@@ -82,7 +82,6 @@ export namespace stormkit::entities {
     };
 
     class EntityManager;
-    class System;
 
     class STORMKIT_API System {
       public:
@@ -119,8 +118,8 @@ export namespace stormkit::entities {
       protected:
         virtual auto onMessageReceived(const Message& message) -> void = 0;
 
-        EntityManager*  m_manager;
-        HashSet<Entity> m_entities;
+        Borrowed<EntityManager> m_manager;
+        HashSet<Entity>         m_entities;
 
         friend class EntityManager;
 
