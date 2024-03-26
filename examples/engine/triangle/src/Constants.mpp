@@ -14,31 +14,8 @@ import stormkit.Core;
 import stormkit.Log;
 
 export {
-    struct Vertex {
-        stormkit::math::Vector2F position;
-        stormkit::math::Vector3F color;
-    };
-
-    inline constexpr auto VERTEX_SIZE = sizeof(Vertex);
-
     inline constexpr auto APPLICATION_NAME        = "Triangle";
     inline constexpr auto WINDOW_TITLE            = "StormKit Triangle Example";
-    inline constexpr auto MESH_VERTEX_BUFFER_SIZE = VERTEX_SIZE * 3;
-    // inline constexpr auto MESH_VERTEX_BINDING_DESCRIPTIONS =
-    // std::array { stormkit::gpu::VertexBindingDescription { .binding = 0,
-    //.stride  = VERTEX_SIZE } };
-    // inline constexpr auto MESH_VERTEX_ATTRIBUTE_DESCRIPTIONS = [] {
-    // using namespace stormkit::gpu;
-    // return std::array { VertexInputAttributeDescription { .location = 0,
-    //.binding  = 0,
-    //.format   = Format::Float2,
-    //.offset =
-    // offsetof(Vertex, position) },
-    // VertexInputAttributeDescription { .location = 1,
-    //.binding  = 0,
-    //.format   = Format::Float3,
-    //.offset = offsetof(Vertex, color) } };
-    //}();
 
     IN_MODULE_LOGGER("StormKit.Triangle");
 }

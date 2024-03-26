@@ -33,8 +33,6 @@ export class TriangleApp: public App {
     DeferInit<gpu::Shader>         m_fragment_shader;
     DeferInit<gpu::PipelineLayout> m_pipeline_layout;
     DeferInit<gpu::Pipeline>       m_pipeline;
-
-    MaybeBorrowed<engine::ShapeRenderSystem> m_render_system;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -57,8 +55,6 @@ auto TriangleApp::run(std::span<const std::string_view> _) -> Int {
     auto& event_handler = m_application->eventHandler();
     auto& renderer      = m_application->renderer();
     auto& world         = m_application->world();
-
-    m_render_system = world.addSystem<engine::ShapeRenderSystem>(renderer);
 
     m_window_extent = window.extent();
 
