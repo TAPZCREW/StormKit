@@ -39,6 +39,7 @@ namespace stormkit::entities {
 
         m_added_entities.emplace(entity);
         m_updated_entities.emplace(entity);
+        m_registered_components_for_entities[entity] = {};
         m_message_bus.push(Message { ADDED_ENTITY_MESSAGE_ID, { entity } });
 
         return entity;

@@ -288,11 +288,13 @@ namespace stormkit::entities {
         static_assert(T::TYPE != Component::INVALID_TYPE, "T must have T::type defined");
 
         expects(hasEntity(entity));
+        expects(not hasComponent<T>(entity));
 
         auto component = std::make_unique<T>(std::forward<Args>(args)...);
 
         auto type                                   = T::TYPE;
         m_components[componentKeyFor(entity, type)] = std::move(component);
+        m_registered_components_for_entities.at(entity).emplace_back(type);
 
         m_updated_entities.emplace(entity);
 
