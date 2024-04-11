@@ -73,14 +73,6 @@ export namespace stormkit::gpu {
     };
 
     class Image;
-
-    class ImageObject: public ParentRef<Image> {
-      public:
-        using ParentRef<Image>::ParentRef;
-
-        [[nodiscard]] auto image() const noexcept -> const Image&;
-    };
-
     class STORMKIT_API ImageView {
         struct Tag {};
 
@@ -268,12 +260,6 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto Sampler::vkHandle() const noexcept -> const vk::raii::Sampler& {
         return m_vk_sampler;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto ImageObject::image() const noexcept -> const Image& {
-        return ParentRef<Image>::parent();
     }
 
     /////////////////////////////////////
