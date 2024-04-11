@@ -77,10 +77,10 @@ export namespace stormkit::gpu {
         auto resetFence(const Fence& fence) const noexcept -> void;
 
         [[nodiscard]] auto rasterQueueEntry() const noexcept -> const QueueEntry&;
-        [[nodiscard]] auto asyncTransfertQueueEntry() const noexcept -> const QueueEntry&;
+        [[nodiscard]] auto asyncTransferQueueEntry() const noexcept -> const QueueEntry&;
         [[nodiscard]] auto asyncComputeQueueEntry() const noexcept -> const QueueEntry&;
 
-        [[nodiscard]] auto hasAsyncTransfertQueue() const noexcept -> bool;
+        [[nodiscard]] auto hasAsyncTransferQueue() const noexcept -> bool;
         [[nodiscard]] auto hasAsyncComputeQueue() const noexcept -> bool;
 
         [[nodiscard]] auto physicalDevice() const noexcept -> const PhysicalDevice&;
@@ -176,7 +176,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto Device::asyncTransfertQueueEntry() const noexcept
+    STORMKIT_FORCE_INLINE auto Device::asyncTransferQueueEntry() const noexcept
         -> const QueueEntry& {
         expects(m_async_transfert_queue != std::nullopt);
 
@@ -194,7 +194,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto Device::hasAsyncTransfertQueue() const noexcept -> bool {
+    STORMKIT_FORCE_INLINE auto Device::hasAsyncTransferQueue() const noexcept -> bool {
         return m_async_transfert_queue != std::nullopt;
     }
 

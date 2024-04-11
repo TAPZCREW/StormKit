@@ -138,7 +138,7 @@ namespace stormkit::gpu {
                                                          Tag) noexcept
         : m_extent { extent }, m_format { format }, m_layers { 1 }, m_faces { 1 },
           m_mip_levels { 1 }, m_type { ImageType::T2D }, m_samples { SampleCountFlag::C1 },
-          m_usages { ImageUsageFlag::Transfert_Dst }, m_vk_image { image } {
+          m_usages { ImageUsageFlag::Transfer_Dst }, m_vk_image { image } {
     }
 
     /////////////////////////////////////

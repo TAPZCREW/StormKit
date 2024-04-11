@@ -137,8 +137,8 @@ export namespace stormkit::gpu {
             ImageType       type       = ImageType::T2D;
             ImageCreateFlag flags      = ImageCreateFlag::None;
             SampleCountFlag samples    = SampleCountFlag::C1;
-            ImageUsageFlag  usages     = ImageUsageFlag::Sampled | ImageUsageFlag::Transfert_Dst |
-                                    ImageUsageFlag::Transfert_Src;
+            ImageUsageFlag  usages     = ImageUsageFlag::Sampled | ImageUsageFlag::Transfer_Dst |
+                                    ImageUsageFlag::Transfer_Src;
             ImageTiling        tiling   = ImageTiling::Optimal;
             MemoryPropertyFlag property = MemoryPropertyFlag::Device_Local;
         };

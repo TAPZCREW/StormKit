@@ -74,7 +74,7 @@ namespace stormkit::gpu {
         const auto compute_queue = [&queue_families]() -> Queue_ {
             const auto it =
                 std::ranges::find_if(queue_families,
-                                     findQueue<QueueFlag::Transfert, QueueFlag::Graphics>());
+                                     findQueue<QueueFlag::Transfer, QueueFlag::Graphics>());
             if (it == std::ranges::cend(queue_families)) return {};
 
             return { .id    = as<UInt32>(std::distance(std::ranges::cbegin(queue_families), it)),
@@ -85,7 +85,7 @@ namespace stormkit::gpu {
         const auto transfert_queue = [&queue_families]() -> Queue_ {
             const auto it = std::ranges::find_if(
                 queue_families,
-                findQueue<QueueFlag::Compute, QueueFlag::Graphics, QueueFlag::Transfert>());
+                findQueue<QueueFlag::Compute, QueueFlag::Graphics, QueueFlag::Transfer>());
             if (it == std::ranges::cend(queue_families)) return {};
 
             return { .id    = as<UInt32>(std::distance(std::ranges::cbegin(queue_families), it)),

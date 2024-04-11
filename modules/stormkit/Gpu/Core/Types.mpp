@@ -31,7 +31,7 @@ export {
             None           = 0,
             Graphics       = narrow<UInt8>(vk::QueueFlagBits::eGraphics),
             Compute        = narrow<UInt8>(vk::QueueFlagBits::eCompute),
-            Transfert      = narrow<UInt8>(vk::QueueFlagBits::eTransfer),
+            Transfer       = narrow<UInt8>(vk::QueueFlagBits::eTransfer),
             Sparse_Binding = narrow<UInt8>(vk::QueueFlagBits::eSparseBinding),
         };
 
@@ -396,8 +396,8 @@ export {
         enum class BufferUsageFlag : UInt16 {
             Vertex        = narrow<UInt16>(vk::BufferUsageFlagBits::eVertexBuffer),
             Index         = narrow<UInt16>(vk::BufferUsageFlagBits::eIndexBuffer),
-            Transfert_Src = narrow<UInt16>(vk::BufferUsageFlagBits::eTransferSrc),
-            Transfert_Dst = narrow<UInt16>(vk::BufferUsageFlagBits::eTransferDst),
+            Transfer_Src  = narrow<UInt16>(vk::BufferUsageFlagBits::eTransferSrc),
+            Transfer_Dst  = narrow<UInt16>(vk::BufferUsageFlagBits::eTransferDst),
             Uniform       = narrow<UInt16>(vk::BufferUsageFlagBits::eUniformBuffer),
             Storage       = narrow<UInt16>(vk::BufferUsageFlagBits::eStorageBuffer),
             Uniform_Texel = narrow<UInt16>(vk::BufferUsageFlagBits::eUniformTexelBuffer),
@@ -406,8 +406,8 @@ export {
         };
 
         enum class ImageUsageFlag : UInt16 {
-            Transfert_Src    = narrow<UInt16>(vk::ImageUsageFlagBits::eTransferSrc),
-            Transfert_Dst    = narrow<UInt16>(vk::ImageUsageFlagBits::eTransferDst),
+            Transfer_Src     = narrow<UInt16>(vk::ImageUsageFlagBits::eTransferSrc),
+            Transfer_Dst     = narrow<UInt16>(vk::ImageUsageFlagBits::eTransferDst),
             Sampled          = narrow<UInt16>(vk::ImageUsageFlagBits::eSampled),
             Storage          = narrow<UInt16>(vk::ImageUsageFlagBits::eStorage),
             Color_Attachment = narrow<UInt16>(vk::ImageUsageFlagBits::eColorAttachment),
@@ -970,44 +970,8 @@ export {
         using ClearValue = std::variant<ClearColor, ClearDepthStencil>;
         using SpirvID    = UInt32;
 
-        template<typename T>
-        class ParentRef {
-          public:
-            explicit ParentRef(const T& parent) noexcept;
-            ~ParentRef() noexcept;
-
-            ParentRef(const ParentRef&) noexcept;
-            auto operator=(const ParentRef&) noexcept -> ParentRef&;
-
-            ParentRef(ParentRef&&) noexcept;
-            auto operator=(ParentRef&&) noexcept -> ParentRef&;
-
-            [[nodiscard]] auto parent() const noexcept -> const T&;
-
-          private:
-            Borrowed<const T> m_parent;
-        };
-
         template<class T>
         using Expected = std::expected<T, Result>;
-
-        class Instance;
-
-        class InstanceObject: public ParentRef<Instance> {
-          public:
-            using ParentRef<Instance>::ParentRef;
-
-            [[nodiscard]] auto instance() const noexcept -> const Instance&;
-        };
-
-        class Device;
-
-        class DeviceObject: public ParentRef<Device> {
-          public:
-            using ParentRef<Device>::ParentRef;
-
-            [[nodiscard]] auto device() const noexcept -> const Device&;
-        };
 
         [[nodiscard]] constexpr auto isDepthOnlyFormat(PixelFormat format) noexcept -> bool;
         [[nodiscard]] constexpr auto isDepthStencilFormat(PixelFormat format) noexcept -> bool;
@@ -1017,9 +981,10 @@ export {
         [[nodiscard]] constexpr auto getArraySizeByChannelFor(PixelFormat format) noexcept -> UInt8;
 
         [[nodiscard]] auto computeMipLevel(const math::ExtentU& extent) noexcept -> UInt32;
-        [[nodiscard]] constexpr auto computeUniformBufferOffsetAlignement(
-            RangeExtent               size,
-            const RenderCapabilities& capabilities) noexcept -> RangeExtent;
+        [[nodiscard]] constexpr auto
+            computeUniformBufferOffsetAlignement(RangeExtent               size,
+                                                 const RenderCapabilities& capabilities) noexcept
+            -> RangeExtent;
 
         [[nodiscard]] auto toString(const PhysicalDeviceInfo& data) noexcept;
 
@@ -1028,14 +993,14 @@ export {
     namespace stormkit::core { inline namespace casts {
         template<>
         struct AsCaster<vk::Viewport, const gpu::Viewport&> {
-            [[nodiscard]] static constexpr auto
-                operator()(const gpu::Viewport& from) noexcept -> vk::Viewport;
+            [[nodiscard]] static constexpr auto operator()(const gpu::Viewport& from) noexcept
+                -> vk::Viewport;
         };
 
         template<>
         struct AsCaster<vk::Rect2D, const gpu::Scissor&> {
-            [[nodiscard]] static constexpr auto
-                operator()(const gpu::Scissor& from) noexcept -> vk::Rect2D;
+            [[nodiscard]] static constexpr auto operator()(const gpu::Scissor& from) noexcept
+                -> vk::Rect2D;
         };
     }} // namespace stormkit::core::casts
 
@@ -1063,58 +1028,6 @@ export {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit::gpu {
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE ParentRef<T>::ParentRef(const T& parent) noexcept : m_parent { &parent } {
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE ParentRef<T>::~ParentRef() noexcept = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE ParentRef<T>::ParentRef(const ParentRef&) noexcept = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE auto
-        ParentRef<T>::operator=(const ParentRef&) noexcept -> ParentRef& = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE ParentRef<T>::ParentRef(ParentRef&&) noexcept = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE auto
-        ParentRef<T>::operator=(ParentRef&&) noexcept -> ParentRef& = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE auto ParentRef<T>::parent() const noexcept -> const T& {
-        return m_parent.get();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto InstanceObject::instance() const noexcept -> const Instance& {
-        return ParentRef<Instance>::parent();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto DeviceObject::device() const noexcept -> const Device& {
-        return ParentRef<Device>::parent();
-    }
-
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE constexpr auto isDepthOnlyFormat(PixelFormat format) noexcept -> bool {
@@ -1213,8 +1126,8 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE constexpr auto
-        getArraySizeByChannelFor(PixelFormat format) noexcept -> UInt8 {
+    STORMKIT_FORCE_INLINE constexpr auto getArraySizeByChannelFor(PixelFormat format) noexcept
+        -> UInt8 {
         switch (format) {
             case PixelFormat::R8_SNorm:
             case PixelFormat::R8_UNorm:
@@ -1308,9 +1221,10 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE constexpr auto computeUniformBufferOffsetAlignement(
-        RangeExtent               size,
-        const RenderCapabilities& capabilities) noexcept -> RangeExtent {
+    STORMKIT_FORCE_INLINE constexpr auto
+        computeUniformBufferOffsetAlignement(RangeExtent               size,
+                                             const RenderCapabilities& capabilities) noexcept
+        -> RangeExtent {
         const auto min_ubo_align = capabilities.limits.min_uniform_buffer_offset_alignment;
 
         if (min_ubo_align > 0) size = (size + min_ubo_align - 1) & ~(min_ubo_align - 1);
@@ -1346,15 +1260,17 @@ namespace stormkit::gpu {
 namespace stormkit::core { inline namespace casts {
     /////////////////////////////////////
     /////////////////////////////////////
-    constexpr auto AsCaster<vk::Viewport, const gpu::Viewport&>::operator()(
-        const gpu::Viewport& from) noexcept -> vk::Viewport {
+    constexpr auto
+        AsCaster<vk::Viewport, const gpu::Viewport&>::operator()(const gpu::Viewport& from) noexcept
+        -> vk::Viewport {
         return from.operator vk::Viewport();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    constexpr auto AsCaster<vk::Rect2D, const gpu::Scissor&>::operator()(
-        const gpu::Scissor& from) noexcept -> vk::Rect2D {
+    constexpr auto
+        AsCaster<vk::Rect2D, const gpu::Scissor&>::operator()(const gpu::Scissor& from) noexcept
+        -> vk::Rect2D {
         return from.operator vk::Rect2D();
     }
 }} // namespace stormkit::core::casts
