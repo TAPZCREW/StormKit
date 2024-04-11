@@ -71,10 +71,8 @@ export namespace stormkit::gpu {
 
         auto upload(const Device& device, std::span<const Byte> data, RangeOffset offset = 0)
             -> void;
-        template<class T>
+        template<IsNot<std::span<const Byte>> T>
         auto upload(const Device& device, const T& data, RangeOffset offset = 0) -> void;
-        template<class T>
-        auto upload(const Device& device, std::span<const T> data, RangeOffset offset = 0) -> void;
 
         [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::Buffer&;
 
@@ -241,7 +239,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto Buffer::unmap(const Device& device) -> void {
         expects(m_vma_allocation.operator bool());
-        expects(m_is_persistently_mapped, "Trying to unmap persistent buffer !");
+        expects(not m_is_persistently_mapped, "Trying to unmap persistent buffer !");
 
         device.vmaAllocator().unmapMemory(*m_vma_allocation);
 
@@ -255,25 +253,23 @@ namespace stormkit::gpu {
                                               RangeOffset           offset) -> void {
         auto ptr = map(device, offset, std::size(data));
 
-        std::ranges::copy(data, std::begin(ptr));
+        std::ranges::copy(data, std::ranges::begin(ptr));
 
         unmap(device);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T>
+    template<IsNot<std::span<const Byte>> T>
     STORMKIT_FORCE_INLINE auto
         Buffer::upload(const Device& device, const T& data, RangeOffset offset) -> void {
-        upload(device, asByteView(data), offset);
-    }
+        const auto bytes = asByteView(data);
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<class T>
-    STORMKIT_FORCE_INLINE auto
-        Buffer::upload(const Device& device, std::span<const T> data, RangeOffset offset) -> void {
-        upload(device, asByteView(data), offset);
+        auto ptr = map(device, offset, std::size(bytes));
+
+        std::ranges::copy(bytes, std::ranges::begin(ptr));
+
+        unmap(device);
     }
 
     /////////////////////////////////////

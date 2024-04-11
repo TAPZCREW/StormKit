@@ -32,10 +32,12 @@ namespace stormkit::gpu {
 
                 auto&& allocator = device.vmaAllocator();
 
-                auto&& [error, m_vma_allocation] =
+                auto&& [error, vma_allocation] =
                     allocator.allocateMemoryUnique(requirements, allocate_info);
                 if (error != vk::Result::eSuccess)
                     return std::unexpected { narrow<vk::Result>(error) };
+
+                m_vma_allocation = std::move(vma_allocation);
 
                 error = allocator.bindBufferMemory(*m_vma_allocation, *m_vk_buffer.get());
                 if (error != vk::Result::eSuccess)
