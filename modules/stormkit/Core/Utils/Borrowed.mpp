@@ -33,20 +33,22 @@ export namespace stormkit::core {
         constexpr auto operator=(const Borrowed&) noexcept -> Borrowed&;
         constexpr auto operator=(Borrowed&&) noexcept -> Borrowed&;
 
-        constexpr auto get(this auto&& self) noexcept -> decltype(auto);
-        constexpr auto operator->(this auto&& self) noexcept -> decltype(auto);
-        constexpr auto operator*(this auto&& self) noexcept -> decltype(auto);
+        constexpr auto get() const noexcept -> PointerType;
+        constexpr auto operator->() const noexcept -> PointerType;
+        constexpr auto operator*() const noexcept -> ReferenceType;
 
         constexpr explicit operator bool() const noexcept;
         constexpr auto     hasValue() const noexcept -> bool;
 
-        template<typename Self>
-        constexpr operator std::conditional_t<std::is_const_v<Self>, const T&, T&>(
-            this Self&& self) noexcept;
+        // template<typename Self>
+        // constexpr operator std::conditional_t<std::is_const_v<Self>, const T&, T&>(
+        //     this Self&& self) noexcept;
+        //
+        // template<typename Self>
+        // constexpr operator std::enable_if<not std::is_const_v<T>, Borrowed<const T>>(
+        //     this Self&& self) noexcept;
 
-        template<typename Self>
-        constexpr operator std::enable_if<not std::is_const_v<T>, Borrowed<const T>>(
-            this Self&& self) noexcept;
+        constexpr operator ReferenceType() const noexcept;
 
       private:
         PointerType m_value;
@@ -55,14 +57,15 @@ export namespace stormkit::core {
     template<typename T>
     using MaybeBorrowed = std::optional<Borrowed<T>>;
 
-    template<IsRawIndirection T>
-        requires(not IsRValueReference<T> and not IsFancyPointer<PureType<T>>)
-    [[nodiscard]] constexpr auto borrow(T&& value) noexcept -> decltype(auto);
+    template<IsRawPointer T>
+    [[nodiscard]] constexpr auto borrow(T value) noexcept -> decltype(auto);
+
+    template<IsFancyPointer T>
+    [[nodiscard]] constexpr auto borrow(T& value) noexcept -> decltype(auto);
+
     template<typename T>
-        requires(not IsFancyPointer<PureType<T>>)
-    [[nodiscard]] constexpr auto borrow(const Borrowed<T>& value) noexcept -> decltype(auto);
-    template<typename T>
-        requires IsFancyPointer<PureType<T>>
+        requires(not IsRawPointer<PureType<T>> and not IsFancyPointer<PureType<T>> and
+                 not IsRValueReference<T>)
     [[nodiscard]] constexpr auto borrow(T&& value) noexcept -> decltype(auto);
 
     template<template<typename...> typename Out = std::vector, typename... Args>
@@ -126,22 +129,22 @@ namespace stormkit::core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    [[nodiscard]] constexpr auto Borrowed<T>::get(this auto&& self) noexcept -> decltype(auto) {
-        return *std::forward_like<decltype(self)>(self.m_value);
+    [[nodiscard]] constexpr auto Borrowed<T>::get() const noexcept -> PointerType {
+        return m_value;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    constexpr auto Borrowed<T>::operator->(this auto&& self) noexcept -> decltype(auto) {
-        return std::forward_like<decltype(self)>(self.m_value);
+    constexpr auto Borrowed<T>::operator->() const noexcept -> PointerType {
+        return get();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    constexpr auto Borrowed<T>::operator*(this auto&& self) noexcept -> decltype(auto) {
-        return std::forward_like<decltype(self)>(self.get());
+    constexpr auto Borrowed<T>::operator*() const noexcept -> ReferenceType {
+        return *get();
     }
 
     /////////////////////////////////////
@@ -161,50 +164,31 @@ namespace stormkit::core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    template<typename Self>
-    constexpr Borrowed<T>::operator std::conditional_t<std::is_const_v<Self>, const T&, T&>(
-        this Self &&
-            self) noexcept {
-        return std::forward_like<decltype(self)>(self.get());
+    constexpr Borrowed<T>::operator Borrowed<T>::ReferenceType() const noexcept {
+        return *m_value;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<IsRawPointer T>
+    constexpr auto borrow(T value) noexcept -> decltype(auto) {
+        return Borrowed { *value };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<IsFancyPointer T>
+    constexpr auto borrow(T& value) noexcept -> decltype(auto) {
+        return borrow(value.get());
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    template<typename Self>
-    constexpr Borrowed<T>::operator std::enable_if<not std::is_const_v<T>,
-                                                   Borrowed<const T>>(this Self && self) noexcept {
-        return { std::as_const(self.m_value) };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<IsRawIndirection T>
-        requires(not IsRValueReference<T> and not IsFancyPointer<PureType<T>>)
+        requires(not IsRawPointer<PureType<T>> and not IsFancyPointer<PureType<T>> and
+                 not IsRValueReference<T>)
     constexpr auto borrow(T&& value) noexcept -> decltype(auto) {
-        using PureT = PureType<T>;
-        using Out =
-            std::conditional_t<std::is_const_v<T>, Borrowed<PureT>, const Borrowed<const PureT>>;
-        return Out { value };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-        requires(not IsFancyPointer<PureType<T>>)
-    constexpr auto borrow(const Borrowed<T>& value) noexcept -> decltype(auto) {
-        return auto { value };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T>
-        requires IsFancyPointer<PureType<T>>
-    constexpr auto borrow(T&& value) noexcept -> decltype(auto) {
-        using PureT = PureType<typename PureType<T>::element_type>;
-        using Out =
-            std::conditional_t<std::is_const_v<T>, Borrowed<PureT>, const Borrowed<const PureT>>;
-        return Out { *value };
+        return borrow(&value);
     }
 
     /////////////////////////////////////

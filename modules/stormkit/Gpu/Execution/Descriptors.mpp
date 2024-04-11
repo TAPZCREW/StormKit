@@ -172,15 +172,15 @@ export {
     HASH_FUNC(stormkit::gpu::BufferDescriptor,
               value.type,
               value.binding,
-              &value.buffer.get(),
+              value.buffer.get(),
               value.range,
               value.offset)
     HASH_FUNC(stormkit::gpu::ImageDescriptor,
               value.type,
               value.binding,
               value.layout,
-              &value.image_view.get(),
-              &value.sampler.get())
+              value.image_view.get(),
+              value.sampler.get())
 
     template<>
     struct STORMKIT_API std::hash<stormkit::gpu::Descriptor> {
