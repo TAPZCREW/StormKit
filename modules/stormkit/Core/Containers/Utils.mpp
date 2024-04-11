@@ -33,6 +33,9 @@ export namespace stormkit::core {
     constexpr auto makeArray(T&& first, Args&&... args) noexcept -> decltype(auto);
 
     template<std::ranges::range T>
+    constexpr auto toArray(T&& range) noexcept -> decltype(auto);
+
+    template<std::ranges::range T>
     constexpr auto viewAsBytes(T& data) -> decltype(auto);
 
     template<typename T>
@@ -48,9 +51,11 @@ export namespace stormkit::core {
                                             Pred,
                                             Proj1,
                                             Proj2>
-    constexpr auto
-        findFirstNotOf(R1&& first, R2&& second, Pred pred = {}, Proj1 proj1 = {}, Proj2 proj2 = {})
-            -> decltype(auto) {
+    constexpr auto findFirstNotOf(R1&&  first,
+                                  R2&&  second,
+                                  Pred  pred  = {},
+                                  Proj1 proj1 = {},
+                                  Proj2 proj2 = {}) -> decltype(auto) {
         auto first1 = std::ranges::begin(first);
         auto last1  = std::ranges::end(first);
         auto first2 = std::ranges::begin(second);
@@ -88,8 +93,8 @@ namespace stormkit::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<std::ranges::range T, std::ranges::range... U>
-    constexpr auto concat(const T& first, const U&... others) noexcept
-        -> std::vector<RangeType<T>> {
+    constexpr auto concat(const T& first,
+                          const U&... others) noexcept -> std::vector<RangeType<T>> {
         auto output = std::vector<RangeType<T>> {};
         merge(output, first, others...);
 
@@ -130,6 +135,13 @@ namespace stormkit::core {
                  (std::constructible_from<T, Args> and ...))
     constexpr auto makeArray(T&& first, Args&&... args) noexcept -> decltype(auto) {
         return std::vector { std::forward<T>(first), static_cast<T>(std::forward<Args>(args))... };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<std::ranges::range T>
+    constexpr auto toArray(T&& range) noexcept -> decltype(auto) {
+        return range | std::ranges::to<std::vector>();
     }
 
     /////////////////////////////////////
