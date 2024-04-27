@@ -1,0 +1,9 @@
+export module ShaderData;
+
+import stormkit.Core;
+
+import std;
+
+export inline constexpr auto SHADER_DATA = stormkit::makeStaticByteArray(
+#include <shader.spv.h>
+);

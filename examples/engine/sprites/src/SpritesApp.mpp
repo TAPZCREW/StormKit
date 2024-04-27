@@ -1,0 +1,74 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+export module SpritesApp;
+
+import std;
+
+import stormkit.Core;
+import stormkit.Gpu;
+import stormkit.Engine;
+import stormkit.Wsi;
+
+import Constants;
+import ShaderData;
+
+using namespace stormkit;
+
+export class SpritesApp: public App {
+  public:
+    ~SpritesApp() override;
+    auto run(std::span<const std::string_view> args) -> Int override;
+
+  private:
+    bool          m_fullscreen_enabled = false;
+    math::ExtentU m_window_extent;
+
+    DeferInit<engine::Application> m_application;
+};
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+module :private;
+
+SpritesApp::~SpritesApp() = default;
+
+////////////////////////////////////////
+////////////////////////////////////////
+auto SpritesApp::run(std::span<const std::string_view> _) -> Int {
+    m_application = engine::Application::create(APPLICATION_NAME, { 800u, 600u }, WINDOW_TITLE)
+                        .transform_error(expectsWithMessage("Failed to initialize Render engine"))
+                        .value();
+
+    auto& window        = m_application->window();
+    auto& event_handler = m_application->eventHandler();
+    auto& renderer      = m_application->renderer();
+    auto& world         = m_application->world();
+
+    auto& render_system = world.addSystem<engine::SpriteRenderSystem>(renderer, window.extent());
+    m_application->setUpdateFrameGraphCallback(
+        curry(&engine::SpriteRenderSystem::updateFrameGraph, &render_system));
+
+    engine::makeSprite(world, { 32.f, 32.f });
+
+    event_handler.setCallbacks(
+        { { wsi::EventType::Closed, [&window](const wsi::Event& _) noexcept { window.close(); } },
+          { wsi::EventType::KeyReleased, [this, &window](const wsi::Event& event) noexcept {
+               const auto& event_data = as<wsi::KeyReleasedEventData>(event.data);
+
+               if (event_data.key == wsi::Key::Escape) [[unlikely]]
+                   window.close();
+
+               if (event_data.key == wsi::Key::F11) [[unlikely]] {
+                   m_fullscreen_enabled = not m_fullscreen_enabled;
+                   window.setFullscreenEnabled(m_fullscreen_enabled);
+               }
+           } } });
+
+    m_application->run();
+
+    return 0;
+}
