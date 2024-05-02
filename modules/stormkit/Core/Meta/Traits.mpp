@@ -26,7 +26,17 @@ export namespace stormkit::core {
     using RawType = typename RawTypeTrait<T>::Type;
 
     template<class T>
-    struct ElementTypeTrait;
+    struct RemoveIndirectionsTypeTrait {
+        using Type = std::remove_pointer_t<std::remove_reference_t<T>>;
+    };
+
+    template<class T>
+    using RemoveIndirectionsType = RemoveIndirectionsTypeTrait<T>::Type;
+
+    template<class T>
+    struct ElementTypeTrait {
+        using Type = T;
+    };
 
     template<IsFancyPointer T>
     struct ElementTypeTrait<T> {
