@@ -107,6 +107,9 @@ namespace stormkit::core {
         concept IsRawIndirection = IsLValueReference<T> or IsRawPointer<T>;
 
         template<class T>
+        concept IsNotRawIndirection = not IsRawIndirection<T>;
+
+        template<class T>
         concept IsNotIndirection = not IsIndirection<T>;
 
         template<class T>
