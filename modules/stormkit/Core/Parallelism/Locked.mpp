@@ -55,8 +55,8 @@ export namespace stormkit::core {
         Locked() noexcept(noexcept(std::is_nothrow_default_constructible_v<ValueType>));
 
         template<typename... Args>
-        explicit Locked(Args&&... args)
-            noexcept(noexcept(std::is_nothrow_constructible_v<ValueType, Args...>));
+        explicit Locked(Args&&... args) noexcept(
+            noexcept(std::is_nothrow_constructible_v<ValueType, Args...>));
 
         Locked(const Locked&)                    = delete;
         auto operator=(const Locked&) -> Locked& = delete;
@@ -65,7 +65,7 @@ export namespace stormkit::core {
         auto operator=(Locked&&) noexcept -> Locked& = delete;
 
         template<LockAccessMode Mode, template<class> class Lock, typename... LockArgs, class Self>
-        auto access(this Self &self, LockArgs&&... lock_args) noexcept -> Access<Lock, Mode>;
+        auto access(this Self& self, LockArgs&&... lock_args) noexcept -> Access<Lock, Mode>;
 
         template<template<class> class Lock = DefaultReadOnlyLock, typename... LockArgs>
         auto read(LockArgs&&... lock_args) const noexcept -> ReadAccess<Lock>;
@@ -77,12 +77,12 @@ export namespace stormkit::core {
         auto copy(LockArgs&&... lock_args) const noexcept -> ValueType;
 
         template<template<class> class Lock = DefaultReadWriteLock, typename... LockArgs>
-        auto assign(ConstReferenceType value, LockArgs&&... lock_args)
-            noexcept(noexcept(std::is_nothrow_assignable_v<ValueType, ConstReferenceType>)) -> void;
+        auto assign(ConstReferenceType value, LockArgs&&... lock_args) noexcept(
+            noexcept(std::is_nothrow_assignable_v<ValueType, ConstReferenceType>)) -> void;
 
         template<template<class> class Lock = DefaultReadWriteLock, typename... LockArgs>
-        auto assign(ValueType&& value, LockArgs&&... lock_args)
-            noexcept(noexcept(std::is_nothrow_assignable_v<ValueType, ValueType&&>)) -> void;
+        auto assign(ValueType&& value, LockArgs&&... lock_args) noexcept(
+            noexcept(std::is_nothrow_assignable_v<ValueType, ValueType&&>)) -> void;
 
         template<typename Self>
         auto unsafe(this Self& self) noexcept -> LikeCVType<Self, ReferenceType>;
@@ -122,6 +122,9 @@ export namespace stormkit::core {
         Mutex     m_mutex;
         ValueType m_value;
     };
+
+    template<typename T>
+    Locked(T) -> Locked<T>;
 } // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -132,15 +135,15 @@ namespace stormkit::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<IsNotRawIndirection T, class Mutex>
-    STORMKIT_FORCE_INLINE Locked<T, Mutex>::Locked()
-        noexcept(noexcept(std::is_nothrow_default_constructible_v<ValueType>)) = default;
+    STORMKIT_FORCE_INLINE Locked<T, Mutex>::Locked() noexcept(
+        noexcept(std::is_nothrow_default_constructible_v<ValueType>)) = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<IsNotRawIndirection T, class Mutex>
     template<typename... Args>
-    STORMKIT_FORCE_INLINE Locked<T, Mutex>::Locked(Args&&... args)
-        noexcept(noexcept(std::is_nothrow_constructible_v<ValueType, Args...>))
+    STORMKIT_FORCE_INLINE Locked<T, Mutex>::Locked(Args&&... args) noexcept(
+        noexcept(std::is_nothrow_constructible_v<ValueType, Args...>))
         : m_value { std::forward<Args>(args)... } {
     }
 
@@ -149,8 +152,11 @@ namespace stormkit::core {
     template<IsNotRawIndirection T, class Mutex>
     template<LockAccessMode Mode, template<class> class Lock, typename... LockArgs, class Self>
     STORMKIT_FORCE_INLINE auto
-        Locked<T, Mutex>::access(this Self &self, LockArgs&&... lock_args) noexcept -> Access<Lock, Mode> {
-        static_assert(not (Mode == LockAccessMode::Read_Only and not std::is_const_v<NoIndirectionType<Self>>), "can't get read access on const Locked<T>");
+        Locked<T, Mutex>::access(this Self& self,
+                                 LockArgs&&... lock_args) noexcept -> Access<Lock, Mode> {
+        static_assert(not(Mode == LockAccessMode::Read_Only and
+                          not std::is_const_v<RemoveIndirectionsType<Self>>),
+                      "can't get read access on const Locked<T>");
         using AccessType = Access<Lock, Mode>;
         return AccessType { self, std::forward<LockArgs>(lock_args)... };
     }
@@ -186,9 +192,9 @@ namespace stormkit::core {
     ////////////////////////////////////////
     template<IsNotRawIndirection T, class Mutex>
     template<template<class> class Lock, typename... LockArgs>
-    STORMKIT_FORCE_INLINE auto Locked<T, Mutex>::assign(ConstReferenceType value,
-                                                        LockArgs&&... lock_args)
-        noexcept(noexcept(std::is_nothrow_assignable_v<ValueType, ConstReferenceType>)) -> void {
+    STORMKIT_FORCE_INLINE auto
+        Locked<T, Mutex>::assign(ConstReferenceType value, LockArgs&&... lock_args) noexcept(
+            noexcept(std::is_nothrow_assignable_v<ValueType, ConstReferenceType>)) -> void {
         *write(std::forward<LockArgs>(lock_args)...) = value;
     }
 
@@ -196,8 +202,9 @@ namespace stormkit::core {
     ////////////////////////////////////////
     template<IsNotRawIndirection T, class Mutex>
     template<template<class> class Lock, typename... LockArgs>
-    STORMKIT_FORCE_INLINE auto Locked<T, Mutex>::assign(ValueType&& value, LockArgs&&... lock_args)
-        noexcept(noexcept(std::is_nothrow_assignable_v<ValueType, ValueType&&>)) -> void {
+    STORMKIT_FORCE_INLINE auto
+        Locked<T, Mutex>::assign(ValueType&& value, LockArgs&&... lock_args) noexcept(
+            noexcept(std::is_nothrow_assignable_v<ValueType, ValueType&&>)) -> void {
         *write(std::forward<LockArgs>(lock_args)...) = std::move(value);
     }
 

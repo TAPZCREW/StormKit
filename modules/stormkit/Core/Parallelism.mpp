@@ -4,5 +4,6 @@
 
 export module stormkit.Core:Parallelism;
 
+export import :Parallelism.Locked;
 export import :Parallelism.ThreadPool;
 export import :Parallelism.ThreadUtils;
