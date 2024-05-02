@@ -6,8 +6,8 @@ for name, _ in pairs(modules) do
 				function parseTestFile(filename)
 					local code = io.readfile(filename)
 
-					local suite_name_regex = [[TestSuite -{.-"(.-)",]]
-					local test_name_regex = [[{.-"(.-)",.-]]
+					local suite_name_regex = [[TestSuite%s-{.-"(.-)",]]
+					local test_name_regex = [[{%s-"(.-)"%s-,]]
 
 					local suite_name = code:match(suite_name_regex)
 
@@ -22,7 +22,7 @@ for name, _ in pairs(modules) do
 					return { suite_name = suite_name, test_names = test_names }
 				end
 
-				for _, file in ipairs(os.files(path.join("tests", "src", name, "*.cpp"))) do
+				for _, file in ipairs(os.files(path.join("tests", "src", name, "**.cpp"))) do
 					target:add("files", file)
 
 					local tests = parseTestFile(file)
@@ -40,7 +40,7 @@ for name, _ in pairs(modules) do
 			set_kind("binary")
 			set_languages("cxxlatest", "clatest")
 
-			add_files("src/main.cpp", path.join("src", name, "*.cpp"), "src/Test.mpp")
+			add_files("src/main.cpp", path.join("src", name, "**.cpp"), "src/Test.mpp")
 
 			if has_config("mold") then
 				add_ldflags("-Wl,-fuse-ld=mold")
