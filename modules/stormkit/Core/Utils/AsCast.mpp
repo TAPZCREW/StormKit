@@ -58,7 +58,8 @@ export namespace stormkit::core { inline namespace casts {
     };
 
     template<typename To, typename From>
-    concept IsAsCastable = requires(From&& from) { AsCaster<To, From>::operator()(from); };
+    concept IsAsCastable =
+        requires(From&& from) { AsCaster<To, From>::operator()(std::forward<From>(from)); };
 
     template<typename To, typename From>
         requires IsAsCastable<To, From>
@@ -72,17 +73,14 @@ export namespace stormkit::core { inline namespace casts {
     };
 
     // polymorphic
-    template<IsPolymorphicReference To, typename From>
-        requires(IsPolymorphicReference<From> and Is<PureType<To>, PureType<From>>)
+    template<typename To, typename From>
+    // clang-format off
+        requires(IsPolymorphic<RemoveIndirectionsType<To>>
+                 and IsPolymorphic<ElementType<PureType<From>>>
+                 and Is<RawType<To>, ElementType<PureType<From>>>)
+    // clang-format on
     struct AsCaster<To, From> {
-        [[nodiscard]] static constexpr auto operator()(From value) -> To;
-    };
-
-    template<IsPolymorphicPointer To, typename From>
-        requires(IsPolymorphicPointer<From> and
-                 Is<ElementType<PureType<To>>, ElementType<PureType<From>>>)
-    struct AsCaster<To, From> {
-        [[nodiscard]] static constexpr auto operator()(From value) -> To;
+        [[nodiscard]] static constexpr auto operator()(From&& value) noexcept -> To;
     };
 
     // std::byte* / char*
@@ -129,9 +127,14 @@ export namespace stormkit::core { inline namespace casts {
 
     // explicit casts
     template<IsNot<std::string> To, typename From>
-        requires(IsBraceInitializableTo<PureType<From>, To> and not IsPure<From, To> and
-                 not IsEnumerationPure<To> and not IsEnumerationPure<From> and
-                 not IsBytePure<To> and not IsBytePure<From>)
+        // clang-format off
+        requires(IsBraceInitializableTo<PureType<From>, To> 
+                 and not IsPure<From, To> 
+                 and not IsEnumerationPure<To> 
+                 and not IsEnumerationPure<From>
+                 and not IsBytePure<To> 
+                 and not IsBytePure<From>)
+        // clang-format on
     struct AsCaster<To, From> {
         [[nodiscard]] static constexpr auto operator()(From from) noexcept -> To;
     };
@@ -286,30 +289,30 @@ namespace stormkit::core { inline namespace casts {
         requires(IsVariantType<PureType<From>>)
     STORMKIT_FORCE_INLINE constexpr auto
         AsCaster<To, From>::operator()(From variant) noexcept -> decltype(auto) {
-        expects(is<To, From>(variant));
+        expects(is<To>(variant));
 
-        return std::get<To>(std::forward<From>(variant));
+        return std::forward_like<From>(std::get<To>(variant));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsPolymorphicPointer To, typename From>
-        requires(IsPolymorphicPointer<From> and
-                 Is<ElementType<PureType<To>>, ElementType<PureType<From>>>)
-    STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(From value) -> To {
-        expects(is<ElementType<PureType<To>>>(value));
+    template<typename To, typename From>
+    // clang-format off
+        requires(IsPolymorphic<RemoveIndirectionsType<To>>
+                 and IsPolymorphic<ElementType<PureType<From>>>
+                 and Is<RawType<To>, ElementType<PureType<From>>>)
+    // clang-format on
+    STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(From&& value) noexcept -> To {
+        expects(is<RemoveIndirectionsType<To>>(value));
 
-        return static_cast<To>(std::to_address(value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<IsPolymorphicReference To, typename From>
-        requires(IsPolymorphicReference<From> and Is<PureType<To>, PureType<From>>)
-    STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(From value) -> To {
-        expects(is<PureType<To>>(value));
-
-        return static_cast<To>(value);
+        if constexpr (IsPointer<PureType<From>> and not IsRawPointer<PureType<To>>)
+            return static_cast<To>(*value);
+        else if constexpr (IsPointer<PureType<From>> and IsRawPointer<PureType<To>>)
+            return static_cast<To>(std::to_address(value));
+        else if constexpr (not IsPointer<PureType<From>> and IsRawPointer<PureType<To>>)
+            return static_cast<To>(&value);
+        else if constexpr (not IsPointer<PureType<From>> and not IsRawPointer<PureType<To>>)
+            return static_cast<To>(value);
     }
 
     /////////////////////////////////////
