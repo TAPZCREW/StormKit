@@ -20,8 +20,8 @@ export {
 
             constexpr auto operator=(bool value) noexcept -> Boolean&;
 
-            explicit constexpr operator bool() const noexcept;
-            constexpr auto     operator!() const noexcept -> Boolean;
+            constexpr      operator bool() const noexcept;
+            constexpr auto operator!() const noexcept -> Boolean;
 
           private:
             bool m_value;
