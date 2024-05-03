@@ -5,6 +5,8 @@
 #ifndef STORMKIT_PLATFORM_MACRO_HPP
 #define STORMKIT_PLATFORM_MACRO_HPP
 
+#include <version>
+
 #if defined(__cplusplus)
     #ifndef __clang__ // remove when clang support headerunits with clang-scan-deps
         #if not(_MSC_VER >= 1900 or __cplusplus >= 202002L)
@@ -58,9 +60,9 @@
         #define STORMKIT_COMPILER_CLANG std::string { "MinGW Clang " } + __clang_version__
         #define STORMKIT_COMPILER       STORMKIT_COMPILER_CLANG
     #elif defined(__GNUC__) or defined(__GNUG__)
-        #define STORMKIT_COMPILER_GCC                                                              \
-            "MinGW GCC " + std::to_string(__GNUC__) + "." + std::to_string(__GNUC_MINOR__) + "." + \
-                "." + std::to_string(__GNUC_PATCHLEVEL__)
+        #define STORMKIT_COMPILER_GCC                                                            \
+            "MinGW GCC " + std::to_string(__GNUC__) + "." + std::to_string(__GNUC_MINOR__) + "." \
+                + "." + std::to_string(__GNUC_PATCHLEVEL__)
         #define STORMKIT_COMPILER_MINGW STORMKIT_COMPILER_GCC
     #endif
     #define STORMKIT_COMPILER_MINGW STORMKIT_COMPILER
@@ -68,9 +70,9 @@
     #define STORMKIT_COMPILER_CLANG std::string { "Clang " } + __clang_version__
     #define STORMKIT_COMPILER       STORMKIT_COMPILER_CLANG
 #elif defined(__GNUC__) or defined(__GNUG__)
-    #define STORMKIT_COMPILER_GCC                                                              \
-        "GCC " + std::to_string(__GNUC__) + "." + std::to_string(__GNUC_MINOR__) + "." + "." + \
-            std::to_string(__GNUC_PATCHLEVEL__)
+    #define STORMKIT_COMPILER_GCC                                                            \
+        "GCC " + std::to_string(__GNUC__) + "." + std::to_string(__GNUC_MINOR__) + "." + "." \
+            + std::to_string(__GNUC_PATCHLEVEL__)
     #define STORMKIT_COMPILER STORMKIT_COMPILER_GCC
 #endif
 
@@ -138,6 +140,17 @@ extern "C" {
 
 #ifdef _POSIX_VERSION
     #define STORMKIT_POSIX
+#endif
+
+#ifdef _LIBCPP_VERSION
+    #define STORMKIT_LIBCXX "libc++"
+inline constexpr auto STORMKIT_CXX_LIBRARY = STORMKIT_LIBCXX;
+#elif defined(STORMKIT_COMPILER_MSVC)
+    #define STORMKIT_MSSTL "libc++"
+inline constexpr auto STORMKIT_CXX_LIBRARY = STORMKIT_MSSTL;
+#else
+    #define STORMKIT_LIBSTDCXX "libstdc++"
+inline constexpr auto STORMKIT_CXX_LIBRARY = STORMKIT_LIBSTDCXX;
 #endif
 
 #define STORMKIT_STRINGIFY_DETAILS(x) #x
