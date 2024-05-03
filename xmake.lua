@@ -380,14 +380,12 @@ if get_config("sanitizers") then
 	set_policy("build.sanitizer.undefined", true)
 end
 
-if has_config("gpu") then
-	add_requireconfs("vulkan-headers", { override = true, system = false })
-	add_requireconfs("vulkan-memory-allocator", { override = true, version = "master", system = false })
-	add_requireconfs(
-		"vulkan-memory-allocator-hpp",
-		{ override = true, version = "master", system = false, configs = { use_vulkanheaders = true } }
-	)
-end
+add_requireconfs("vulkan-headers", { override = true, system = false })
+add_requireconfs("vulkan-memory-allocator", { override = true, version = "master", system = false })
+add_requireconfs(
+  "vulkan-memory-allocator-hpp",
+  { override = true, version = "master", system = false, configs = { use_vulkanheaders = true } }
+)
 
 add_requireconfs("*", { configs = { modules = true, std_import = true } })
 
