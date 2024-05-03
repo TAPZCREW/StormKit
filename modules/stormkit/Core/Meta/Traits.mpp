@@ -78,13 +78,11 @@ export namespace stormkit::core {
     template<IsArithmetic T, IsArithmetic V>
     constexpr auto isGreater() noexcept;
 
-    template<IsArithmeticPure T, IsArithmeticPure V>
-    using SafeNarrowHelperType =
-        std::conditional_t<isGreater<PureType<T>, PureType<V>>(), PureType<T>, PureType<V>>;
+    template<IsArithmetic T, IsArithmetic V>
+    using SafeNarrowHelperType = std::conditional_t<isGreater<T, V>(), T, V>;
 
-    template<IsArithmeticPure T, IsArithmeticPure V>
-    using SafeNarrowHelperOtherType =
-        std::conditional_t<isGreater<PureType<T>, PureType<V>>(), PureType<V>, PureType<T>>;
+    template<IsArithmetic T, IsArithmetic V>
+    using SafeNarrowHelperOtherType = std::conditional_t<isGreater<T, V>(), V, T>;
 
     template<class T, typename U>
     struct LikeCV {
