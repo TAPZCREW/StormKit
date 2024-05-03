@@ -11,6 +11,10 @@ import Test;
 using namespace stormkit::core;
 
 #define expects(x) test::expects(x, #x)
+static_assert(std::is_standard_layout_v<Boolean>);
+static_assert(std::is_trivially_copyable_v<Boolean>);
+static_assert(std::is_constructible_v<Boolean, bool>);
+static_assert(std::is_assignable_v<Boolean, bool>);
 
 namespace {
     auto _ = test::TestSuite { "Core.TypeSafe",
