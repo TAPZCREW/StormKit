@@ -24,19 +24,29 @@ import :Utils.AsCast;
 import :Coroutines;
 
 export namespace stormkit::core {
-    using UInt8   = std::uint8_t;
-    using UInt16  = std::uint16_t;
-    using UInt32  = std::uint32_t;
-    using UInt64  = std::uint64_t;
-    using UInt128 = __uint128_t;
-    using UInt    = std::uint_fast32_t;
+    using UInt8  = std::uint8_t;
+    using UInt16 = std::uint16_t;
+    using UInt32 = std::uint32_t;
+    using UInt64 = std::uint64_t;
+#ifdef STORMKIT_COMPILER_MSVC
+    // Workaround from https://developercommunity.microsoft.com/t/Support-for-128-bit-integer-type/879048#T-N10042436
+    using UInt128 = std::ranges::range_difference_t<std::ranges::iota_view<unsigned long long, unsigned long long>>;
+#else
+    __extension__ using UInt128 = __uint128_t;
+#endif
+    using UInt = std::uint_fast32_t;
 
-    using Int8   = std::int8_t;
-    using Int16  = std::int16_t;
-    using Int32  = std::int32_t;
-    using Int64  = std::int64_t;
-    using Int128 = __int128_t;
-    using Int    = std::int_fast32_t;
+    using Int8  = std::int8_t;
+    using Int16 = std::int16_t;
+    using Int32 = std::int32_t;
+    using Int64 = std::int64_t;
+#ifdef STORMKIT_COMPILER_MSVC
+    // Workaround from https://developercommunity.microsoft.com/t/Support-for-128-bit-integer-type/879048#T-N10042436
+    using Int128 = std::ranges::range_difference_t<std::ranges::iota_view<long long, long long>>;
+#else
+    __extension__ using Int128 = __int128_t;
+#endif
+    using Int = std::int_fast32_t;
 
 #ifdef __STDCPP_FLOAT16_T__
     using Float16 = std::float16_t;
