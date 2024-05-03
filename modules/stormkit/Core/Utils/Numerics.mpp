@@ -6,6 +6,13 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
+#if not defined(__STDCPP_FLOAT32_T__) or not defined(__STDCPP_FLOAT64_T__) \
+    or not defined(__STDCPP_FLOAT128_T__)
+    #ifdef STORMKIT_LIBCXX
+        #include <bits/floatn.h>
+    #endif
+#endif
+
 export module stormkit.Core:Utils.Numerics;
 
 import std;
@@ -17,17 +24,42 @@ import :Utils.AsCast;
 import :Coroutines;
 
 export namespace stormkit::core {
-    using UInt8  = std::uint8_t;
-    using UInt16 = std::uint16_t;
-    using UInt32 = std::uint32_t;
-    using UInt64 = std::uint64_t;
-    using UInt   = std::uint_fast64_t;
+    using UInt8   = std::uint8_t;
+    using UInt16  = std::uint16_t;
+    using UInt32  = std::uint32_t;
+    using UInt64  = std::uint64_t;
+    using UInt128 = __uint128_t;
+    using UInt    = std::uint_fast32_t;
 
-    using Int8  = std::int8_t;
-    using Int16 = std::int16_t;
-    using Int32 = std::int32_t;
-    using Int64 = std::int64_t;
-    using Int   = std::int_fast64_t;
+    using Int8   = std::int8_t;
+    using Int16  = std::int16_t;
+    using Int32  = std::int32_t;
+    using Int64  = std::int64_t;
+    using Int128 = __int128_t;
+    using Int    = std::int_fast32_t;
+
+#ifdef __STDCPP_FLOAT16_T__
+    using Float16 = std::float16_t;
+#else
+    using Float16 = _Float16;
+#endif
+
+#ifdef __STDCPP_FLOAT32_T__
+    using Float32 = std::float32_t;
+#else
+    using Float32 = _Float32;
+#endif
+#ifdef __STDCPP_FLOAT64_T__
+    using Float64 = std::float64_t;
+#else
+    using Float64 = _Float64;
+#endif
+#ifdef __STDCPP_FLOAT128_T__
+    using Float128 = std::float128_t;
+#else
+    // using Float128 = _Float128; // TODO provide a fallback
+#endif
+    using Float = Float32;
 
     using RangeExtent = std::size_t;
     using RangeOffset = std::ptrdiff_t;
@@ -127,8 +159,10 @@ namespace stormkit::core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<IsNumericsRange T, IsNumericsRange U, IsNumericsRange V, IsNumericsRange W>
-    auto rangeImplementation(T a, U b, V c, W d) noexcept -> std::generator<
-        std::tuple<decltype(a.begin), decltype(b.begin), decltype(c.begin), decltype(d.begin)>> {
+    auto rangeImplementation(T a, U b, V c, W d) noexcept
+        -> std::generator<
+            std::
+                tuple<decltype(a.begin), decltype(b.begin), decltype(c.begin), decltype(d.begin)>> {
         FOR(i, a)
         FOR(j, b)
         FOR(k, c)
@@ -230,8 +264,8 @@ namespace stormkit::core {
     template<IsFloatingPoint T,
              IsFloatingPoint U,
              IsFloatingPoint V = SafeNarrowHelperOtherType<T, U>>
-    STORMKIT_FORCE_INLINE constexpr auto is(const T& a, const U& b, const V& epsilon) noexcept
-        -> bool {
+    STORMKIT_FORCE_INLINE constexpr auto
+        is(const T& a, const U& b, const V& epsilon) noexcept -> bool {
         using Type = SafeNarrowHelperType<T, U>;
 
         return is<Type>(narrow<Type>(a), narrow<Type>(b), narrow<Type>(epsilon));
