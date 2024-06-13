@@ -100,6 +100,7 @@ namespace test {
                 return not state.failed;
             }
         }
+        return true;
     }
 
     auto TestSuiteHolder::runTests() noexcept {
