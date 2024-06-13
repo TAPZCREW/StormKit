@@ -15,6 +15,7 @@ export import :Hash;
 export import :Meta;
 export import :Parallelism;
 export import :String;
+export import :TypeSafe;
 export import :Utils;
 
 export namespace stormkit {
