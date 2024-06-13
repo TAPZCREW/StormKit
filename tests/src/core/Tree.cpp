@@ -13,16 +13,12 @@ using namespace stormkit::core;
 #define expects(x) test::expects(x, #x)
 
 namespace {
-    auto _ = test::TestSuite { "Core.Tree",
-                               {
-                                   { "Node.name",
-                                     [] {
-                                         const auto name = "TestNodeName";
+    auto _ = test::TestSuite { "Core.Tree", { { "Node.name", [] {
+                                                   const auto name = "TestNodeName";
 
-                                         auto node = TreeNode {};
-                                         expects(node.name() == "");
-                                         node.setName(name);
-                                         expects(node.name() == name);
-                                     } },
-                               } };
-}
+                                                   auto node = TreeNode {};
+                                                   expects(node.name() == "");
+                                                   node.setName(name);
+                                                   expects(node.name() == name);
+                                               } } } };
+} // namespace
