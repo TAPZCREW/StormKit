@@ -58,7 +58,7 @@ namespace std {
     template<class FormatContext>
     auto formatter<std::byte, CharT>::format(std::byte data, FormatContext& ctx) const
         -> decltype(ctx.out()) {
-        return formatter<int, CharT>::format(stormkit::core::as<int>(data), ctx);
+        return formatter<int, CharT>::format(static_cast<int>(data), ctx);
     }
 
     /////////////////////////////////////
