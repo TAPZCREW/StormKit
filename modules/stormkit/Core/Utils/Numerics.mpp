@@ -19,7 +19,7 @@ import std;
 
 import :Meta.Traits;
 import :Meta.Concepts;
-import :Utils.AsCast;
+import :TypeSafe.AsCast;
 
 import :Coroutines;
 
@@ -28,25 +28,13 @@ export namespace stormkit::core {
     using UInt16 = std::uint16_t;
     using UInt32 = std::uint32_t;
     using UInt64 = std::uint64_t;
-#ifdef STORMKIT_COMPILER_MSVC
-    // Workaround from https://developercommunity.microsoft.com/t/Support-for-128-bit-integer-type/879048#T-N10042436
-    using UInt128 = std::ranges::range_difference_t<std::ranges::iota_view<unsigned long long, unsigned long long>>;
-#else
-    __extension__ using UInt128 = __uint128_t;
-#endif
-    using UInt = std::uint_fast32_t;
+    using UInt   = std::uint_fast32_t;
 
     using Int8  = std::int8_t;
     using Int16 = std::int16_t;
     using Int32 = std::int32_t;
     using Int64 = std::int64_t;
-#ifdef STORMKIT_COMPILER_MSVC
-    // Workaround from https://developercommunity.microsoft.com/t/Support-for-128-bit-integer-type/879048#T-N10042436
-    using Int128 = std::ranges::range_difference_t<std::ranges::iota_view<long long, long long>>;
-#else
-    __extension__ using Int128 = __int128_t;
-#endif
-    using Int = std::int_fast32_t;
+    using Int   = std::int_fast32_t;
 
 #ifdef __STDCPP_FLOAT16_T__
     using Float16 = std::float16_t;
@@ -76,26 +64,63 @@ export namespace stormkit::core {
 
     using Secondf = std::chrono::duration<float, std::chrono::seconds::period>;
 
+    template<typename First, typename Second>
+    struct IsValueQueryer {
+        IsValueQueryer()                      = delete;
+        IsValueQueryer(const IsValueQueryer&) = delete;
+        auto operator=(const IsValueQueryer&) = delete;
+        IsValueQueryer(IsValueQueryer&&)      = delete;
+        auto operator=(IsValueQueryer&&)      = delete;
+
+        static constexpr auto operator()(const First&, const Second&) noexcept
+            -> Boolean = delete("No IsValueQueryer defined for this type");
+    };
+
+    template<typename First, typename Second>
+    concept IsValueQueryerable = requires(const First& first, const Second& second) {
+        { IsValueQueryer<First, Second>::operator()(first, second) } -> IsBooleanTestable;
+    };
+
+    template<typename First, typename Second>
+        requires IsValueQueryerable<First, Second>
+    [[nodiscard]] constexpr auto is(const First& first, const Second&) noexcept -> Boolean;
+
+    template<typename First, std::equality_comparable_with<First> Second>
+        requires(not(IsFloatingPoint<First> and IsFloatingPoint<Second>)
+                 and not(IsIntegral<First> and IsIntegral<Second> and not Is<First, Second>))
+    struct IsValueQueryer<First, Second> {
+        [[nodiscard]] static constexpr auto operator()(const First&  first,
+                                                       const Second& second) noexcept -> Boolean;
+    };
+
     template<IsFloatingPoint T>
     inline constexpr auto Epsilon = std::numeric_limits<T>::epsilon();
 
-    template<IsFloatingPoint T>
-    [[nodiscard]] constexpr auto
-        is(const T& a, const T& b, const T& epsilon = Epsilon<T>) noexcept -> bool;
+    template<IsFloatingPoint First, IsFloatingPoint Second>
+        requires(Is<First, Second>)
+    struct IsValueQueryer<First, Second> {
+        [[nodiscard]] static constexpr auto operator()(const First&  first,
+                                                       const Second& second,
+                                                       const First&  epsilon
+                                                       = Epsilon<First>) noexcept -> Boolean;
+    };
 
-    template<IsFloatingPoint T,
-             IsFloatingPoint U,
-             IsFloatingPoint V = SafeNarrowHelperOtherType<T, U>>
-    [[nodiscard]] constexpr auto
-        is(const T& a, const U& b, const V& epsilon = Epsilon<V>) noexcept -> bool;
+    template<IsFloatingPoint First, IsFloatingPoint Second>
+        requires(not Is<First, Second>)
+    struct IsValueQueryer<First, Second> {
+        using EpsilonT = SafeNarrowHelperOtherType<First, Second>;
+        [[nodiscard]] static constexpr auto operator()(const First&    first,
+                                                       const Second&   second,
+                                                       const EpsilonT& epsilon
+                                                       = Epsilon<EpsilonT>) noexcept -> Boolean;
+    };
 
-    template<IsIntegral T, IsIntegral U>
-        requires Is<T, U>
-    [[nodiscard]] constexpr auto is(const T& a, const U& b) noexcept -> bool;
-
-    template<IsIntegral T, IsIntegral U>
-        requires IsNot<T, U>
-    [[nodiscard]] constexpr auto is(const T& a, const U& b) noexcept -> bool;
+    template<IsIntegral First, IsIntegral Second>
+        requires(not Is<First, Second>)
+    struct IsValueQueryer<First, Second> {
+        [[nodiscard]] static constexpr auto operator()(const First&  first,
+                                                       const Second& second) noexcept -> Boolean;
+    };
 
     template<IsArithmetic U, IsArithmetic T>
     [[nodiscard]] constexpr auto map(const T& x,
@@ -257,13 +282,28 @@ namespace stormkit::core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsFloatingPoint T>
-    constexpr auto is(const T& a, const T& b, const T& epsilon) noexcept -> bool {
-        const auto diff   = std::abs(a - b);
-        const auto max_ab = std::max(std::abs(a), std::abs(b));
+    template<typename First, std::equality_comparable_with<First> Second>
+        requires(not(IsFloatingPoint<First> and IsFloatingPoint<Second>)
+                 and not(IsIntegral<First> and IsIntegral<Second> and not Is<First, Second>))
+    STORMKIT_FORCE_INLINE constexpr auto
+        IsValueQueryer<First, Second>::operator()(const First&  first,
+                                                  const Second& second) noexcept -> Boolean {
+        return first == second;
+    }
 
-        if (max_ab >= T { 1 }) return diff <= (epsilon * max_ab);
-        else if (max_ab > T { 0 })
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<IsFloatingPoint First, IsFloatingPoint Second>
+        requires(Is<First, Second>)
+    STORMKIT_FORCE_INLINE constexpr auto
+        IsValueQueryer<First, Second>::operator()(const First&  first,
+                                                  const Second& second,
+                                                  const First&  epsilon) noexcept -> Boolean {
+        const auto diff   = std::abs(first - second);
+        const auto max_ab = std::max(std::abs(first), std::abs(second));
+
+        if (max_ab >= First { 1 }) return diff <= (epsilon * max_ab);
+        else if (max_ab > First { 0 })
             return (diff / max_ab) <= epsilon;
 
         return false;
@@ -271,32 +311,28 @@ namespace stormkit::core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsFloatingPoint T,
-             IsFloatingPoint U,
-             IsFloatingPoint V = SafeNarrowHelperOtherType<T, U>>
+    template<IsFloatingPoint First, IsFloatingPoint Second>
+        requires(not Is<First, Second>)
     STORMKIT_FORCE_INLINE constexpr auto
-        is(const T& a, const U& b, const V& epsilon) noexcept -> bool {
-        using Type = SafeNarrowHelperType<T, U>;
-
-        return is<Type>(narrow<Type>(a), narrow<Type>(b), narrow<Type>(epsilon));
+        IsValueQueryer<First, Second>::operator()(const First&    first,
+                                                  const Second&   second,
+                                                  const EpsilonT& epsilon) noexcept -> Boolean {
+        using Type = SafeNarrowHelperType<First, Second>;
+        return IsValueQueryer<Type, Type>::operator()(narrow<Type>(first),
+                                                      narrow<Type>(second),
+                                                      narrow<Type>(epsilon));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsIntegral T, IsIntegral U>
-        requires Is<T, U>
-    STORMKIT_FORCE_INLINE constexpr auto is(const T& a, const U& b) noexcept -> bool {
-        return a == b;
-    }
+    template<IsIntegral First, IsIntegral Second>
+        requires(not Is<First, Second>)
+    STORMKIT_FORCE_INLINE constexpr auto
+        IsValueQueryer<First, Second>::operator()(const First&  first,
+                                                  const Second& second) noexcept -> Boolean {
+        using Type = SafeNarrowHelperType<First, Second>;
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<IsIntegral T, IsIntegral U>
-        requires IsNot<T, U>
-    STORMKIT_FORCE_INLINE constexpr auto is(const T& a, const U& b) noexcept -> bool {
-        using Type = SafeNarrowHelperType<T, U>;
-
-        return is<Type>(narrow<Type>(a), narrow<Type>(b));
+        return IsValueQueryer<Type, Type>::operator()(narrow<Type>(first), narrow<Type>(second));
     }
 
     /////////////////////////////////////
@@ -347,4 +383,14 @@ namespace stormkit::core {
     STORMKIT_FORCE_INLINE constexpr auto multiRange(Args&&... args) noexcept {
         return rangeImplementation(std::forward<Args>(args)...);
     }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename First, typename Second>
+        requires IsValueQueryerable<First, Second>
+    STORMKIT_FORCE_INLINE constexpr auto is(const First&  first,
+                                            const Second& second) noexcept -> Boolean {
+        return IsValueQueryer<First, Second>::operator()(first, second);
+    }
+
 } // namespace stormkit::core

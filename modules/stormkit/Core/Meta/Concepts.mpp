@@ -103,7 +103,7 @@ namespace stormkit::core {
 
         template<typename T>
         concept IsIntegral
-            = (std::integral<T> and not Is<T, bool> and not Is<T, char> and not IsByte<T>)
+            = (std::integral<T> and not Is<T, bool> and not IsByte<T>)
               or Is<T,
                     std::ranges::range_difference_t<std::ranges::iota_view<long long, long long>>>
               or Is<T,
