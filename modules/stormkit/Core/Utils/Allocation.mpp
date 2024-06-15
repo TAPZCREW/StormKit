@@ -1,0 +1,46 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/Core/PlatformMacro.hpp>
+
+export module stormkit.Core:Utils.Allocation;
+
+import std;
+
+export namespace stormkit::core {
+    template<class T, class... Args>
+    auto makeUnique(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
+        -> std::expected<std::unique_ptr<T>, std::nullopt_t>;
+
+    template<class T, class... Args>
+    auto makeUniqueUnsafe(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
+        -> std::unique_ptr<T>;
+} // namespace stormkit::core
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit::core {
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class T, class... Args>
+    STORMKIT_FORCE_INLINE auto makeUnique(Args&&... args) noexcept(noexcept(
+        T(std::forward<Args>(args)...))) -> std::expected<std::unique_ptr<T>, std::nullopt_t> {
+        auto value = std::unique_ptr<T> { new (std::nothrow) T(std::forward<Args>(args)...) };
+        if (not value) return std::unexpected(std::nullopt);
+        return std::expected<std::unique_ptr<T>, std::nullopt_t> { std::in_place,
+                                                                   std::move(value) };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class T, class... Args>
+    STORMKIT_FORCE_INLINE auto makeUniqueUnsafe(Args&&... args) noexcept(
+        noexcept(T(std::forward<Args>(args)...))) -> std::unique_ptr<T> {
+        return std::unique_ptr<T> { new (std::nothrow) T(std::forward<Args>(args)...) };
+    }
+} // namespace stormkit::core

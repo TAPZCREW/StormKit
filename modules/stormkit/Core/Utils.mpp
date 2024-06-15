@@ -5,6 +5,7 @@
 export module stormkit.Core:Utils;
 
 export import :Utils.Algorithms;
+export import :Utils.Allocation;
 export import :Utils.App;
 export import :Utils.Assert;
 export import :Utils.Byte;
