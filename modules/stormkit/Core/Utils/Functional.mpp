@@ -31,10 +31,6 @@ namespace stormkit::core::details {
 export namespace stormkit::core {
     inline constexpr auto either = details::EitherFunc {};
 
-    template<typename T, typename U>
-        requires(not IsArithmetic<T> and not IsArithmetic<U>)
-    [[nodiscard]] constexpr auto is(const T& a, const U& b) noexcept -> bool;
-
     template<typename Func, typename... Args>
     // requires(std::invocable<Func, Args...>)
     [[nodiscard]] constexpr auto curry(Func&& func, Args&&... args) noexcept -> decltype(auto);
@@ -68,14 +64,6 @@ namespace stormkit::core {
             return false_();
         }
     } // namespace details
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename T, typename U>
-        requires(not IsArithmetic<T> and not IsArithmetic<U>)
-    STORMKIT_FORCE_INLINE constexpr auto is(const T& a, const U& b) noexcept -> bool {
-        return a == b;
-    }
 
     /////////////////////////////////////
     /////////////////////////////////////
