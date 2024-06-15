@@ -12,7 +12,7 @@ import std;
 
 import :Meta;
 
-import :Utils.AsCast;
+import :TypeSafe.AsCast;
 import :Utils.Functional;
 import :Utils.Borrowed;
 
