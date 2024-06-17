@@ -6,15 +6,15 @@ module;
 
 #include <vulkan/vulkan_hpp_macros.hpp>
 
+#include <stormkit/Gpu/Core/VulkanMacro.hpp>
+#include <stormkit/Log/LogMacro.hpp>
+
 module stormkit.Gpu;
 
 import std;
 
 import stormkit.Core;
 import stormkit.Log;
-
-#include <stormkit/Gpu/Core/VulkanMacro.hpp>
-#include <stormkit/Log/LogMacro.hpp>
 
 import :Core.Device;
 import :Core.Sync;
