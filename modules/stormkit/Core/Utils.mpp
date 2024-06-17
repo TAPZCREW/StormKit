@@ -20,7 +20,6 @@ export import :Utils.FunctionRef;
 export import :Utils.Handle;
 export import :Utils.Math;
 export import :Utils.Monadic;
-export import :Utils.Borrowed;
 export import :Utils.Numerics;
 export import :Utils.Pimpl;
 export import :Utils.Random;

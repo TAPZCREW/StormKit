@@ -13,9 +13,9 @@ using namespace stormkit::core;
 #define expects(x) test::expects(x, #x)
 
 namespace {
-    auto _ = test::TestSuite { "Core.Borrowed",
+    auto _ = test::TestSuite { "Core.TypeSafe",
                                {
-                                   { "borrows<std::vector>.all_ref",
+                                   { "Borrowed.borrows<std::vector>.all_ref",
                                      [] static noexcept {
                                          auto a = 0;
                                          auto b = 1;
@@ -29,7 +29,7 @@ namespace {
                                          auto i = 0;
                                          for (auto&& ref : refs) expects(*ref == i++);
                                      } },
-                                   { "borrows<std::array>.all_ref",
+                                   { "Borrowed.borrows<std::array>.all_ref",
                                      [] static noexcept {
                                          auto a = 0;
                                          auto b = 1;
@@ -43,7 +43,7 @@ namespace {
                                          auto i = 0;
                                          for (auto&& ref : refs) expects(*ref == i++);
                                      } },
-                                   { "borrows<default>.all_ref",
+                                   { "Borrowed.borrows<default>.all_ref",
                                      [] static noexcept {
                                          auto a = 0;
                                          auto b = 1;
@@ -57,7 +57,7 @@ namespace {
                                          auto i = 0;
                                          for (auto&& ref : refs) expects(*ref == i++);
                                      } },
-                                   { "borrows<std::vector>.all_ptr",
+                                   { "Borrowed.borrows<std::vector>.all_ptr",
                                      [] static noexcept {
                                          auto a = std::make_unique<int>(0);
                                          auto b = std::make_unique<int>(1);
@@ -74,7 +74,7 @@ namespace {
                                          delete d;
                                          delete e;
                                      } },
-                                   { "borrows<std::array>.all_ptr",
+                                   { "Borrowed.borrows<std::array>.all_ptr",
                                      [] static noexcept {
                                          auto a = std::make_unique<int>(0);
                                          auto b = std::make_unique<int>(1);
@@ -88,7 +88,7 @@ namespace {
                                          auto i = 0;
                                          for (auto&& ref : refs) expects(*ref == i++);
                                      } },
-                                   { "borrows<default>.all_ptr",
+                                   { "Borrowed.borrows<default>.all_ptr",
                                      [] static noexcept {
                                          auto a = std::make_unique<int>(0);
                                          auto b = std::make_unique<int>(1);
@@ -102,7 +102,7 @@ namespace {
                                          auto i = 0;
                                          for (auto&& ref : refs) expects(*ref == i++);
                                      } },
-                                   { "toBorroweds<std::set>",
+                                   { "Borrowed.toBorroweds<std::set>",
                                      [] static noexcept {
                                          auto vec = std::vector { 1, 3, 5, 6, 9 };
                                          auto refs = toBorroweds<std::set>(vec);
@@ -110,7 +110,7 @@ namespace {
                                          auto i = 0;
                                          for (auto&& ref : refs) expects(ref == vec[i++]);
                                      } },
-                                   { "toBorroweds<default>",
+                                   { "Borrowed.toBorroweds<default>",
                                      [] static noexcept {
                                          constexpr auto vec = std::array { 1, 3, 5, 6, 9 };
                                          auto refs = toBorroweds(vec);

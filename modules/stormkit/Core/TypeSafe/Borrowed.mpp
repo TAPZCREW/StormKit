@@ -6,7 +6,7 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:Utils.Borrowed;
+export module stormkit.Core:TypeSafe.Borrowed;
 
 import std;
 
