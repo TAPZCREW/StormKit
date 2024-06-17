@@ -13,9 +13,9 @@ using namespace stormkit::core;
 #define expects(x) test::expects(x, #x)
 
 namespace {
-    auto _ = test::TestSuite { "Core.Locked",
+    auto _ = test::TestSuite { "Core.Parallelism",
                                {
-                                   { "write",
+                                   { "Locked.write",
                                      [] static noexcept {
                                          static constexpr auto ITERATIONS = 1'000'000;
                                          auto locked_int = Locked { 0 };

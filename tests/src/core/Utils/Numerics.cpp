@@ -58,8 +58,8 @@ namespace {
     const auto unsigned_longlongint2 = ulonglongint { 2 };
 
     auto _ = test::TestSuite {
-        "Core.Numerics",
-        { { "is<SameFloat>",
+        "Core.Utils",
+        { { "Numerics.is<SameFloat>",
             [] {
                 auto float1 = 0.1f;
                 auto float2 = 0.2f;
@@ -95,7 +95,7 @@ namespace {
                 expects((not is(double1, double2)));
                 expects((not is(longdouble1, longdouble2)));
             } },
-          { "is<DifferentFloatT>",
+          { "Numerics.is<DifferentFloatT>",
             [] {
                 auto float1 = 0.1f;
                 auto float2 = 0.2f;
@@ -155,7 +155,7 @@ namespace {
                 expects((not is(double2, longdouble1)));
                 expects((not is(longdouble1, double2)));
             } },
-          { "is<SameInteger>",
+          { "Numerics.is<SameInteger>",
             [] {
                 expects((is(char1, char1)));
 
@@ -191,7 +191,7 @@ namespace {
                 expects((not is(signed_longlongint1, signed_longlongint2)));
                 expects((not is(unsigned_longlongint1, unsigned_longlongint2)));
             } },
-          { "is<DifferentInteger>",
+          { "Numerics.is<DifferentInteger>",
             [] {
                 // char
                 expects((is(char1, signed_char1)));
@@ -549,8 +549,8 @@ namespace {
 
                 expects((not is(unsigned_longlongint1, signed_longlongint2)));
             } },
-          { "map", [] { expects((map(10, 0, 20, 0, 10) == 5)); } },
-          { "range.simple",
+          { "Numerics.map", [] { expects((map(10, 0, 20, 0, 10) == 5)); } },
+          { "Numerics.range.simple",
             [] {
                 auto rng     = range(10);
                 auto success = true;
@@ -562,7 +562,7 @@ namespace {
                 }
                 expects(success);
             } },
-          { "range.custom_start",
+          { "Numerics.range.custom_start",
             [] {
                 auto rng     = range(2, 10);
                 auto success = true;
@@ -574,7 +574,7 @@ namespace {
                 }
                 expects(success);
             } },
-          { "range.custom_negative_start",
+          { "Numerics.range.custom_negative_start",
             [] {
                 auto rng     = range(-5, 10);
                 auto success = true;
@@ -586,7 +586,7 @@ namespace {
                 }
                 expects(success);
             } },
-          { "range.custom_step",
+          { "Numerics.range.custom_step",
             [] {
                 auto rng     = range(-6, 10, 2);
                 auto success = true;
@@ -600,7 +600,7 @@ namespace {
                 }
                 expects(success);
             } },
-          { "range.custom_numeric_range",
+          { "Numerics.range.custom_numeric_range",
             [] {
                 auto rng     = range(NumericsRange { -5, 10, 2 });
                 auto success = true;
@@ -614,7 +614,7 @@ namespace {
                 }
                 expects(success);
             } },
-          { "multirange.simple",
+          { "Numerics.multirange.simple",
             [] {
                 auto success = true;
                 auto i       = 0;
@@ -635,7 +635,7 @@ namespace {
 
                 expects(success);
             } },
-          { "multirange.different_types",
+          { "Numerics.multirange.different_types",
             [] {
                 auto success = true;
                 auto i       = 0;
@@ -656,7 +656,7 @@ namespace {
 
                 expects(success);
             } },
-          { "multirange.custom_start",
+          { "Numerics.multirange.custom_start",
             [] {
                 auto success = true;
                 auto i       = 5;
@@ -678,7 +678,7 @@ namespace {
 
                 expects(success);
             } },
-          { "multirange.custom_step",
+          { "Numerics.multirange.custom_step",
             [] {
                 auto success = true;
                 auto i       = 0;
