@@ -42,16 +42,16 @@ namespace stormkit::image::details {
     namespace {
         constexpr auto SIZE_OF_HEADER = 14;
 
-        constexpr auto CHANNELS_TO_FORMAT =
-            frozen::make_unordered_map<Int32, std::array<image::Image::Format, 2>>(
-                { { 3,
-                    std::array { image::Image::Format::sRGB8, image::Image::Format::RGB8_UNorm } },
-                  { 4,
-                    std::array { image::Image::Format::sRGBA8,
-                                 image::Image::Format::RGBA8_UNorm } } });
+        constexpr auto CHANNELS_TO_FORMAT
+            = frozen::make_unordered_map<Int32, std::array<image::Image::Format, 2>>({
+                { 3, std::array { image::Image::Format::sRGB8, image::Image::Format::RGB8_UNorm } },
+                { 4,
+                 std::array { image::Image::Format::sRGBA8,
+                               image::Image::Format::RGBA8_UNorm }                                }
+        });
 
-        constexpr auto END_OF_FILE =
-            makeStaticByteArray(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01);
+        constexpr auto END_OF_FILE
+            = makeStaticByteArray(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01);
 
         constexpr auto PIXEL_CACHE_SIZE = 64u;
     } // namespace
@@ -79,8 +79,8 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     /////////////////////////////////////
     constexpr auto indexHash(const Pixel& pixel) noexcept {
-        return (pixel.rgba.r * 3u + pixel.rgba.g * 5u + pixel.rgba.b * 7u + pixel.rgba.a * 11u) %
-               PIXEL_CACHE_SIZE;
+        return (pixel.rgba.r * 3u + pixel.rgba.g * 5u + pixel.rgba.b * 7u + pixel.rgba.a * 11u)
+               % PIXEL_CACHE_SIZE;
     }
 
     /////////////////////////////////////
@@ -96,9 +96,9 @@ namespace stormkit::image::details {
 
         auto pixel_cache = std::array<Pixel, PIXEL_CACHE_SIZE> {};
 
-        const auto chunks =
-            std::span { std::bit_cast<const UInt8*>(std::data(data)) + SIZE_OF_HEADER,
-                        std::size(data) - SIZE_OF_HEADER };
+        const auto chunks
+            = std::span { std::bit_cast<const UInt8*>(std::data(data)) + SIZE_OF_HEADER,
+                          std::size(data) - SIZE_OF_HEADER };
 
         const auto output_size = extent.width * extent.height * channels;
 
@@ -176,8 +176,8 @@ namespace stormkit::image::details {
             std::ranges::transform(std::begin(previous_pixel.data),
                                    std::end(previous_pixel.data) - diff,
                                    std::back_inserter(output),
-                                   [](auto&& val) { return as<Byte>(val); });
-            // monadic::as<Byte>());
+                                   /*[](auto&& val) static noexcept { return as<Byte>(val); });*/
+                                   monadic::narrow<Byte>());
         }
 
         auto image_data = image::Image::ImageData { .extent            = extent,

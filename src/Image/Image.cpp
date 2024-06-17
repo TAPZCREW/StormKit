@@ -699,10 +699,10 @@ namespace stormkit::image {
 
         for (auto [layer, face, level, i] :
              multiRange(image.layers(), image.faces(), image.layers(), pixel_count)) {
-            const auto from_image = details::map(pixel(as<RangeExtent>(i), layer, face, level),
+            const auto from_image = details::map(pixel(narrow<RangeExtent>(i), layer, face, level),
                                                  m_data.bytes_per_channel,
                                                  image.bytesPerChannel());
-            auto       to_image   = image.pixel(as<RangeExtent>(i), layer, face, level);
+            auto       to_image   = image.pixel(narrow<RangeExtent>(i), layer, face, level);
 
             std::ranges::copy_n(std::ranges::begin(from_image),
                                 std::min(m_data.channel_count, image.channelCount()),
