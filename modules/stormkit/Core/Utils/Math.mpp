@@ -593,7 +593,6 @@ namespace stormkit::core {
     }
 
     inline namespace casts {
-
         /////////////////////////////////////
         /////////////////////////////////////
         template<math::IsVectorLike To, math::IsVectorLike From>
