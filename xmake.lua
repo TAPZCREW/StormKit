@@ -63,7 +63,7 @@ modules = {
 	},
 	image = {
 		public_packages = { "frozen" },
-		packages = { "gli", "libpng", "libjpeg-turbo" },
+		packages = { "libktx", "libpng", "libjpeg-turbo" },
 		modulename = "Image",
 		public_deps = { "stormkit-core" },
 	},
