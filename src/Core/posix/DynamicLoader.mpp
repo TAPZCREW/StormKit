@@ -66,7 +66,7 @@ export namespace stormkit::core {
 
             if (not m_library_handle) [[unlikely]]
                 return std::unexpected(
-                    std::error_code { as<Int32>(errno), std::system_category() });
+                    std::error_code { static_cast<Int32>(errno), std::system_category() });
 
             return {};
         }
@@ -79,7 +79,7 @@ export namespace stormkit::core {
 
             if (not func) [[unlikely]]
                 return std::unexpected(
-                    std::error_code { as<Int32>(errno), std::system_category() });
+                    std::error_code { static_cast<Int32>(errno), std::system_category() });
 
             return { func };
         }
