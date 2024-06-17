@@ -11,7 +11,7 @@ export module stormkit.Core:Parallelism.Locked;
 import std;
 
 import :Utils.Numerics;
-import :Utils.Borrowed;
+import :TypeSafe.Borrowed;
 
 namespace stormkit::core {
     using DefaultMutex = std::mutex;

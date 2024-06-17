@@ -14,7 +14,7 @@ import :Meta;
 
 import :TypeSafe.AsCast;
 import :Utils.Functional;
-import :Utils.Borrowed;
+import :TypeSafe.Borrowed;
 
 export namespace stormkit::core::monadic {
     struct Anything {

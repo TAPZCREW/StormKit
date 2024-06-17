@@ -11,7 +11,7 @@ export module stormkit.Core:TypeSafe.AsCast;
 import std;
 
 import :Utils.Assert;
-import :Utils.Borrowed;
+import :TypeSafe.Borrowed;
 import :Meta.Concepts;
 import :Meta.Traits;
 import :TypeSafe.Boolean;
@@ -79,7 +79,7 @@ export namespace stormkit::core { inline namespace casts {
     template<typename To, typename From>
         requires Is<To, PureType<From>>
     struct AsCaster<To, From> {
-        [[nodiscard]] static constexpr auto operator()(From&& from) noexcept -> LikeType<From, To>;
+        [[nodiscard]] static constexpr auto operator()(From&& from) noexcept -> decltype(auto);
     };
 
     // variants
@@ -296,7 +296,7 @@ namespace stormkit::core { inline namespace casts {
     template<typename To, typename From>
         requires Is<To, PureType<From>>
     STORMKIT_FORCE_INLINE constexpr auto
-        AsCaster<To, From>::operator()(From&& from) noexcept -> LikeType<From, To> {
+        AsCaster<To, From>::operator()(From&& from) noexcept -> decltype(auto) {
         return std::forward<From>(from);
     }
 
