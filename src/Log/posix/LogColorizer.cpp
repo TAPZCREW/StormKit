@@ -21,8 +21,8 @@ namespace stormkit::log::details {
         [[maybe_unused]] constexpr auto KCYN  = "\x1B[36m"sv;
         [[maybe_unused]] constexpr auto KWHT  = "\x1B[37m"sv;
         [[maybe_unused]] constexpr auto KGRS  = "\033[1m"sv;
-        [[maybe_unused]] constexpr auto KINV  = "\e[7m"sv;
-        [[maybe_unused]] constexpr auto KBLCK = "\e[30m"sv;
+        [[maybe_unused]] constexpr auto KINV  = "\033[7m"sv;
+        [[maybe_unused]] constexpr auto KBLCK = "\033[30m"sv;
     } // namespace
 
     /////////////////////////////////////
