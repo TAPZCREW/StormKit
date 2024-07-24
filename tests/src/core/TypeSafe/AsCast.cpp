@@ -201,7 +201,7 @@ namespace {
                   };
                   struct FooBar {
                       operator bool() { return true; }
-                      explicit FooBar(Foo& foo) {}
+                      explicit FooBar(Foo&) {}
                   };
 
                   auto foo = Foo {};
