@@ -225,7 +225,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_INLINE auto EntityHashFunc::operator()(Entity k) const noexcept -> Hash64 {
-        return as<Hash64>(k);
+        return narrow<Hash64>(k);
     }
 
     /////////////////////////////////////
