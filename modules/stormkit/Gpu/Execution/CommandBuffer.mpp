@@ -109,11 +109,7 @@ export namespace stormkit::gpu {
         static constexpr auto DEBUG_TYPE = DebugObjectType::Command_Buffer;
 
         using Deleter = std::function<void(vk::raii::CommandBuffer&)>;
-        CommandBuffer(const CommandPool&,
-                      CommandBufferLevel,
-                      vk::raii::CommandBuffer&&,
-                      Deleter,
-                      Tag);
+        CommandBuffer(CommandBufferLevel, vk::raii::CommandBuffer&&, Deleter, Tag);
         ~CommandBuffer();
 
         CommandBuffer(const CommandBuffer&)                    = delete;
@@ -122,12 +118,10 @@ export namespace stormkit::gpu {
         CommandBuffer(CommandBuffer&&) noexcept;
         auto operator=(CommandBuffer&&) noexcept -> CommandBuffer&;
 
-        [[nodiscard]] static auto create(const CommandPool&,
-                                         CommandBufferLevel,
+        [[nodiscard]] static auto create(CommandBufferLevel,
                                          vk::raii::CommandBuffer&&,
                                          Deleter) noexcept -> CommandBuffer;
-        [[nodiscard]] static auto allocate(const CommandPool&,
-                                           CommandBufferLevel,
+        [[nodiscard]] static auto allocate(CommandBufferLevel,
                                            vk::raii::CommandBuffer&&,
                                            Deleter) noexcept -> std::unique_ptr<CommandBuffer>;
 
@@ -269,7 +263,7 @@ export namespace stormkit::gpu {
         struct Tag {};
 
       public:
-        CommandPool(const Device& device, const Queue& queue, Tag);
+        CommandPool(const Device& device, Tag);
         ~CommandPool();
 
         CommandPool(const CommandPool&)    = delete;
@@ -278,29 +272,29 @@ export namespace stormkit::gpu {
         CommandPool(CommandPool&&) noexcept;
         auto operator=(CommandPool&&) noexcept -> CommandPool&;
 
-        [[nodiscard]] static auto create(const Device& device,
-                                         const Queue&  queue) noexcept -> Expected<CommandPool>;
-        [[nodiscard]] static auto allocate(const Device& device, const Queue& queue) noexcept
-            -> Expected<std::unique_ptr<CommandPool>>;
-
-        [[nodiscard]] auto createCommandBuffer(
-            const Device&      device,
-            CommandBufferLevel level = CommandBufferLevel::Primary) const noexcept -> CommandBuffer;
-        [[nodiscard]] auto
-            createCommandBuffers(const Device&      device,
-                                 RangeExtent        count,
-                                 CommandBufferLevel level = CommandBufferLevel::Primary)
-                const noexcept -> std::vector<CommandBuffer>;
+        [[nodiscard]] static auto create(const Device& device) noexcept -> Expected<CommandPool>;
+        [[nodiscard]] static auto
+            allocate(const Device& device) noexcept -> Expected<std::unique_ptr<CommandPool>>;
 
         [[nodiscard]] auto
-            allocateCommandBuffer(const Device&      device,
-                                  CommandBufferLevel level = CommandBufferLevel::Primary)
-                const noexcept -> std::unique_ptr<CommandBuffer>;
-        [[nodiscard]] auto
-            allocateCommandBuffers(const Device&      device,
-                                   RangeExtent        count,
-                                   CommandBufferLevel level = CommandBufferLevel::Primary)
-                const noexcept -> std::vector<std::unique_ptr<CommandBuffer>>;
+                           createCommandBuffer(const Device&      device,
+                                               CommandBufferLevel level
+                                               = CommandBufferLevel::Primary) const noexcept -> CommandBuffer;
+        [[nodiscard]] auto createCommandBuffers(const Device&      device,
+                                                RangeExtent        count,
+                                                CommandBufferLevel level
+                                                = CommandBufferLevel::Primary) const noexcept
+            -> std::vector<CommandBuffer>;
+
+        [[nodiscard]] auto allocateCommandBuffer(const Device&      device,
+                                                 CommandBufferLevel level
+                                                 = CommandBufferLevel::Primary) const noexcept
+            -> std::unique_ptr<CommandBuffer>;
+        [[nodiscard]] auto allocateCommandBuffers(const Device&      device,
+                                                  RangeExtent        count,
+                                                  CommandBufferLevel level
+                                                  = CommandBufferLevel::Primary) const noexcept
+            -> std::vector<std::unique_ptr<CommandBuffer>>;
 
         [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::CommandPool&;
 
@@ -324,65 +318,66 @@ export namespace stormkit::gpu {
 
 namespace stormkit::gpu {
     namespace {
-        constexpr auto old_layout_access_map =
-            frozen::make_unordered_map<vk::ImageLayout,
-                                       std::pair<vk::AccessFlags, vk::PipelineStageFlags>>(
-                { { vk::ImageLayout::eUndefined,
-                    { vk::AccessFlagBits {}, vk::PipelineStageFlagBits::eTopOfPipe } },
-                  { vk::ImageLayout::ePreinitialized,
-                    { vk::AccessFlagBits {}, vk::PipelineStageFlagBits::eTopOfPipe } },
-                  { vk::ImageLayout::eGeneral,
-                    { vk::AccessFlagBits::eColorAttachmentWrite |
-                          vk::AccessFlagBits::eColorAttachmentRead,
-                      vk::PipelineStageFlagBits::eColorAttachmentOutput } },
-                  { vk::ImageLayout::eColorAttachmentOptimal,
-                    { vk::AccessFlagBits::eColorAttachmentWrite |
-                          vk::AccessFlagBits::eColorAttachmentRead,
-                      vk::PipelineStageFlagBits::eColorAttachmentOutput } },
-                  { vk::ImageLayout::eDepthStencilAttachmentOptimal,
-                    { vk::AccessFlagBits::eDepthStencilAttachmentRead |
-                          vk::AccessFlagBits::eDepthStencilAttachmentWrite,
-                      vk::PipelineStageFlagBits::eLateFragmentTests } },
-                  { vk::ImageLayout::eDepthStencilReadOnlyOptimal,
-                    { vk::AccessFlagBits::eDepthStencilAttachmentRead,
-                      vk::PipelineStageFlagBits::eLateFragmentTests } },
-                  { vk::ImageLayout::eShaderReadOnlyOptimal,
-                    { vk::AccessFlagBits::eInputAttachmentRead,
-                      vk::PipelineStageFlagBits::eFragmentShader } },
-                  { vk::ImageLayout::eTransferSrcOptimal,
-                    { vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer } },
-                  { vk::ImageLayout::eTransferDstOptimal,
-                    { vk::AccessFlagBits::eTransferWrite, vk::PipelineStageFlagBits::eTransfer } },
-                  { vk::ImageLayout::ePresentSrcKHR,
-                    { vk::AccessFlagBits::eMemoryRead, vk::PipelineStageFlagBits::eTransfer } } });
+        constexpr auto old_layout_access_map
+            = frozen::make_unordered_map<vk::ImageLayout,
+                                         std::pair<vk::AccessFlags, vk::PipelineStageFlags>>({
+                { vk::ImageLayout::eUndefined,
+                 { vk::AccessFlagBits {}, vk::PipelineStageFlagBits::eTopOfPipe }             },
+                { vk::ImageLayout::ePreinitialized,
+                 { vk::AccessFlagBits {}, vk::PipelineStageFlagBits::eTopOfPipe }             },
+                { vk::ImageLayout::eGeneral,
+                 { vk::AccessFlagBits::eColorAttachmentWrite
+                        | vk::AccessFlagBits::eColorAttachmentRead,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput }                       },
+                { vk::ImageLayout::eColorAttachmentOptimal,
+                 { vk::AccessFlagBits::eColorAttachmentWrite
+                        | vk::AccessFlagBits::eColorAttachmentRead,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput }                       },
+                { vk::ImageLayout::eDepthStencilAttachmentOptimal,
+                 { vk::AccessFlagBits::eDepthStencilAttachmentRead
+                        | vk::AccessFlagBits::eDepthStencilAttachmentWrite,
+                    vk::PipelineStageFlagBits::eLateFragmentTests }                           },
+                { vk::ImageLayout::eDepthStencilReadOnlyOptimal,
+                 { vk::AccessFlagBits::eDepthStencilAttachmentRead,
+                    vk::PipelineStageFlagBits::eLateFragmentTests }                           },
+                { vk::ImageLayout::eShaderReadOnlyOptimal,
+                 { vk::AccessFlagBits::eInputAttachmentRead,
+                    vk::PipelineStageFlagBits::eFragmentShader }                              },
+                { vk::ImageLayout::eTransferSrcOptimal,
+                 { vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer }  },
+                { vk::ImageLayout::eTransferDstOptimal,
+                 { vk::AccessFlagBits::eTransferWrite, vk::PipelineStageFlagBits::eTransfer } },
+                { vk::ImageLayout::ePresentSrcKHR,
+                 { vk::AccessFlagBits::eMemoryRead, vk::PipelineStageFlagBits::eTransfer }    }
+        });
 
-        constexpr auto new_layout_access_map =
-            frozen::make_unordered_map<vk::ImageLayout,
-                                       std::pair<vk::AccessFlags, vk::PipelineStageFlags>>(
-                { { vk::ImageLayout::eUndefined, { vk::AccessFlagBits {}, {} } },
-                  { vk::ImageLayout::ePreinitialized, { vk::AccessFlagBits {}, {} } },
-                  { vk::ImageLayout::eGeneral,
-                    { vk::AccessFlagBits::eShaderWrite | vk::AccessFlagBits::eShaderRead,
-                      vk::PipelineStageFlagBits::eVertexShader } },
-                  { vk::ImageLayout::eColorAttachmentOptimal,
-                    { vk::AccessFlagBits::eColorAttachmentWrite |
-                          vk::AccessFlagBits::eColorAttachmentRead,
-                      vk::PipelineStageFlagBits::eColorAttachmentOutput } },
-                  { vk::ImageLayout::eDepthStencilAttachmentOptimal,
-                    { vk::AccessFlagBits::eDepthStencilAttachmentWrite |
-                          vk::AccessFlagBits::eDepthStencilAttachmentRead,
-                      vk::PipelineStageFlagBits::eEarlyFragmentTests } },
-                  { vk::ImageLayout::eDepthStencilReadOnlyOptimal,
-                    { vk::AccessFlagBits::eShaderRead, vk::PipelineStageFlagBits::eVertexInput } },
-                  { vk::ImageLayout::eShaderReadOnlyOptimal,
-                    { vk::AccessFlagBits::eShaderRead,
-                      vk::PipelineStageFlagBits::eFragmentShader } },
-                  { vk::ImageLayout::eTransferSrcOptimal,
-                    { vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer } },
-                  { vk::ImageLayout::eTransferDstOptimal,
-                    { vk::AccessFlagBits::eTransferWrite, vk::PipelineStageFlagBits::eTransfer } },
-                  { vk::ImageLayout::ePresentSrcKHR,
-                    { vk::AccessFlagBits::eMemoryRead, vk::PipelineStageFlagBits::eTransfer } } });
+        constexpr auto new_layout_access_map
+            = frozen::make_unordered_map<vk::ImageLayout,
+                                         std::pair<vk::AccessFlags, vk::PipelineStageFlags>>({
+                { vk::ImageLayout::eUndefined,                     { vk::AccessFlagBits {}, {} } },
+                { vk::ImageLayout::ePreinitialized,                { vk::AccessFlagBits {}, {} } },
+                { vk::ImageLayout::eGeneral,
+                 { vk::AccessFlagBits::eShaderWrite | vk::AccessFlagBits::eShaderRead,
+                    vk::PipelineStageFlagBits::eVertexShader }                                   },
+                { vk::ImageLayout::eColorAttachmentOptimal,
+                 { vk::AccessFlagBits::eColorAttachmentWrite
+                        | vk::AccessFlagBits::eColorAttachmentRead,
+                    vk::PipelineStageFlagBits::eColorAttachmentOutput }                          },
+                { vk::ImageLayout::eDepthStencilAttachmentOptimal,
+                 { vk::AccessFlagBits::eDepthStencilAttachmentWrite
+                        | vk::AccessFlagBits::eDepthStencilAttachmentRead,
+                    vk::PipelineStageFlagBits::eEarlyFragmentTests }                             },
+                { vk::ImageLayout::eDepthStencilReadOnlyOptimal,
+                 { vk::AccessFlagBits::eShaderRead, vk::PipelineStageFlagBits::eVertexInput }    },
+                { vk::ImageLayout::eShaderReadOnlyOptimal,
+                 { vk::AccessFlagBits::eShaderRead, vk::PipelineStageFlagBits::eFragmentShader } },
+                { vk::ImageLayout::eTransferSrcOptimal,
+                 { vk::AccessFlagBits::eTransferRead, vk::PipelineStageFlagBits::eTransfer }     },
+                { vk::ImageLayout::eTransferDstOptimal,
+                 { vk::AccessFlagBits::eTransferWrite, vk::PipelineStageFlagBits::eTransfer }    },
+                { vk::ImageLayout::ePresentSrcKHR,
+                 { vk::AccessFlagBits::eMemoryRead, vk::PipelineStageFlagBits::eTransfer }       }
+        });
     } // namespace
 
     /////////////////////////////////////
@@ -473,8 +468,8 @@ namespace stormkit::gpu {
         | std::ranges::to<std::vector>();
         // clang-format on
 
-        const auto vk_fence =
-            core::either(fence, monadic::toVkHandle(), core::monadic::init<vk::Fence>(nullptr));
+        const auto vk_fence
+            = core::either(fence, monadic::toVkHandle(), core::monadic::init<vk::Fence>(nullptr));
 
         vkHandle().submit(vk_submit_infos, vk_fence);
     }
@@ -495,11 +490,11 @@ namespace stormkit::gpu {
         -> Expected<gpu::Result> {
         expects(std::size(wait_semaphores) >= 1);
         expects(std::size(image_indices) >= 1);
-        const auto vk_wait_semaphores = wait_semaphores |
-                                        std::views::transform(monadic::toVkHandle()) |
-                                        std::ranges::to<std::vector>();
-        const auto vk_swapchains = swapchains | std::views::transform(monadic::toVkHandle()) |
-                                   std::ranges::to<std::vector>();
+        const auto vk_wait_semaphores = wait_semaphores
+                                        | std::views::transform(monadic::toVkHandle())
+                                        | std::ranges::to<std::vector>();
+        const auto vk_swapchains = swapchains | std::views::transform(monadic::toVkHandle())
+                                   | std::ranges::to<std::vector>();
         const auto present_info = vk::PresentInfoKHR {}
                                       .setWaitSemaphores(vk_wait_semaphores)
                                       .setSwapchains(vk_swapchains)
@@ -530,8 +525,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE CommandBuffer::CommandBuffer(const CommandPool&        command_pool,
-                                                       CommandBufferLevel        level,
+    STORMKIT_FORCE_INLINE CommandBuffer::CommandBuffer(CommandBufferLevel        level,
                                                        vk::raii::CommandBuffer&& command_buffer,
                                                        Deleter                   deleter,
                                                        Tag)
@@ -541,25 +535,19 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto CommandBuffer::create(const CommandPool&        pool,
-                                                     CommandBufferLevel        level,
+    STORMKIT_FORCE_INLINE auto CommandBuffer::create(CommandBufferLevel        level,
                                                      vk::raii::CommandBuffer&& cmb,
                                                      Deleter deleter) noexcept -> CommandBuffer {
-        return CommandBuffer { pool, level, std::move(cmb), std::move(deleter), Tag {} };
+        return CommandBuffer { level, std::move(cmb), std::move(deleter), Tag {} };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto
-        CommandBuffer::allocate(const CommandPool&        pool,
-                                CommandBufferLevel        level,
+        CommandBuffer::allocate(CommandBufferLevel        level,
                                 vk::raii::CommandBuffer&& cmb,
                                 Deleter deleter) noexcept -> std::unique_ptr<CommandBuffer> {
-        return std::make_unique<CommandBuffer>(pool,
-                                               level,
-                                               std::move(cmb),
-                                               std::move(deleter),
-                                               Tag {});
+        return std::make_unique<CommandBuffer>(level, std::move(cmb), std::move(deleter), Tag {});
     }
 
     /////////////////////////////////////
@@ -592,11 +580,14 @@ namespace stormkit::gpu {
                                MaybeBorrowed<const Fence> fence) const noexcept -> void {
         auto cmbs = borrows<std::array>(*this);
 
-        queue.submit(std::array { SubmitInfo { .wait_semaphores   = wait_semaphores,
-                                               .wait_dst_stages   = wait_dst_stages,
-                                               .command_buffers   = cmbs,
-                                               .signal_semaphores = signal_semaphores } },
-                     std::move(fence));
+        queue.submit(
+            std::array {
+                SubmitInfo { .wait_semaphores   = wait_semaphores,
+                            .wait_dst_stages   = wait_dst_stages,
+                            .command_buffers   = cmbs,
+                            .signal_semaphores = signal_semaphores }
+        },
+            std::move(fence));
     }
 
     /////////////////////////////////////
@@ -621,8 +612,8 @@ namespace stormkit::gpu {
         if (not dispatcher->vkCmdBeginDebugUtilsLabelEXT) [[unlikely]]
             return;
 
-        const auto payload =
-            vk::DebugUtilsLabelEXT {}.setPLabelName(std::data(name)).setColor(color);
+        const auto payload
+            = vk::DebugUtilsLabelEXT {}.setPLabelName(std::data(name)).setColor(color);
 
         m_vk_command_buffer.beginDebugUtilsLabelEXT(payload);
     }
@@ -637,8 +628,8 @@ namespace stormkit::gpu {
         if (not dispatcher->vkCmdInsertDebugUtilsLabelEXT) [[unlikely]]
             return;
 
-        const auto payload =
-            vk::DebugUtilsLabelEXT {}.setPLabelName(std::data(name)).setColor(color);
+        const auto payload
+            = vk::DebugUtilsLabelEXT {}.setPLabelName(std::data(name)).setColor(color);
 
         m_vk_command_buffer.insertDebugUtilsLabelEXT(payload);
     }
@@ -682,8 +673,8 @@ namespace stormkit::gpu {
             return flags;
         }();
 
-        const auto begin_info =
-            vk::CommandBufferBeginInfo {}.setFlags(flags).setPInheritanceInfo(&vk_inheritance_info);
+        const auto begin_info = vk::CommandBufferBeginInfo {}.setFlags(flags).setPInheritanceInfo(
+            &vk_inheritance_info);
 
         m_vk_command_buffer.begin(begin_info);
 
@@ -708,28 +699,30 @@ namespace stormkit::gpu {
                                        bool secondary_commandbuffers) -> void {
         expects(m_state == State::Recording);
 
-        const auto vk_clear_values =
-            clear_values |
-            std::views::transform(core::monadic::either(
-                [](const ClearColor& color) noexcept -> decltype(auto) {
-                    return vk::ClearValue { .color = vk::ClearColorValue {
-                                                .float32 =
-                                                    color.color.operator std::array<float, 4>() } };
-                },
-                [](const ClearDepthStencil& depth_stencil) noexcept -> decltype(auto) {
-                    return vk::ClearValue { .depthStencil = vk::ClearDepthStencilValue {
-                                                .depth   = depth_stencil.depth,
-                                                .stencil = depth_stencil.stencil } };
-                })) |
-            std::ranges::to<std::vector>();
+        const auto vk_clear_values
+            = clear_values
+              | std::views::transform(core::monadic::either(
+                  [](const ClearColor& color) noexcept -> decltype(auto) {
+                      return vk::ClearValue { .color = vk::ClearColorValue {
+                                                  .float32
+                                                  = color.color.operator std::array<float, 4>() } };
+                  },
+                  [](const ClearDepthStencil& depth_stencil) noexcept -> decltype(auto) {
+                      return vk::ClearValue {
+                          .depthStencil
+                          = vk::ClearDepthStencilValue { .depth   = depth_stencil.depth,
+                                                        .stencil = depth_stencil.stencil }
+                      };
+                  }))
+              | std::ranges::to<std::vector>();
 
-        const auto begin_info =
-            vk::RenderPassBeginInfo {}
-                .setRenderPass(toVkHandle(render_pass))
-                .setFramebuffer(toVkHandle(framebuffer))
-                .setRenderArea(vk::Rect2D {}.setOffset({ 0, 0 }).setExtent(
-                    { framebuffer.extent().width, framebuffer.extent().height }))
-                .setClearValues(vk_clear_values);
+        const auto begin_info
+            = vk::RenderPassBeginInfo {}
+                  .setRenderPass(toVkHandle(render_pass))
+                  .setFramebuffer(toVkHandle(framebuffer))
+                  .setRenderArea(vk::Rect2D {}.setOffset({ 0, 0 }).setExtent(
+                      { framebuffer.extent().width, framebuffer.extent().height }))
+                  .setClearValues(vk_clear_values);
 
         const auto subpass_content = secondary_commandbuffers
                                          ? vk::SubpassContents::eSecondaryCommandBuffers
@@ -773,9 +766,9 @@ namespace stormkit::gpu {
                                    std::span<const Viewport> viewports) -> void {
         expects(m_state == State::Recording);
 
-        const auto vk_viewports = viewports |
-                                  std::views::transform(core::monadic::as<vk::Viewport>()) |
-                                  std::ranges::to<std::vector>();
+        const auto vk_viewports = viewports
+                                  | std::views::transform(core::monadic::as<vk::Viewport>())
+                                  | std::ranges::to<std::vector>();
 
         m_vk_command_buffer.setViewport(first_viewport, vk_viewports);
     }
@@ -786,8 +779,8 @@ namespace stormkit::gpu {
         CommandBuffer::setScissor(UInt32 first_scissor, std::span<const Scissor> scissors) -> void {
         expects(m_state == State::Recording);
 
-        const auto vk_scissors = scissors | std::views::transform(core::monadic::as<vk::Rect2D>()) |
-                                 std::ranges::to<std::vector>();
+        const auto vk_scissors = scissors | std::views::transform(core::monadic::as<vk::Rect2D>())
+                                 | std::ranges::to<std::vector>();
 
         m_vk_command_buffer.setScissor(first_scissor, vk_scissors);
     }
@@ -928,8 +921,8 @@ namespace stormkit::gpu {
         expects(not std::empty(buffers));
         expects(std::size(buffers) == std::size(offsets));
 
-        const auto vk_buffers =
-            buffers | std::views::transform(monadic::toVkHandle()) | std::ranges::to<std::vector>();
+        const auto vk_buffers = buffers | std::views::transform(monadic::toVkHandle())
+                                | std::ranges::to<std::vector>();
 
         m_vk_command_buffer.bindVertexBuffers(0, vk_buffers, offsets);
     }
@@ -960,9 +953,9 @@ namespace stormkit::gpu {
                                     ? vk::PipelineBindPoint::eGraphics
                                     : vk::PipelineBindPoint::eCompute;
 
-        const auto vk_descriptor_sets = descriptor_sets |
-                                        std::views::transform(monadic::toVkHandle()) |
-                                        std::ranges::to<std::vector>();
+        const auto vk_descriptor_sets = descriptor_sets
+                                        | std::views::transform(monadic::toVkHandle())
+                                        | std::ranges::to<std::vector>();
 
         m_vk_command_buffer.bindDescriptorSets(bind_point,
                                                toVkHandle(layout),
@@ -993,31 +986,32 @@ namespace stormkit::gpu {
         std::span<const BufferImageCopy> buffer_image_copies) -> void {
         expects(m_state == State::Recording);
 
-        const auto DEFAULT_COPY =
-            std::array { BufferImageCopy { 0, 0, 0, {}, { 0, 0, 0 }, dst.extent() } };
+        const auto DEFAULT_COPY = std::array {
+            BufferImageCopy { 0, 0, 0, {}, { 0, 0, 0 }, dst.extent() }
+        };
 
         if (std::empty(buffer_image_copies)) buffer_image_copies = DEFAULT_COPY;
 
-        const auto vk_copy_regions =
-            buffer_image_copies | std::views::transform([](auto&& buffer_image_copy) noexcept {
-                const auto image_subresource = vk::ImageSubresourceLayers {
-                    .aspectMask = narrow<vk::ImageAspectFlagBits>(
-                        buffer_image_copy.subresource_layers.aspect_mask),
-                    .mipLevel       = buffer_image_copy.subresource_layers.mip_level,
-                    .baseArrayLayer = buffer_image_copy.subresource_layers.base_array_layer,
-                    .layerCount     = buffer_image_copy.subresource_layers.layer_count,
-                };
+        const auto vk_copy_regions
+            = buffer_image_copies | std::views::transform([](auto&& buffer_image_copy) noexcept {
+                  const auto image_subresource = vk::ImageSubresourceLayers {
+                      .aspectMask = narrow<vk::ImageAspectFlagBits>(
+                          buffer_image_copy.subresource_layers.aspect_mask),
+                      .mipLevel       = buffer_image_copy.subresource_layers.mip_level,
+                      .baseArrayLayer = buffer_image_copy.subresource_layers.base_array_layer,
+                      .layerCount     = buffer_image_copy.subresource_layers.layer_count,
+                  };
 
-                return vk::BufferImageCopy {
-                    .bufferOffset      = buffer_image_copy.buffer_offset,
-                    .bufferRowLength   = buffer_image_copy.buffer_row_length,
-                    .bufferImageHeight = buffer_image_copy.buffer_image_height,
-                    .imageSubresource  = image_subresource,
-                    .imageOffset       = as<vk::Offset3D>(buffer_image_copy.offset),
-                    .imageExtent       = as<vk::Extent3D>(buffer_image_copy.extent)
-                };
-            }) |
-            std::ranges::to<std::vector>();
+                  return vk::BufferImageCopy {
+                      .bufferOffset      = buffer_image_copy.buffer_offset,
+                      .bufferRowLength   = buffer_image_copy.buffer_row_length,
+                      .bufferImageHeight = buffer_image_copy.buffer_image_height,
+                      .imageSubresource  = image_subresource,
+                      .imageOffset       = as<vk::Offset3D>(buffer_image_copy.offset),
+                      .imageExtent       = as<vk::Extent3D>(buffer_image_copy.extent)
+                  };
+              })
+              | std::ranges::to<std::vector>();
 
         m_vk_command_buffer.copyBufferToImage(toVkHandle(src),
                                               toVkHandle(dst),
@@ -1033,31 +1027,32 @@ namespace stormkit::gpu {
         std::span<const BufferImageCopy> buffer_image_copies) -> void {
         expects(m_state == State::Recording);
 
-        const auto DEFAULT_COPY =
-            std::array { BufferImageCopy { 0, 0, 0, {}, { 0, 0, 0 }, src.extent() } };
+        const auto DEFAULT_COPY = std::array {
+            BufferImageCopy { 0, 0, 0, {}, { 0, 0, 0 }, src.extent() }
+        };
 
         if (std::empty(buffer_image_copies)) buffer_image_copies = DEFAULT_COPY;
 
-        const auto vk_copy_regions =
-            buffer_image_copies | std::views::transform([](auto&& buffer_image_copy) noexcept {
-                const auto image_subresource = vk::ImageSubresourceLayers {
-                    .aspectMask = narrow<vk::ImageAspectFlagBits>(
-                        buffer_image_copy.subresource_layers.aspect_mask),
-                    .mipLevel       = buffer_image_copy.subresource_layers.mip_level,
-                    .baseArrayLayer = buffer_image_copy.subresource_layers.base_array_layer,
-                    .layerCount     = buffer_image_copy.subresource_layers.layer_count,
-                };
+        const auto vk_copy_regions
+            = buffer_image_copies | std::views::transform([](auto&& buffer_image_copy) noexcept {
+                  const auto image_subresource = vk::ImageSubresourceLayers {
+                      .aspectMask = narrow<vk::ImageAspectFlagBits>(
+                          buffer_image_copy.subresource_layers.aspect_mask),
+                      .mipLevel       = buffer_image_copy.subresource_layers.mip_level,
+                      .baseArrayLayer = buffer_image_copy.subresource_layers.base_array_layer,
+                      .layerCount     = buffer_image_copy.subresource_layers.layer_count,
+                  };
 
-                return vk::BufferImageCopy {
-                    .bufferOffset      = buffer_image_copy.buffer_offset,
-                    .bufferRowLength   = buffer_image_copy.buffer_row_length,
-                    .bufferImageHeight = buffer_image_copy.buffer_image_height,
-                    .imageSubresource  = image_subresource,
-                    .imageOffset       = as<vk::Offset3D>(buffer_image_copy.offset),
-                    .imageExtent       = as<vk::Extent3D>(buffer_image_copy.extent)
-                };
-            }) |
-            std::ranges::to<std::vector>();
+                  return vk::BufferImageCopy {
+                      .bufferOffset      = buffer_image_copy.buffer_offset,
+                      .bufferRowLength   = buffer_image_copy.buffer_row_length,
+                      .bufferImageHeight = buffer_image_copy.buffer_image_height,
+                      .imageSubresource  = image_subresource,
+                      .imageOffset       = as<vk::Offset3D>(buffer_image_copy.offset),
+                      .imageExtent       = as<vk::Extent3D>(buffer_image_copy.extent)
+                  };
+              })
+              | std::ranges::to<std::vector>();
 
         m_vk_command_buffer.copyImageToBuffer(toVkHandle(src),
                                               vk::ImageLayout::eTransferDstOptimal,
@@ -1091,10 +1086,11 @@ namespace stormkit::gpu {
             .layerCount     = dst_subresource_layers.layer_count
         };
 
-        const auto vk_regions =
-            std::array { vk::ImageCopy { .srcSubresource = vk_src_subresource_layers,
-                                         .dstSubresource = vk_dst_subresource_layers,
-                                         .extent         = as<vk::Extent3D>(extent) } };
+        const auto vk_regions = std::array {
+            vk::ImageCopy { .srcSubresource = vk_src_subresource_layers,
+                           .dstSubresource = vk_dst_subresource_layers,
+                           .extent         = as<vk::Extent3D>(extent) }
+        };
 
         m_vk_command_buffer.copyImage(toVkHandle(src),
                                       narrow<vk::ImageLayout>(src_layout),
@@ -1130,10 +1126,11 @@ namespace stormkit::gpu {
             .layerCount     = dst_subresource_layers.layer_count
         };
 
-        const auto vk_regions =
-            std::array { vk::ImageResolve { .srcSubresource = vk_src_subresource_layers,
-                                            .dstSubresource = vk_dst_subresource_layers,
-                                            .extent         = vk_extent } };
+        const auto vk_regions = std::array {
+            vk::ImageResolve { .srcSubresource = vk_src_subresource_layers,
+                              .dstSubresource = vk_dst_subresource_layers,
+                              .extent         = vk_extent }
+        };
 
         m_vk_command_buffer.resolveImage(toVkHandle(src),
                                          narrow<vk::ImageLayout>(src_layout),
@@ -1152,32 +1149,32 @@ namespace stormkit::gpu {
                                                         Filter filter) -> void {
         expects(m_state == State::Recording);
 
-        const auto vk_regions =
-            regions | std::views::transform([](auto&& region) noexcept {
-                const auto vk_src_subresource_layers = vk::ImageSubresourceLayers {
-                    .aspectMask     = narrow<vk::ImageAspectFlagBits>(region.src.aspect_mask),
-                    .mipLevel       = region.src.mip_level,
-                    .baseArrayLayer = region.src.base_array_layer,
-                    .layerCount     = region.src.layer_count
-                };
+        const auto vk_regions
+            = regions | std::views::transform([](auto&& region) noexcept {
+                  const auto vk_src_subresource_layers = vk::ImageSubresourceLayers {
+                      .aspectMask     = narrow<vk::ImageAspectFlagBits>(region.src.aspect_mask),
+                      .mipLevel       = region.src.mip_level,
+                      .baseArrayLayer = region.src.base_array_layer,
+                      .layerCount     = region.src.layer_count
+                  };
 
-                const auto vk_dst_subresource_layers = vk::ImageSubresourceLayers {
-                    .aspectMask     = narrow<vk::ImageAspectFlagBits>(region.dst.aspect_mask),
-                    .mipLevel       = region.dst.mip_level,
-                    .baseArrayLayer = region.dst.base_array_layer,
-                    .layerCount     = region.dst.layer_count
-                };
+                  const auto vk_dst_subresource_layers = vk::ImageSubresourceLayers {
+                      .aspectMask     = narrow<vk::ImageAspectFlagBits>(region.dst.aspect_mask),
+                      .mipLevel       = region.dst.mip_level,
+                      .baseArrayLayer = region.dst.base_array_layer,
+                      .layerCount     = region.dst.layer_count
+                  };
 
-                return vk::ImageBlit {
-                    .srcSubresource = vk_src_subresource_layers,
-                    .srcOffsets     = std::array { as<vk::Offset3D>(region.src_offset[0]),
-                                               as<vk::Offset3D>(region.src_offset[1]) },
-                    .dstSubresource = vk_dst_subresource_layers,
-                    .dstOffsets     = std::array { as<vk::Offset3D>(region.dst_offset[0]),
-                                               as<vk::Offset3D>(region.dst_offset[1]) },
-                };
-            }) |
-            std::ranges::to<std::vector>();
+                  return vk::ImageBlit {
+                      .srcSubresource = vk_src_subresource_layers,
+                      .srcOffsets     = std::array { as<vk::Offset3D>(region.src_offset[0]),
+                                                    as<vk::Offset3D>(region.src_offset[1]) },
+                      .dstSubresource = vk_dst_subresource_layers,
+                      .dstOffsets     = std::array { as<vk::Offset3D>(region.dst_offset[0]),
+                                                    as<vk::Offset3D>(region.dst_offset[1]) },
+                  };
+              })
+              | std::ranges::to<std::vector>();
 
         m_vk_command_buffer.blitImage(toVkHandle(src),
                                       narrow<vk::ImageLayout>(src_layout),
@@ -1213,15 +1210,16 @@ namespace stormkit::gpu {
             .layerCount     = subresource_range.layer_count,
         };
 
-        const auto barriers =
-            std::array { vk::ImageMemoryBarrier { .srcAccessMask       = src_access->second.first,
-                                                  .dstAccessMask       = dst_access->second.first,
-                                                  .oldLayout           = vk_src_layout,
-                                                  .newLayout           = vk_dst_layout,
-                                                  .srcQueueFamilyIndex = vk::QueueFamilyIgnored,
-                                                  .dstQueueFamilyIndex = vk::QueueFamilyIgnored,
-                                                  .image               = toVkHandle(image),
-                                                  .subresourceRange    = vk_subresource_range } };
+        const auto barriers = std::array {
+            vk::ImageMemoryBarrier { .srcAccessMask       = src_access->second.first,
+                                    .dstAccessMask       = dst_access->second.first,
+                                    .oldLayout           = vk_src_layout,
+                                    .newLayout           = vk_dst_layout,
+                                    .srcQueueFamilyIndex = vk::QueueFamilyIgnored,
+                                    .dstQueueFamilyIndex = vk::QueueFamilyIgnored,
+                                    .image               = toVkHandle(image),
+                                    .subresourceRange    = vk_subresource_range }
+        };
 
         m_vk_command_buffer.pipelineBarrier(src_stage, dst_stage, {}, {}, {}, barriers);
     }
@@ -1235,53 +1233,54 @@ namespace stormkit::gpu {
         std::span<const MemoryBarrier>       memory_barriers,
         std::span<const BufferMemoryBarrier> buffer_memory_barriers,
         std::span<const ImageMemoryBarrier>  image_memory_barriers) -> void {
-        const auto vk_memory_barriers =
-            memory_barriers | std::views::transform([](auto&& barrier) noexcept -> decltype(auto) {
-                return vk::MemoryBarrier {
-                    .srcAccessMask = narrow<vk::AccessFlagBits>(barrier.src),
-                    .dstAccessMask = narrow<vk::AccessFlagBits>(barrier.dst),
-                };
-            }) |
-            std::ranges::to<std::vector>();
+        const auto vk_memory_barriers
+            = memory_barriers
+              | std::views::transform([](auto&& barrier) noexcept -> decltype(auto) {
+                    return vk::MemoryBarrier {
+                        .srcAccessMask = narrow<vk::AccessFlagBits>(barrier.src),
+                        .dstAccessMask = narrow<vk::AccessFlagBits>(barrier.dst),
+                    };
+                })
+              | std::ranges::to<std::vector>();
 
-        const auto vk_buffer_memory_barriers =
-            buffer_memory_barriers |
-            std::views::transform([](auto&& barrier) noexcept -> decltype(auto) {
-                return vk::BufferMemoryBarrier {
-                    .srcAccessMask       = narrow<vk::AccessFlagBits>(barrier.src),
-                    .dstAccessMask       = narrow<vk::AccessFlagBits>(barrier.dst),
-                    .srcQueueFamilyIndex = barrier.src_queue_family_index,
-                    .dstQueueFamilyIndex = barrier.dst_queue_family_index,
-                    .buffer              = toVkHandle(barrier.buffer),
-                    .offset              = barrier.offset,
-                    .size                = barrier.size
-                };
-            }) |
-            std::ranges::to<std::vector>();
+        const auto vk_buffer_memory_barriers
+            = buffer_memory_barriers
+              | std::views::transform([](auto&& barrier) noexcept -> decltype(auto) {
+                    return vk::BufferMemoryBarrier {
+                        .srcAccessMask       = narrow<vk::AccessFlagBits>(barrier.src),
+                        .dstAccessMask       = narrow<vk::AccessFlagBits>(barrier.dst),
+                        .srcQueueFamilyIndex = barrier.src_queue_family_index,
+                        .dstQueueFamilyIndex = barrier.dst_queue_family_index,
+                        .buffer              = toVkHandle(barrier.buffer),
+                        .offset              = barrier.offset,
+                        .size                = barrier.size
+                    };
+                })
+              | std::ranges::to<std::vector>();
 
-        const auto vk_image_memory_barriers =
-            image_memory_barriers |
-            std::views::transform([](auto&& barrier) noexcept -> decltype(auto) {
-                const auto vk_subresource_range = vk::ImageSubresourceRange {
-                    .aspectMask     = narrow<vk::ImageAspectFlagBits>(barrier.range.aspect_mask),
-                    .baseMipLevel   = barrier.range.base_mip_level,
-                    .levelCount     = barrier.range.level_count,
-                    .baseArrayLayer = barrier.range.base_array_layer,
-                    .layerCount     = barrier.range.layer_count
-                };
+        const auto vk_image_memory_barriers
+            = image_memory_barriers
+              | std::views::transform([](auto&& barrier) noexcept -> decltype(auto) {
+                    const auto vk_subresource_range = vk::ImageSubresourceRange {
+                        .aspectMask   = narrow<vk::ImageAspectFlagBits>(barrier.range.aspect_mask),
+                        .baseMipLevel = barrier.range.base_mip_level,
+                        .levelCount   = barrier.range.level_count,
+                        .baseArrayLayer = barrier.range.base_array_layer,
+                        .layerCount     = barrier.range.layer_count
+                    };
 
-                return vk::ImageMemoryBarrier {
-                    .srcAccessMask       = narrow<vk::AccessFlagBits>(barrier.src),
-                    .dstAccessMask       = narrow<vk::AccessFlagBits>(barrier.dst),
-                    .oldLayout           = narrow<vk::ImageLayout>(barrier.old_layout),
-                    .newLayout           = narrow<vk::ImageLayout>(barrier.new_layout),
-                    .srcQueueFamilyIndex = barrier.src_queue_family_index,
-                    .dstQueueFamilyIndex = barrier.dst_queue_family_index,
-                    .image               = toVkHandle(barrier.image),
-                    .subresourceRange    = vk_subresource_range
-                };
-            }) |
-            std::ranges::to<std::vector>();
+                    return vk::ImageMemoryBarrier {
+                        .srcAccessMask       = narrow<vk::AccessFlagBits>(barrier.src),
+                        .dstAccessMask       = narrow<vk::AccessFlagBits>(barrier.dst),
+                        .oldLayout           = narrow<vk::ImageLayout>(barrier.old_layout),
+                        .newLayout           = narrow<vk::ImageLayout>(barrier.new_layout),
+                        .srcQueueFamilyIndex = barrier.src_queue_family_index,
+                        .dstQueueFamilyIndex = barrier.dst_queue_family_index,
+                        .image               = toVkHandle(barrier.image),
+                        .subresourceRange    = vk_subresource_range
+                    };
+                })
+              | std::ranges::to<std::vector>();
 
         m_vk_command_buffer.pipelineBarrier(narrow<vk::PipelineStageFlagBits>(src_mask),
                                             narrow<vk::PipelineStageFlagBits>(dst_mask),
@@ -1317,10 +1316,10 @@ namespace stormkit::gpu {
             return cmb;
         };
 
-        const auto vk_command_buffers =
-            commandbuffers |
-            std::views::transform(core::monadic::map(expectsSecondary, monadic::toVkHandle())) |
-            std::ranges::to<std::vector>();
+        const auto vk_command_buffers
+            = commandbuffers
+              | std::views::transform(core::monadic::map(expectsSecondary, monadic::toVkHandle()))
+              | std::ranges::to<std::vector>();
 
         m_vk_command_buffer.executeCommands(vk_command_buffers);
     }
@@ -1334,11 +1333,11 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE CommandPool::CommandPool(const Device& device, const Queue& queue, Tag) {
+    STORMKIT_FORCE_INLINE CommandPool::CommandPool(const Device& device, Tag) {
         device.vkHandle()
             .createCommandPool(vk::CommandPoolCreateInfo {
-                .flags = vk::CommandPoolCreateFlagBits::eTransient |
-                         vk::CommandPoolCreateFlagBits::eResetCommandBuffer })
+                .flags = vk::CommandPoolCreateFlagBits::eTransient
+                         | vk::CommandPoolCreateFlagBits::eResetCommandBuffer })
             .transform(core::monadic::set(m_vk_command_pool))
             .transform_error(core::monadic::map(core::monadic::as<Result>(), throwError()));
     }
@@ -1359,17 +1358,15 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto
-        CommandPool::create(const Device& device,
-                            const Queue&  queue) noexcept -> Expected<CommandPool> try {
-        return CommandPool { device, queue, Tag {} };
+        CommandPool::create(const Device& device) noexcept -> Expected<CommandPool> try {
+        return CommandPool { device, Tag {} };
     } catch (const Result& result) { return std::unexpected(result); }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto CommandPool::allocate(const Device& device,
-                                                     const Queue&  queue) noexcept
+    STORMKIT_FORCE_INLINE auto CommandPool::allocate(const Device& device) noexcept
         -> Expected<std::unique_ptr<CommandPool>> try {
-        return std::make_unique<CommandPool>(device, queue, Tag {});
+        return std::make_unique<CommandPool>(device, Tag {});
     } catch (const Result& result) { return std::unexpected(result); }
 
     /////////////////////////////////////
@@ -1386,16 +1383,15 @@ namespace stormkit::gpu {
         const Device&      device,
         RangeExtent        count,
         CommandBufferLevel level) const noexcept -> std::vector<CommandBuffer> {
-        return createVkCommandBuffers(device, count, level) | std::views::as_rvalue |
-               std::views::transform(
+        return createVkCommandBuffers(device, count, level) | std::views::as_rvalue
+               | std::views::transform(
                    [this, &level](vk::raii::CommandBuffer&& cmb) noexcept -> decltype(auto) {
-                       return CommandBuffer::create(*this,
-                                                    level,
+                       return CommandBuffer::create(level,
                                                     std::move(cmb),
                                                     curry(&CommandPool::deleteVkCommandBuffer,
                                                           const_cast<CommandPool*>(this)));
-                   }) |
-               std::ranges::to<std::vector>();
+                   })
+               | std::ranges::to<std::vector>();
     }
 
     /////////////////////////////////////
@@ -1412,16 +1408,15 @@ namespace stormkit::gpu {
         const Device&      device,
         RangeExtent        count,
         CommandBufferLevel level) const noexcept -> std::vector<std::unique_ptr<CommandBuffer>> {
-        return createVkCommandBuffers(device, count, level) | std::views::as_rvalue |
-               std::views::transform(
+        return createVkCommandBuffers(device, count, level) | std::views::as_rvalue
+               | std::views::transform(
                    [this, &level](vk::raii::CommandBuffer&& cmb) noexcept -> decltype(auto) {
-                       return CommandBuffer::allocate(*this,
-                                                      level,
+                       return CommandBuffer::allocate(level,
                                                       std::move(cmb),
                                                       curry(&CommandPool::deleteVkCommandBuffer,
                                                             const_cast<CommandPool*>(this)));
-                   }) |
-               std::ranges::to<std::vector>();
+                   })
+               | std::ranges::to<std::vector>();
     }
 
     /////////////////////////////////////
@@ -1434,7 +1429,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto
-        CommandPool::deleteVkCommandBuffer(vk::raii::CommandBuffer& cmb) noexcept -> void {
+        CommandPool::deleteVkCommandBuffer([[maybe_unused]] vk::raii::CommandBuffer& cmb) noexcept -> void {
         // auto lock = std::unique_lock { m_reuse_mutex };
         // m_reusable_command_buffers.emplace_back(std::move(cmb));
     }
