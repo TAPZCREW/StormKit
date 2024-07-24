@@ -1,5 +1,5 @@
 package("frozen", function()
-	set_kind("library")
+	set_kind("library", {moduleonly = true})
 	set_homepage("https://github.com/serge-sans-paille/frozen")
 	set_description("A header-only, constexpr alternative to gperf for C++14 users")
 	set_license("Apache-2.0")
