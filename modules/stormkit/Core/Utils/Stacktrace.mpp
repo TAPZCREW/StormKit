@@ -2,13 +2,10 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-#include <cstdio>
 #include <version>
 
 #if defined(__cpp_lib_stacktrace) and __cpp_lib_stacktrace >= 202011L
     #define STD_STACKTRACE_SUPPORTED
-#else
-    #include <boost/stacktrace.hpp>
 #endif
 
 export module stormkit.Core:Utils.Stacktrace;
@@ -19,54 +16,4 @@ import :Parallelism.ThreadUtils;
 
 export namespace stormkit::core {
     STORMKIT_API auto printStacktrace(int ignore_count = 0) noexcept -> void;
-} // namespace stormkit::core
-
-////////////////////////////////////////////////////////////////////
-///                      IMPLEMENTATION                          ///
-////////////////////////////////////////////////////////////////////
-
-namespace stormkit::core {
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto printStacktrace(int ignore_count) noexcept -> void {
-        const auto thread_name = getCurrentThreadName();
-        if (not std::empty(thread_name))
-            std::println(stderr,
-                         "================= CALLSTACK (thread name: {}, id: {}) =================",
-                         thread_name,
-                         std::this_thread::get_id());
-        else
-            std::println(stderr,
-                         "================= CALLSTACK (thread id: {}) =================",
-                         std::this_thread::get_id());
-// #if defined(STD_STACKTRACE_SUPPORTED)
-//         const auto st = std::to_string(std::stacktrace::current());
-// #else
-//         const auto st = boost::stacktrace::to_string(boost::stacktrace::stacktrace {});
-// #endif
-//         std::println(stderr, "{}", st);
-#if defined(STD_STACKTRACE_SUPPORTED)
-        const auto st = std::stacktrace::current();
-
-        auto i = 0;
-        for (auto&& frame : st) {
-            if (i < ignore_count) {
-                i += 1;
-                continue;
-            }
-            std::println("{}# {}", (i++ - ignore_count), frame);
-        }
-#else
-        const auto st = boost::stacktrace::stacktrace {};
-
-        auto i = 0;
-        for (auto&& frame : st) {
-            if (i < ignore_count) {
-                i += 1;
-                continue;
-            }
-            std::println("{}# {}", (i++ - ignore_count), boost::stacktrace::to_string(frame));
-        }
-#endif
-    }
 } // namespace stormkit::core
