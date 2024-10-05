@@ -37,17 +37,6 @@ modules = {
              }
          ]],
 				}, { configs = { languages = "c++23" }, includes = { "stacktrace" } })
-
-				if not has_stacktrace then
-					print("No C++23 stacktrace support, falling back to boost stacktrace")
-					target:add("packages", "boost", { public = true })
-					if target:is_plat("linux") or target:is_plat("mingw") then
-						target:add("packages", "libbacktrace", { public = true })
-						target:add("defines", "BOOST_STACKTRACE_USE_ADDR2LINE", { public = true })
-						target:add("defines", "BOOST_STACKTRACE_LINK", { public = true })
-						target:add("syslinks", "dl", { public = true })
-					end
-				end
 			end)
 		end,
 	},
@@ -295,7 +284,7 @@ option("vsxmake", { default = false, category = "root menu/support" })
 
 ---------------------------- global configs ----------------------------
 set_allowedmodes(allowedmodes)
-set_allowedplats("windows", "mingw", "linux", "macosx")
+set_allowedplats("windows", "mingw", "linux", "macosx", "wasm")
 set_allowedarchs("windows|x64", "mingw|x86_64", "linux|x86_64", "macosx|x86_64")
 
 -- set_runtimes(is_mode("debug") and "MDd" or "MD")
@@ -339,8 +328,8 @@ set_symbols("hidden")
 set_optimize("fastest")
 if is_mode("debug") then
 	set_symbols("debug", "hidden")
-	add_defines("_GLIBCXX_DEBUG")
 	add_cxflags("-ggdb3", { tools = { "clang", "gcc" } })
+  add_cxflags("-D_GLIBCXX_DEBUG", { tools = { "gcc" } })
 	add_mxflags("-ggdb3", { tools = { "clang", "gcc" } })
 elseif is_mode("releasedbg") then
 	set_optimize("fast")
@@ -380,12 +369,14 @@ if get_config("sanitizers") then
 	set_policy("build.sanitizer.undefined", true)
 end
 
-add_requireconfs("vulkan-headers", { override = true, system = false })
-add_requireconfs("vulkan-memory-allocator", { override = true, version = "master", system = false })
-add_requireconfs(
-  "vulkan-memory-allocator-hpp",
-  { override = true, version = "master", system = false, configs = { use_vulkanheaders = true } }
-)
+if not is_plat("wasm") then
+    add_requireconfs("vulkan-headers", { override = true, system = false })
+    add_requireconfs("vulkan-memory-allocator", { override = true, version = "master", system = false })
+    add_requireconfs(
+      "vulkan-memory-allocator-hpp",
+      { override = true, version = "master", system = false, configs = { use_vulkanheaders = true } }
+    )
+end
 
 add_requireconfs("*", { configs = { modules = true, std_import = true } })
 
@@ -396,18 +387,13 @@ if get_config("lto") then
 	end
 end
 
-add_requires("boost", { system = false, configs = { stacktrace = true, filesystem = false } })
-if is_plat("linux") then
-	add_requires("libbacktrace", { system = false })
-end
-
 ---------------------------- targets ----------------------------
 for name, module in pairs(modules) do
-	add_requires(table.join(module.packages or {}, module.public_packages or {}))
 
 	local modulename = module.modulename
 
 	if name == "core" or name == "main" or get_config("" .. name) then
+    add_requires(table.join(module.packages or {}, module.public_packages or {}))
 		target("stormkit-" .. name, function()
 			set_group("libraries")
 
