@@ -126,7 +126,7 @@ export {
             [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::PhysicalDevice&;
 
           private:
-            PhysicalDevice(vk::raii::PhysicalDevice physical_device, const Instance& instance);
+            explicit PhysicalDevice(vk::raii::PhysicalDevice physical_device);
 
             vk::raii::PhysicalDevice m_vk_physical_device;
 

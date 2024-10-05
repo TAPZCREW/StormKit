@@ -59,7 +59,7 @@ namespace stormkit::gpu {
         /////////////////////////////////////
         /////////////////////////////////////
         auto debugCallback(vk::DebugUtilsMessageSeverityFlagsEXT         severity,
-                           vk::DebugUtilsMessageTypeFlagsEXT             type,
+                           vk::DebugUtilsMessageTypeFlagsEXT             _,
                            const vk::DebugUtilsMessengerCallbackDataEXT& callback_data,
                            [[maybe_unused]] void*                        user_data) -> bool {
             auto message = std::format("{}", callback_data.pMessage);
@@ -221,8 +221,8 @@ namespace stormkit::gpu {
         return m_vk_instance->enumeratePhysicalDevices().transform([this](auto&& physical_devices) {
             // clang-format off
             m_physical_devices = std::forward<decltype(physical_devices)>(physical_devices) 
-              | std::views::transform([this](auto&& physical_device) {
-                       return PhysicalDevice { std::move(physical_device), *this };
+              | std::views::transform([](auto&& physical_device) static noexcept {
+                       return PhysicalDevice { std::move(physical_device) };
               })
               | std::ranges::to<std::vector>();
             // clang-format on
