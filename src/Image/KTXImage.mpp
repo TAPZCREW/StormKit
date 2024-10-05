@@ -104,7 +104,7 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto loadKTX(std::span<const Byte> data) noexcept
+    auto loadKTX([[maybe_unused]] std::span<const Byte> data) noexcept
         -> std::expected<image::Image, image::Image::Error> {
         /*auto image = gli::load_ktx(reinterpret_cast<const char*>(std::data(data)), std::size(data));*/
         /**/
@@ -134,6 +134,8 @@ namespace stormkit::image::details {
         /*image_data.format            = format;*/
         /**/
         /*return Image { std::move(image_data) };*/
+        return std::unexpected(
+            Error { .reason = Reason::Not_Implemented, .str_error = "load to memory" });
     }
 
     /////////////////////////////////////
