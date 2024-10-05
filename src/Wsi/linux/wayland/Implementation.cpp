@@ -112,13 +112,16 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto pointerAxisSourceHandler(void* data, wl_pointer* pointer, UInt32 axis_source) noexcept
-        -> void;
+    auto pointerAxisSourceHandler(void*       data,
+                                  wl_pointer* pointer,
+                                  UInt32      axis_source) noexcept -> void;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto pointerAxisStopHandler(void* data, wl_pointer* pointer, UInt32 time, UInt32 axis) noexcept
-        -> void;
+    auto pointerAxisStopHandler(void*       data,
+                                wl_pointer* pointer,
+                                UInt32      time,
+                                UInt32      axis) noexcept -> void;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -179,35 +182,35 @@ namespace stormkit::wsi::linux::wayland {
     namespace {
         auto globals = Globals {};
 
-        constinit const auto stormkit_registry_listener =
-            wl_registry_listener { .global        = registryHandler,
-                                   .global_remove = registryRemoverHandler };
+        constinit const auto stormkit_registry_listener
+            = wl_registry_listener { .global        = registryHandler,
+                                     .global_remove = registryRemoverHandler };
 
-        constinit const auto stormkit_surface_listener =
-            wl_surface_listener { .enter = surfaceEnterHandler, .leave = surfaceLeaveHandler };
+        constinit const auto stormkit_surface_listener
+            = wl_surface_listener { .enter = surfaceEnterHandler, .leave = surfaceLeaveHandler };
 
-        constinit const auto stormkit_xdg_surface_listener =
-            xdg_surface_listener { .configure = surfaceConfigureHandler };
+        constinit const auto stormkit_xdg_surface_listener
+            = xdg_surface_listener { .configure = surfaceConfigureHandler };
 
-        constinit const auto stormkit_xdg_toplevel_listener =
-            xdg_toplevel_listener { .configure = toplevelConfigureHandler,
-                                    .close     = toplevelCloseHandler };
+        constinit const auto stormkit_xdg_toplevel_listener
+            = xdg_toplevel_listener { .configure = toplevelConfigureHandler,
+                                      .close     = toplevelCloseHandler };
 
-        constinit const auto stormkit_shell_listener =
-            xdg_wm_base_listener { .ping = shellPingHandler };
+        constinit const auto stormkit_shell_listener
+            = xdg_wm_base_listener { .ping = shellPingHandler };
 
-        constinit const auto stormkit_shell_surface_listener =
-            wl_shell_surface_listener { .ping       = shellPingHandler,
-                                        .configure  = shellSurfaceConfigureHandler,
-                                        .popup_done = nullptr };
+        constinit const auto stormkit_shell_surface_listener
+            = wl_shell_surface_listener { .ping       = shellPingHandler,
+                                          .configure  = shellSurfaceConfigureHandler,
+                                          .popup_done = nullptr };
 
-        constinit const auto stormkit_relative_pointer_listener =
-            zwp_relative_pointer_v1_listener { .relative_motion =
-                                                   relativePointerRelativeMotionHandler };
+        constinit const auto stormkit_relative_pointer_listener
+            = zwp_relative_pointer_v1_listener { .relative_motion
+                                                 = relativePointerRelativeMotionHandler };
 
-        constinit const auto stormkit_locked_pointer_listener =
-            zwp_locked_pointer_v1_listener { .locked   = lockedPointerLockedHandler,
-                                             .unlocked = lockedPointerUnlockedHandler };
+        constinit const auto stormkit_locked_pointer_listener
+            = zwp_locked_pointer_v1_listener { .locked   = lockedPointerLockedHandler,
+                                               .unlocked = lockedPointerUnlockedHandler };
     } // namespace
 
     void init() {
@@ -239,57 +242,108 @@ namespace stormkit::wsi::linux::wayland {
         if (!globals.display) init();
 
         m_keyboard_state = std::array {
-            KeyState { XKB_KEY_a, false },           KeyState { XKB_KEY_b, false },
-            KeyState { XKB_KEY_c, false },           KeyState { XKB_KEY_d, false },
-            KeyState { XKB_KEY_e, false },           KeyState { XKB_KEY_f, false },
-            KeyState { XKB_KEY_g, false },           KeyState { XKB_KEY_h, false },
-            KeyState { XKB_KEY_i, false },           KeyState { XKB_KEY_j, false },
-            KeyState { XKB_KEY_k, false },           KeyState { XKB_KEY_l, false },
-            KeyState { XKB_KEY_m, false },           KeyState { XKB_KEY_n, false },
-            KeyState { XKB_KEY_o, false },           KeyState { XKB_KEY_p, false },
-            KeyState { XKB_KEY_q, false },           KeyState { XKB_KEY_r, false },
-            KeyState { XKB_KEY_s, false },           KeyState { XKB_KEY_t, false },
-            KeyState { XKB_KEY_u, false },           KeyState { XKB_KEY_v, false },
-            KeyState { XKB_KEY_w, false },           KeyState { XKB_KEY_x, false },
-            KeyState { XKB_KEY_y, false },           KeyState { XKB_KEY_z, false },
-            KeyState { XKB_KEY_0, false },           KeyState { XKB_KEY_1, false },
-            KeyState { XKB_KEY_2, false },           KeyState { XKB_KEY_3, false },
-            KeyState { XKB_KEY_4, false },           KeyState { XKB_KEY_5, false },
-            KeyState { XKB_KEY_6, false },           KeyState { XKB_KEY_7, false },
-            KeyState { XKB_KEY_8, false },           KeyState { XKB_KEY_9, false },
-            KeyState { XKB_KEY_Escape, false },      KeyState { XKB_KEY_Control_L, false },
-            KeyState { XKB_KEY_Shift_L, false },     KeyState { XKB_KEY_Alt_L, false },
-            KeyState { XKB_KEY_Super_L, false },     KeyState { XKB_KEY_Control_R, false },
-            KeyState { XKB_KEY_Shift_R, false },     KeyState { XKB_KEY_Alt_R, false },
-            KeyState { XKB_KEY_Super_R, false },     KeyState { XKB_KEY_Menu, false },
-            KeyState { XKB_KEY_bracketleft, false }, KeyState { XKB_KEY_bracketright, false },
-            KeyState { XKB_KEY_semicolon, false },   KeyState { XKB_KEY_comma, false },
-            KeyState { XKB_KEY_period, false },      KeyState { XKB_KEY_quoteleft, false },
-            KeyState { XKB_KEY_slash, false },       KeyState { XKB_KEY_backslash, false },
-            KeyState { XKB_KEY_dead_grave, false },  KeyState { XKB_KEY_equal, false },
-            KeyState { XKB_KEY_hyphen, false },      KeyState { XKB_KEY_space, false },
-            KeyState { XKB_KEY_Return, false },      KeyState { XKB_KEY_BackSpace, false },
-            KeyState { XKB_KEY_Tab, false },         KeyState { XKB_KEY_Page_Up, false },
-            KeyState { XKB_KEY_Page_Down, false },   KeyState { XKB_KEY_Begin, false },
-            KeyState { XKB_KEY_End, false },         KeyState { XKB_KEY_Home, false },
-            KeyState { XKB_KEY_Insert, false },      KeyState { XKB_KEY_Delete, false },
-            KeyState { XKB_KEY_KP_Add, false },      KeyState { XKB_KEY_KP_Subtract, false },
-            KeyState { XKB_KEY_KP_Multiply, false }, KeyState { XKB_KEY_KP_Divide, false },
-            KeyState { XKB_KEY_Left, false },        KeyState { XKB_KEY_Right, false },
-            KeyState { XKB_KEY_Up, false },          KeyState { XKB_KEY_Down, false },
-            KeyState { XKB_KEY_KP_0, false },        KeyState { XKB_KEY_KP_1, false },
-            KeyState { XKB_KEY_KP_2, false },        KeyState { XKB_KEY_KP_3, false },
-            KeyState { XKB_KEY_KP_4, false },        KeyState { XKB_KEY_KP_5, false },
-            KeyState { XKB_KEY_KP_6, false },        KeyState { XKB_KEY_KP_7, false },
-            KeyState { XKB_KEY_KP_8, false },        KeyState { XKB_KEY_KP_9, false },
-            KeyState { XKB_KEY_F1, false },          KeyState { XKB_KEY_F2, false },
-            KeyState { XKB_KEY_F3, false },          KeyState { XKB_KEY_F4, false },
-            KeyState { XKB_KEY_F5, false },          KeyState { XKB_KEY_F6, false },
-            KeyState { XKB_KEY_F7, false },          KeyState { XKB_KEY_F8, false },
-            KeyState { XKB_KEY_F9, false },          KeyState { XKB_KEY_F10, false },
-            KeyState { XKB_KEY_F11, false },         KeyState { XKB_KEY_F12, false },
-            KeyState { XKB_KEY_F13, false },         KeyState { XKB_KEY_F14, false },
-            KeyState { XKB_KEY_F15, false },         KeyState { XKB_KEY_Pause, false },
+            KeyState { XKB_KEY_a,            false },
+             KeyState { XKB_KEY_b,            false },
+            KeyState { XKB_KEY_c,            false },
+             KeyState { XKB_KEY_d,            false },
+            KeyState { XKB_KEY_e,            false },
+             KeyState { XKB_KEY_f,            false },
+            KeyState { XKB_KEY_g,            false },
+             KeyState { XKB_KEY_h,            false },
+            KeyState { XKB_KEY_i,            false },
+             KeyState { XKB_KEY_j,            false },
+            KeyState { XKB_KEY_k,            false },
+             KeyState { XKB_KEY_l,            false },
+            KeyState { XKB_KEY_m,            false },
+             KeyState { XKB_KEY_n,            false },
+            KeyState { XKB_KEY_o,            false },
+             KeyState { XKB_KEY_p,            false },
+            KeyState { XKB_KEY_q,            false },
+             KeyState { XKB_KEY_r,            false },
+            KeyState { XKB_KEY_s,            false },
+             KeyState { XKB_KEY_t,            false },
+            KeyState { XKB_KEY_u,            false },
+             KeyState { XKB_KEY_v,            false },
+            KeyState { XKB_KEY_w,            false },
+             KeyState { XKB_KEY_x,            false },
+            KeyState { XKB_KEY_y,            false },
+             KeyState { XKB_KEY_z,            false },
+            KeyState { XKB_KEY_0,            false },
+             KeyState { XKB_KEY_1,            false },
+            KeyState { XKB_KEY_2,            false },
+             KeyState { XKB_KEY_3,            false },
+            KeyState { XKB_KEY_4,            false },
+             KeyState { XKB_KEY_5,            false },
+            KeyState { XKB_KEY_6,            false },
+             KeyState { XKB_KEY_7,            false },
+            KeyState { XKB_KEY_8,            false },
+             KeyState { XKB_KEY_9,            false },
+            KeyState { XKB_KEY_Escape,       false },
+             KeyState { XKB_KEY_Control_L,    false },
+            KeyState { XKB_KEY_Shift_L,      false },
+             KeyState { XKB_KEY_Alt_L,        false },
+            KeyState { XKB_KEY_Super_L,      false },
+             KeyState { XKB_KEY_Control_R,    false },
+            KeyState { XKB_KEY_Shift_R,      false },
+             KeyState { XKB_KEY_Alt_R,        false },
+            KeyState { XKB_KEY_Super_R,      false },
+             KeyState { XKB_KEY_Menu,         false },
+            KeyState { XKB_KEY_bracketleft,  false },
+             KeyState { XKB_KEY_bracketright, false },
+            KeyState { XKB_KEY_semicolon,    false },
+             KeyState { XKB_KEY_comma,        false },
+            KeyState { XKB_KEY_period,       false },
+             KeyState { XKB_KEY_quoteleft,    false },
+            KeyState { XKB_KEY_slash,        false },
+             KeyState { XKB_KEY_backslash,    false },
+            KeyState { XKB_KEY_dead_grave,   false },
+             KeyState { XKB_KEY_equal,        false },
+            KeyState { XKB_KEY_hyphen,       false },
+             KeyState { XKB_KEY_space,        false },
+            KeyState { XKB_KEY_Return,       false },
+             KeyState { XKB_KEY_BackSpace,    false },
+            KeyState { XKB_KEY_Tab,          false },
+             KeyState { XKB_KEY_Page_Up,      false },
+            KeyState { XKB_KEY_Page_Down,    false },
+             KeyState { XKB_KEY_Begin,        false },
+            KeyState { XKB_KEY_End,          false },
+             KeyState { XKB_KEY_Home,         false },
+            KeyState { XKB_KEY_Insert,       false },
+             KeyState { XKB_KEY_Delete,       false },
+            KeyState { XKB_KEY_KP_Add,       false },
+             KeyState { XKB_KEY_KP_Subtract,  false },
+            KeyState { XKB_KEY_KP_Multiply,  false },
+             KeyState { XKB_KEY_KP_Divide,    false },
+            KeyState { XKB_KEY_Left,         false },
+             KeyState { XKB_KEY_Right,        false },
+            KeyState { XKB_KEY_Up,           false },
+             KeyState { XKB_KEY_Down,         false },
+            KeyState { XKB_KEY_KP_0,         false },
+             KeyState { XKB_KEY_KP_1,         false },
+            KeyState { XKB_KEY_KP_2,         false },
+             KeyState { XKB_KEY_KP_3,         false },
+            KeyState { XKB_KEY_KP_4,         false },
+             KeyState { XKB_KEY_KP_5,         false },
+            KeyState { XKB_KEY_KP_6,         false },
+             KeyState { XKB_KEY_KP_7,         false },
+            KeyState { XKB_KEY_KP_8,         false },
+             KeyState { XKB_KEY_KP_9,         false },
+            KeyState { XKB_KEY_F1,           false },
+             KeyState { XKB_KEY_F2,           false },
+            KeyState { XKB_KEY_F3,           false },
+             KeyState { XKB_KEY_F4,           false },
+            KeyState { XKB_KEY_F5,           false },
+             KeyState { XKB_KEY_F6,           false },
+            KeyState { XKB_KEY_F7,           false },
+             KeyState { XKB_KEY_F8,           false },
+            KeyState { XKB_KEY_F9,           false },
+             KeyState { XKB_KEY_F10,          false },
+            KeyState { XKB_KEY_F11,          false },
+             KeyState { XKB_KEY_F12,          false },
+            KeyState { XKB_KEY_F13,          false },
+             KeyState { XKB_KEY_F14,          false },
+            KeyState { XKB_KEY_F15,          false },
+             KeyState { XKB_KEY_Pause,        false },
         };
 
         m_xkb_context = common::getXKBContext();
@@ -333,8 +387,9 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::create(std::string title, const math::ExtentU& extent, WindowStyle style)
-        -> void {
+    auto WindowImpl::create(std::string          title,
+                            const math::ExtentU& extent,
+                            WindowStyle          style) -> void {
         m_title  = title;
         m_extent = extent;
         m_style  = style;
@@ -684,9 +739,9 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::seatCapabilities([[maybe_unused]] wl_seat*      seat,
-                                      [[maybe_unused]] std::uint32_t capabilities) noexcept
-        -> void {
+    auto
+        WindowImpl::seatCapabilities([[maybe_unused]] wl_seat*      seat,
+                                     [[maybe_unused]] std::uint32_t capabilities) noexcept -> void {
     }
 
     /////////////////////////////////////
@@ -784,8 +839,8 @@ namespace stormkit::wsi::linux::wayland {
                                     std::int32_t                  fd,
                                     std::uint32_t                 size) noexcept -> void {
         if (format == WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
-            auto map_shm =
-                reinterpret_cast<char*>(mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fd, 0));
+            auto map_shm
+                = reinterpret_cast<char*>(mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fd, 0));
 
             updateKeymap(std::string_view { map_shm, size });
 
@@ -954,8 +1009,8 @@ namespace stormkit::wsi::linux::wayland {
         auto fd = syscall(SYS_memfd_create, "buffer", 0);
         ftruncate(fd, buffer_size);
 
-        [[maybe_unused]] auto* data =
-            mmap(nullptr, buffer_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+        [[maybe_unused]] auto* data
+            = mmap(nullptr, buffer_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
         m_shm_pool.reset(wl_shm_create_pool(globals.shm.get(), fd, buffer_size));
 
@@ -1003,35 +1058,36 @@ namespace stormkit::wsi::linux::wayland {
     }
 
     namespace {
-        constinit const auto stormkit_output_listener =
-            wl_output_listener { .geometry = outputGeometryHandler,
-                                 .mode     = outputModeHandler,
-                                 .done     = outputDoneHandler,
-                                 .scale    = outputScaleHandler };
+        constinit const auto stormkit_output_listener
+            = wl_output_listener { .geometry = outputGeometryHandler,
+                                   .mode     = outputModeHandler,
+                                   .done     = outputDoneHandler,
+                                   .scale    = outputScaleHandler };
 
-        constinit const auto stormkit_seat_listener =
-            wl_seat_listener { .capabilities = seatCapabilitiesHandler, .name = seatNameHandler };
+        constinit const auto stormkit_seat_listener
+            = wl_seat_listener { .capabilities = seatCapabilitiesHandler, .name = seatNameHandler };
 
-        constinit const auto stormkit_pointer_listener =
-            wl_pointer_listener { .enter         = pointerEnterHandler,
-                                  .leave         = pointerLeaveHandler,
-                                  .motion        = pointerMotionHandler,
-                                  .button        = pointerButtonHandler,
-                                  .axis          = pointerAxisHandler,
-                                  .frame         = pointerFrameHandler,
-                                  .axis_source   = pointerAxisSourceHandler,
-                                  .axis_stop     = pointerAxisStopHandler,
-                                  .axis_discrete = pointerAxisDiscreteHandler };
+        constinit const auto stormkit_pointer_listener
+            = wl_pointer_listener { .enter         = pointerEnterHandler,
+                                    .leave         = pointerLeaveHandler,
+                                    .motion        = pointerMotionHandler,
+                                    .button        = pointerButtonHandler,
+                                    .axis          = pointerAxisHandler,
+                                    .frame         = pointerFrameHandler,
+                                    .axis_source   = pointerAxisSourceHandler,
+                                    .axis_stop     = pointerAxisStopHandler,
+                                    .axis_discrete = pointerAxisDiscreteHandler };
 
-        constinit const auto stormkit_keyboard_listener =
-            wl_keyboard_listener { .keymap      = keyboardKeymapHandler,
-                                   .enter       = keyboardEnterHandler,
-                                   .leave       = keyboardLeaveHandler,
-                                   .key         = keyboardKeyHandler,
-                                   .modifiers   = keyboardModifiersHandler,
-                                   .repeat_info = keyboardRepeatInfoHandler };
+        constinit const auto stormkit_keyboard_listener
+            = wl_keyboard_listener { .keymap      = keyboardKeymapHandler,
+                                     .enter       = keyboardEnterHandler,
+                                     .leave       = keyboardLeaveHandler,
+                                     .key         = keyboardKeyHandler,
+                                     .modifiers   = keyboardModifiersHandler,
+                                     .repeat_info = keyboardRepeatInfoHandler };
 
-        constinit const auto stormkit_touchscreen_listener = wl_touch_listener {};
+        // TODO support touchscreens
+        [[maybe_unused]] constinit const auto stormkit_touchscreen_listener = wl_touch_listener {};
     } // namespace
 
     /////////////////////////////////////
@@ -1208,8 +1264,8 @@ namespace stormkit::wsi::linux::wayland {
         auto& globals = *static_cast<Globals*>(data);
 
         if ((capabilities & WL_SEAT_CAPABILITY_KEYBOARD) > 0) {
-            auto& keyboard =
-                globals.keyboards.emplace_back(wl_seat_get_keyboard(globals.seat.get()));
+            auto& keyboard
+                = globals.keyboards.emplace_back(wl_seat_get_keyboard(globals.seat.get()));
             wl_keyboard_add_listener(keyboard.get(), &stormkit_keyboard_listener, nullptr);
         }
 
