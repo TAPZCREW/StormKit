@@ -591,8 +591,8 @@ namespace {
                 auto rng     = range(-6, 10, 2);
                 auto success = true;
                 auto j       = -6;
-                for (auto i = 0u; i < std::size(rng); ++i) {
-                    if (rng[i] != j) {
+                for (auto i : rng) {
+                    if (i != j) {
                         success = false;
                         break;
                     }
@@ -605,8 +605,8 @@ namespace {
                 auto rng     = range(NumericsRange { -5, 10, 2 });
                 auto success = true;
                 auto j       = -5;
-                for (auto i = 0u; i < std::size(rng); ++i) {
-                    if (rng[i] != j) {
+                for (auto i : rng) {
+                    if (i != j) {
                         success = false;
                         break;
                     }

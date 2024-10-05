@@ -72,8 +72,8 @@ export namespace stormkit::core {
         IsValueQueryer(IsValueQueryer&&)      = delete;
         auto operator=(IsValueQueryer&&)      = delete;
 
-        static constexpr auto operator()(const First&, const Second&) noexcept
-            -> Boolean = delete("No IsValueQueryer defined for this type");
+        static constexpr auto operator()(const First&, const Second&) noexcept -> Boolean
+            = delete("No IsValueQueryer defined for this type");
     };
 
     template<typename First, typename Second>
@@ -131,6 +131,7 @@ export namespace stormkit::core {
 
     template<IsArithmetic T>
     struct NumericsRange {
+        using RangeType = T;
         T begin;
         T end;
         T step = T { 1 };
@@ -141,25 +142,26 @@ export namespace stormkit::core {
         t.begin;
         t.end;
         t.step;
+        typename T::RangeType;
     };
 
     template<class T>
     concept IsNumericsRangePure = IsNumericsRange<PureType<T>>;
 
     template<IsArithmetic T>
-    [[nodiscard]] constexpr auto range(const T& end) noexcept;
+    [[nodiscard]] constexpr auto range(const T& end) noexcept -> decltype(auto);
 
     template<IsArithmetic T, IsArithmetic U, IsArithmetic V = U>
     [[nodiscard]] constexpr auto
-        range(const T& begin, const U& end, const V& step = V { 1 }) noexcept;
+        range(const T& begin, const U& end, const V& step = V { 1 }) noexcept -> decltype(auto);
 
-    [[nodiscard]] constexpr auto range(IsNumericsRangePure auto&& range) noexcept;
+    [[nodiscard]] constexpr auto range(IsNumericsRangePure auto&& range) noexcept -> decltype(auto);
 
     template<IsArithmetic... Args>
-    [[nodiscard]] constexpr auto multiRange(const Args&... args) noexcept;
+    [[nodiscard]] constexpr auto multiRange(const Args&... args) noexcept -> decltype(auto);
 
     template<IsNumericsRangePure... Args>
-    [[nodiscard]] constexpr auto multiRange(Args&&... args) noexcept;
+    [[nodiscard]] constexpr auto multiRange(Args&&... args) noexcept -> decltype(auto);
 } // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -194,10 +196,8 @@ namespace stormkit::core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<IsNumericsRange T, IsNumericsRange U, IsNumericsRange V, IsNumericsRange W>
-    auto rangeImplementation(T a, U b, V c, W d) noexcept
-        -> std::generator<
-            std::
-                tuple<decltype(a.begin), decltype(b.begin), decltype(c.begin), decltype(d.begin)>> {
+    auto rangeImplementation(T a, U b, V c, W d) noexcept -> std::generator<
+        std::tuple<decltype(a.begin), decltype(b.begin), decltype(c.begin), decltype(d.begin)>> {
         FOR(i, a)
         FOR(j, b)
         FOR(k, c)
@@ -286,8 +286,8 @@ namespace stormkit::core {
         requires(not(IsFloatingPoint<First> and IsFloatingPoint<Second>)
                  and not(IsIntegral<First> and IsIntegral<Second> and not Is<First, Second>))
     STORMKIT_FORCE_INLINE constexpr auto
-        IsValueQueryer<First, Second>::operator()(const First&  first,
-                                                  const Second& second) noexcept -> Boolean {
+        IsValueQueryer<First, Second>::operator()(const First& first, const Second& second) noexcept
+        -> Boolean {
         return first == second;
     }
 
@@ -328,8 +328,8 @@ namespace stormkit::core {
     template<IsIntegral First, IsIntegral Second>
         requires(not Is<First, Second>)
     STORMKIT_FORCE_INLINE constexpr auto
-        IsValueQueryer<First, Second>::operator()(const First&  first,
-                                                  const Second& second) noexcept -> Boolean {
+        IsValueQueryer<First, Second>::operator()(const First& first, const Second& second) noexcept
+        -> Boolean {
         using Type = SafeNarrowHelperType<First, Second>;
 
         return IsValueQueryer<Type, Type>::operator()(narrow<Type>(first), narrow<Type>(second));
@@ -346,17 +346,95 @@ namespace stormkit::core {
         return narrow<U>((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min);
     }
 
+    template<typename T>
+    struct Range {
+        using Type = typename T::RangeType;
+
+        struct Iterator {
+            Iterator(Type val, Type step) noexcept : m_val { val }, m_step { step } {}
+
+            auto operator+(std::size_t index) -> decltype(auto) {
+                auto cpy = auto(*this);
+                for (auto i = 0u; i < index; ++i) ++cpy;
+                return cpy;
+            }
+
+            auto operator++() -> decltype(auto) {
+                m_val += m_step;
+                return *this;
+            }
+
+            auto operator++(int) -> decltype(auto) {
+                auto old = auto(*this);
+                m_val += m_step;
+                return old;
+            }
+
+            auto operator--() -> decltype(auto) {
+                m_val -= m_step;
+                return *this;
+            }
+
+            auto operator--(int) -> decltype(auto) {
+                auto old = auto(*this);
+                m_val -= m_step;
+                return old;
+            }
+
+            auto operator==(const Iterator& other) const noexcept { return m_val == other.m_val; }
+
+            auto operator!=(const Iterator& other) const noexcept { return m_val != other.m_val; }
+
+            template<typename Self>
+            auto operator*(this Self&& self) noexcept -> decltype(auto) {
+                return std::forward_like<Self>(self.m_val);
+            }
+
+          private:
+            Type m_val;
+            Type m_step;
+        };
+
+        constexpr explicit Range(T&& range)
+            : m_begin { range.begin, range.step }, m_end { range.end, range.step } {}
+
+        template<typename Self>
+        constexpr auto begin(this Self&& self) noexcept -> decltype(auto) {
+            return std::forward_like<Self>(self.m_begin);
+        }
+
+        constexpr auto cbegin() const noexcept -> const Iterator& { return m_begin; }
+
+        template<typename Self>
+        constexpr auto end(this Self&& self) noexcept -> decltype(auto) {
+            return std::forward_like<Self>(self.m_end);
+        }
+
+        constexpr auto cend() const noexcept -> const Iterator& { return m_end; }
+
+        template<typename Self>
+        auto operator[](this Self&& self, std::size_t index) noexcept -> decltype(auto) {
+            return *(std::forward<Self>(self).begin() + index);
+        }
+
+      private:
+        Iterator m_begin;
+        Iterator m_end;
+    };
+
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE constexpr auto range(IsNumericsRangePure auto&& range) noexcept {
-        return std::views::iota(range.begin, range.end) | std::views::stride(range.step);
+    STORMKIT_FORCE_INLINE constexpr auto range(IsNumericsRangePure auto&& range) noexcept
+        -> decltype(auto) {
+        // return ranges::views::iota(range.begin, range.end) | ranges::view::stride(range.step);
+        return Range { std::forward<decltype(range)>(range) };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<IsArithmetic T, IsArithmetic U, IsArithmetic V>
-    STORMKIT_FORCE_INLINE constexpr auto
-        range(const T& begin, const U& end, const V& step) noexcept {
+    STORMKIT_FORCE_INLINE constexpr auto range(const T& begin, const U& end, const V& step) noexcept
+        -> decltype(auto) {
         using Type = SafeNarrowHelperType<SafeNarrowHelperType<T, U>, V>;
         return range(NumericsRange<Type> { .begin = narrow<Type>(begin),
                                            .end   = narrow<Type>(end),
@@ -366,21 +444,22 @@ namespace stormkit::core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<IsArithmetic T>
-    STORMKIT_FORCE_INLINE constexpr auto range(const T& end) noexcept {
+    STORMKIT_FORCE_INLINE constexpr auto range(const T& end) noexcept -> decltype(auto) {
         return range(T { 0 }, end);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<IsArithmetic... Args>
-    STORMKIT_FORCE_INLINE constexpr auto multiRange(const Args&... args) noexcept {
+    STORMKIT_FORCE_INLINE constexpr auto multiRange(const Args&... args) noexcept
+        -> decltype(auto) {
         return rangeImplementation(NumericsRange<Args> { .begin = 0, .end = args }...);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<IsNumericsRangePure... Args>
-    STORMKIT_FORCE_INLINE constexpr auto multiRange(Args&&... args) noexcept {
+    STORMKIT_FORCE_INLINE constexpr auto multiRange(Args&&... args) noexcept -> decltype(auto) {
         return rangeImplementation(std::forward<Args>(args)...);
     }
 
@@ -388,8 +467,8 @@ namespace stormkit::core {
     /////////////////////////////////////
     template<typename First, typename Second>
         requires IsValueQueryerable<First, Second>
-    STORMKIT_FORCE_INLINE constexpr auto is(const First&  first,
-                                            const Second& second) noexcept -> Boolean {
+    STORMKIT_FORCE_INLINE constexpr auto is(const First& first, const Second& second) noexcept
+        -> Boolean {
         return IsValueQueryer<First, Second>::operator()(first, second);
     }
 
