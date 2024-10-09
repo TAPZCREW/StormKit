@@ -10,20 +10,20 @@ import :Meta.Concepts;
 
 export namespace stormkit::core {
     template<class T>
-    struct PureTypeTrait {
+    struct CanonicalTypeTrait {
         using Type = std::remove_cvref_t<T>;
     };
 
     template<class T>
-    using PureType = typename PureTypeTrait<T>::Type;
+    using CanonicalType = typename CanonicalTypeTrait<T>::Type;
 
     template<class T>
-    struct RawTypeTrait {
-        using Type = std::remove_pointer_t<PureType<T>>;
+    struct DecayTypeTrait {
+        using Type = std::decay_t<T>;
     };
 
     template<class T>
-    using RawType = typename RawTypeTrait<T>::Type;
+    using DecayType = typename DecayTypeTrait<T>::Type;
 
     template<class T>
     struct RemoveIndirectionsTypeTrait {
@@ -100,10 +100,10 @@ export namespace stormkit::core {
     template<class T, typename U>
     struct LikeRef {
       private:
-        using U1 =
-            std::conditional_t<std::is_lvalue_reference_v<T>, std::add_lvalue_reference_t<U>, U>;
-        using U2 =
-            std::conditional_t<std::is_rvalue_reference_v<T>, std::add_rvalue_reference_t<U1>, U1>;
+        using U1
+            = std::conditional_t<std::is_lvalue_reference_v<T>, std::add_lvalue_reference_t<U>, U>;
+        using U2 = std::
+            conditional_t<std::is_rvalue_reference_v<T>, std::add_rvalue_reference_t<U1>, U1>;
 
       public:
         using type = U2;
@@ -146,7 +146,7 @@ namespace stormkit::core {
     constexpr auto isGreater() noexcept {
         using Type = decltype(T {} + V {});
 
-        return static_cast<Type>(std::numeric_limits<T>::max()) >
-               static_cast<Type>(std::numeric_limits<V>::max());
+        return static_cast<Type>(std::numeric_limits<T>::max())
+               > static_cast<Type>(std::numeric_limits<V>::max());
     }
 } // namespace stormkit::core

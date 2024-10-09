@@ -28,11 +28,11 @@ export namespace stormkit::gpu {
     // clang-format off
     template<class T>
     concept IsStormKitVulkanWrappedType =
-        (IsFancyPointer<PureType<T>> 
-           and IsStormKitVulkanType<typename PureType<T>::element_type>)
+        (IsFancyPointer<CanonicalType<T>> 
+           and IsStormKitVulkanType<typename CanonicalType<T>::element_type>)
          or (IsRawIndirection<T> 
                and not IsRValueReference<T> 
-               and IsStormKitVulkanType<RawType<T>>);
+               and IsStormKitVulkanType<DecayType<T>>);
     // clang-format on
 
     template<class T>
@@ -159,7 +159,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<IsStormKitVulkanWrappedType T>
     STORMKIT_FORCE_INLINE auto toRaiiVkHandle(T&& value) noexcept -> decltype(auto) {
-        if constexpr (IsPointer<PureType<T>>) return std::forward<T>(value)->vkHandle();
+        if constexpr (IsPointer<CanonicalType<T>>) return std::forward<T>(value)->vkHandle();
         else
             return std::forward<T>(value).vkHandle();
     }

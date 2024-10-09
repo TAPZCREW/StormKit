@@ -28,7 +28,7 @@ export {
         } // namespace details
 
         template<class T>
-        concept FlagsType = IsEnumeration<PureType<T>> and details::EnableBitmaskOperatorsEnable<T>;
+        concept FlagsType = IsEnumeration<CanonicalType<T>> and details::EnableBitmaskOperatorsEnable<T>;
 
         /// \brief Check if a flag bit is enabled
         /// \requires `Enum` to be an enumeration promoted as a flag with `FLAG_ENUM` macro

@@ -41,7 +41,7 @@ export namespace stormkit::core {
         [[nodiscard]] auto size() const noexcept -> ExtentType;
         [[nodiscard]] auto capacity() const noexcept -> ExtentType;
 
-        template<Is<PureType<ValueType>> U>
+        template<Is<CanonicalType<ValueType>> U>
         auto push(U&& value) noexcept(std::is_nothrow_constructible_v<ValueType, U>) -> void;
 
         template<class... Args>
@@ -199,7 +199,7 @@ namespace stormkit::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T>
-    template<Is<PureType<typename RingBuffer<T>::ValueType>> U>
+    template<Is<CanonicalType<typename RingBuffer<T>::ValueType>> U>
     auto RingBuffer<T>::push(U&& value) noexcept(std::is_nothrow_constructible_v<ValueType, U>)
         -> void {
         emplace(std::forward(value));

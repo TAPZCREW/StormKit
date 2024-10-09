@@ -14,7 +14,7 @@ import :Meta;
 
 import :TypeSafe.AsCast;
 import :Utils.Functional;
-import :TypeSafe.Borrowed;
+import :TypeSafe.Ref;
 
 export namespace stormkit::core::monadic {
     struct Anything {
@@ -189,8 +189,8 @@ namespace stormkit::core::monadic {
                                              auto&& second) noexcept -> decltype(auto) {
         using First   = decltype(first);
         using Second  = decltype(second);
-        using FirstP  = core::PureType<First>;
-        using SecondP = core::PureType<Second>;
+        using FirstP  = core::CanonicalType<First>;
+        using SecondP = core::CanonicalType<Second>;
 
         return
             [first  = std::forward<First>(first),
@@ -246,7 +246,7 @@ namespace stormkit::core::monadic {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE constexpr auto clone() noexcept -> decltype(auto) {
         return []<typename T>(auto&& value) static noexcept(
-                   noexcept(std::is_nothrow_copy_constructible_v<PureType<T>>)) {
+                   noexcept(std::is_nothrow_copy_constructible_v<CanonicalType<T>>)) {
             return auto(std::forward<T>(value));
         };
     }

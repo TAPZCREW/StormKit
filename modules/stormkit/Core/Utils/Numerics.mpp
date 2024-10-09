@@ -162,7 +162,7 @@ export namespace stormkit::core {
     };
 
     template<class T>
-    concept IsNumericsRangePure = IsNumericsRange<PureType<T>>;
+    concept IsNumericsRangePure = IsNumericsRange<CanonicalType<T>>;
 
     template<IsArithmetic T>
     [[nodiscard]] constexpr auto range(const T& end) noexcept -> decltype(auto);

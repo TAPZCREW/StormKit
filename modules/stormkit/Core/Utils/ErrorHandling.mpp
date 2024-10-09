@@ -109,7 +109,7 @@ namespace stormkit::core {
     constexpr auto expectsWithMessage(std::string&& message, std::source_location location) noexcept
         -> decltype(auto) {
         return [message = std::move(message), location = std::move(location)] NORETURN_LAMBDA(
-                   auto&& error) -> std::expected<void, PureType<decltype(error)>> {
+                   auto&& error) -> std::expected<void, CanonicalType<decltype(error)>> {
             auto stderr = getSTDErr();
 
             std::println(stderr,
@@ -135,7 +135,7 @@ namespace stormkit::core {
     ////////////////////////////////////////
     constexpr auto expects(std::source_location location) noexcept -> decltype(auto) {
         return [location = std::move(location)] NORETURN_LAMBDA(
-                   auto&& error) -> std::expected<void, PureType<decltype(error)>> {
+                   auto&& error) -> std::expected<void, CanonicalType<decltype(error)>> {
             auto stderr = getSTDErr();
 
             std::println(stderr,
@@ -160,7 +160,7 @@ namespace stormkit::core {
     constexpr auto log(std::invocable auto&& logger, std::string&& message) noexcept
         -> decltype(auto) {
         return [logger = std::forward<decltype(logger)>, message = std::move(message)](
-                   auto&& error) -> std::expected<void, PureType<decltype(error)>> {
+                   auto&& error) -> std::expected<void, CanonicalType<decltype(error)>> {
             logger(message, error);
 
             return {};
@@ -171,7 +171,7 @@ namespace stormkit::core {
     ////////////////////////////////////////
     constexpr auto throwError() noexcept -> decltype(auto) {
         return [] NORETURN_LAMBDA(
-                   auto&& error) static -> std::expected<void, PureType<decltype(error)>> {
+                   auto&& error) static -> std::expected<void, CanonicalType<decltype(error)>> {
             throw std::forward<decltype(error)>(error);
         };
     }

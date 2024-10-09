@@ -20,10 +20,10 @@ namespace stormkit::core::details {
             -> decltype(false_());
 
         template<typename T>
-            requires IsOptionalType<PureType<T>>
+            requires IsOptionalType<CanonicalType<T>>
         [[nodiscard]] static constexpr auto
             operator()(T&&                                                     optional,
-                       std::invocable<typename PureType<T>::value_type> auto&& true_,
+                       std::invocable<typename CanonicalType<T>::value_type> auto&& true_,
                        std::invocable auto&& false_) noexcept -> decltype(false_());
     };
 } // namespace stormkit::core::details
@@ -55,10 +55,10 @@ namespace stormkit::core {
         /////////////////////////////////////
         /////////////////////////////////////
         template<typename T>
-            requires IsOptionalType<PureType<T>>
+            requires IsOptionalType<CanonicalType<T>>
         STORMKIT_FORCE_INLINE constexpr auto
             EitherFunc::operator()(T&&                                                     optional,
-                                   std::invocable<typename PureType<T>::value_type> auto&& true_,
+                                   std::invocable<typename CanonicalType<T>::value_type> auto&& true_,
                                    std::invocable auto&& false_) noexcept -> decltype(false_()) {
             if (optional != std::nullopt) return true_(*std::forward<T>(optional));
             return false_();

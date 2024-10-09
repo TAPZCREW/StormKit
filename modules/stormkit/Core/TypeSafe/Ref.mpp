@@ -76,8 +76,8 @@ export namespace stormkit::core {
 
     template<typename T>
     // clang-format off
-        requires(not IsRawPointer<PureType<T>> 
-                 and not IsFancyPointer<PureType<T>> 
+        requires(not IsRawPointer<CanonicalType<T>> 
+                 and not IsFancyPointer<CanonicalType<T>> 
                  and not IsRValueReference<T>)
     // clang-format on
     [[nodiscard]] constexpr auto borrow(T&& value) noexcept -> decltype(auto);
@@ -151,8 +151,8 @@ export namespace stormkit::core {
 
     template<typename T>
     // clang-format off
-        requires(not IsRawPointer<PureType<T>> 
-                 and not IsFancyPointer<PureType<T>> 
+        requires(not IsRawPointer<CanonicalType<T>> 
+                 and not IsFancyPointer<CanonicalType<T>> 
                  and not IsRValueReference<T>)
     // clang-format on
     [[nodiscard]] constexpr auto borrowMutable(T&& value) noexcept -> decltype(auto);
@@ -275,8 +275,8 @@ namespace stormkit::core {
     /////////////////////////////////////
     template<typename T>
     // clang-format off
-        requires(not IsRawPointer<PureType<T>> 
-                 and not IsFancyPointer<PureType<T>>
+        requires(not IsRawPointer<CanonicalType<T>> 
+                 and not IsFancyPointer<CanonicalType<T>>
                  and not IsRValueReference<T>)
     // clang-format on
     constexpr auto borrow(T&& value) noexcept -> decltype(auto) {
@@ -415,8 +415,8 @@ namespace stormkit::core {
     /////////////////////////////////////
     template<typename T>
     // clang-format off
-        requires(not IsRawPointer<PureType<T>> 
-                 and not IsFancyPointer<PureType<T>>
+        requires(not IsRawPointer<CanonicalType<T>> 
+                 and not IsFancyPointer<CanonicalType<T>>
                  and not IsRValueReference<T>)
     // clang-format on
     constexpr auto borrowMutable(T&& value) noexcept -> decltype(auto) {

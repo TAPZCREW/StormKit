@@ -602,9 +602,9 @@ namespace stormkit::core {
             to.x                 = core::as<UnderlyingType>(from.x);
             to.y                 = core::as<UnderlyingType>(from.y);
 
-            if constexpr (math::IsVector3Like<core::PureType<To>> and math::IsVector3Like<From>)
+            if constexpr (math::IsVector3Like<core::CanonicalType<To>> and math::IsVector3Like<From>)
                 to.z = core::as<UnderlyingType>(from.z);
-            else if constexpr (math::IsVector4Like<core::PureType<To>> and
+            else if constexpr (math::IsVector4Like<core::CanonicalType<To>> and
                                math::IsVector4Like<From>)
                 to.w = core::as<UnderlyingType>(from.w);
 
@@ -620,9 +620,9 @@ namespace stormkit::core {
             to.x                 = core::narrow<UnderlyingType>(from.x);
             to.y                 = core::narrow<UnderlyingType>(from.y);
 
-            if constexpr (math::IsVector3Like<core::PureType<To>> and math::IsVector3Like<From>)
+            if constexpr (math::IsVector3Like<core::CanonicalType<To>> and math::IsVector3Like<From>)
                 to.z = core::narrow<UnderlyingType>(from.z);
-            else if constexpr (math::IsVector4Like<core::PureType<To>> and
+            else if constexpr (math::IsVector4Like<core::CanonicalType<To>> and
                                math::IsVector4Like<From>)
                 to.w = core::narrow<UnderlyingType>(from.w);
 
@@ -638,7 +638,7 @@ namespace stormkit::core {
             to.width             = core::as<UnderlyingType>(from.width);
             to.height            = core::as<UnderlyingType>(from.height);
 
-            if constexpr (math::IsExtent3Like<core::PureType<To>> and math::IsExtent3Like<From>)
+            if constexpr (math::IsExtent3Like<core::CanonicalType<To>> and math::IsExtent3Like<From>)
                 to.depth = core::as<UnderlyingType>(from.depth);
 
             return to;
@@ -653,7 +653,7 @@ namespace stormkit::core {
             to.width             = core::narrow<UnderlyingType>(from.width);
             to.height            = core::narrow<UnderlyingType>(from.height);
 
-            if constexpr (math::IsExtent3Like<core::PureType<To>> and math::IsExtent3Like<From>)
+            if constexpr (math::IsExtent3Like<core::CanonicalType<To>> and math::IsExtent3Like<From>)
                 to.depth = core::narrow<UnderlyingType>(from.depth);
 
             return to;
@@ -668,7 +668,7 @@ namespace stormkit::core {
             to.x                 = core::narrow<UnderlyingType>(from.width);
             to.y                 = core::narrow<UnderlyingType>(from.height);
 
-            if constexpr (math::IsVector3Like<core::PureType<To>> and math::IsExtent3Like<From>)
+            if constexpr (math::IsVector3Like<core::CanonicalType<To>> and math::IsExtent3Like<From>)
                 to.z = core::narrow<UnderlyingType>(from.depth);
 
             return to;
@@ -683,7 +683,7 @@ namespace stormkit::core {
             to.x                 = core::narrow<UnderlyingType>(from.width);
             to.y                 = core::narrow<UnderlyingType>(from.height);
 
-            if constexpr (math::IsVector3Like<core::PureType<To>> and math::IsExtent3Like<From>)
+            if constexpr (math::IsVector3Like<core::CanonicalType<To>> and math::IsExtent3Like<From>)
                 to.z = core::narrow<UnderlyingType>(from.depth);
 
             return to;
@@ -698,7 +698,7 @@ namespace stormkit::core {
             to.width             = core::as<UnderlyingType>(from.x);
             to.height            = core::as<UnderlyingType>(from.y);
 
-            if constexpr (math::IsExtent3Like<core::PureType<To>> and math::IsVector3Like<From>)
+            if constexpr (math::IsExtent3Like<core::CanonicalType<To>> and math::IsVector3Like<From>)
                 to.depth = core::as<UnderlyingType>(from.z);
 
             return to;
@@ -713,7 +713,7 @@ namespace stormkit::core {
             to.width             = core::as<UnderlyingType>(from.x);
             to.height            = core::as<UnderlyingType>(from.y);
 
-            if constexpr (math::IsExtent3Like<core::PureType<To>> and math::IsVector3Like<From>)
+            if constexpr (math::IsExtent3Like<core::CanonicalType<To>> and math::IsVector3Like<From>)
                 to.depth = core::as<UnderlyingType>(from.z);
 
             return to;
