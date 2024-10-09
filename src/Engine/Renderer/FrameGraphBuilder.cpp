@@ -62,7 +62,7 @@ namespace stormkit::engine {
     /////////////////////////////////////
     /////////////////////////////////////
     auto FrameGraphBuilder::cullUnreferencedResources() noexcept -> void {
-        auto unreferenced_resources = std::stack<Borrowed<GraphResourceVariant>> {};
+        auto unreferenced_resources = std::stack<Ref<GraphResourceVariant>> {};
 
         constexpr auto decrementRefcount = [](auto& value) noexcept {
             if (value.m_ref_count > 0) --value.m_ref_count;
@@ -353,7 +353,7 @@ namespace stormkit::engine {
 
     auto FrameGraphBuilder::allocatePhysicalResources(const gpu::CommandPool& command_pool,
                                                       const gpu::Device&      device)
-        -> std::pair<Borrowed<const gpu::Image>, BakedFrameGraph::Data> {
+        -> std::pair<Ref<const gpu::Image>, BakedFrameGraph::Data> {
         using Data = BakedFrameGraph::Data;
 
         auto output = Data {};
@@ -387,7 +387,7 @@ namespace stormkit::engine {
 
             auto extent       = math::ExtentU {};
             auto clear_values = std::vector<gpu::ClearValue> {};
-            auto attachments  = std::vector<Borrowed<const gpu::ImageView>> {};
+            auto attachments  = std::vector<Ref<const gpu::ImageView>> {};
             for (const auto& image : pass.images) {
                 extent.width  = std::max(image.create_info.extent.width, extent.width);
                 extent.height = std::max(image.create_info.extent.height, extent.height);
@@ -452,6 +452,6 @@ namespace stormkit::engine {
         for (auto&& task : output.tasks) std::visit(visitors, task);
         output.cmb->end();
 
-        return std::make_pair(Borrowed { backbuffer }, std::move(output));
+        return std::make_pair(Ref { backbuffer }, std::move(output));
     } // namespace stormkit::engine
 } // namespace stormkit::engine

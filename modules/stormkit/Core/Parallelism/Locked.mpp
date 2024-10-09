@@ -11,7 +11,7 @@ export module stormkit.Core:Parallelism.Locked;
 import std;
 
 import :Utils.Numerics;
-import :TypeSafe.Borrowed;
+import :TypeSafe.Ref;
 
 namespace stormkit::core {
     using DefaultMutex = std::mutex;
@@ -95,6 +95,8 @@ export namespace stormkit::core {
           public:
             using ValueType =
                 std::conditional_t<Mode == LockAccessMode::Read_Only, const ValueType, ValueType>;
+            using RefContainerType =
+                std::conditional_t<Mode == LockAccessMode::Read_Only, Ref<ValueType>, MutableRef<ValueType>>;
             using ReferenceType = ValueType&;
             using PointerType   = ValueType*;
 
@@ -116,7 +118,7 @@ export namespace stormkit::core {
             mutable Lock<MutexType> lock;
 
           private:
-            Borrowed<ValueType> m_value;
+            MutableRef<ValueType> m_value;
         };
 
         Mutex     m_mutex;

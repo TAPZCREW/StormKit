@@ -223,7 +223,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Device::waitForFences(std::span<const Borrowed<const Fence>> fences,
+    auto Device::waitForFences(std::span<const Ref<const Fence>> fences,
                                bool                                   wait_all,
                                const std::chrono::milliseconds&       timeout) const noexcept
         -> Expected<Result> {
@@ -242,7 +242,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Device::resetFences(std::span<const Borrowed<const Fence>> fences) const noexcept -> void {
+    auto Device::resetFences(std::span<const Ref<const Fence>> fences) const noexcept -> void {
         const auto vk_fences =
             fences | std::views::transform(monadic::toVkHandle()) | std::ranges::to<std::vector>();
 

@@ -22,7 +22,7 @@ export {
         struct BufferDescriptor {
             DescriptorType         type = DescriptorType::Uniform_Buffer;
             UInt32                 binding;
-            Borrowed<const Buffer> buffer;
+            Ref<const Buffer> buffer;
             UInt32                 range;
             UInt32                 offset;
         };
@@ -31,8 +31,8 @@ export {
             DescriptorType            type = DescriptorType::Combined_Image_Sampler;
             UInt32                    binding;
             ImageLayout               layout;
-            Borrowed<const ImageView> image_view;
-            Borrowed<const Sampler>   sampler;
+            Ref<const ImageView> image_view;
+            Ref<const Sampler>   sampler;
         };
 
         using Descriptor = std::variant<BufferDescriptor, ImageDescriptor>;

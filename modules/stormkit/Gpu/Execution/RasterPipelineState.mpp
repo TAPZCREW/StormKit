@@ -85,7 +85,7 @@ export namespace stormkit::gpu {
     };
 
     struct RasterPipelineShaderState {
-        std::vector<Borrowed<const Shader>> shaders;
+        std::vector<Ref<const Shader>> shaders;
     };
 
     struct RasterPipelineDepthStencilState {
@@ -101,7 +101,7 @@ export namespace stormkit::gpu {
     };
 
     struct RasterPipelineLayout {
-        std::vector<Borrowed<const DescriptorSetLayout>> descriptor_set_layouts;
+        std::vector<Ref<const DescriptorSetLayout>> descriptor_set_layouts;
         std::vector<PushConstantRange>                   push_constant_ranges;
     };
 

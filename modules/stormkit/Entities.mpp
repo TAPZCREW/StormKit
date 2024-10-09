@@ -118,7 +118,7 @@ export namespace stormkit::entities {
       protected:
         virtual auto onMessageReceived(const Message& message) -> void = 0;
 
-        Borrowed<EntityManager> m_manager;
+        Ref<EntityManager> m_manager;
         HashSet<Entity>         m_entities;
 
         friend class EntityManager;
@@ -168,10 +168,10 @@ export namespace stormkit::entities {
 
         template<class Self>
         auto components(this Self& self,
-                        Entity     entity) -> std::vector<Borrowed<LikeType<Self, Component>>>;
+                        Entity     entity) -> std::vector<Ref<LikeType<Self, Component>>>;
 
         template<IsComponentTypeOrFail T, class Self>
-        auto componentsOfType(this Self& self) noexcept -> std::vector<Borrowed<LikeType<Self, T>>>;
+        auto componentsOfType(this Self& self) noexcept -> std::vector<Ref<LikeType<Self, T>>>;
 
         template<Is<System> T, typename... Args>
         auto addSystem(Args&&... args) -> T&;
@@ -180,7 +180,7 @@ export namespace stormkit::entities {
         auto hasSystem() const noexcept -> bool;
 
         template<class Self>
-        auto systems(this Self& self) noexcept -> std::vector<Borrowed<LikeType<Self, System>>>;
+        auto systems(this Self& self) noexcept -> std::vector<Ref<LikeType<Self, System>>>;
 
         template<Is<System> T, class Self>
         auto getSystem(this Self& self) noexcept -> LikeType<Self, T&>;
@@ -365,7 +365,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     template<class Self>
     auto EntityManager::components(this Self& self, Entity entity)
-        -> std::vector<Borrowed<LikeType<Self, Component>>> {
+        -> std::vector<Ref<LikeType<Self, Component>>> {
         if (not self.hasEntity(entity)) [[unlikely]]
             return {};
         // clang-format off
@@ -383,7 +383,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     template<IsComponentTypeOrFail T, class Self>
     auto EntityManager::componentsOfType(this Self& self) noexcept
-        -> std::vector<Borrowed<LikeType<Self, T>>> {
+        -> std::vector<Ref<LikeType<Self, T>>> {
         // clang-format off
         return self.m_entities 
                | std::views::filter(curry(&EntityManager::hasComponent<T>, &self))
@@ -418,7 +418,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     template<class Self>
     auto EntityManager::systems(this Self& self) noexcept
-        -> std::vector<Borrowed<LikeType<Self, System>>> {
+        -> std::vector<Ref<LikeType<Self, System>>> {
         // clang-format off
         return self.m_systems 
                | std::views::transform(monadic::forwardLike<Self>())

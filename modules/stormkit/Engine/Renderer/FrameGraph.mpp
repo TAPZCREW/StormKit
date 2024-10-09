@@ -81,6 +81,7 @@ export namespace stormkit::engine {
       public:
         enum class Type {
             Raster,
+            Transfer,
             Compute
         };
 
@@ -111,7 +112,7 @@ export namespace stormkit::engine {
 
         std::function<void(std::byte&, GraphTaskBuilder&)> onSetup;
         std::function<void(const std::byte&,
-                           std::optional<Borrowed<gpu::RenderPass>> renderpass,
+                           std::optional<Ref<gpu::RenderPass>> renderpass,
                            gpu::CommandBuffer&                      cmb)>
             onExecute;
 
@@ -174,12 +175,12 @@ export namespace stormkit::engine {
         auto operator=(BakedFrameGraph&&) noexcept -> BakedFrameGraph&;
 
         auto execute(const gpu::Queue& queue) noexcept
-            -> gpu::Expected<Borrowed<const gpu::Semaphore>>;
+            -> gpu::Expected<Ref<const gpu::Semaphore>>;
 
         auto backbuffer() noexcept -> const gpu::Image&;
 
       private:
-        Borrowed<const gpu::Image> m_backbuffer;
+        Ref<const gpu::Image> m_backbuffer;
 
         Data m_data;
 
@@ -191,8 +192,8 @@ export namespace stormkit::engine {
         template<typename T>
         using SetupCallback = std::function<void(T&, GraphTaskBuilder&)>;
         template<typename T>
-        using ExecuteCallback =
-            std::function<void(const T&, MaybeBorrowed<gpu::RenderPass>, gpu::CommandBuffer& cmb)>;
+        using ExecuteCallback = std::function<
+            void(const T&, OptionalRef<gpu::RenderPass>, gpu::CommandBuffer& cmb)>;
 
         FrameGraphBuilder() noexcept;
         ~FrameGraphBuilder();
@@ -215,6 +216,12 @@ export namespace stormkit::engine {
                            SetupCallback<TaskData>   setup,
                            ExecuteCallback<TaskData> execute,
                            bool                      cull_imune = false) noexcept -> GraphTask&;
+
+        template<class TaskData>
+        auto addTransferTask(std::string               name,
+                             SetupCallback<TaskData>   setup,
+                             ExecuteCallback<TaskData> execute,
+                             bool                      cull_imune = false) noexcept -> GraphTask&;
 
         template<class TaskData>
         auto addComputeTask(std::string               name,
@@ -297,8 +304,8 @@ export namespace stormkit::engine {
         };
 
         using GraphResourceVariant = std::variant<GraphBuffer, GraphImage>;
-        using ResourceVariant =
-            std::variant<Borrowed<const gpu::Image>, Borrowed<const gpu::Buffer>>;
+        using ResourceVariant
+            = std::variant<Ref<const gpu::Image>, Ref<const gpu::Buffer>>;
 
         auto prepareTask(GraphTask& task) noexcept -> void;
 
@@ -313,7 +320,7 @@ export namespace stormkit::engine {
             HashMap<GraphID, gpu::ImageLayout>& layouts) noexcept -> RenderPassData;
         auto allocatePhysicalResources(const gpu::CommandPool& command_pool,
                                        const gpu::Device&      device)
-            -> std::pair<Borrowed<const gpu::Image>, BakedFrameGraph::Data>;
+            -> std::pair<Ref<const gpu::Image>, BakedFrameGraph::Data>;
 
         std::future<void>               m_bake_future;
         std::list<GraphTask>            m_tasks;
@@ -355,7 +362,7 @@ export namespace stormkit::engine {
         auto readwrite(GraphResource<Description>& resource) -> GraphResource<Description>&;
 
       private:
-        Borrowed<GraphTask> m_task       = nullptr;
+        Ref<GraphTask> m_task       = nullptr;
         FrameGraphBuilder*  m_framegraph = nullptr;
     };
 
@@ -607,7 +614,7 @@ namespace stormkit::engine {
             setup(*std::bit_cast<TaskData*>(&data), builder);
         };
         task.onExecute = [execute = std::move(execute)](const Byte&                    data,
-                                                        MaybeBorrowed<gpu::RenderPass> renderpass,
+                                                        OptionalRef<gpu::RenderPass> renderpass,
                                                         gpu::CommandBuffer& cmb) noexcept {
             execute(*std::bit_cast<const TaskData*>(&data), std::move(renderpass), cmb);
         };
@@ -629,6 +636,21 @@ namespace stormkit::engine {
                                  std::move(setup),
                                  std::move(execute),
                                  GraphTask::Type::Raster,
+                                 cull_imune);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<class TaskData>
+    STORMKIT_FORCE_INLINE auto
+        FrameGraphBuilder::addTransferTask(std::string               name,
+                                           SetupCallback<TaskData>   setup,
+                                           ExecuteCallback<TaskData> execute,
+                                           bool cull_imune) noexcept -> GraphTask& {
+        return addTask<TaskData>(std::move(name),
+                                 std::move(setup),
+                                 std::move(execute),
+                                 GraphTask::Type::Transfer,
                                  cull_imune);
     }
 

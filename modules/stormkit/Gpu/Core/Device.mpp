@@ -63,7 +63,7 @@ export namespace stormkit::gpu {
 
         auto waitIdle() const noexcept -> void;
 
-        [[nodiscard]] auto waitForFences(std::span<const Borrowed<const Fence>> fences,
+        [[nodiscard]] auto waitForFences(std::span<const Ref<const Fence>> fences,
                                          bool                                   wait_all = true,
                                          const std::chrono::milliseconds&       timeout =
                                              std::chrono::milliseconds::max()) const noexcept
@@ -73,7 +73,7 @@ export namespace stormkit::gpu {
                                             std::chrono::milliseconds::max()) const noexcept
             -> Expected<Result>;
 
-        auto resetFences(std::span<const Borrowed<const Fence>> fences) const noexcept -> void;
+        auto resetFences(std::span<const Ref<const Fence>> fences) const noexcept -> void;
         auto resetFence(const Fence& fence) const noexcept -> void;
 
         [[nodiscard]] auto rasterQueueEntry() const noexcept -> const QueueEntry&;
@@ -97,7 +97,7 @@ export namespace stormkit::gpu {
             -> void;
 
       private:
-        Borrowed<const PhysicalDevice> m_physical_device;
+        Ref<const PhysicalDevice> m_physical_device;
 
         DeferInit<vk::raii::Device> m_vk_device;
 

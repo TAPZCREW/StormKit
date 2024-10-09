@@ -5,7 +5,7 @@
 export module stormkit.Core:TypeSafe;
 
 export import :TypeSafe.Boolean;
-export import :TypeSafe.Borrowed;
+export import :TypeSafe.Ref;
 export import :TypeSafe.Integer;
 export import :TypeSafe.AsCast;
 export import :TypeSafe.Flags;

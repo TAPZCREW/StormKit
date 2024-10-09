@@ -30,7 +30,7 @@ export {
             FrameBuffer(const Device&                          device,
                         const RenderPass&                      render_pass,
                         const math::ExtentU&                   size,
-                        std::vector<Borrowed<const ImageView>> attachments,
+                        std::vector<Ref<const ImageView>> attachments,
                         Tag);
             ~FrameBuffer();
 
@@ -44,24 +44,24 @@ export {
                 create(const Device&                          device,
                        const RenderPass&                      render_pass,
                        const math::ExtentU&                   size,
-                       std::vector<Borrowed<const ImageView>> attachments) noexcept
+                       std::vector<Ref<const ImageView>> attachments) noexcept
                 -> Expected<FrameBuffer>;
             [[nodiscard]] static auto
                 allocate(const Device&                          device,
                          const RenderPass&                      render_pass,
                          const math::ExtentU&                   size,
-                         std::vector<Borrowed<const ImageView>> attachments) noexcept
+                         std::vector<Ref<const ImageView>> attachments) noexcept
                 -> Expected<std::unique_ptr<FrameBuffer>>;
 
             [[nodiscard]] auto extent() const noexcept -> const math::ExtentU&;
             [[nodiscard]] auto attachments() const noexcept
-                -> const std::vector<Borrowed<const ImageView>>&;
+                -> const std::vector<Ref<const ImageView>>&;
 
             [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::Framebuffer&;
 
           private:
             math::ExtentU                          m_extent = { 0, 0 };
-            std::vector<Borrowed<const ImageView>> m_attachments;
+            std::vector<Ref<const ImageView>> m_attachments;
 
             DeferInit<vk::raii::Framebuffer> m_vk_framebuffer;
         };
@@ -131,12 +131,12 @@ export {
             [[nodiscard]] auto
                 createFrameBuffer(const Device&                          device,
                                   const math::ExtentU&                   size,
-                                  std::vector<Borrowed<const ImageView>> attachments) const noexcept
+                                  std::vector<Ref<const ImageView>> attachments) const noexcept
                 -> Expected<FrameBuffer>;
             [[nodiscard]] auto allocateFrameBuffer(
                 const Device&                          device,
                 const math::ExtentU&                   size,
-                std::vector<Borrowed<const ImageView>> attachments) const noexcept
+                std::vector<Ref<const ImageView>> attachments) const noexcept
                 -> Expected<std::unique_ptr<FrameBuffer>>;
 
             [[nodiscard]] auto isCompatible(const RenderPass& render_pass) const noexcept -> bool;
@@ -186,7 +186,7 @@ namespace stormkit::gpu {
     FrameBuffer::FrameBuffer(const Device&                          device,
                              const RenderPass&                      render_pass,
                              const math::ExtentU&                   extent,
-                             std::vector<Borrowed<const ImageView>> attachments,
+                             std::vector<Ref<const ImageView>> attachments,
                              Tag)
         : m_extent { std::move(extent) }, m_attachments { std::move(attachments) } {
         const auto vk_attachments = m_attachments | std::views::transform(monadic::toVkHandle()) |
@@ -224,7 +224,7 @@ namespace stormkit::gpu {
         FrameBuffer::create(const Device&                          device,
                             const RenderPass&                      render_pass,
                             const math::ExtentU&                   size,
-                            std::vector<Borrowed<const ImageView>> attachments) noexcept
+                            std::vector<Ref<const ImageView>> attachments) noexcept
         -> Expected<FrameBuffer> try {
         return FrameBuffer { device, render_pass, size, std::move(attachments), Tag {} };
     } catch (const Result& result) { return std::unexpected(result); }
@@ -235,7 +235,7 @@ namespace stormkit::gpu {
         FrameBuffer::allocate(const Device&                          device,
                               const RenderPass&                      render_pass,
                               const math::ExtentU&                   size,
-                              std::vector<Borrowed<const ImageView>> attachments) noexcept
+                              std::vector<Ref<const ImageView>> attachments) noexcept
         -> Expected<std::unique_ptr<FrameBuffer>> try {
         return std::make_unique<FrameBuffer>(device,
                                              render_pass,
@@ -253,7 +253,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto FrameBuffer::attachments() const noexcept
-        -> const std::vector<Borrowed<const ImageView>>& {
+        -> const std::vector<Ref<const ImageView>>& {
         return m_attachments;
     }
 
@@ -308,7 +308,7 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE auto RenderPass::createFrameBuffer(
         const Device&                          device,
         const math::ExtentU&                   extent,
-        std::vector<Borrowed<const ImageView>> attachments) const noexcept
+        std::vector<Ref<const ImageView>> attachments) const noexcept
         -> Expected<FrameBuffer> {
         return FrameBuffer::create(device, *this, extent, std::move(attachments));
     }
@@ -318,7 +318,7 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE auto RenderPass::allocateFrameBuffer(
         const Device&                          device,
         const math::ExtentU&                   extent,
-        std::vector<Borrowed<const ImageView>> attachments) const noexcept
+        std::vector<Ref<const ImageView>> attachments) const noexcept
         -> Expected<std::unique_ptr<FrameBuffer>> {
         return FrameBuffer::allocate(device, *this, extent, std::move(attachments));
     }

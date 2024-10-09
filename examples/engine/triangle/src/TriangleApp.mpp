@@ -116,7 +116,7 @@ auto TriangleApp::updateFrameGraph(engine::FrameGraphBuilder& graph,
                 graph.setFinalResource(task_data.backbuffer);
             },
             [this](const DrawTask&                task_data,
-                   MaybeBorrowed<gpu::RenderPass> render_pass,
+                   OptionalRef<gpu::RenderPass> render_pass,
                    gpu::CommandBuffer&            cmb) {
                 if (not m_pipeline) {
                     auto& renderer = m_application->renderer();

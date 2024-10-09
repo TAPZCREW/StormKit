@@ -77,6 +77,7 @@ namespace {
                   };
 
                   auto bar = std::unique_ptr<Foo> { std::make_unique<Bar>() };
+                  MutableRef<Bar> xxx = as<Bar>(bar);
 
                   expects(as<Bar>(bar)->foo() == 1);
                   expects(as<Bar>(*bar).foo() == 1);
@@ -94,7 +95,7 @@ namespace {
                   auto bar          = Foo { 9, 3, 'x' };
                   auto bar_byte_ptr = as<std::byte*>(&bar);
                   auto bar_ptr      = as<Foo*>(bar_byte_ptr);
-                  auto bar_borrowed = as<Borrowed<Foo>>(bar_byte_ptr);
+                  auto bar_borrowed = as<Ref<Foo>>(bar_byte_ptr);
 
                   auto bar2          = std::make_unique<Foo>(9, 3, 'x');
                   auto bar_byte_ptr2 = as<std::byte*>(bar2);
@@ -104,7 +105,7 @@ namespace {
                   auto bar_byte_ptr3 = as<std::byte*>(bar3);
                   auto bar_ptr3      = as<Foo*>(bar_byte_ptr3);
 
-                  auto bar4          = Borrowed { bar };
+                  auto bar4          = Ref { bar };
                   auto bar_byte_ptr4 = as<std::byte*>(bar4);
                   auto bar_ptr4      = as<Foo*>(bar_byte_ptr4);
 

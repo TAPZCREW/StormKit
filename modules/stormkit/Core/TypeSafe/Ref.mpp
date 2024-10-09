@@ -1,0 +1,453 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/Core/PlatformMacro.hpp>
+
+export module stormkit.Core:TypeSafe.Ref;
+
+import std;
+
+import :Meta.Concepts;
+import :Meta.Traits;
+import :Utils.Assert;
+
+export namespace stormkit::core {
+    template<typename T>
+    class MutableRef;
+
+    template<typename T>
+    class [[nodiscard]] Ref {
+      public:
+        using ElementType   = const DecayType<T>;
+        using PointerType   = const ElementType*;
+        using ReferenceType = ElementType&;
+
+        // STL compatible
+        using element_type   = ElementType;
+        using pointer_type   = PointerType;
+        using reference_type = ReferenceType;
+
+        constexpr Ref(ReferenceType value) noexcept;
+        constexpr Ref(PointerType value) noexcept;
+        constexpr ~Ref() noexcept;
+
+        constexpr Ref(const Ref&) noexcept;
+        constexpr Ref(Ref&&) noexcept;
+
+        constexpr auto operator=(const Ref&) noexcept -> Ref& = delete;
+        constexpr auto operator=(Ref&&) noexcept -> Ref&;
+
+        constexpr Ref(MutableRef<T>&&) noexcept;
+
+        [[nodiscard]] constexpr auto get() const noexcept -> PointerType;
+        [[nodiscard]] constexpr auto operator->() const noexcept -> PointerType;
+        [[nodiscard]] constexpr auto operator*() const noexcept -> ReferenceType;
+
+        constexpr explicit           operator bool() const noexcept;
+        [[nodiscard]] constexpr auto hasValue() const noexcept -> bool;
+
+        // template<typename Self>
+        // constexpr operator std::conditional_t<std::is_const_v<Self>, const T&, T&>(
+        //     this Self&& self) noexcept;
+        //
+        // template<typename Self>
+        // constexpr operator std::enable_if<not std::is_const_v<T>, Ref<const T>>(
+        //     this Self&& self) noexcept;
+
+        [[nodiscard]] constexpr operator ReferenceType() const noexcept;
+
+      private:
+        PointerType m_value;
+    };
+
+    template<typename T>
+    using OptionalRef = std::optional<Ref<T>>;
+
+    template<IsRawPointer T>
+    [[nodiscard]] constexpr auto borrow(T value [[clang::lifetimebound]]) noexcept
+        -> decltype(auto);
+
+    template<IsFancyPointer T>
+    [[nodiscard]] constexpr auto borrow(T& value [[clang::lifetimebound]]) noexcept
+        -> decltype(auto);
+
+    template<typename T>
+    // clang-format off
+        requires(not IsRawPointer<PureType<T>> 
+                 and not IsFancyPointer<PureType<T>> 
+                 and not IsRValueReference<T>)
+    // clang-format on
+    [[nodiscard]] constexpr auto borrow(T&& value) noexcept -> decltype(auto);
+
+    template<template<typename...> typename Out, typename... Args>
+        requires(AreIndirections<Args...>)
+    [[nodiscard]] constexpr auto borrows(Args&&... args) noexcept -> decltype(auto);
+    template<template<typename, std::size_t> typename Out = std::array, typename... Args>
+        requires(AreIndirections<Args...>)
+    [[nodiscard]] constexpr auto borrows(Args&&... args) noexcept -> decltype(auto);
+
+    template<template<typename...> class Out = std::array, std::ranges::range T>
+        requires(std::ranges::range<Out<typename T::value_type>>)
+    [[nodiscard]] constexpr auto toRefs(T& range) noexcept -> decltype(auto);
+
+    template<typename T>
+    class [[nodiscard]] MutableRef {
+      public:
+        using ElementType   = DecayType<T>;
+        using PointerType   = ElementType* const;
+        using ReferenceType = ElementType&;
+
+        // STL compatible
+        using element_type   = ElementType;
+        using pointer_type   = PointerType;
+        using reference_type = ReferenceType;
+
+        constexpr MutableRef(ReferenceType value) noexcept;
+        constexpr MutableRef(PointerType value) noexcept;
+        constexpr ~MutableRef() noexcept;
+
+        constexpr MutableRef(const MutableRef&) noexcept;
+        constexpr MutableRef(MutableRef&&) noexcept;
+
+        constexpr auto operator=(const MutableRef&) noexcept -> MutableRef& = delete;
+        constexpr auto operator=(MutableRef&&) noexcept -> MutableRef&;
+
+        constexpr auto get() const noexcept -> PointerType;
+        constexpr auto operator->() const noexcept -> PointerType;
+        constexpr auto operator*() const noexcept -> ReferenceType;
+
+        constexpr explicit operator bool() const noexcept;
+        constexpr auto     hasValue() const noexcept -> bool;
+
+        // template<typename Self>
+        // constexpr operator std::conditional_t<std::is_const_v<Self>, const T&, T&>(
+        //     this Self&& self) noexcept;
+        //
+        // template<typename Self>
+        // constexpr operator std::enable_if<not std::is_const_v<T>, Ref<const T>>(
+        //     this Self&& self) noexcept;
+
+        constexpr operator ReferenceType() const noexcept;
+
+      private:
+        PointerType m_value;
+
+        friend class Ref<T>;
+    };
+
+    template<typename T>
+    using OptionalMutableRef = std::optional<MutableRef<T>>;
+
+    template<IsRawPointer T>
+    [[nodiscard]] constexpr auto borrowMutable(T value [[clang::lifetimebound]]) noexcept
+        -> decltype(auto);
+
+    template<IsFancyPointer T>
+    [[nodiscard]] constexpr auto borrowMutable(T& value [[clang::lifetimebound]]) noexcept
+        -> decltype(auto);
+
+    template<typename T>
+    // clang-format off
+        requires(not IsRawPointer<PureType<T>> 
+                 and not IsFancyPointer<PureType<T>> 
+                 and not IsRValueReference<T>)
+    // clang-format on
+    [[nodiscard]] constexpr auto borrowMutable(T&& value) noexcept -> decltype(auto);
+
+    template<template<typename...> typename Out, typename... Args>
+        requires(AreIndirections<Args...>)
+    [[nodiscard]] constexpr auto borrowMutables(Args&&... args) noexcept -> decltype(auto);
+    template<template<typename, std::size_t> typename Out = std::array, typename... Args>
+        requires(AreIndirections<Args...>)
+    [[nodiscard]] constexpr auto borrowMutables(Args&&... args) noexcept -> decltype(auto);
+
+    template<template<typename...> class Out = std::array, std::ranges::range T>
+        requires(std::ranges::range<Out<typename T::value_type>>)
+    [[nodiscard]] constexpr auto toMutableRefs(T& range) noexcept -> decltype(auto);
+} // namespace stormkit::core
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit::core {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr Ref<T>::Ref(ReferenceType value) noexcept : m_value { &value } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr Ref<T>::Ref(PointerType value) noexcept : m_value { value } {
+        core::expects(m_value != nullptr);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr Ref<T>::~Ref() noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr Ref<T>::Ref(const Ref&) noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr Ref<T>::Ref(Ref&&) noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr auto Ref<T>::operator=(Ref&&) noexcept -> Ref& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr Ref<T>::Ref(MutableRef<T>&& other) noexcept
+        : m_value { other.m_value } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr auto Ref<T>::get() const noexcept -> PointerType {
+        return m_value;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr auto Ref<T>::operator->() const noexcept -> PointerType {
+        return get();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr auto Ref<T>::operator*() const noexcept -> ReferenceType {
+        return *get();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr Ref<T>::operator bool() const noexcept {
+        return m_value != nullptr;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr auto Ref<T>::hasValue() const noexcept -> bool {
+        return operator bool();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr Ref<T>::operator Ref<T>::ReferenceType() const noexcept {
+        return *m_value;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<IsRawPointer T>
+    constexpr auto borrow(T value) noexcept -> decltype(auto) {
+        using RawType = std::remove_cvref_t<T>;
+        return Ref<T> { std::as_const(*value) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<IsFancyPointer T>
+    constexpr auto borrow(T& value) noexcept -> decltype(auto) {
+        return borrow(value.get());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    // clang-format off
+        requires(not IsRawPointer<PureType<T>> 
+                 and not IsFancyPointer<PureType<T>>
+                 and not IsRValueReference<T>)
+    // clang-format on
+    constexpr auto borrow(T&& value) noexcept -> decltype(auto) {
+        return borrow(&value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<typename...> typename Out, typename... Args>
+        requires(AreIndirections<Args...>)
+    constexpr auto borrows(Args&&... args) noexcept -> decltype(auto) {
+        return Out { borrow(std::forward<Args>(args))... };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<typename, std::size_t> typename Out = std::array, typename... Args>
+        requires(AreIndirections<Args...>)
+    constexpr auto borrows(Args&&... args) noexcept -> decltype(auto) {
+        return Out { borrow(std::forward<Args>(args))... };
+    }
+
+    template<template<typename...> class Out = std::array, std::ranges::range T>
+        requires(std::ranges::range<Out<typename T::value_type>>)
+    constexpr auto toRefs(T& args) noexcept -> decltype(auto) {
+        // clang-format off
+        return args
+               | std::views::transform([]<class U>(U&& val) static noexcept -> decltype(auto) {
+                   return borrow(std::forward<U>(val));
+               }) 
+               | std::ranges::to<Out>();
+        // clang-format on
+    }
+
+    //
+    // /////////////////////////////////////
+    // /////////////////////////////////////
+    // template<template<typename, std::size_t> typename Out = std::array, std::ranges::range T>
+    //     requires std::ranges::range<Out<int, 1>>
+    // constexpr auto toRefs(T& args) -> decltype(auto) {
+    //     // clang-format off
+    //     return args
+    //            | std::views::transform([]<class U>(U&& val) static noexcept -> decltype(auto) {
+    //                return borrow(std::forward<U>(val));
+    //            })
+    //            | std::ranges::to<Out>();
+    //     // clang-format on
+    // }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr MutableRef<T>::MutableRef(ReferenceType value) noexcept : m_value { &value } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr MutableRef<T>::MutableRef(PointerType value) noexcept : m_value { value } {
+        core::expects(m_value != nullptr);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr MutableRef<T>::~MutableRef() noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr MutableRef<T>::MutableRef(MutableRef&&) noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr auto MutableRef<T>::operator=(MutableRef&&) noexcept -> MutableRef& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr auto MutableRef<T>::get() const noexcept -> PointerType {
+        return m_value;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr auto MutableRef<T>::operator->() const noexcept -> PointerType {
+        return get();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr auto MutableRef<T>::operator*() const noexcept -> ReferenceType {
+        return *get();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr MutableRef<T>::operator bool() const noexcept {
+        return m_value != nullptr;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr auto MutableRef<T>::hasValue() const noexcept -> bool {
+        return operator bool();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    constexpr MutableRef<T>::operator MutableRef<T>::ReferenceType() const noexcept {
+        return *m_value;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<IsRawPointer T>
+    constexpr auto borrowMutable(T value) noexcept -> decltype(auto) {
+        using RawType = std::remove_cvref_t<T>;
+        return MutableRef<T> { std::as_const(*value) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<IsFancyPointer T>
+    constexpr auto borrowMutable(T& value) noexcept -> decltype(auto) {
+        return borrowMutable(value.get());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    // clang-format off
+        requires(not IsRawPointer<PureType<T>> 
+                 and not IsFancyPointer<PureType<T>>
+                 and not IsRValueReference<T>)
+    // clang-format on
+    constexpr auto borrowMutable(T&& value) noexcept -> decltype(auto) {
+        return borrowMutable(&value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<typename...> typename Out, typename... Args>
+        requires(AreIndirections<Args...>)
+    constexpr auto borrowMutables(Args&&... args) noexcept -> decltype(auto) {
+        return Out { borrowMutable(std::forward<Args>(args))... };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<template<typename, std::size_t> typename Out = std::array, typename... Args>
+        requires(AreIndirections<Args...>)
+    constexpr auto borrowMutables(Args&&... args) noexcept -> decltype(auto) {
+        return Out { borrowMutable(std::forward<Args>(args))... };
+    }
+
+    template<template<typename...> class Out = std::array, std::ranges::range T>
+        requires(std::ranges::range<Out<typename T::value_type>>)
+    constexpr auto toMutableRefs(T& args) noexcept -> decltype(auto) {
+        // clang-format off
+        return args
+               | std::views::transform([]<class U>(U&& val) static noexcept -> decltype(auto) {
+                   return borrowMutable(std::forward<U>(val));
+               }) 
+               | std::ranges::to<Out>();
+        // clang-format on
+    }
+} // namespace stormkit::core

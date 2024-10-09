@@ -40,7 +40,7 @@ namespace stormkit::engine {
         }
 
         const auto command_pool =
-            gpu::CommandPool::create(device, raster_queue)
+            gpu::CommandPool::create(device)
                 .transform_error(expectsWithMessage("Failed to raster Queue command pool"))
                 .value();
 
@@ -63,7 +63,7 @@ namespace stormkit::engine {
                 .transform_error(monadic::map(monadic::narrow<gpu::Result>(), throwError()))
                 .value();
 
-        auto cmbs = toBorroweds(transition_command_buffers);
+        auto cmbs = toRefs(transition_command_buffers);
         raster_queue.submit({ .command_buffers = cmbs }, fence);
 
         fence.wait().transform_error(monadic::map(monadic::narrow<gpu::Result>(), throwError()));
