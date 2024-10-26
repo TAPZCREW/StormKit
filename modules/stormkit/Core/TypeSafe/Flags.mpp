@@ -28,7 +28,8 @@ export {
         } // namespace details
 
         template<class T>
-        concept FlagsType = IsEnumeration<CanonicalType<T>> and details::EnableBitmaskOperatorsEnable<T>;
+        concept FlagsType
+            = IsEnumeration<CanonicalType<T>> and details::EnableBitmaskOperatorsEnable<T>;
 
         /// \brief Check if a flag bit is enabled
         /// \requires `Enum` to be an enumeration promoted as a flag with `FLAG_ENUM` macro
@@ -86,40 +87,34 @@ namespace stormkit::core {
 /////////////////////////////////////
 /////////////////////////////////////
 template<stormkit::core::FlagsType T>
-STORMKIT_FORCE_INLINE constexpr auto operator|(const T& lhs,
-                                               const T& rhs) noexcept -> decltype(auto) {
+STORMKIT_FORCE_INLINE constexpr auto operator|(const T& lhs, const T& rhs) noexcept
+    -> decltype(auto) {
     using namespace stormkit::core;
     namespace details = stormkit::core::details;
 
-    using Underlying = std::underlying_type_t<T>;
-
-    return as<T>(as<Underlying>(as<Underlying>(lhs) | as<Underlying>(rhs)));
+    return as<T>(as<Underlying>(lhs) | as<Underlying>(rhs));
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 template<stormkit::core::FlagsType T>
-STORMKIT_FORCE_INLINE constexpr auto operator&(const T& lhs,
-                                               const T& rhs) noexcept -> decltype(auto) {
+STORMKIT_FORCE_INLINE constexpr auto operator&(const T& lhs, const T& rhs) noexcept
+    -> decltype(auto) {
     using namespace stormkit::core;
     namespace details = stormkit::core::details;
 
-    using Underlying = std::underlying_type_t<T>;
-
-    return as<T>(as<Underlying>(as<Underlying>(lhs) & as<Underlying>(rhs)));
+    return as<T>(as<Underlying>(lhs) & as<Underlying>(rhs));
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
 template<stormkit::core::FlagsType T>
-STORMKIT_FORCE_INLINE constexpr auto operator^(const T& lhs,
-                                               const T& rhs) noexcept -> decltype(auto) {
+STORMKIT_FORCE_INLINE constexpr auto operator^(const T& lhs, const T& rhs) noexcept
+    -> decltype(auto) {
     using namespace stormkit::core;
     namespace details = stormkit::core::details;
 
-    using Underlying = std::underlying_type_t<T>;
-
-    return as<T>(as<Underlying>(as<Underlying>(lhs) ^ as<Underlying>(rhs)));
+    return as<T>(as<Underlying>(lhs) ^ as<Underlying>(rhs));
 }
 
 /////////////////////////////////////
@@ -129,9 +124,7 @@ STORMKIT_FORCE_INLINE constexpr auto operator~(const T& lhs) noexcept -> decltyp
     using namespace stormkit::core;
     namespace details = stormkit::core::details;
 
-    using Underlying = std::underlying_type_t<T>;
-
-    return as<T>(as<Underlying>(~as<Underlying>(lhs)));
+    return as<T>(~as<Underlying>(lhs));
 }
 
 /////////////////////////////////////
