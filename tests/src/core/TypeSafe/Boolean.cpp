@@ -9,10 +9,12 @@ import stormkit.Core;
 import Test;
 
 using namespace stormkit::core;
+using namespace std::literals;
 
 #define expects(x) test::expects(x, #x)
 static_assert(std::is_standard_layout_v<Boolean>);
 static_assert(std::is_trivially_copyable_v<Boolean>);
+static_assert(not std::is_constructible_v<Boolean, int>);
 static_assert(std::is_constructible_v<Boolean, bool>);
 static_assert(std::is_assignable_v<Boolean, bool>);
 
@@ -63,9 +65,9 @@ namespace {
                                  { "Boolean.format", [] static noexcept {
                                       auto bool_1 = Boolean { true };
                                       auto str = std::format("{}", bool_1);
-                                      expects(str == "true");
+                                      expects(str == "true"s);
                                       bool_1 = false;
                                       str = std::format("{}", bool_1);
-                                      expects(str == "false");
+                                      expects(str == "false"s);
                                   } } } };
 } // namespace
