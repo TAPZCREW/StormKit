@@ -10,6 +10,17 @@ namespace stormkit::core {
     namespace details {
         template<class T>
         concept IsBooleanTestable = std::convertible_to<T, bool>;
+
+        template<template<typename...> class T, typename... Args>
+        constexpr auto isSpecializationOfHelper(const T<Args...>&) noexcept -> std::true_type {
+            return {};
+        }
+
+        template<template<typename, auto...> class T, typename T2, auto... Args>
+        constexpr auto isSpecializationOfWithHelper(const T<T2, Args...>&) noexcept
+            -> std::true_type {
+            return {};
+        }
     } // namespace details
 
     export {
@@ -125,17 +136,31 @@ namespace stormkit::core {
             { not std::forward<T>(t) } -> details::IsBooleanTestable;
         };
 
-        template<class T>
-        concept IsOptionalType = requires(T&& t) {
-            *t;
-            { t == std::nullopt } -> details::IsBooleanTestable;
-            { t != std::nullopt } -> details::IsBooleanTestable;
+        template<typename S, template<typename...> class T>
+        concept IsSpecializationOf = requires(S&& s) {
+            {
+                details::isSpecializationOfHelper<T>(std::forward<S>(s))
+            } -> IsStrict<std::true_type>;
+        };
+
+        template<typename S, template<typename, auto...> class T>
+        concept IsSpecializationWithNTTPOf = requires(S&& s) {
+            {
+                details::isSpecializationOfHelper<T>(std::forward<S>(s))
+            } -> IsStrict<std::true_type>;
         };
 
         template<class T>
-        concept IsVariantType = requires(T&& t) {
-            { std::holds_alternative<int>(t) } -> details::IsBooleanTestable;
-        };
+        concept IsOptionalType = IsSpecializationOf<T, std::optional>;
+
+        template<class T>
+        concept IsExpectedType = IsSpecializationOf<T, std::expected>;
+
+        template<class T>
+        concept IsVariantType = IsSpecializationOf<T, std::variant>;
+
+        template<class T>
+        concept IsArrayType = IsSpecializationWithNTTPOf<T, std::array>;
 
         template<class T, class... Args>
         concept IsPredicate = std::predicate<T, Args...>;
