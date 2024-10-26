@@ -11,7 +11,8 @@ export module stormkit.Core:String.Format;
 import std;
 
 import :Meta;
-import :Utils.Numerics;
+import :TypeSafe.Integer;
+import :Utils.Time;
 import :Utils.Math;
 
 export namespace std {

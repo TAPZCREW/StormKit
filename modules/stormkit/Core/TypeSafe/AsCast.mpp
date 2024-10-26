@@ -11,593 +11,935 @@ export module stormkit.Core:TypeSafe.AsCast;
 import std;
 
 import :Utils.Assert;
+import :Utils.Byte;
+import :Utils.FunctionRef;
 import :TypeSafe.Ref;
 import :Meta.Concepts;
+import :Meta.Algorithms;
 import :Meta.Traits;
 import :TypeSafe.Boolean;
+import :TypeSafe.Integer;
+import :TypeSafe.Float;
 
 export namespace stormkit::core { inline namespace casts {
     template<typename To, typename From>
-    struct IsQueryer {
-        IsQueryer()                      = delete;
-        IsQueryer(const IsQueryer&)      = delete;
-        auto operator=(const IsQueryer&) = delete;
-        IsQueryer(IsQueryer&&)           = delete;
-        auto operator=(IsQueryer&&)      = delete;
-
-        static constexpr auto operator()(const From&) noexcept -> Boolean
-            = delete("No IsQueryer defined for this type");
-    };
+    concept IsSignNarrowing
+        = (IsSigned<From> ? !IsSigned<To> : IsSigned<To> and sizeof(From) == sizeof(To));
 
     template<typename To, typename From>
-    concept IsQueryerable = requires(const From& from) {
-        { IsQueryer<To, CanonicalType<From>>::operator()(from) } -> IsBooleanTestable;
-    };
+    concept IsByteNarrowing
+        = ((IsArithmetic<To> and IsByte<From>) or (IsByte<To> and IsArithmetic<From>))
+          and (IsByte<To> and sizeof(To) != sizeof(From));
 
     template<typename To, typename From>
-        requires IsQueryerable<To, From>
-    [[nodiscard]] constexpr auto is(const From& from) noexcept -> Boolean;
+    concept IsNarrowing
+        = (IsFloatingPoint<From> and IsIntegral<To>)
+          or (IsFloatingPoint<From> and IsFloatingPoint<To> and sizeof(From) > sizeof(To))
+          or (IsIntegralOrEnumeration<From> and IsFloatingPoint<To>)
+          or (IsIntegral<From> and IsIntegral<To>
+              and (sizeof(From) > sizeof(To) or IsSignNarrowing<To, From>))
+          or (IsEnumeration<From> and IsIntegral<To>
+              and (sizeof(From) > sizeof(To) or IsSignNarrowing<UnderlyingType<From>, From>))
+          or (IsPointer<From> and Is<To, bool>);
 
     template<typename To, typename From>
-    struct AsCaster {
-        AsCaster()                      = delete;
-        AsCaster(const AsCaster&)       = delete;
-        auto operator=(const AsCaster&) = delete;
-        AsCaster(AsCaster&&)            = delete;
-        auto operator=(AsCaster&&)      = delete;
-
-        static constexpr auto operator()(From&&) noexcept -> decltype(auto)
-            = delete("No AsCaster defined for this type");
-    };
+    concept IsUnsafePointerConvertion
+        = IsPointer<To> and IsPointer<From> and not requires(To to, From from) { to = from; };
 
     template<typename To, typename From>
-    concept IsAsCastable
-        = requires(From&& from) { AsCaster<To, From>::operator()(std::forward<From>(from)); };
+    constexpr auto isSafeNarrowing(const From& from) noexcept -> Boolean {
+        if constexpr ((IsArithmetic<From> and IsByte<To>) or (IsByte<From> and IsArithmetic<To>))
+            return (static_cast<From>(static_cast<To>(from)) == from)
+                   or ((static_cast<To>(from) < To {}) != (from < From {}));
+        else if constexpr (IsArithmetic<From> and IsArithmetic<To>)
+            return (static_cast<From>(static_cast<To>(from)) != from)
+                   or (IsSigned<To> != IsUnsigned<From>
+                       and ((static_cast<To>(from) < To {}) != (from < From {})));
+        else
+            static_assert(
+                false,
+                "isSafeNarrowing called with argument that are not bytes or arithmetic types");
+        std::unreachable();
+    }
 
-    template<typename To, typename From>
-        requires IsAsCastable<To, From>
-    [[nodiscard]] constexpr auto as(From&& from) noexcept -> decltype(auto);
-
-    template<typename To, typename From>
-    struct NarrowCaster {
-        NarrowCaster()                      = delete;
-        NarrowCaster(const NarrowCaster&)   = delete;
-        auto operator=(const NarrowCaster&) = delete;
-        NarrowCaster(NarrowCaster&&)        = delete;
-        auto operator=(NarrowCaster&&)      = delete;
-
-        static constexpr auto operator()(From) noexcept -> decltype(auto)
-            = delete("No NarrowCaster defined for this type");
-    };
-
-    template<typename To, typename From>
-    [[nodiscard]] constexpr auto narrow(From&& from) noexcept -> To;
-
-    template<typename To, typename From>
-        requires Is<To, CanonicalType<From>>
-    struct AsCaster<To, From> {
-        [[nodiscard]] static constexpr auto operator()(From&& from) noexcept -> decltype(auto);
-    };
-
-    // variants
-    template<IsNotReference To, typename From>
-        requires IsVariantType<From>
-    struct IsQueryer<To, From> {
-        [[nodiscard]] static constexpr auto operator()(const From& variant) noexcept -> Boolean;
-    };
-
-    template<IsNotReference To, typename From>
-        requires(IsVariantType<CanonicalType<From>>)
-    struct AsCaster<To, From> {
-        [[nodiscard]] static constexpr auto operator()(From&& variant) noexcept -> decltype(auto);
-    };
-
-    // polymorphic
-    template<IsPolymorphic To, IsNotPointer From>
-        requires(IsPolymorphic<From> and Is<To, From>)
-    struct IsQueryer<To, From> {
-        [[nodiscard]] static constexpr auto operator()(const From& value) noexcept -> Boolean;
-    };
-
-    template<IsPolymorphic To, typename From>
-        requires(IsPolymorphicPointer<CanonicalType<From>> and Is<To, ElementType<From>>)
-    struct IsQueryer<To, From> {
-        [[nodiscard]] static constexpr auto operator()(const From& value) noexcept -> Boolean;
-    };
-
-    template<IsPolymorphic To, typename From>
-        requires(not IsPointer<CanonicalType<From>> and IsPolymorphic<CanonicalType<From>> and Is<To, CanonicalType<From>>)
-    struct AsCaster<To, From> {
-        [[nodiscard]] static constexpr auto operator()(From&& value) noexcept
-            -> LikeCVType<From, To&>;
-    };
-
-    template<IsPolymorphic To, IsPolymorphicPointer From>
-        requires(Is<To, ElementType<CanonicalType<From>>>)
-    struct AsCaster<To, From> {
-        [[nodiscard]] static constexpr auto operator()(From&& value) noexcept
-            -> Ref<LikeCVType<ElementType<From>, To>>;
-    };
-
-    // std::byte* / char*
-    template<IsPointer To, IsIndirection From>
-        requires(IsByte<ElementType<To>> and not IsRValueReference<From>)
-    struct AsCaster<To, From> {
-        [[nodiscard]] static constexpr auto operator()(From&& value) noexcept -> To;
-    };
-
-    template<IsPointer To, typename From>
-        requires(IsPointer<CanonicalType<From>> and IsByte<ElementType<CanonicalType<From>>>)
-    struct AsCaster<To, From> {
-        [[nodiscard]] static constexpr auto operator()(From&& value) noexcept -> To;
-    };
-
-    // enumerations
-    template<IsEnumeration To, typename From>
-        requires(IsIntegral<CanonicalType<From>> and Is<CanonicalType<From>, UnderlyingType<To>>)
-    struct AsCaster<To, From> {
-        static constexpr auto PASS_BY_REF = sizeof(To) > sizeof(void*);
-        using Arg                         = std::conditional_t<PASS_BY_REF, From&&, CanonicalType<From>>;
-
-        [[nodiscard]] static constexpr auto operator()(Arg value) noexcept -> To;
-    };
-
-    template<IsEnumeration To, typename From>
-    // clang-format off
-        requires(IsEnumeration<CanonicalType<From>>
-                 and Is<UnderlyingType<To>, UnderlyingType<CanonicalType<From>>>)
-    // clang-format on
-    struct AsCaster<To, From> {
-        static constexpr auto PASS_BY_REF = sizeof(To) > sizeof(void*);
-        using Arg                         = std::conditional_t<PASS_BY_REF, From&&, CanonicalType<From>>;
-
-        [[nodiscard]] static constexpr auto operator()(Arg value) noexcept -> To;
-    };
-
-    template<IsIntegral To, typename From>
-        requires(IsEnumeration<CanonicalType<From>> and Is<To, UnderlyingType<CanonicalType<From>>>)
-    struct AsCaster<To, From> {
-        static constexpr auto PASS_BY_REF = sizeof(To) > sizeof(void*);
-        using Arg                         = std::conditional_t<PASS_BY_REF, From&&, CanonicalType<From>>;
-        [[nodiscard]] static constexpr auto operator()(Arg value) noexcept -> To;
-    };
+    template<typename To, auto from>
+    concept IsSafeNarrowing = IsArithmetic<To> and IsArithmetic<CanonicalTypeOf<from>>
+                              and not isSafeNarrowing<To>(from);
 
     struct Underlying {};
 
-    template<Is<Underlying> To, typename From>
-        requires IsEnumeration<CanonicalType<From>>
-    struct AsCaster<To, From> {
-        static constexpr auto PASS_BY_REF = sizeof(To) > sizeof(void*);
-        using Arg                         = std::conditional_t<PASS_BY_REF, From&&, CanonicalType<From>>;
-        [[nodiscard]] static constexpr auto operator()(Arg value) noexcept
-            -> UnderlyingType<CanonicalType<From>>;
-    };
+    // Templates
+    template<template<typename...> class T1, class T2>
+    [[nodiscard]] constexpr auto is(T2&&) noexcept -> decltype(auto);
 
-    // safe numeric types
-    template<IsArithmetic To, typename From>
-    constexpr auto isNarrowing(From&& value) -> Boolean;
+    template<template<typename, auto...> class T1, class T2>
+    [[nodiscard]] constexpr auto is(T2&&) noexcept -> decltype(auto);
 
-    template<IsArithmetic To, typename From>
-    // clang-format off
-        requires(IsArithmetic<CanonicalType<From>>
-                 and not Is<CanonicalType<From>, To>
-                 and not IsNarrowing<To, CanonicalType<From>>)
-    // clang-format on
-    struct AsCaster<To, From> {
-        static constexpr auto PASS_BY_REF = sizeof(To) > sizeof(void*);
-        using Arg                         = std::conditional_t<PASS_BY_REF, From&&, CanonicalType<From>>;
-        [[nodiscard]] static constexpr auto operator()(Arg value) noexcept -> To;
-    };
-
-    // std::byte
-    template<IsIntegral To, IsByte From>
-    struct AsCaster<To, From> {
-        [[nodiscard]] static constexpr auto operator()(From value) noexcept -> To;
-    };
-
-    template<typename T>
-    concept IsSafeCastableToByte = IsOneOf<T, char, unsigned char, signed char>;
-
-    template<IsByte To, IsSafeCastableToByte From>
-    struct AsCaster<To, From> {
-        [[nodiscard]] static constexpr auto operator()(From value) noexcept -> To;
-    };
-
-    // explicit casts
+    // Types
     template<typename To, typename From>
-    // clang-format off
-        requires(IsExplicitConvertibleTo<From, To>
-                 and not IsByte<To>
-                 and not Is<CanonicalType<From>, To>
-                 and not IsEnumeration<CanonicalType<From>>
-                 and not IsArithmetic<CanonicalType<From>>
-                 and not IsByte<CanonicalType<From>>)
-    // clang-format on
-    struct AsCaster<To, From> {
-        [[nodiscard]] static constexpr auto operator()(From&& from) noexcept -> To;
-    };
+    [[nodiscard]] constexpr auto is(const From& from) noexcept -> decltype(auto);
 
-    // narrowing
+    // values
+    template<typename T1, typename T2>
+    [[nodiscard]] constexpr auto is(const T1& first, T2&& second) noexcept -> Boolean;
+
+    template<typename T1, IsUnaryPredicate<T1> T2>
+    [[nodiscard]] constexpr auto is(const T1& first, T2&& second) noexcept -> Boolean;
+
+    template<IsArrayType T1, IsArrayType T2>
+    [[nodiscard]] constexpr auto is(const T1& first, T2&& second) noexcept -> Boolean;
+
+    template<typename T1, HasEqualityOperator<T1> T2>
+    [[nodiscard]] constexpr auto is(const T1& first, T2&& second) noexcept -> Boolean;
+
+    template<IsArithmetic To, auto From>
+        requires(IsArithmetic<decltype(From)> and IsSafeNarrowing<To, From>)
+    [[nodiscard]] constexpr auto as(const std::source_location& location
+                                    = std::source_location::current()) noexcept -> To;
+
+    /*requires((IsNarrowing<To, CanonicalType<From>>) or (IsStrict<To, CanonicalType<From>>)*/
+    /*         or (IsPolymorphic<To> and IsPolymorphicPointer<CanonicalType<From>>*/
+    /*             and Is<ElementType<From>, To> and not IsMovedFancyPointer<From>)*/
+    /*         or (IsPolymorphic<To> and IsPolymorphic<CanonicalType<From>>*/
+    /*             and not IsRValueReference<From>)*/
+    /**/
+    /*         or (IsBraceInitializableTo<To, CanonicalType<From>>*/
+    /*             and not IsNarrowing<To, CanonicalType<From>>*/
+    /*             and not IsStrict<To, CanonicalType<From>>)*/
+    /*         or (IsEnumeration<To> and IsIntegral<CanonicalType<From>>)*/
+    /*         or (IsIntegral<To> and IsEnumeration<CanonicalType<From>>)*/
+    /*         or (IsStrict<Underlying, To> and IsEnumeration<CanonicalType<From>>))*/
+    template<typename To, typename From>
+    constexpr auto as(From&&                      value,
+                      const std::source_location& location
+                      = std::source_location::current()) noexcept -> void;
+
+    // exact same type
+    template<typename To, typename From>
+        requires(IsStrict<To, RemoveIndirectionsType<From>>)
+    [[nodiscard]] constexpr auto as(From&&                      value,
+                                    const std::source_location& location
+                                    = std::source_location::current()) noexcept
+        -> ForwardLike<From, To>;
+
+    // safe narrowing
+    template<IsFloatingPoint T1, IsFloatingPoint T2>
+        requires(IsFloatingPoint<CanonicalType<T2>>)
+    [[nodiscard]] constexpr auto is(const T1& first, const T2& second) noexcept -> Boolean;
+
+    template<typename To, typename From>
+        requires((IsArithmetic<To> or IsByte<To>)
+                 and (IsArithmetic<CanonicalType<From>> or IsByte<CanonicalType<From>>)
+                 and not IsStrict<To, CanonicalType<From>>)
+    [[nodiscard]] constexpr auto as(From&&                      value,
+                                    const std::source_location& location
+                                    = std::source_location::current()) noexcept -> To;
+
+    // enumerations
+    template<IsStrict<Underlying> To, typename From>
+        requires(IsEnumeration<CanonicalType<From>>)
+    [[nodiscard]] constexpr auto as(From&&                      value,
+                                    const std::source_location& location
+                                    = std::source_location::current()) noexcept
+        -> UnderlyingType<CanonicalType<From>>;
+
     template<IsIntegral To, typename From>
-        requires(IsIntegral<CanonicalType<From>>)
-    struct NarrowCaster<To, From> {
-        static constexpr auto PASS_BY_REF = sizeof(To) > sizeof(void*);
-        using Arg                         = std::conditional_t<PASS_BY_REF, From&&, CanonicalType<From>>;
-        [[nodiscard]] static constexpr auto operator()(Arg value) noexcept -> To;
-    };
-
-    template<IsFloatingPoint To, typename From>
-        requires(IsIntegral<CanonicalType<From>>)
-    struct NarrowCaster<To, From> {
-        static constexpr auto PASS_BY_REF = sizeof(To) > sizeof(void*);
-        using Arg                         = std::conditional_t<PASS_BY_REF, From&&, CanonicalType<From>>;
-        [[nodiscard]] static constexpr auto operator()(Arg value) noexcept -> To;
-    };
-
-    template<IsFloatingPoint To, typename From>
-        requires(IsFloatingPoint<CanonicalType<From>>)
-    struct NarrowCaster<To, From> {
-        static constexpr auto PASS_BY_REF = sizeof(To) > sizeof(void*);
-        using Arg                         = std::conditional_t<PASS_BY_REF, From&&, CanonicalType<From>>;
-        [[nodiscard]] static constexpr auto operator()(Arg value) noexcept -> To;
-    };
-
-    template<IsIntegral To, typename From>
-        requires(IsFloatingPoint<CanonicalType<From>>)
-    struct NarrowCaster<To, From> {
-        static constexpr auto PASS_BY_REF = sizeof(To) > sizeof(void*);
-        using Arg                         = std::conditional_t<PASS_BY_REF, From&&, CanonicalType<From>>;
-        [[nodiscard]] static constexpr auto operator()(Arg value) noexcept -> To;
-    };
+        requires(IsEnumeration<CanonicalType<From>>)
+    [[nodiscard]] constexpr auto as(From&&                      value,
+                                    const std::source_location& location
+                                    = std::source_location::current()) noexcept -> To;
 
     template<IsEnumeration To, typename From>
         requires(IsIntegral<CanonicalType<From>>)
-    struct NarrowCaster<To, From> {
-        static constexpr auto PASS_BY_REF = sizeof(To) > sizeof(void*);
-        using Arg                         = std::conditional_t<PASS_BY_REF, From&&, CanonicalType<From>>;
-        [[nodiscard]] static constexpr auto operator()(Arg value) noexcept -> To;
-    };
+    [[nodiscard]] constexpr auto as(From&&                      value,
+                                    const std::source_location& location
+                                    = std::source_location::current()) noexcept -> To;
 
-    template<IsEnumeration To, typename From>
-        requires(IsEnumeration<CanonicalType<From>>)
-    struct NarrowCaster<To, From> {
-        static constexpr auto PASS_BY_REF = sizeof(To) > sizeof(void*);
-        using Arg                         = std::conditional_t<PASS_BY_REF, From&&, CanonicalType<From>>;
-        [[nodiscard]] static constexpr auto operator()(Arg value) noexcept -> To;
-    };
+    // to / from byte(s)
+    template<typename To, typename From>
+        requires(not IsPointer<CanonicalType<From>>
+                 and ((IsConst<std::remove_reference_t<From>> and IsStrict<To, ByteView>)
+                      or (not IsConst<std::remove_reference_t<From>>
+                          and IsStrictOneOf<To, ByteView, MutableByteView>)))
+    [[nodiscard]] constexpr auto as(STORMKIT_LIFETIMEBOUND From& value,
+                                    const std::source_location&  location
+                                    = std::source_location::current()) noexcept -> To;
 
-    template<IsIntegral To, typename From>
-        requires(IsEnumeration<CanonicalType<From>>)
-    struct NarrowCaster<To, From> {
-        static constexpr auto PASS_BY_REF = sizeof(To) > sizeof(void*);
-        using Arg                         = std::conditional_t<PASS_BY_REF, From&&, CanonicalType<From>>;
-        [[nodiscard]] static constexpr auto operator()(Arg value) noexcept -> To;
-    };
+    template<typename To, typename From>
+        requires(IsPointer<CanonicalType<From>> and not IsMovedFancyPointer<From>
+                 and ((IsConst<std::remove_reference_t<From>> and IsStrict<To, ByteView>)
+                      or (not IsConst<std::remove_reference_t<From>>
+                          and IsStrictOneOf<To, ByteView, MutableByteView>)))
+    [[nodiscard]] constexpr auto as(From&&                      value,
+                                    const std::source_location& location
+                                    = std::source_location::current()) noexcept -> To;
 
-    template<IsByte To, typename From>
-        requires(IsIntegral<CanonicalType<From>> and not IsSafeCastableToByte<CanonicalType<From>>)
-    struct NarrowCaster<To, From> {
-        static constexpr auto PASS_BY_REF = sizeof(To) > sizeof(void*);
-        using Arg                         = std::conditional_t<PASS_BY_REF, From&&, CanonicalType<From>>;
-        [[nodiscard]] static constexpr auto operator()(Arg value) noexcept -> To;
-    };
+    template<IsViewPointer To, typename From>
+        requires(IsStrictOneOf<CanonicalType<From>, ByteView, MutableByteView>)
+    [[nodiscard]] constexpr auto as(From&&                      value,
+                                    const std::source_location& location
+                                    = std::source_location::current()) noexcept -> To;
+
+    // polymorphism
+    template<IsPolymorphicIndirection To, typename From>
+        requires(IsPolymorphicPointer<CanonicalType<From>> and not IsMovedFancyPointer<From>)
+    [[nodiscard]] constexpr auto as(From&&                      value,
+                                    const std::source_location& location
+                                    = std::source_location::current()) noexcept -> decltype(auto);
+
+    template<IsPolymorphicIndirection To, typename From>
+        requires(IsPolymorphic<CanonicalType<From>> and not IsRValueReference<From>)
+    [[nodiscard]] constexpr auto as(From&&                      value,
+                                    const std::source_location& location
+                                    = std::source_location::current()) noexcept -> decltype(auto);
+
+    // predicate
+    template<typename T>
+    [[nodiscard]] constexpr auto is(const T& value, FunctionRef<const T&> predicate) noexcept
+        -> Boolean;
+
+    // std::variant
+    template<typename T1, IsVariantType T2>
+    [[nodiscard]] constexpr auto is(const T2& variant) noexcept -> Boolean;
+
+    template<typename T1, IsVariantType T2>
+    [[nodiscard]] constexpr auto is(const T2& variant, T1&& value) noexcept -> Boolean;
+
+    template<typename To, IsVariantType From>
+    [[nodiscard]] constexpr auto as(From&&                      variant,
+                                    const std::source_location& location
+                                    = std::source_location::current()) noexcept
+        -> ForwardLike<From, To>;
+
+    // std::optional
+    template<typename T1, IsOptionalType T2>
+    [[nodiscard]] constexpr auto is(const T2& optional) noexcept -> Boolean;
+
+    template<typename T1, IsOptionalType T2>
+    [[nodiscard]] constexpr auto is(const T2& optional, T1&& value) noexcept -> Boolean;
+
+    template<typename To, IsOptionalType From>
+    [[nodiscard]] constexpr auto as(From&&                      optional,
+                                    const std::source_location& location
+                                    = std::source_location::current()) noexcept
+        -> ForwardLike<From, To>;
+
+    template<typename To, typename From>
+    [[nodiscard]] constexpr auto narrow(From&& value) noexcept -> To;
 }} // namespace stormkit::core::casts
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
+// floats safe narrowing
 namespace stormkit::core { inline namespace casts {
+    // Templates
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename To, typename From>
-        requires Is<To, CanonicalType<From>>
-    STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(From&& from) noexcept
-        -> decltype(auto) {
-        return std::forward<From>(from);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<IsNotReference To, typename From>
-        requires IsVariantType<From>
-    STORMKIT_FORCE_INLINE constexpr auto
-        IsQueryer<To, From>::operator()(const From& variant) noexcept -> Boolean {
-        return std::holds_alternative<To>(variant);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<IsNotReference To, typename From>
-        requires(IsVariantType<CanonicalType<From>>)
-    STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(From&& variant) noexcept
-        -> decltype(auto) {
-        expects(is<To>(variant));
-
-        return std::get<To>(std::forward<From>(variant));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<IsPolymorphic To, IsNotPointer From>
-        requires(IsPolymorphic<From> and Is<To, From>)
-    STORMKIT_FORCE_INLINE constexpr auto IsQueryer<To, From>::operator()(const From& value) noexcept
-        -> Boolean {
-        return dynamic_cast<const To*>(&value) != nullptr;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<IsPolymorphic To, typename From>
-        requires(IsPolymorphicPointer<CanonicalType<From>> and Is<To, ElementType<From>>)
-    STORMKIT_FORCE_INLINE constexpr auto IsQueryer<To, From>::operator()(const From& value) noexcept
-        -> Boolean {
-        return dynamic_cast<const To*>(std::to_address(value)) != nullptr;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<IsPolymorphic To, typename From>
-        requires(not IsPointer<From> and IsPolymorphic<CanonicalType<From>> and Is<To, CanonicalType<From>>)
-    STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(From&& value) noexcept
-        -> LikeCVType<From, To&> {
-        expects(is<To>(value));
-
-        return static_cast<LikeCVType<From, To&>>(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<IsPolymorphic To, IsPolymorphicPointer From>
-        requires(Is<To, ElementType<CanonicalType<From>>>)
-    STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(From&& value) noexcept
-        -> Ref<LikeCVType<ElementType<From>, To>> {
-        expects(is<To>(value));
-
-        using RefType = std::conditional_t<std::is_const_v<To>, Ref<To>, MutableRef<To>>;
-
-        return RefType { static_cast<LikeCVType<From, To>*>(std::to_address(value)) };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<IsPointer To, IsIndirection From>
-        requires(IsByte<ElementType<To>> and not IsRValueReference<From>)
-    STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(From&& value) noexcept
-        -> To {
-        using ByteType = ElementType<To>;
-        if constexpr (IsPointer<CanonicalType<From>>)
-            return To { std::bit_cast<ByteType*>(std::to_address(std::forward<From>(value))) };
+    template<template<typename...> class T1, class T2>
+    STORMKIT_FORCE_INLINE constexpr auto is(const T2&) noexcept -> decltype(auto) {
+        if constexpr (IsSpecializationOf<T2, T1>) return std::true_type {};
         else
-            return To { std::bit_cast<ByteType*>(&value) };
+            return std::false_type {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsPointer To, typename From>
-        requires(IsPointer<CanonicalType<From>> and IsByte<ElementType<CanonicalType<From>>>)
-    STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(From&& value) noexcept
-        -> To {
-        using ByteType = ElementType<To>;
-        return To { std::bit_cast<ByteType*>(std::to_address(std::forward<From>(value))) };
+    template<template<typename, auto...> class T1, class T2>
+    STORMKIT_FORCE_INLINE constexpr auto is(const T2&) noexcept -> decltype(auto) {
+        if constexpr (IsSpecializationWithNTTPOf<T2, T1>) return std::true_type {};
+        else
+            return std::false_type {};
+    }
+
+    // Types
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename To, typename From>
+    STORMKIT_FORCE_INLINE constexpr auto is(const From& value) noexcept -> decltype(auto) {
+        if constexpr (IsStrict<To, From>) return std::true_type {};
+        else if constexpr (IsPolymorphicPointer<From> and IsPolymorphic<To>)
+            return dynamic_cast<const To * const>(std::to_address(value)) != nullptr;
+        else if constexpr (IsPolymorphic<From> and IsPolymorphic<To>)
+            return dynamic_cast<const To * const>(&value) != nullptr;
+        else if constexpr ((Is<From, std::nullptr_t> or requires {
+                               *value;
+                               From {};
+                           }) and Is<To, void>)
+            return value == From {};
+        else if constexpr (IsPointer<From> and IsPointer<To>) {
+            if (value != nullptr) return bool { is<DecayType<To>>(*value) };
+            return false;
+        } else
+            return std::false_type {};
+    }
+
+    // values
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T1, typename T2>
+    STORMKIT_FORCE_INLINE constexpr auto is(const T1&, T2&&) noexcept -> Boolean {
+        return false;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsEnumeration To, typename From>
-        requires(IsIntegral<CanonicalType<From>> and Is<CanonicalType<From>, UnderlyingType<To>>)
-    STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(Arg value) noexcept -> To {
-        return static_cast<To>(std::forward<Arg>(value));
+    template<typename T1, IsUnaryPredicate<T1> T2>
+    STORMKIT_FORCE_INLINE constexpr auto is(const T1& first, T2&& second) noexcept -> Boolean {
+        return std::forward<T2>(second)(first);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsEnumeration To, typename From>
-    // clang-format off
-        requires(IsEnumeration<CanonicalType<From>>
-                 and Is<UnderlyingType<To>, UnderlyingType<CanonicalType<From>>>)
-    // clang-format on
-    STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(Arg value) noexcept -> To {
-        return as<To>(as<Underlying>(std::forward<Arg>(value)));
+    template<IsArrayType T1, IsArrayType T2>
+    STORMKIT_FORCE_INLINE constexpr auto is(const T1& first, T2&& second) noexcept -> Boolean {
+        if (std::ssize(first) == std::ssize(second)) return std::ranges::equal(first, second);
+        return false;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsIntegral To, typename From>
-        requires(IsEnumeration<CanonicalType<From>> and Is<To, UnderlyingType<CanonicalType<From>>>)
-    STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(Arg value) noexcept -> To {
-        return as<Underlying>(std::forward<Arg>(value));
+    template<typename T1, HasEqualityOperator<T1> T2>
+    STORMKIT_FORCE_INLINE constexpr auto is(const T1& first, T2&& second) noexcept -> Boolean {
+        if constexpr (IsNarrowing<T1, CanonicalType<T2>>)
+            return first == as<T1>(std::forward<T2>(second));
+        else
+            return first == std::forward<T2>(second);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<Is<Underlying> To, typename From>
-        requires IsEnumeration<CanonicalType<From>>
-    STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(Arg value) noexcept
+    template<IsArithmetic To, auto from>
+        requires(IsArithmetic<decltype(from)> and IsSafeNarrowing<To, from>)
+    STORMKIT_FORCE_INLINE constexpr auto as(const std::source_location& location) noexcept -> To {
+        expects(IsSafeNarrowing<To, from>,
+                "Lossy narrowing detected, please use narrow() only if you really want unsafe "
+                "narrowing",
+                location);
+
+        return static_cast<To>(from);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename To, typename From>
+    STORMKIT_FORCE_INLINE constexpr auto
+        as([[maybe_unused]] From&&                      value,
+           [[maybe_unused]] const std::source_location& location) noexcept -> void {
+        static_assert(false, "no as caster for this type !");
+    }
+
+    // exact same type
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename To, typename From>
+        requires(IsStrict<To, RemoveIndirectionsType<From>>)
+    STORMKIT_FORCE_INLINE constexpr auto
+        as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept
+        -> ForwardLike<From, To> {
+        return std::forward<From>(value);
+    }
+
+    // safe narrowing
+    template<IsFloatingPoint T1, IsFloatingPoint T2>
+    STORMKIT_FORCE_INLINE constexpr auto is(const T1& first, const T2& second) noexcept -> Boolean {
+        using T            = SafeNarrowHelperType<T1, T2>;
+        const auto first_  = static_cast<T>(first);
+        const auto second_ = static_cast<T>(second);
+
+        const auto diff   = std::abs(first_ - second_);
+        const auto max_ab = std::max(std::abs(first_), std::abs(second_));
+
+        if (max_ab >= T { 1 }) return diff <= (Epsilon<T> * max_ab);
+        else if (max_ab > T { 0 })
+            return (diff / max_ab) <= Epsilon<T>;
+        return false;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename To, typename From>
+        requires((IsArithmetic<To> or IsByte<To>)
+                 and (IsArithmetic<CanonicalType<From>> or IsByte<CanonicalType<From>>)
+                 and not IsStrict<To, CanonicalType<From>>)
+    STORMKIT_FORCE_INLINE constexpr auto as(From&&                      value,
+                                            const std::source_location& location) noexcept -> To {
+        if constexpr (IsNarrowing<To, CanonicalType<From>>
+                      or IsByteNarrowing<To, CanonicalType<From>>)
+            expects(isSafeNarrowing<To>(value),
+                    "Lossy narrowing detected, please use narrow() only if you really want unsafe "
+                    "narrowing",
+                    location);
+
+        return static_cast<To>(value);
+    }
+
+    // enumerations
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<IsStrict<Underlying> To, typename From>
+        requires(IsEnumeration<CanonicalType<From>>)
+    STORMKIT_FORCE_INLINE constexpr auto
+        as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept
         -> UnderlyingType<CanonicalType<From>> {
-        using T = UnderlyingType<CanonicalType<From>>;
-        return static_cast<T>(std::forward<Arg>(value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<IsArithmetic To, typename From>
-    STORMKIT_FORCE_INLINE constexpr auto isNarrowing(From&& value) -> Boolean {
-        if constexpr (IsUnsigned<To> and not IsUnsigned<CanonicalType<From>>) {
-            if (value < 0) return true;
-        }
-
-        return IsNarrowing<To, From>;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<IsArithmetic To, typename From>
-    // clang-format off
-        requires(IsArithmetic<CanonicalType<From>>
-                 and not Is<CanonicalType<From>, To>
-                 and not IsNarrowing<To, CanonicalType<From>>)
-    // clang-format on
-    STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(Arg value) noexcept -> To {
-        expects(not isNarrowing<To>(value));
-        return static_cast<To>(std::forward<Arg>(value));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<IsIntegral To, IsByte From>
-    STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(From value) noexcept -> To {
-        return static_cast<To>(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<IsByte To, IsSafeCastableToByte From>
-    STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(From value) noexcept -> To {
-        return static_cast<To>(value);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename To, typename From>
-    // clang-format off
-        requires(IsExplicitConvertibleTo<From, To>
-                 and not IsByte<To>
-                 and not Is<CanonicalType<From>, To>
-                 and not IsEnumeration<CanonicalType<From>>
-                 and not IsArithmetic<CanonicalType<From>>
-                 and not IsByte<CanonicalType<From>>)
-    // clang-format on
-    STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(From&& from) noexcept
-        -> To {
-        return static_cast<To>(std::forward<From>(from));
+        return static_cast<UnderlyingType<CanonicalType<From>>>(value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<IsIntegral To, typename From>
+        requires(IsEnumeration<CanonicalType<From>>)
+    STORMKIT_FORCE_INLINE constexpr auto as(From&&                      value,
+                                            const std::source_location& location) noexcept -> To {
+        if constexpr (IsStrict<To, UnderlyingType<CanonicalType<From>>>)
+            return static_cast<To>(std::forward<From>(value));
+        else
+            return as<To>(as<Underlying>(std::forward<From>(value), location), location);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<IsEnumeration To, typename From>
         requires(IsIntegral<CanonicalType<From>>)
-    STORMKIT_FORCE_INLINE constexpr auto NarrowCaster<To, From>::operator()(Arg value) noexcept
-        -> To {
-        using Type = SafeNarrowHelperType<To, CanonicalType<From>>;
-        if constexpr (Is<CanonicalType<From>, To>) {
-            expects(std::numeric_limits<To>::lowest() <= value);
-            expects(std::numeric_limits<To>::max() > value);
+    STORMKIT_FORCE_INLINE constexpr auto as(From&&                      value,
+                                            const std::source_location& location) noexcept -> To {
+        if constexpr (IsStrict<From, UnderlyingType<CanonicalType<To>>>)
+            return static_cast<To>(std::forward<From>(value));
+        else
+            return static_cast<To>(as<UnderlyingType>(std::forward<From>(value), location));
+    }
+
+    // to / from byte(s)
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename To, typename From>
+        requires(not IsPointer<CanonicalType<From>>
+                 and ((IsConst<std::remove_reference_t<From>> and IsStrict<To, ByteView>)
+                      or (not IsConst<std::remove_reference_t<From>>
+                          and IsStrictOneOf<To, ByteView, MutableByteView>)))
+    STORMKIT_FORCE_INLINE constexpr auto as(From&                       value,
+                                            const std::source_location& location) noexcept -> To {
+        return as<To>(&value, location);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename To, typename From>
+        requires(IsPointer<CanonicalType<From>> and not IsMovedFancyPointer<From>
+                 and ((IsConst<std::remove_reference_t<From>> and IsStrict<To, ByteView>)
+                      or (not IsConst<std::remove_reference_t<From>>
+                          and IsStrictOneOf<To, ByteView, MutableByteView>)))
+    STORMKIT_FORCE_INLINE constexpr auto
+        as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept -> To {
+        expects(value != nullptr);
+
+        using CanonicalFrom = ElementType<CanonicalType<From>>;
+        using BytePtr       = ConstnessLike<From, Byte>*;
+        return To { std::bit_cast<BytePtr>(std::to_address(value)),
+                    sizeof(Byte) * sizeof(CanonicalFrom) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<IsViewPointer To, typename From>
+        requires(IsStrictOneOf<CanonicalType<From>, ByteView, MutableByteView>)
+    STORMKIT_FORCE_INLINE constexpr auto
+        as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept -> To {
+        using Type    = ElementType<To>;
+        using Pointer = Type*;
+        return std::bit_cast<Pointer>(std::data(value));
+    }
+
+    // polymorphism
+    template<IsPolymorphicIndirection To, typename From>
+        requires(IsPolymorphicPointer<CanonicalType<From>> and not IsMovedFancyPointer<From>)
+    STORMKIT_FORCE_INLINE constexpr auto
+        as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept -> decltype(auto) {
+        using CanonicalFrom = std::remove_reference_t<From>;
+
+        const auto ptr = std::to_address(value);
+
+        if constexpr (IsPointer<To>) {
+            using PointerElement = ElementType<CanonicalFrom>;
+            using ToPointerType  = PointerType<To>;
+            using ToElementType  = ElementType<To>;
+            using To_            = std::conditional_t<IsRawPointer<To>, Ref<ToElementType>, To>;
+            static_assert(Is<PointerElement, ToElementType>, "Invalid Polymorphic cast !");
+
+            return To_ { static_cast<ToPointerType>(ptr) };
         } else {
-            if constexpr (std::signed_integral<To> and std::unsigned_integral<From>) {
-                expects(static_cast<Type>(std::numeric_limits<To>::max())
-                        > static_cast<Type>(value));
-            } else {
-                expects(static_cast<Type>(std::numeric_limits<To>::lowest())
-                        <= static_cast<Type>(value));
-                expects(static_cast<Type>(std::numeric_limits<To>::max())
-                        > static_cast<Type>(value));
-            }
+            static_assert(Is<CanonicalFrom, CanonicalType<To>>, "Invalid Polymorphic cast !");
+
+            return static_cast<To>(*ptr);
         }
+    }
 
-        return static_cast<To>(std::forward<From>(value));
+    template<IsPolymorphicIndirection To, typename From>
+        requires(IsPolymorphic<CanonicalType<From>> and not IsRValueReference<From>)
+    STORMKIT_FORCE_INLINE constexpr auto
+        as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept -> decltype(auto) {
+        using CanonicalFrom = std::remove_reference_t<From>;
+
+        if constexpr (IsPointer<To>) {
+            using ToPointerType  = PointerType<To>;
+            using ToElementType  = ElementType<To>;
+            using To_            = std::conditional_t<IsRawPointer<To>, Ref<ToElementType>, To>;
+            static_assert(Is<CanonicalFrom, ToElementType>, "Invalid Polymorphic cast !");
+
+            return To_ { static_cast<ToPointerType>(&value) };
+        } else {
+            static_assert(Is<CanonicalFrom, CanonicalType<To>>, "Invalid Polymorphic cast !");
+
+            return static_cast<To>(value);
+        }
+    }
+
+    // predicate
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    STORMKIT_FORCE_INLINE constexpr auto is(const T&                       value,
+                                            FunctionRef<Boolean(const T&)> predicate) noexcept
+        -> Boolean {
+        return predicate(value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsFloatingPoint To, typename From>
-        requires(IsIntegral<CanonicalType<From>>)
-    STORMKIT_FORCE_INLINE constexpr auto NarrowCaster<To, From>::operator()(Arg value) noexcept
-        -> To {
-        expects(std::numeric_limits<To>::lowest() < value);
-        expects(std::numeric_limits<To>::max() > value);
-
-        return static_cast<To>(std::forward<From>(value));
+    template<typename T1, IsVariantType T2>
+    STORMKIT_FORCE_INLINE constexpr auto is(const T2& variant) noexcept -> Boolean {
+        return std::holds_alternative<T1>(variant);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsFloatingPoint To, typename From>
-        requires(IsFloatingPoint<CanonicalType<From>>)
-    STORMKIT_FORCE_INLINE constexpr auto NarrowCaster<To, From>::operator()(Arg value) noexcept
-        -> To {
-        using Type = SafeNarrowHelperType<To, CanonicalType<From>>;
+    template<typename T1, IsVariantType T2>
+    STORMKIT_FORCE_INLINE constexpr auto is(const T2& variant, T1&& value) noexcept -> Boolean {
+        return variantTypeFindIf(variant, [&]<auto Index>() noexcept {
+            if (variant.index() == Index) {
+                if constexpr (IsUnaryPredicate<CanonicalType<T1>,
+                                               decltype(std::get<Index>(variant))>)
+                    return value(std::get<Index>(variant));
+                else if constexpr (requires {
+                                       { std::get<Index>(variant) == value } -> IsBooleanTestable;
+                                   })
+                    return is(std::get<Index>(variant), value);
 
-        expects(static_cast<Type>(std::numeric_limits<To>::lowest()) < static_cast<Type>(value));
-        expects(static_cast<Type>(std::numeric_limits<To>::max()) > static_cast<Type>(value));
+                return false;
+            }
 
-        return static_cast<To>(std::forward<From>(value));
+            return false;
+        });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsIntegral To, typename From>
-        requires(IsFloatingPoint<CanonicalType<From>>)
-    STORMKIT_FORCE_INLINE constexpr auto NarrowCaster<To, From>::operator()(Arg value) noexcept
-        -> To {
-        using Type = SafeNarrowHelperType<To, CanonicalType<From>>;
+    template<typename To, IsVariantType From>
+    STORMKIT_FORCE_INLINE constexpr auto as(From&&                      variant,
+                                            const std::source_location& location) noexcept
+        -> ForwardLike<From, To> {
+        /*using PtrType = ConstnessLike<From, To>*;*/
+        /*auto ptr      = PtrType { nullptr };*/
+        /**/
+        /*variantTypeFindIf(variant, [&]<auto Index, typename T>() noexcept {*/
+        /*    if constexpr (IsStrict<To, T>)*/
+        /*        if (variant.index() == Index) {*/
+        /*            ptr = &std::get<Index>(variant);*/
+        /*            return true;*/
+        /*        }*/
+        /*    return false;*/
+        /*});*/
 
-        expects(static_cast<Type>(std::numeric_limits<To>::lowest()) < static_cast<Type>(value));
-        expects(static_cast<Type>(std::numeric_limits<To>::max()) > static_cast<Type>(value));
+        ensures(is<To>(variant), "Bad variant access detected", location);
 
-        return static_cast<To>(std::forward<From>(value));
+        /*return std::forward_like<From>(*ptr);*/
+        return std::forward_like<From>(std::get<To>(std::forward<From>(variant)));
+    }
+
+    // std::optional
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T1, IsOptionalType T2>
+    STORMKIT_FORCE_INLINE constexpr auto is(const T2& optional) noexcept -> Boolean {
+        if (not optional.has_value()) return false;
+
+        if constexpr (requires { static_cast<const T1&>(*optional); }) return true;
+
+        return false;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsEnumeration To, typename From>
-        requires(IsIntegral<CanonicalType<From>>)
-    STORMKIT_FORCE_INLINE constexpr auto NarrowCaster<To, From>::operator()(Arg value) noexcept
-        -> To {
-        using T = UnderlyingType<To>;
-        return as<To, T>(narrow<T>(std::forward<From>(value)));
+    template<typename T1, typename T2>
+    STORMKIT_FORCE_INLINE constexpr auto is(const std::optional<T2>& optional, T1&& value) noexcept
+        -> Boolean {
+        if constexpr (IsUnaryPredicate<CanonicalType<T1>, T2>)
+            return std::forward<T1>(value)(optional);
+        else if constexpr (requires {
+                               { optional.value() == value } -> IsBooleanTestable;
+                           })
+            return optional.has_value() and optional.value() == value();
+
+        return false;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsEnumeration To, typename From>
-        requires(IsEnumeration<CanonicalType<From>>)
-    STORMKIT_FORCE_INLINE constexpr auto NarrowCaster<To, From>::operator()(Arg value) noexcept
-        -> To {
-        using T = UnderlyingType<To>;
-        return as<To, T>(narrow<T>(as<Underlying>(std::forward<From>(value))));
-    }
+    template<typename To, IsOptionalType From>
+    STORMKIT_FORCE_INLINE constexpr auto as(From&&                      optional,
+                                            const std::source_location& location) noexcept
+        -> ForwardLike<From, To> {
+        expects(is<To>(optional), "Bad optional access detected", location);
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<IsIntegral To, typename From>
-        requires(IsEnumeration<CanonicalType<From>>)
-    STORMKIT_FORCE_INLINE constexpr auto NarrowCaster<To, From>::operator()(Arg value) noexcept
-        -> To {
-        return narrow<To>(as<Underlying>(std::forward<From>(value)));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<IsByte To, typename From>
-        requires(IsIntegral<CanonicalType<From>> and not IsSafeCastableToByte<CanonicalType<From>>)
-    STORMKIT_FORCE_INLINE constexpr auto NarrowCaster<To, From>::operator()(Arg value) noexcept
-        -> To {
-        expects(value < std::numeric_limits<std::byte>::max());
-        return static_cast<To>(std::forward<From>(value));
+        return std::forward<From>(optional).value();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename To, typename From>
-        requires IsQueryerable<To, From>
-    STORMKIT_FORCE_INLINE constexpr auto is(const From& from) noexcept -> Boolean {
-        return IsQueryer<To, CanonicalType<From>>::operator()(from);
+    STORMKIT_FORCE_INLINE constexpr auto narrow(From&& value) noexcept -> To {
+        return static_cast<To>(std::forward<From>(value));
     }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename To, typename From>
-        requires IsAsCastable<To, From>
-    STORMKIT_FORCE_INLINE constexpr auto as(From&& from) noexcept -> decltype(auto) {
-        return AsCaster<To, From>::operator()(std::forward<From>(from));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<typename To, typename From>
-    STORMKIT_FORCE_INLINE constexpr auto narrow(From&& from) noexcept -> To {
-        // return NarrowCaster<To, From>::operator()(std::forward<From>(from));
-        return static_cast<To>(std::forward<From>(from));
-    }
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsNotReference To, typename From>*/
+    /*    requires(IsVariantType<CanonicalType<From>>)*/
+    /*STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(From&& variant)
+     * noexcept*/
+    /*    -> decltype(auto) {*/
+    /*    expects(is<To>(variant));*/
+    /**/
+    /*    return std::get<To>(std::forward<From>(variant));*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsPolymorphic To, IsNotPointer From>*/
+    /*    requires(IsPolymorphic<From> and Is<To, From>)*/
+    /*STORMKIT_FORCE_INLINE constexpr auto IsQueryer<To, From>::operator()(const From&
+     * value) noexcept*/
+    /*    -> Boolean {*/
+    /*    return dynamic_cast<const To*>(&value) != nullptr;*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsPolymorphic To, typename From>*/
+    /*    requires(IsPolymorphicPointer<CanonicalType<From>> and Is<To,
+     * ElementType<From>>)*/
+    /*STORMKIT_FORCE_INLINE constexpr auto IsQueryer<To, From>::operator()(const From&
+     * value) noexcept*/
+    /*    -> Boolean {*/
+    /*    return dynamic_cast<const To*>(std::to_address(value)) != nullptr;*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsPolymorphic To, typename From>*/
+    /*    requires(not IsPointer<From> and IsPolymorphic<CanonicalType<From>>*/
+    /*             and Is<To, CanonicalType<From>>)*/
+    /*STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(From&& value)
+     * noexcept*/
+    /*    -> ConstnessLike<From, To&> {*/
+    /*    expects(is<To>(value));*/
+    /**/
+    /*    return static_cast<ConstnessLike<From, To&>>(value);*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsPolymorphic To, IsPolymorphicPointer From>*/
+    /*    requires(Is<To, ElementType<CanonicalType<From>>>)*/
+    /*STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(From&& value)
+     * noexcept*/
+    /*    -> Ref<ConstnessLike<ElementType<From>, To>> {*/
+    /*    expects(is<To>(value));*/
+    /**/
+    /*    using RefType = std::conditional_t<std::is_const_v<To>, Ref<To>,
+     * MutableRef<To>>;*/
+    /**/
+    /*    return RefType { static_cast<ConstnessLike<From, To>*>(std::to_address(value)) };*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsPointer To, IsIndirection From>*/
+    /*    requires(IsByte<ElementType<To>> and not IsRValueReference<From>)*/
+    /*STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(From&& value)
+     * noexcept*/
+    /*    -> To {*/
+    /*    using ByteType = ElementType<To>;*/
+    /*    if constexpr (IsPointer<CanonicalType<From>>)*/
+    /*        return To {
+     * std::bit_cast<ByteType*>(std::to_address(std::forward<From>(value)))
+     * };*/
+    /*    else*/
+    /*        return To { std::bit_cast<ByteType*>(&value) };*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsPointer To, typename From>*/
+    /*    requires(IsPointer<CanonicalType<From>> and
+     * IsByte<ElementType<CanonicalType<From>>>)*/
+    /*STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(From&& value)
+     * noexcept*/
+    /*    -> To {*/
+    /*    using ByteType = ElementType<To>;*/
+    /*    return To { std::bit_cast<ByteType*>(std::to_address(std::forward<From>(value)))
+     * };*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsEnumeration To, typename From>*/
+    /*    requires(IsIntegral<CanonicalType<From>> and Is<CanonicalType<From>,
+     * UnderlyingType<To>>)*/
+    /*STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(Arg value)
+     * noexcept -> To
+     * {*/
+    /*    return static_cast<To>(std::forward<Arg>(value));*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsEnumeration To, typename From>*/
+    /*// clang-format off*/
+    /*    requires(IsEnumeration<CanonicalType<From>>*/
+    /*             and Is<UnderlyingType<To>, UnderlyingType<CanonicalType<From>>>)*/
+    /*// clang-format on*/
+    /*STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(Arg value)
+     * noexcept -> To
+     * {*/
+    /*    return as<To>(as<Underlying>(std::forward<Arg>(value)));*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsIntegral To, typename From>*/
+    /*    requires(IsEnumeration<CanonicalType<From>> and Is<To,
+     * UnderlyingType<CanonicalType<From>>>)*/
+    /*STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(Arg value)
+     * noexcept -> To
+     * {*/
+    /*    return as<Underlying>(std::forward<Arg>(value));*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<Is<Underlying> To, typename From>*/
+    /*    requires IsEnumeration<CanonicalType<From>>*/
+    /*STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(Arg value)
+     * noexcept*/
+    /*    -> UnderlyingType<CanonicalType<From>> {*/
+    /*    using T = UnderlyingType<CanonicalType<From>>;*/
+    /*    return static_cast<T>(std::forward<Arg>(value));*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsArithmetic To, typename From>*/
+    /*STORMKIT_FORCE_INLINE constexpr auto isNarrowing(From&& value) -> Boolean {*/
+    /*    if constexpr (IsUnsigned<To> and not IsUnsigned<CanonicalType<From>>) {*/
+    /*        if (value < 0) return true;*/
+    /*    }*/
+    /**/
+    /*    return IsNarrowing<To, From>;*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsArithmetic To, typename From>*/
+    /*// clang-format off*/
+    /*    requires(IsArithmetic<CanonicalType<From>>*/
+    /*             and not Is<CanonicalType<From>, To>*/
+    /*             and not IsNarrowing<To, CanonicalType<From>>)*/
+    /*// clang-format on*/
+    /*STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(Arg value)
+     * noexcept -> To
+     * {*/
+    /*    expects(not isNarrowing<To>(value));*/
+    /*    return static_cast<To>(std::forward<Arg>(value));*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsIntegral To, IsByte From>*/
+    /*STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(From value)
+     * noexcept
+     * -> To
+     * {*/
+    /*    return static_cast<To>(value);*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsByte To, IsSafeCastableToByte From>*/
+    /*STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(From value)
+     * noexcept
+     * -> To
+     * {*/
+    /*    return static_cast<To>(value);*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<typename To, typename From>*/
+    /*// clang-format off*/
+    /*    requires(IsExplicitConvertibleTo<From, To>*/
+    /*             and not IsByte<To>*/
+    /*             and not Is<CanonicalType<From>, To>*/
+    /*             and not IsEnumeration<CanonicalType<From>>*/
+    /*             and not IsArithmetic<CanonicalType<From>>*/
+    /*             and not IsByte<CanonicalType<From>>)*/
+    /*// clang-format on*/
+    /*STORMKIT_FORCE_INLINE constexpr auto AsCaster<To, From>::operator()(From&& from)
+     * noexcept*/
+    /*    -> To {*/
+    /*    return static_cast<To>(std::forward<From>(from));*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsIntegral To, typename From>*/
+    /*    requires(IsIntegral<CanonicalType<From>>)*/
+    /*STORMKIT_FORCE_INLINE constexpr auto NarrowCaster<To, From>::operator()(Arg value)
+     * noexcept*/
+    /*    -> To {*/
+    /*    using Type = SafeNarrowHelperType<To, CanonicalType<From>>;*/
+    /*    if constexpr (Is<CanonicalType<From>, To>) {*/
+    /*        expects(std::numeric_limits<To>::lowest() <= value);*/
+    /*        expects(std::numeric_limits<To>::max() > value);*/
+    /*    } else {*/
+    /*        if constexpr (std::signed_integral<To> and std::unsigned_integral<From>) {*/
+    /*            expects(static_cast<Type>(std::numeric_limits<To>::max())*/
+    /*                    > static_cast<Type>(value));*/
+    /*        } else {*/
+    /*            expects(static_cast<Type>(std::numeric_limits<To>::lowest())*/
+    /*                    <= static_cast<Type>(value));*/
+    /*            expects(static_cast<Type>(std::numeric_limits<To>::max())*/
+    /*                    > static_cast<Type>(value));*/
+    /*        }*/
+    /*    }*/
+    /**/
+    /*    return static_cast<To>(std::forward<From>(value));*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsFloatingPoint To, typename From>*/
+    /*    requires(IsIntegral<CanonicalType<From>>)*/
+    /*STORMKIT_FORCE_INLINE constexpr auto NarrowCaster<To, From>::operator()(Arg value)
+     * noexcept*/
+    /*    -> To {*/
+    /*    expects(std::numeric_limits<To>::lowest() < value);*/
+    /*    expects(std::numeric_limits<To>::max() > value);*/
+    /**/
+    /*    return static_cast<To>(std::forward<From>(value));*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsFloatingPoint To, typename From>*/
+    /*    requires(IsFloatingPoint<CanonicalType<From>>)*/
+    /*STORMKIT_FORCE_INLINE constexpr auto NarrowCaster<To, From>::operator()(Arg value)
+     * noexcept*/
+    /*    -> To {*/
+    /*    using Type = SafeNarrowHelperType<To, CanonicalType<From>>;*/
+    /**/
+    /*    expects(static_cast<Type>(std::numeric_limits<To>::lowest()) <
+     * static_cast<Type>(value));*/
+    /*    expects(static_cast<Type>(std::numeric_limits<To>::max()) >
+     * static_cast<Type>(value));*/
+    /**/
+    /*    return static_cast<To>(std::forward<From>(value));*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsIntegral To, typename From>*/
+    /*    requires(IsFloatingPoint<CanonicalType<From>>)*/
+    /*STORMKIT_FORCE_INLINE constexpr auto NarrowCaster<To, From>::operator()(Arg value)
+     * noexcept*/
+    /*    -> To {*/
+    /*    using Type = SafeNarrowHelperType<To, CanonicalType<From>>;*/
+    /**/
+    /*    expects(static_cast<Type>(std::numeric_limits<To>::lowest()) <
+     * static_cast<Type>(value));*/
+    /*    expects(static_cast<Type>(std::numeric_limits<To>::max()) >
+     * static_cast<Type>(value));*/
+    /**/
+    /*    return static_cast<To>(std::forward<From>(value));*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsEnumeration To, typename From>*/
+    /*    requires(IsIntegral<CanonicalType<From>>)*/
+    /*STORMKIT_FORCE_INLINE constexpr auto NarrowCaster<To, From>::operator()(Arg value)
+     * noexcept*/
+    /*    -> To {*/
+    /*    using T = UnderlyingType<To>;*/
+    /*    return as<To, T>(narrow<T>(std::forward<From>(value)));*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsEnumeration To, typename From>*/
+    /*    requires(IsEnumeration<CanonicalType<From>>)*/
+    /*STORMKIT_FORCE_INLINE constexpr auto NarrowCaster<To, From>::operator()(Arg value)
+     * noexcept*/
+    /*    -> To {*/
+    /*    using T = UnderlyingType<To>;*/
+    /*    return as<To, T>(narrow<T>(as<Underlying>(std::forward<From>(value))));*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsIntegral To, typename From>*/
+    /*    requires(IsEnumeration<CanonicalType<From>>)*/
+    /*STORMKIT_FORCE_INLINE constexpr auto NarrowCaster<To, From>::operator()(Arg value)
+     * noexcept*/
+    /*    -> To {*/
+    /*    return narrow<To>(as<Underlying>(std::forward<From>(value)));*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<IsByte To, typename From>*/
+    /*    requires(IsIntegral<CanonicalType<From>> and not
+     * IsSafeCastableToByte<CanonicalType<From>>)*/
+    /*STORMKIT_FORCE_INLINE constexpr auto NarrowCaster<To, From>::operator()(Arg value)
+     * noexcept*/
+    /*    -> To {*/
+    /*    expects(value < std::numeric_limits<std::byte>::max());*/
+    /*    return static_cast<To>(std::forward<From>(value));*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<typename To, typename From>*/
+    /*    requires IsQueryerable<To, From>*/
+    /*STORMKIT_FORCE_INLINE constexpr auto is(const From& from) noexcept -> Boolean {*/
+    /*    return IsQueryer<To, CanonicalType<From>>::operator()(from);*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<typename To, typename From>*/
+    /*    requires IsAsCastable<To, From>*/
+    /*STORMKIT_FORCE_INLINE constexpr auto as(From&& from) noexcept -> decltype(auto) {*/
+    /*    return AsCaster<To, From>::operator()(std::forward<From>(from));*/
+    /*}*/
+    /**/
+    /*/////////////////////////////////////*/
+    /*/////////////////////////////////////*/
+    /*template<typename To, typename From>*/
+    /*STORMKIT_FORCE_INLINE constexpr auto narrow(From&& from) noexcept -> To {*/
+    /*    // return NarrowCaster<To, From>::operator()(std::forward<From>(from));*/
+    /*    return static_cast<To>(std::forward<From>(from));*/
+    /*}*/
 }} // namespace stormkit::core::casts

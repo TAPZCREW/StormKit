@@ -11,7 +11,8 @@ export module stormkit.Core:Parallelism.ThreadPool;
 import std;
 
 import :Utils.Algorithms;
-import :Utils.Numerics;
+import :Utils.NumericRange;
+import :TypeSafe.Integer;
 import :Parallelism.ThreadUtils;
 
 export namespace stormkit::core {

@@ -11,7 +11,7 @@ export module stormkit.Core:Utils.Filesystem;
 import std;
 
 import :Utils.Byte;
-import :Utils.Numerics;
+import :TypeSafe.Integer;
 
 export namespace stormkit::core {
     [[nodiscard]] auto read(std::istream& stream, RangeExtent size) noexcept -> std::vector<Byte>;

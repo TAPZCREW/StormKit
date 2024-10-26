@@ -17,7 +17,7 @@ import std;
 
 import :Meta;
 import :Hash;
-import :Utils.Numerics;
+import :TypeSafe;
 
 // import :Utils.Details.GLM;
 
@@ -161,15 +161,15 @@ export {
 
             /// \group vector-types
             /// \unique_name Vector2F
-            using Vector2F = Vector2<float>;
+            using Vector2F = Vector2<Float32>;
 
             /// \group vector-types
             /// \unique_name Vector3F
-            using Vector3F = Vector3<float>;
+            using Vector3F = Vector3<Float32>;
 
             /// \group vector-types
             /// \unique_name Vector4F
-            using Vector4F = Vector4<float>;
+            using Vector4F = Vector4<Float32>;
 
             /// \group vector-types
             /// \unique_name Vector2U
@@ -240,7 +240,7 @@ export {
 
             /// \group matrices-types
             /// \unique_name MatrixF
-            using MatrixF = Matrix<float>;
+            using MatrixF = Matrix<Float32>;
 
             /// \brief Quaternion.
             ///
@@ -378,7 +378,7 @@ export {
 
             /// \brief Alias of `Extent<float>`.
             /// \unique_name ExtentF
-            using ExtentF = Extent<float>;
+            using ExtentF = Extent<Float32>;
 
             template<class T>
             concept IsExtent2Like = requires(T&& value) {
@@ -407,46 +407,30 @@ export {
 
         inline namespace casts {
             template<math::IsVectorLike To, math::IsVectorLike From>
-            struct AsCaster<To, From> {
-                [[nodiscard]] static constexpr auto operator()(const From& from) noexcept -> To;
-            };
+            [[nodiscard]] constexpr auto as(const From& from) noexcept -> To;
 
             template<math::IsVectorLike To, math::IsVectorLike From>
-            struct NarrowCaster<To, From> {
-                [[nodiscard]] static constexpr auto operator()(const From& from) noexcept -> To;
-            };
+            [[nodiscard]] constexpr auto narrow(const From& from) noexcept -> To;
 
             template<math::IsExtentLike To, math::IsExtentLike From>
-            struct AsCaster<To, From> {
-                [[nodiscard]] static constexpr auto operator()(const From& from) noexcept -> To;
-            };
+            [[nodiscard]] constexpr auto as(const From& from) noexcept -> To;
 
             template<math::IsExtentLike To, math::IsExtentLike From>
-            struct NarrowCaster<To, From> {
-                [[nodiscard]] static constexpr auto operator()(const From& from) noexcept -> To;
-            };
+            [[nodiscard]] constexpr auto narrow(const From& from) noexcept -> To;
 
             template<math::IsVectorLike To, math::IsExtentLike From>
-            struct AsCaster<To, From> {
-                [[nodiscard]] static constexpr auto operator()(const From& from) noexcept -> To;
-            };
+            [[nodiscard]] constexpr auto as(const From& from) noexcept -> To;
 
             template<math::IsVectorLike To, math::IsExtentLike From>
-            struct NarrowCaster<To, From> {
-                [[nodiscard]] static constexpr auto operator()(const From& from) noexcept -> To;
-            };
+            [[nodiscard]] constexpr auto narrow(const From& from) noexcept -> To;
 
             template<math::IsExtentLike To, math::IsVectorLike From>
-            struct AsCaster<To, From> {
-                [[nodiscard]] static constexpr auto operator()(const From& from) noexcept -> To;
-            };
+            [[nodiscard]] constexpr auto as(const From& from) noexcept -> To;
 
             template<math::IsExtentLike To, math::IsVectorLike From>
-            struct NarrowCaster<To, From> {
-                [[nodiscard]] static constexpr auto operator()(const From& from) noexcept -> To;
-            };
+            [[nodiscard]] constexpr auto narrow(const From& from) noexcept -> To;
         } // namespace casts
-    }     // namespace stormkit::core
+    } // namespace stormkit::core
 
     TEMPLATED_HASH_FUNC(stormkit::core::math::Vector2,
                         stormkit::core::IsArithmetic,
@@ -518,8 +502,8 @@ namespace stormkit::core {
         /////////////////////////////////////
         template<IsArithmetic T>
         constexpr auto Extent<T>::operator==(const Extent<T>& other) const noexcept -> bool {
-            return core::is<T>(width, other.width) and core::is<T>(height, other.height) and
-                   core::is<T>(depth, other.depth);
+            return core::is<T>(width, other.width) and core::is<T>(height, other.height)
+                   and core::is<T>(depth, other.depth);
         }
 
         /////////////////////////////////////
@@ -596,16 +580,15 @@ namespace stormkit::core {
         /////////////////////////////////////
         /////////////////////////////////////
         template<math::IsVectorLike To, math::IsVectorLike From>
-        constexpr auto AsCaster<To, From>::operator()(const From& from) noexcept -> To {
+        constexpr auto as(const From& from) noexcept -> To {
             using UnderlyingType = decltype(std::declval<To>().x);
             auto to              = To {};
             to.x                 = core::as<UnderlyingType>(from.x);
             to.y                 = core::as<UnderlyingType>(from.y);
 
-            if constexpr (math::IsVector3Like<core::CanonicalType<To>> and math::IsVector3Like<From>)
+            if constexpr (math::IsVector3Like<To> and math::IsVector3Like<From>)
                 to.z = core::as<UnderlyingType>(from.z);
-            else if constexpr (math::IsVector4Like<core::CanonicalType<To>> and
-                               math::IsVector4Like<From>)
+            else if constexpr (math::IsVector4Like<To> and math::IsVector4Like<From>)
                 to.w = core::as<UnderlyingType>(from.w);
 
             return to;
@@ -614,16 +597,15 @@ namespace stormkit::core {
         /////////////////////////////////////
         /////////////////////////////////////
         template<math::IsVectorLike To, math::IsVectorLike From>
-        constexpr auto NarrowCaster<To, From>::operator()(const From& from) noexcept -> To {
+        constexpr auto narrow(const From& from) noexcept -> To {
             using UnderlyingType = decltype(std::declval<To>().x);
             auto to              = To {};
             to.x                 = core::narrow<UnderlyingType>(from.x);
             to.y                 = core::narrow<UnderlyingType>(from.y);
 
-            if constexpr (math::IsVector3Like<core::CanonicalType<To>> and math::IsVector3Like<From>)
+            if constexpr (math::IsVector3Like<To> and math::IsVector3Like<From>)
                 to.z = core::narrow<UnderlyingType>(from.z);
-            else if constexpr (math::IsVector4Like<core::CanonicalType<To>> and
-                               math::IsVector4Like<From>)
+            else if constexpr (math::IsVector4Like<To> and math::IsVector4Like<From>)
                 to.w = core::narrow<UnderlyingType>(from.w);
 
             return to;
@@ -632,13 +614,14 @@ namespace stormkit::core {
         /////////////////////////////////////
         /////////////////////////////////////
         template<math::IsExtentLike To, math::IsExtentLike From>
-        constexpr auto AsCaster<To, From>::operator()(const From& from) noexcept -> To {
+        constexpr auto as(const From& from) noexcept -> To {
             using UnderlyingType = decltype(std::declval<To>().width);
             auto to              = To {};
             to.width             = core::as<UnderlyingType>(from.width);
             to.height            = core::as<UnderlyingType>(from.height);
 
-            if constexpr (math::IsExtent3Like<core::CanonicalType<To>> and math::IsExtent3Like<From>)
+            if constexpr (math::IsExtent3Like<core::CanonicalType<To>>
+                          and math::IsExtent3Like<From>)
                 to.depth = core::as<UnderlyingType>(from.depth);
 
             return to;
@@ -647,13 +630,14 @@ namespace stormkit::core {
         /////////////////////////////////////
         /////////////////////////////////////
         template<math::IsExtentLike To, math::IsExtentLike From>
-        constexpr auto NarrowCaster<To, From>::operator()(const From& from) noexcept -> To {
+        constexpr auto narrow(const From& from) noexcept -> To {
             using UnderlyingType = decltype(std::declval<To>().x);
             auto to              = To {};
             to.width             = core::narrow<UnderlyingType>(from.width);
             to.height            = core::narrow<UnderlyingType>(from.height);
 
-            if constexpr (math::IsExtent3Like<core::CanonicalType<To>> and math::IsExtent3Like<From>)
+            if constexpr (math::IsExtent3Like<core::CanonicalType<To>>
+                          and math::IsExtent3Like<From>)
                 to.depth = core::narrow<UnderlyingType>(from.depth);
 
             return to;
@@ -662,13 +646,14 @@ namespace stormkit::core {
         /////////////////////////////////////
         /////////////////////////////////////
         template<math::IsVectorLike To, math::IsExtentLike From>
-        constexpr auto AsCaster<To, From>::operator()(const From& from) noexcept -> To {
+        constexpr auto as(const From& from) noexcept -> To {
             using UnderlyingType = decltype(std::declval<To>().x);
             auto to              = To {};
             to.x                 = core::narrow<UnderlyingType>(from.width);
             to.y                 = core::narrow<UnderlyingType>(from.height);
 
-            if constexpr (math::IsVector3Like<core::CanonicalType<To>> and math::IsExtent3Like<From>)
+            if constexpr (math::IsVector3Like<core::CanonicalType<To>>
+                          and math::IsExtent3Like<From>)
                 to.z = core::narrow<UnderlyingType>(from.depth);
 
             return to;
@@ -677,13 +662,14 @@ namespace stormkit::core {
         /////////////////////////////////////
         /////////////////////////////////////
         template<math::IsVectorLike To, math::IsExtentLike From>
-        constexpr auto NarrowCaster<To, From>::operator()(const From& from) noexcept -> To {
+        constexpr auto narrow(const From& from) noexcept -> To {
             using UnderlyingType = decltype(std::declval<To>().x);
             auto to              = To {};
             to.x                 = core::narrow<UnderlyingType>(from.width);
             to.y                 = core::narrow<UnderlyingType>(from.height);
 
-            if constexpr (math::IsVector3Like<core::CanonicalType<To>> and math::IsExtent3Like<From>)
+            if constexpr (math::IsVector3Like<core::CanonicalType<To>>
+                          and math::IsExtent3Like<From>)
                 to.z = core::narrow<UnderlyingType>(from.depth);
 
             return to;
@@ -692,13 +678,14 @@ namespace stormkit::core {
         /////////////////////////////////////
         /////////////////////////////////////
         template<math::IsExtentLike To, math::IsVectorLike From>
-        constexpr auto AsCaster<To, From>::operator()(const From& from) noexcept -> To {
+        constexpr auto as(const From& from) noexcept -> To {
             using UnderlyingType = decltype(std::declval<To>().x);
             auto to              = To {};
             to.width             = core::as<UnderlyingType>(from.x);
             to.height            = core::as<UnderlyingType>(from.y);
 
-            if constexpr (math::IsExtent3Like<core::CanonicalType<To>> and math::IsVector3Like<From>)
+            if constexpr (math::IsExtent3Like<core::CanonicalType<To>>
+                          and math::IsVector3Like<From>)
                 to.depth = core::as<UnderlyingType>(from.z);
 
             return to;
@@ -707,13 +694,14 @@ namespace stormkit::core {
         /////////////////////////////////////
         /////////////////////////////////////
         template<math::IsExtentLike To, math::IsVectorLike From>
-        constexpr auto NarrowCaster<To, From>::operator()(const From& from) noexcept -> To {
+        constexpr auto narrow(const From& from) noexcept -> To {
             using UnderlyingType = decltype(std::declval<To>().x);
             auto to              = To {};
             to.width             = core::as<UnderlyingType>(from.x);
             to.height            = core::as<UnderlyingType>(from.y);
 
-            if constexpr (math::IsExtent3Like<core::CanonicalType<To>> and math::IsVector3Like<From>)
+            if constexpr (math::IsExtent3Like<core::CanonicalType<To>>
+                          and math::IsVector3Like<From>)
                 to.depth = core::as<UnderlyingType>(from.z);
 
             return to;

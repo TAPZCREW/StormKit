@@ -14,6 +14,37 @@ import :Meta.Concepts;
 
 export {
     namespace stormkit::core {
+        namespace cpp {
+            using UChar     = unsigned short;
+            using UShort    = unsigned short;
+            using UInt      = unsigned int;
+            using ULong     = unsigned long;
+            using ULongLong = unsigned long long;
+
+            using SChar    = signed char;
+            using Short    = signed short;
+            using Int      = signed int;
+            using Long     = signed long;
+            using LongLong = signed long long;
+
+            using LongDouble = long double;
+        } // namespace cpp
+
+        using UInt8  = std::uint8_t;
+        using UInt16 = std::uint16_t;
+        using UInt32 = std::uint32_t;
+        using UInt64 = std::uint64_t;
+        using UInt   = std::uint_fast32_t;
+
+        using Int8  = std::int8_t;
+        using Int16 = std::int16_t;
+        using Int32 = std::int32_t;
+        using Int64 = std::int64_t;
+        using Int   = std::int_fast32_t;
+
+        using RangeExtent = std::size_t;
+        using RangeOffset = std::ptrdiff_t;
+
         template<IsIntegral T>
         class Integer {
           public:
@@ -34,8 +65,8 @@ export {
     template<class T, class CharT>
     struct std::formatter<stormkit::core::Integer<T>, CharT>: std::formatter<T, CharT> {
         template<class FormatContext>
-        auto format(stormkit::core::Integer<T> data,
-                    FormatContext&             ctx) const noexcept -> decltype(ctx.out());
+        auto format(stormkit::core::Integer<T> data, FormatContext& ctx) const noexcept
+            -> decltype(ctx.out());
     };
 }
 
@@ -50,8 +81,9 @@ namespace stormkit::core {
 /////////////////////////////////////
 template<class T, class CharT>
 template<class FormatContext>
-STORMKIT_FORCE_INLINE auto std::formatter<stormkit::core::Integer<T>, CharT>::format(
-    stormkit::core::Integer<T> data,
-    FormatContext&             ctx) const noexcept -> decltype(ctx.out()) {
+STORMKIT_FORCE_INLINE auto
+    std::formatter<stormkit::core::Integer<T>, CharT>::format(stormkit::core::Integer<T> data,
+                                                              FormatContext& ctx) const noexcept
+    -> decltype(ctx.out()) {
     return std::formatter<T, CharT>::format(static_cast<T>(data), ctx);
 }

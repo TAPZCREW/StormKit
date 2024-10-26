@@ -14,7 +14,7 @@ import std;
 
 import :Hash;
 import :TypeSafe.AsCast;
-import :Utils.Numerics;
+import :TypeSafe.Integer;
 import :Meta;
 
 export {

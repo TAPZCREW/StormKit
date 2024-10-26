@@ -14,7 +14,7 @@ export module stormkit.Core:String.Encodings;
 import std;
 
 import :TypeSafe.AsCast;
-import :Utils.Numerics;
+import :TypeSafe.Integer;
 
 export namespace stormkit::core {
     auto asciiToUtf16(std::string_view) -> std::u16string;
@@ -115,11 +115,11 @@ namespace stormkit::core {
         output.resize(std::size(input));
 
 #if defined(STORMKIT_COMPILER_MSVC)
-        for (const auto& c : input) std::c16rtomb(std::data(output), core::as<char16_t>(c), &state);
+        for (const auto& c : input) std::c16rtomb(std::data(output), as<char16_t>(c), &state);
 #elif defined(STORMKIT_COMPILER_CLANG)
         output = std::bit_cast<char*>(std::data(input));
 #else
-        for (const auto& c : input) std::c8rtomb(std::data(output), core::narrow<char>(c), &state);
+        for (const auto& c : input) std::c8rtomb(std::data(output), as<char>(c), &state);
 #endif
 
         return output;
@@ -130,7 +130,7 @@ namespace stormkit::core {
     STORMKIT_INLINE auto asciiToUtf8(std::string_view input) -> std::u8string {
         [[maybe_unused]] auto state  = std::mbstate_t {};
         [[maybe_unused]] auto output = std::u8string {};
-        output.resize(std::size(input) * narrow<RangeExtent>(MB_LEN_MAX));
+        output.resize(std::size(input) * as<RangeExtent>(MB_LEN_MAX));
 
 #if defined(STORMKIT_COMPILER_MSVC)
         auto bytes = toByteSpan(output);
