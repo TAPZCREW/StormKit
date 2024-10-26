@@ -387,6 +387,10 @@ if get_config("lto") then
 	end
 end
 
+add_defines("MAGIC_ENUM_USE_STD_MODULE")
+
+add_requires("cpptrace")
+
 ---------------------------- targets ----------------------------
 for name, module in pairs(modules) do
 

@@ -2,13 +2,10 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-module;
-
-#include "magic_enum.hpp"
-
 export module stormkit.Core:String.Format;
 
 import std;
+import magic_enum;
 
 import :Meta;
 import :TypeSafe.Integer;
