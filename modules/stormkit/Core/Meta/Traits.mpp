@@ -19,7 +19,7 @@ export namespace stormkit::core {
     using DecayType = std::decay_t<T>;
 
     template<class T>
-    using RemoveIndirectionsType = std::remove_pointer_t<std::remove_reference_t<T>>;
+    using RemoveIndirections = std::remove_pointer_t<std::remove_reference_t<T>>;
 
     template<class T>
     using ElementType = typename std::pointer_traits<T>::element_type;
