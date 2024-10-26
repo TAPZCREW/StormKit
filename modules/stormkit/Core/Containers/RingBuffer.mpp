@@ -262,7 +262,7 @@ namespace stormkit::core {
     template<class T>
     template<class Self>
     auto RingBuffer<T>::getPtr(this Self& self, ExtentType pos) noexcept -> decltype(auto) {
-        using OutPtr    = LikeCVType<Self, T*>;
+        using OutPtr    = ConstnessLike<Self, T*>;
         auto addr = std::forward_like<Self>(&(self.m_buffer[pos * sizeof(ValueType)]));
 
         return std::launder(std::bit_cast<OutPtr>(addr));

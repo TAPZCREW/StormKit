@@ -85,7 +85,7 @@ export namespace stormkit::core {
             noexcept(std::is_nothrow_assignable_v<ValueType, ValueType&&>)) -> void;
 
         template<typename Self>
-        auto unsafe(this Self& self) noexcept -> LikeCVType<Self, ReferenceType>;
+        auto unsafe(this Self& self) noexcept -> ConstnessLike<Self, ReferenceType>;
 
         auto mutex() const noexcept -> const MutexType&;
 
@@ -96,7 +96,7 @@ export namespace stormkit::core {
             using ValueType =
                 std::conditional_t<Mode == LockAccessMode::Read_Only, const ValueType, ValueType>;
             using RefContainerType =
-                std::conditional_t<Mode == LockAccessMode::Read_Only, Ref<ValueType>, MutableRef<ValueType>>;
+                std::conditional_t<Mode == LockAccessMode::Read_Only, Ref<const ValueType>, Ref<ValueType>>;
             using ReferenceType = ValueType&;
             using PointerType   = ValueType*;
 
@@ -110,15 +110,15 @@ export namespace stormkit::core {
             explicit Access(Locked& locked, LockArgs&&... args) noexcept;
 
             template<class Self>
-            auto operator->(this Self&& self) noexcept -> LikeCVType<Self, PointerType>;
+            auto operator->(this Self&& self) noexcept -> ConstnessLike<Self, PointerType>;
 
             template<class Self>
-            auto operator*(this Self&& self) noexcept -> LikeCVType<Self, ReferenceType>;
+            auto operator*(this Self&& self) noexcept -> ConstnessLike<Self, ReferenceType>;
 
             mutable Lock<MutexType> lock;
 
           private:
-            MutableRef<ValueType> m_value;
+            RefContainerType m_value;
         };
 
         Mutex     m_mutex;
@@ -215,7 +215,7 @@ namespace stormkit::core {
     template<IsNotRawIndirection T, class Mutex>
     template<typename Self>
     STORMKIT_FORCE_INLINE auto
-        Locked<T, Mutex>::unsafe(this Self& self) noexcept -> LikeCVType<Self, ReferenceType> {
+        Locked<T, Mutex>::unsafe(this Self& self) noexcept -> ConstnessLike<Self, ReferenceType> {
         return self.m_value;
     }
 
@@ -266,7 +266,7 @@ namespace stormkit::core {
     template<template<class> class Lock, LockAccessMode Mode>
     template<class Self>
     STORMKIT_FORCE_INLINE auto Locked<T, Mutex>::Access<Lock, Mode>::operator->(
-        this Self&& self) noexcept -> LikeCVType<Self, PointerType> {
+        this Self&& self) noexcept -> ConstnessLike<Self, PointerType> {
         return self.m_value.get();
     }
 
@@ -276,7 +276,7 @@ namespace stormkit::core {
     template<template<class> class Lock, LockAccessMode Mode>
     template<class Self>
     STORMKIT_FORCE_INLINE auto Locked<T, Mutex>::Access<Lock, Mode>::operator*(
-        this Self&& self) noexcept -> LikeCVType<Self, ReferenceType> {
+        this Self&& self) noexcept -> ConstnessLike<Self, ReferenceType> {
         return *self.m_value;
     }
 } // namespace stormkit::core
