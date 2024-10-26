@@ -9,15 +9,16 @@ import stormkit.Core;
 import Test;
 
 using namespace stormkit::core;
+using namespace std::literals;
 
 #define expects(x) test::expects(x, #x)
 
 namespace {
     auto _ = test::TestSuite { "Core.Containers", { { "Tree.Node.name", [] {
-                                                         const auto name = "TestNodeName";
+                                                         static constexpr auto name = "TestNodeName"s;
 
                                                          auto node = TreeNode {};
-                                                         expects(node.name() == "");
+                                                         expects(node.name() == ""s);
                                                          node.setName(name);
                                                          expects(node.name() == name);
                                                      } } } };
