@@ -62,7 +62,6 @@ namespace stormkit::core {
         template<class T>
         concept IsViewPointer = IsRawPointer<T> or (requires {
             typename T::element_type;
-            typename T::pointer;
         } and requires(T a) {
             { a.operator->() } -> std::convertible_to<decltype(&*a)>;
             { a.operator*() };
@@ -70,13 +69,8 @@ namespace stormkit::core {
         });
 
         template<class T>
-        concept IsFancyPointer = requires {
-            typename T::element_type;
-        } and requires(T a) {
-            { a.operator->() } -> std::convertible_to<decltype(&*a)>;
-            { a.operator*() };
+        concept IsFancyPointer = IsViewPointer<T> and requires(T a) {
             { a.reset() };
-            { static_cast<bool>(a) };
         };
 
         template<class T>
