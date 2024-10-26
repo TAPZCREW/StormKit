@@ -15,6 +15,20 @@ modules = {
 			add_includedirs("$(buildir)/.gens/include", { public = true })
 			add_cxflags("clang::-Wno-language-extension-token")
 
+			on_load(function(target)
+				local has_stacktrace = target:check_cxxsnippets({
+					test = [[
+             void test() {
+                 std::stacktrace::current();
+             }
+         ]],
+				}, { configs = { languages = "c++23" }, includes = { "stacktrace" } })
+
+        if not has_stacktrace then
+					  print("No std C++23 stacktrace, falling back to cpptrace")
+            target:add("packages", "cpptrace", "libdwarf")
+        end
+      end)
 			on_config(function(target)
 				local output, errors = os.iorunv("git", { "rev-parse", "--abbrev-ref", "HEAD" })
 
@@ -29,14 +43,6 @@ modules = {
 				output, errors = os.iorunv("git", { "rev-parse", "--verify", "HEAD" })
 
 				target:set("configvar", "STORMKIT_GIT_COMMIT_HASH", output:trim())
-
-				local has_stacktrace = target:check_cxxsnippets({
-					test = [[
-             void test() {
-                 std::stacktrace::current();
-             }
-         ]],
-				}, { configs = { languages = "c++23" }, includes = { "stacktrace" } })
 			end)
 		end,
 	},
@@ -335,8 +341,6 @@ elseif is_mode("releasedbg") then
 	set_optimize("fast")
 	set_symbols("debug", "hidden")
 	add_cxflags("-fno-omit-frame-pointer", { tools = { "clang", "gcc" } })
-	add_mxflags("-fno-omit-frame-pointer", { tools = { "clang", "gcc" } })
-	add_cxflags("-ggdb3", { tools = { "clang", "gcc" } })
 	add_mxflags("-ggdb3", { tools = { "clang", "gcc" } })
 end
 

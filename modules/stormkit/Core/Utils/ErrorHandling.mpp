@@ -13,7 +13,6 @@ import std;
 import :Meta.Concepts;
 import :Meta.Traits;
 
-import :Utils.Descriptors;
 import :Utils.Stacktrace;
 
 export namespace stormkit::core {
@@ -61,9 +60,8 @@ namespace stormkit::core {
         -> decltype(auto) {
         return [message  = std::move(message),
                 location = std::move(location)] NORETURN_LAMBDA() -> std::optional<T> {
-            auto stderr = getSTDErr();
 
-            std::println(stderr,
+            std::println(std::cerr,
                          "[Expects] failed in \n"
                          "    > file:     {}\n"
                          "      line:     {}\n"
@@ -74,8 +72,6 @@ namespace stormkit::core {
                          location.function_name(),
                          message);
 
-            printStacktrace();
-
             std::terminate();
         };
     }
@@ -85,9 +81,7 @@ namespace stormkit::core {
     template<typename T>
     constexpr auto expects(std::source_location location) noexcept -> decltype(auto) {
         return [location = std::move(location)] NORETURN_LAMBDA(auto&& error) -> std::optional<T> {
-            auto stderr = getSTDErr();
-
-            std::println(stderr,
+            std::println(std::cerr,
                          "[Expects] failed in\n"
                          "    > file:     {}\n"
                          "      line:     {}\n"
@@ -97,8 +91,6 @@ namespace stormkit::core {
                          location.line(),
                          location.function_name(),
                          error);
-
-            printStacktrace();
 
             std::terminate();
         };
@@ -110,9 +102,7 @@ namespace stormkit::core {
         -> decltype(auto) {
         return [message = std::move(message), location = std::move(location)] NORETURN_LAMBDA(
                    auto&& error) -> std::expected<void, CanonicalType<decltype(error)>> {
-            auto stderr = getSTDErr();
-
-            std::println(stderr,
+            std::println(std::cerr,
                          "[Expects] failed in \n"
                          "    > file:        {}\n"
                          "      line:        {}\n"
@@ -125,8 +115,6 @@ namespace stormkit::core {
                          message,
                          error);
 
-            printStacktrace();
-
             std::terminate();
         };
     }
@@ -136,9 +124,7 @@ namespace stormkit::core {
     constexpr auto expects(std::source_location location) noexcept -> decltype(auto) {
         return [location = std::move(location)] NORETURN_LAMBDA(
                    auto&& error) -> std::expected<void, CanonicalType<decltype(error)>> {
-            auto stderr = getSTDErr();
-
-            std::println(stderr,
+            std::println(std::cerr,
                          "[Expects] failed in\n"
                          "    > file:        {}\n"
                          "      line:        {}\n"
@@ -148,8 +134,6 @@ namespace stormkit::core {
                          location.line(),
                          location.function_name(),
                          std::forward<decltype(error)>(error));
-
-            printStacktrace();
 
             std::terminate();
         };

@@ -19,12 +19,12 @@ export namespace stormkit::core {
 
 namespace stormkit::core {
     extern "C" auto terminateHandler() noexcept -> void {
-        printStacktrace(1);
+        printStacktrace(3);
     }
 
     extern "C" auto signalHandler(int signum) noexcept -> void {
         std::signal(signum, SIG_DFL);
-        printStacktrace(1);
+        printStacktrace(3);
         std::raise(SIGABRT);
     }
 

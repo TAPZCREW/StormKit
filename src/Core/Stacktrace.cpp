@@ -4,7 +4,9 @@
 
 module;
 
-#include <cstdio>
+#if not defined(STD_STACKTRACE_SUPPORTED)
+    #include <cpptrace/cpptrace.hpp>
+#endif
 
 module stormkit.Core;
 
@@ -13,28 +15,29 @@ import std;
 namespace stormkit::core {
     /////////////////////////////////////
     /////////////////////////////////////
-    auto printStacktrace([[maybe_unused]] int ignore_count) noexcept -> void {
+    auto printStacktrace(int ignore_count) noexcept -> void {
         const auto thread_name = getCurrentThreadName();
         if (not std::empty(thread_name))
-            std::println(stderr,
+            std::println(std::cerr,
                          "================= CALLSTACK (thread name: {}, id: {}) =================",
                          thread_name,
                          std::this_thread::get_id());
         else
-            std::println(stderr,
+            std::println(std::cerr,
                          "================= CALLSTACK (thread id: {}) =================",
                          std::this_thread::get_id());
 #if defined(STD_STACKTRACE_SUPPORTED)
         const auto st = std::stacktrace::current();
-
+#else
+        const auto st = cpptrace::stacktrace::current();
+#endif
         auto i = 0;
         for (auto&& frame : st) {
             if (i < ignore_count) {
                 i += 1;
                 continue;
             }
-            std::println("{}# {}", (i++ - ignore_count), frame);
+            std::println(std::cerr, "{}# {}", (i++ - ignore_count), frame);
         }
-#endif
     }
-}
+} // namespace stormkit::core
