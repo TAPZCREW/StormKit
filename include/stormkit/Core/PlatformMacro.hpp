@@ -46,6 +46,16 @@
     #define STORMKIT_FORCE_INLINE_IMPL [[gnu::always_inline]] inline
 #endif
 
+#if __has_cpp_attribute(lifetimebound)
+    #define STORMKIT_LIFETIMEBOUND [[lifetimebound]]
+#elif __has_cpp_attribute(msvc::lifetimebound)
+    #define STORMKIT_LIFETIMEBOUND [[msvc::lifetimebound]]
+#elif __has_cpp_attribute(clang::lifetimebound)
+    #define STORMKIT_LIFETIMEBOUND [[clang::lifetimebound]]
+#else
+    #define STORMKIT_LIFETIMEBOUND
+#endif
+
 #if not defined(STORMKIT_LTO)
     #define STORMKIT_FORCE_INLINE STORMKIT_FORCE_INLINE_IMPL
     #define STORMKIT_INLINE       inline
@@ -132,7 +142,7 @@ extern "C" {
     #else
         #define STORMKIT_API STORMKIT_IMPORT
     #endif
-    // #define STORMKIT_API STORMKIT_EXPORT
+// #define STORMKIT_API STORMKIT_EXPORT
 #else
     #define STORMKIT_PUBLIC
     #define STORMKIT_API
