@@ -6,11 +6,14 @@ export module stormkit.Core:Utils.Byte;
 
 import std;
 
-import :Meta;
-import :Utils.Numerics;
+import :Meta.Concepts;
+import :Meta.Traits;
+import :TypeSafe.Integer;
 
 export namespace stormkit::core {
-    using Byte = std::byte;
+    using Byte            = std::byte;
+    using ByteView        = std::span<const std::byte>;
+    using MutableByteView = std::span<std::byte>;
 
     [[nodiscard]] constexpr auto byteSwap(auto value) noexcept;
 
@@ -25,7 +28,7 @@ export namespace stormkit::core {
     [[nodiscard]] constexpr auto makeStaticByteArray(auto... bytes) noexcept -> decltype(auto);
 
     namespace literals {
-        [[nodiscard]] constexpr auto operator"" _b(unsigned long long int value) noexcept;
+        [[nodiscard]] constexpr auto operator""_b(unsigned long long int value) noexcept;
 
         [[nodiscard]] constexpr auto operator""_kb(unsigned long long x) noexcept -> core::UInt64;
 
@@ -65,17 +68,17 @@ namespace stormkit::core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    constexpr auto asByteView(IsPointer auto ptr, RangeExtent size) {
+    constexpr auto asByteView(IsPointer auto ptr, std::size_t size) {
         auto raw_ptr = std::to_address(ptr);
 
-        using PtrType   = decltype(raw_ptr);
-        using ValueType = std::decay_t<PtrType>;
-        using ByteType  = LikeCVType<ValueType, core::Byte>;
+        using PtrType     = decltype(raw_ptr);
+        using ElementType = ElementType<PtrType>;
+        using ByteType    = ConstnessLike<ElementType, core::Byte>;
 
         constexpr auto byte_count = []() {
-            if constexpr (Is<ValueType, void>) return 1;
+            if constexpr (Is<ElementType, void>) return 1;
             else
-                return sizeof(ValueType);
+                return sizeof(ElementType);
         }();
 
         return std::span<ByteType> { std::bit_cast<ByteType*>(ptr), size * byte_count };
@@ -98,7 +101,7 @@ namespace stormkit::core {
     namespace literals {
         /////////////////////////////////////
         /////////////////////////////////////
-        constexpr auto operator"" _b(unsigned long long int value) noexcept {
+        constexpr auto operator""_b(unsigned long long int value) noexcept {
             return static_cast<Byte>(value);
         }
 
