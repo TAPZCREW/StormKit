@@ -10,70 +10,31 @@ import :Meta.Concepts;
 
 export namespace stormkit::core {
     template<class T>
-    struct CanonicalTypeTrait {
-        using Type = std::remove_cvref_t<T>;
-    };
+    using CanonicalType = std::remove_cvref_t<T>;
+
+    template<auto value>
+    using CanonicalTypeOf = CanonicalType<decltype(value)>;
 
     template<class T>
-    using CanonicalType = typename CanonicalTypeTrait<T>::Type;
+    using DecayType = std::decay_t<T>;
 
     template<class T>
-    struct DecayTypeTrait {
-        using Type = std::decay_t<T>;
-    };
+    using RemoveIndirectionsType = std::remove_pointer_t<std::remove_reference_t<T>>;
 
     template<class T>
-    using DecayType = typename DecayTypeTrait<T>::Type;
+    using ElementType = typename std::pointer_traits<T>::element_type;
 
     template<class T>
-    struct RemoveIndirectionsTypeTrait {
-        using Type = std::remove_pointer_t<std::remove_reference_t<T>>;
-    };
-
-    template<class T>
-    using RemoveIndirectionsType = RemoveIndirectionsTypeTrait<T>::Type;
-
-    template<class T>
-    struct ElementTypeTrait {
-        using Type = T;
-    };
-
-    template<IsFancyPointer T>
-    struct ElementTypeTrait<T> {
-        using Type = std::remove_pointer_t<typename T::element_type>;
-    };
-
-    template<IsRawPointer T>
-    struct ElementTypeTrait<T> {
-        using Type = std::remove_pointer_t<T>;
-    };
-
-    template<class T>
-    using ElementType = typename ElementTypeTrait<T>::Type;
+    using PointerType = typename std::pointer_traits<T>::pointer;
 
     template<std::ranges::range Range>
-    struct IteratorTypeTrait {
-        using Type = decltype(std::cbegin(std::declval<Range>()));
-    };
+    using IteratorType = decltype(std::cbegin(std::declval<Range>()));
 
     template<std::ranges::range Range>
-    using IteratorType = typename IteratorTypeTrait<Range>::Type;
+    using SentinelType = decltype(std::cend(std::declval<Range>()));
 
     template<std::ranges::range Range>
-    struct SentinelTypeTrait {
-        using Type = decltype(std::cend(std::declval<Range>()));
-    };
-
-    template<std::ranges::range Range>
-    using SentinelType = typename SentinelTypeTrait<Range>::Type;
-
-    template<std::ranges::range Range>
-    struct RangeTypeTrait {
-        using Type = std::remove_cvref_t<decltype(*std::begin(std::declval<Range>()))>;
-    };
-
-    template<std::ranges::range Range>
-    using RangeType = typename RangeTypeTrait<Range>::Type;
+    using RangeType = CanonicalType<decltype(*std::begin(std::declval<Range>()))>;
 
     template<IsArithmetic T, IsArithmetic V>
     constexpr auto isGreater() noexcept;
@@ -85,47 +46,39 @@ export namespace stormkit::core {
     using SafeNarrowHelperOtherType = std::conditional_t<isGreater<T, V>(), V, T>;
 
     template<class T, typename U>
-    struct LikeCV {
+    struct ConstnessLikeTrait {
       private:
-        using U1 = std::conditional_t<std::is_const_v<T>, std::add_const_t<U>, U>;
-        using U2 = std::conditional_t<std::is_volatile_v<T>, std::add_volatile_t<U1>, U1>;
+        using T1 = RemoveIndirectionsType<T>;
+        using U1 = std::conditional_t<std::is_const_v<T1>, std::add_const_t<U>, U>;
+        using U2 = std::conditional_t<std::is_volatile_v<T1>, std::add_volatile_t<U1>, U1>;
 
       public:
-        using type = U2;
+        using Type = U2;
     };
 
     template<class T, typename U>
-    using LikeCVType = LikeCV<T, U>::type;
+    using ConstnessLike = ConstnessLikeTrait<T, U>::Type;
 
     template<class T, typename U>
-    struct LikeRef {
+    struct ForwardLikeTrait {
       private:
-        using U1
-            = std::conditional_t<std::is_lvalue_reference_v<T>, std::add_lvalue_reference_t<U>, U>;
-        using U2 = std::
-            conditional_t<std::is_rvalue_reference_v<T>, std::add_rvalue_reference_t<U1>, U1>;
+        using U1 = ConstnessLike<T, U>;
+        using U2
+            = std::conditional_t<std::is_lvalue_reference_v<T>, std::add_lvalue_reference_t<U1>, U1>;
+        using U3 = std::
+            conditional_t<std::is_rvalue_reference_v<T>, std::add_rvalue_reference_t<U2>, U2>;
 
       public:
-        using type = U2;
+        using Type = U3;
     };
 
     template<class T, typename U>
-    using LikeRefType = LikeRef<T, U>::type;
+    using ForwardLike = ForwardLikeTrait<T, U>::Type;
 
-    template<class T, typename U>
-    struct Like {
-      private:
-        using U1 = LikeCVType<T, U>;
-        using U2 = LikeRefType<T, U1>;
+    template<typename ... Ts>
+    struct AlwaysTrue: std::false_type {};
 
-      public:
-        using type = U2;
-    };
-
-    template<class T, typename U>
-    using LikeType = Like<T, U>::type;
-
-    template<typename T>
+    template<typename ... Ts>
     struct AlwaysFalse: std::false_type {};
 
     template<typename T>
