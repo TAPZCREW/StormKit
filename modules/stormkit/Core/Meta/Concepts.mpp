@@ -29,27 +29,26 @@ namespace stormkit::core {
             { std::hash<std::remove_cvref_t<T>> {}(a) } -> std::convertible_to<std::size_t>;
         };
 
-        template<class T>
-        concept IsFancyPointer = requires { typename T::element_type; } and requires(T a) {
-            a.operator->();
-            a.operator*();
-            a.get();
-        };
+        template<class T, class U>
+        concept IsStrict = std::same_as<T, U>;
 
         template<class T, class U>
-        concept Is = std::same_as<T, U> or std::derived_from<T, U>;
+        concept Is = IsStrict<T, U> or std::derived_from<T, U> or std::derived_from<U, T>;
 
         template<class T, class... U>
-        concept Are = ((std::same_as<T, U> or std::derived_from<T, U>) and ...);
+        concept Are = (Is<T, U> and ...);
 
         template<class T, class... U>
         concept IsOneOf = (Is<T, U> or ...);
+
+        template<class T, class... U>
+        concept IsStrictOneOf = (IsStrict<T, U> or ...);
 
         template<class T, class U>
         concept IsNot = not Is<T, U>;
 
         template<class T>
-        concept IsByte = Is<T, std::byte>;
+        concept IsByte = IsStrict<T, std::byte>;
 
         template<class T>
         concept IsNotByte = not IsByte<T>;
@@ -61,15 +60,27 @@ namespace stormkit::core {
         concept IsRawPointer = std::is_pointer_v<T>;
 
         template<class T>
-        concept IsPointer = IsRawPointer<T> or IsFancyPointer<T>;
+        concept IsViewPointer = IsRawPointer<T> or (requires {
+            typename T::element_type;
+            typename T::pointer;
+        } and requires(T a) {
+            { a.operator->() } -> std::convertible_to<decltype(&*a)>;
+            { a.operator*() };
+            { static_cast<bool>(a) };
+        });
 
         template<class T>
-        concept IsPolymorphic = std::is_polymorphic_v<T>;
+        concept IsFancyPointer = requires {
+            typename T::element_type;
+        } and requires(T a) {
+            { a.operator->() } -> std::convertible_to<decltype(&*a)>;
+            { a.operator*() };
+            { a.reset() };
+            { static_cast<bool>(a) };
+        };
 
         template<class T>
-        concept IsPolymorphicPointer
-            = (IsRawPointer<T> and IsPolymorphic<std::remove_pointer_t<T>>)
-              or (IsFancyPointer<T> and IsPolymorphic<typename T::element_type>);
+        concept IsPointer = IsViewPointer<T> or IsFancyPointer<T>;
 
         // clang-format off
         template<class T>
@@ -86,8 +97,7 @@ namespace stormkit::core {
         concept IsReference = IsLValueReference<T> or IsRValueReference<T>;
 
         template<class T>
-        concept IsPolymorphicReference
-            = IsReference<T> and IsPolymorphic<std::remove_reference_t<T>>;
+        concept IsMovedFancyPointer = IsFancyPointer<T> and IsRValueReference<T>;
 
         // clang-format off
         template<class T>
@@ -99,6 +109,19 @@ namespace stormkit::core {
 
         template<class... T>
         concept AreIndirections = ((IsLValueReference<T> or IsPointer<T>) && ...);
+
+        template<class T>
+        concept IsPolymorphic = std::is_polymorphic_v<T>;
+
+        template<class T>
+        concept IsPolymorphicPointer
+            = IsPointer<T> and IsPolymorphic<typename std::pointer_traits<T>::element_type>;
+
+        template<class T>
+        concept IsPolymorphicReference = IsReference<T> and IsPolymorphic<std::remove_reference_t<T>>;
+
+        template<class T>
+        concept IsPolymorphicIndirection = IsPolymorphicReference<T> or IsPolymorphicPointer<T>;
 
         template<class T>
         concept IsRawIndirection = IsLValueReference<T> or IsRawPointer<T>;
@@ -114,7 +137,7 @@ namespace stormkit::core {
 
         template<typename T>
         concept IsIntegral
-            = (std::integral<T> and not Is<T, bool> and not IsByte<T>)
+            = (std::integral<T> and not IsStrict<T, bool> and not IsByte<T>)
               or Is<T,
                     std::ranges::range_difference_t<std::ranges::iota_view<long long, long long>>>
               or Is<T,
@@ -122,11 +145,17 @@ namespace stormkit::core {
                         std::ranges::iota_view<unsigned long long, unsigned long long>>>;
 
         template<typename T>
+        concept IsIntegralOrEnumeration = IsIntegral<T> or IsEnumeration<T>;
+
+        template<typename T>
         concept IsFloatingPoint = std::floating_point<T>;
 
         template<class T>
         concept IsArithmetic
             = (IsIntegral<T> or IsFloatingPoint<T>) and not IsPointer<T> and not IsEnumeration<T>;
+
+        template<class T>
+        concept IsScalar = IsArithmetic<T> or IsPointer<T> or IsEnumeration<T>;
 
         template<class T>
         concept IsPreIncrementable = requires(T& a) { a.operator--(); };
@@ -204,12 +233,16 @@ namespace stormkit::core {
             { static_cast<To>(std::forward<From>(from)) } -> Is<To>;
         };
 
-        template<typename To, typename From>
-        concept IsNarrowing
-            = IsArithmetic<To> and IsArithmetic<From> and IsBraceInitializableTo<From, To>;
-
         template<typename T>
         concept IsUnsigned = std::is_unsigned_v<T>;
+
+        template<typename T>
+        concept IsSigned = std::is_signed_v<T>;
+
+        template<typename T1, typename T2>
+        concept HasEqualityOperator = requires(const T1& first, const T2& second) {
+            { first == second } -> IsBooleanTestable;
+        };
     } // namespace stormkit::core
 
 #ifndef STORMKIT_NO_MODULES
