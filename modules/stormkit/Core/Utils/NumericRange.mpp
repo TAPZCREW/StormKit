@@ -260,9 +260,9 @@ namespace stormkit::core {
     STORMKIT_FORCE_INLINE constexpr auto range(const T& begin, const U& end, const V& step) noexcept
         -> decltype(auto) {
         using Type = SafeNarrowHelperType<SafeNarrowHelperType<T, U>, V>;
-        return range(NumericsRange<Type> { .begin = narrow<Type>(begin),
-                                           .end   = narrow<Type>(end),
-                                           .step  = narrow<Type>(step) });
+        return range(NumericsRange<Type> { .begin = as<Type>(begin),
+                                           .end   = as<Type>(end),
+                                           .step  = as<Type>(step) });
     }
 
     /////////////////////////////////////

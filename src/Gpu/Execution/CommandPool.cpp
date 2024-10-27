@@ -43,7 +43,7 @@ namespace stormkit::gpu {
         if (create_count > 0) {
             const auto allocate_info =
                 vk::CommandBufferAllocateInfo { .commandPool = *vkHandle(),
-                                                .level = narrow<vk::CommandBufferLevel>(level),
+                                                .level = as<vk::CommandBufferLevel>(level),
                                                 .commandBufferCount = as<UInt32>(count) };
 
             // TODO handle error here

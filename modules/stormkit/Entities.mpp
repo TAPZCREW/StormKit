@@ -225,7 +225,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_INLINE auto EntityHashFunc::operator()(Entity k) const noexcept -> Hash64 {
-        return narrow<Hash64>(k);
+        return as<Hash64>(k);
     }
 
     /////////////////////////////////////
@@ -233,7 +233,7 @@ namespace stormkit::entities {
     template<class Result>
     constexpr auto componentHash(std::string_view str) noexcept -> Result {
         return std::empty(str) ? 0xcbf29ce484222325UL
-                               : (narrow<Hash64>(str[0]) ^
+                               : (as<Hash64>(str[0]) ^
                                   componentHash<Result>(str.substr(1, std::size(str) - 1))) *
                                      0x100000001b3UL;
     }
@@ -242,7 +242,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     constexpr auto componentHash(const char* str, RangeExtent size) noexcept -> Component::Type {
         return size == 0 ? 0xcbf29ce484222325UL
-                         : (narrow<RangeExtent>(str[0]) ^
+                         : (as<RangeExtent>(str[0]) ^
                             componentHash(std::string_view { str + 1, size - 1 })) *
                                0x100000001b3UL;
     }

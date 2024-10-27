@@ -758,7 +758,7 @@ namespace stormkit::wsi::linux::x11 {
                 if (crtc == nullptr) continue;
 
                 monitor.extents.emplace_back(
-                    math::ExtentU { narrow<UInt32>(crtc->width), narrow<UInt32>(crtc->height) });
+                    math::ExtentU { as<UInt32>(crtc->width), as<UInt32>(crtc->height) });
             }
         }
 

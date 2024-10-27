@@ -177,7 +177,7 @@ namespace stormkit::image::details {
                                    std::end(previous_pixel.data) - diff,
                                    std::back_inserter(output),
                                    /*[](auto&& val) static noexcept { return as<Byte>(val); });*/
-                                   monadic::narrow<Byte>());
+                                   monadic::as<Byte>());
         }
 
         auto image_data = image::Image::ImageData { .extent            = extent,

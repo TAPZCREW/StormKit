@@ -36,7 +36,7 @@ namespace stormkit::engine {
                 .transform(monadic::emplaceTo(m_render_finisheds))
                 .and_then(curry(gpu::Fence::createSignaled, std::cref(device)))
                 .transform(monadic::emplaceTo(m_in_flight_fences))
-                .transform_error(monadic::map(monadic::narrow<gpu::Result>(), throwError()));
+                .transform_error(monadic::map(monadic::as<gpu::Result>(), throwError()));
         }
 
         const auto command_pool =
@@ -60,13 +60,13 @@ namespace stormkit::engine {
 
         auto fence =
             gpu::Fence::create(device)
-                .transform_error(monadic::map(monadic::narrow<gpu::Result>(), throwError()))
+                .transform_error(monadic::map(monadic::as<gpu::Result>(), throwError()))
                 .value();
 
         auto cmbs = toRefs(transition_command_buffers);
         raster_queue.submit({ .command_buffers = cmbs }, fence);
 
-        fence.wait().transform_error(monadic::map(monadic::narrow<gpu::Result>(), throwError()));
+        fence.wait().transform_error(monadic::map(monadic::as<gpu::Result>(), throwError()));
     }
 
     /////////////////////////////////////
@@ -87,7 +87,7 @@ namespace stormkit::engine {
                             std::cref(image_available)))
             .transform([&, this](auto&& _result) noexcept {
                 auto&& [result, image_index] = _result; // TODO handle result
-                return Frame { .current_frame   = narrow<UInt32>(m_current_frame),
+                return Frame { .current_frame   = as<UInt32>(m_current_frame),
                                .image_index     = image_index,
                                .image_available = image_available,
                                .render_finished = render_finished,

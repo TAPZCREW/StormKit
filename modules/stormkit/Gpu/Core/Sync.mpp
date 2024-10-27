@@ -102,7 +102,7 @@ namespace stormkit::gpu {
         device.vkHandle()
             .createFence(create_info)
             .transform(core::monadic::set(m_vk_fence))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(), throwError()));
+            .transform_error(core::monadic::map(core::monadic::as<Result>(), throwError()));
     }
 
     /////////////////////////////////////
@@ -127,7 +127,7 @@ namespace stormkit::gpu {
                 if (result == vk::Result::eNotReady) return Status::Unsignaled;
                 return Status::Signaled;
             })
-            .transform_error(core::monadic::narrow<Result>());
+            .transform_error(core::monadic::as<Result>());
     }
 
     /////////////////////////////////////
@@ -169,9 +169,9 @@ namespace stormkit::gpu {
         const auto possible_results = std::array { vk::Result::eSuccess, vk::Result::eNotReady };
 
         if (std::ranges::any_of(possible_results, core::monadic::is(result))) [[likely]]
-            return narrow<Result>(result);
+            return as<Result>(result);
 
-        return std::unexpected { narrow<Result>(result) };
+        return std::unexpected { as<Result>(result) };
     }
 
     /////////////////////////////////////
@@ -194,7 +194,7 @@ namespace stormkit::gpu {
         device.vkHandle()
             .createSemaphore(create_info)
             .transform(core::monadic::set(m_vk_semaphore))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(), throwError()));
+            .transform_error(core::monadic::map(core::monadic::as<Result>(), throwError()));
     };
 
     /////////////////////////////////////

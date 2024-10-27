@@ -118,7 +118,7 @@ namespace stormkit::engine {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     auto RenderSurface::bufferingCount() const noexcept -> UInt32 {
-        return narrow<UInt32>(std::size(images()));
+        return as<UInt32>(std::size(images()));
     }
 
     /////////////////////////////////////

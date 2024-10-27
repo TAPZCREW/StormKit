@@ -175,7 +175,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename T, typename Flag>
     STORMKIT_FORCE_INLINE auto toVkFlags(Flag&& flag) noexcept -> vk::Flags<T> {
-        return vk::Flags<T> { narrow<T>(std::forward<Flag>(flag)) };
+        return vk::Flags<T> { as<T>(std::forward<Flag>(flag)) };
     }
 
     namespace monadic {

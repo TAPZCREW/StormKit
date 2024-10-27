@@ -57,7 +57,7 @@ namespace stormkit::gpu {
         std::ranges::copy(properties.pipelineCacheUUID,
                           std::ranges::begin(m_device_info.pipeline_cache_uuid));
 
-        m_device_info.type = narrow<PhysicalDeviceType>(properties.deviceType);
+        m_device_info.type = as<PhysicalDeviceType>(properties.deviceType);
 
         m_capabilities.limits.max_image_dimension_1D    = properties.limits.maxImageDimension1D;
         m_capabilities.limits.max_image_dimension_2D    = properties.limits.maxImageDimension2D;
@@ -188,31 +188,31 @@ namespace stormkit::gpu {
         m_capabilities.limits.max_framebuffer_height = properties.limits.maxFramebufferHeight;
         m_capabilities.limits.max_framebuffer_layers = properties.limits.maxFramebufferLayers;
         m_capabilities.limits.framebuffer_color_sample_counts
-            = narrow<SampleCountFlag>(properties.limits.framebufferColorSampleCounts
+            = as<SampleCountFlag>(properties.limits.framebufferColorSampleCounts
                                           .operator vk::SampleCountFlags::MaskType());
         m_capabilities.limits.framebuffer_depth_sample_counts
-            = narrow<SampleCountFlag>(properties.limits.framebufferDepthSampleCounts
+            = as<SampleCountFlag>(properties.limits.framebufferDepthSampleCounts
                                           .operator vk::SampleCountFlags::MaskType());
         m_capabilities.limits.framebuffer_stencil_sample_counts
-            = narrow<SampleCountFlag>(properties.limits.framebufferStencilSampleCounts
+            = as<SampleCountFlag>(properties.limits.framebufferStencilSampleCounts
                                           .operator vk::SampleCountFlags::MaskType());
         m_capabilities.limits.framebuffer_no_attachments_sample_counts
-            = narrow<SampleCountFlag>(properties.limits.framebufferNoAttachmentsSampleCounts
+            = as<SampleCountFlag>(properties.limits.framebufferNoAttachmentsSampleCounts
                                           .operator vk::SampleCountFlags::MaskType());
         m_capabilities.limits.max_color_attachments = properties.limits.maxColorAttachments;
         m_capabilities.limits.sampled_image_color_sample_counts
-            = narrow<SampleCountFlag>(properties.limits.sampledImageColorSampleCounts
+            = as<SampleCountFlag>(properties.limits.sampledImageColorSampleCounts
                                           .operator vk::SampleCountFlags::MaskType());
         m_capabilities.limits.sampled_image_integer_sample_counts
-            = narrow<SampleCountFlag>(properties.limits.sampledImageIntegerSampleCounts
+            = as<SampleCountFlag>(properties.limits.sampledImageIntegerSampleCounts
                                           .operator vk::SampleCountFlags::MaskType());
         m_capabilities.limits.sampled_image_depth_sample_counts
-            = narrow<SampleCountFlag>(properties.limits.sampledImageDepthSampleCounts
+            = as<SampleCountFlag>(properties.limits.sampledImageDepthSampleCounts
                                           .operator vk::SampleCountFlags::MaskType());
         m_capabilities.limits.sampled_image_stencil_sample_counts
-            = narrow<SampleCountFlag>(properties.limits.sampledImageStencilSampleCounts
+            = as<SampleCountFlag>(properties.limits.sampledImageStencilSampleCounts
                                           .operator vk::SampleCountFlags::MaskType());
-        m_capabilities.limits.storage_image_sample_counts = narrow<SampleCountFlag>(
+        m_capabilities.limits.storage_image_sample_counts = as<SampleCountFlag>(
             properties.limits.storageImageSampleCounts.operator vk::SampleCountFlags::MaskType());
         m_capabilities.limits.max_sample_mask_words = properties.limits.maxSampleMaskWords;
         m_capabilities.limits.timestamp_compute_and_engine
@@ -322,7 +322,7 @@ namespace stormkit::gpu {
         m_memory_properties
             = m_vk_memory_properties.memoryTypes
               | std::views::transform([](auto&& property) noexcept {
-                    return narrow<MemoryPropertyFlag>(
+                    return as<MemoryPropertyFlag>(
                         property.propertyFlags.operator vk::MemoryPropertyFlags::MaskType());
                 })
               | std::ranges::to<std::vector>();
@@ -330,7 +330,7 @@ namespace stormkit::gpu {
         m_queue_families
             = m_vk_physical_device.getQueueFamilyProperties()
               | std::views::transform([](auto&& family) noexcept {
-                    return QueueFamily { .flags = narrow<QueueFlag>(
+                    return QueueFamily { .flags = as<QueueFlag>(
                                              family.queueFlags.operator vk::QueueFlags::MaskType()),
                                          .count = family.queueCount };
                 })

@@ -649,12 +649,12 @@ namespace stormkit::core {
         constexpr auto as(const From& from) noexcept -> To {
             using UnderlyingType = decltype(std::declval<To>().x);
             auto to              = To {};
-            to.x                 = core::narrow<UnderlyingType>(from.width);
-            to.y                 = core::narrow<UnderlyingType>(from.height);
+            to.x                 = core::as<UnderlyingType>(from.width);
+            to.y                 = core::as<UnderlyingType>(from.height);
 
             if constexpr (math::IsVector3Like<core::CanonicalType<To>>
                           and math::IsExtent3Like<From>)
-                to.z = core::narrow<UnderlyingType>(from.depth);
+                to.z = core::as<UnderlyingType>(from.depth);
 
             return to;
         }
@@ -697,12 +697,12 @@ namespace stormkit::core {
         constexpr auto narrow(const From& from) noexcept -> To {
             using UnderlyingType = decltype(std::declval<To>().x);
             auto to              = To {};
-            to.width             = core::as<UnderlyingType>(from.x);
-            to.height            = core::as<UnderlyingType>(from.y);
+            to.width             = core::narrow<UnderlyingType>(from.x);
+            to.height            = core::narrow<UnderlyingType>(from.y);
 
             if constexpr (math::IsExtent3Like<core::CanonicalType<To>>
                           and math::IsVector3Like<From>)
-                to.depth = core::as<UnderlyingType>(from.z);
+                to.depth = core::narrow<UnderlyingType>(from.z);
 
             return to;
         }

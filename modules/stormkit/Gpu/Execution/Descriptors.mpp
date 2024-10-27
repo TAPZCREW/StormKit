@@ -249,7 +249,7 @@ namespace stormkit::gpu {
                             vk::DescriptorImageInfo {}
                                 .setSampler(toVkHandle(descriptor.sampler))
                                 .setImageView(toVkHandle(descriptor.image_view))
-                                .setImageLayout(narrow<vk::ImageLayout>(descriptor.layout)));
+                                .setImageLayout(as<vk::ImageLayout>(descriptor.layout)));
                     }));
 
             return std::pair { std::move(buffers), std::move(images) };
@@ -277,9 +277,9 @@ namespace stormkit::gpu {
             m_bindings | std::views::transform([](auto&& binding) noexcept {
                 return vk::DescriptorSetLayoutBinding {}
                     .setBinding(binding.binding)
-                    .setDescriptorType(narrow<vk::DescriptorType>(binding.type))
+                    .setDescriptorType(as<vk::DescriptorType>(binding.type))
                     .setDescriptorCount(as<UInt32>(binding.descriptor_count))
-                    .setStageFlags(narrow<vk::ShaderStageFlagBits>(binding.stages));
+                    .setStageFlags(as<vk::ShaderStageFlagBits>(binding.stages));
             }) |
             std::ranges::to<std::vector>();
 
@@ -361,7 +361,7 @@ namespace stormkit::gpu {
                                                          Tag) {
         const auto pool_sizes = sizes | std::views::transform([&](const auto& size) {
                                     return vk::DescriptorPoolSize {}
-                                        .setType(narrow<vk::DescriptorType>(size.type))
+                                        .setType(as<vk::DescriptorType>(size.type))
                                         .setDescriptorCount(size.descriptor_count);
                                 }) |
                                 std::ranges::to<std::vector>();

@@ -220,7 +220,7 @@ namespace stormkit::gpu {
         doInitInstance()
             .and_then(curry(&Instance::doInitDebugReportCallback, this))
             .and_then(curry(&Instance::doRetrievePhysicalDevices, this))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(), throwError()));
+            .transform_error(core::monadic::map(core::monadic::as<Result>(), throwError()));
     }
 
     /////////////////////////////////////

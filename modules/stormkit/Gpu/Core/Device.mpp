@@ -250,7 +250,7 @@ namespace stormkit::gpu {
         if (!vkHandle().getDispatcher()->vkSetDebugUtilsObjectNameEXT) return;
 
         const auto info = vk::DebugUtilsObjectNameInfoEXT {}
-                              .setObjectType(narrow<vk::ObjectType>(type))
+                              .setObjectType(as<vk::ObjectType>(type))
                               .setObjectHandle(object)
                               .setPObjectName(std::data(name));
 

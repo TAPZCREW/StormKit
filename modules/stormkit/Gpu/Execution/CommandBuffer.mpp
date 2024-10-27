@@ -506,9 +506,9 @@ namespace stormkit::gpu {
                                                    vk::Result::eSuboptimalKHR };
 
         if (not std::ranges::any_of(possible_results, core::monadic::is(result))) [[likely]]
-            return std::unexpected { narrow<gpu::Result>(result) };
+            return std::unexpected { as<gpu::Result>(result) };
 
-        return narrow<gpu::Result>(result);
+        return as<gpu::Result>(result);
     }
 
     /////////////////////////////////////
@@ -828,7 +828,7 @@ namespace stormkit::gpu {
                                                                     UInt32          mask) -> void {
         expects(m_state == State::Recording);
 
-        m_vk_command_buffer.setStencilCompareMask(narrow<vk::StencilFaceFlagBits>(face), mask);
+        m_vk_command_buffer.setStencilCompareMask(as<vk::StencilFaceFlagBits>(face), mask);
     }
 
     /////////////////////////////////////
@@ -837,7 +837,7 @@ namespace stormkit::gpu {
                                                                   UInt32          mask) -> void {
         expects(m_state == State::Recording);
 
-        m_vk_command_buffer.setStencilWriteMask(narrow<vk::StencilFaceFlagBits>(face), mask);
+        m_vk_command_buffer.setStencilWriteMask(as<vk::StencilFaceFlagBits>(face), mask);
     }
 
     /////////////////////////////////////
@@ -846,7 +846,7 @@ namespace stormkit::gpu {
                                                                   UInt32 reference) -> void {
         expects(m_state == State::Recording);
 
-        m_vk_command_buffer.setStencilReference(narrow<vk::StencilFaceFlagBits>(face), reference);
+        m_vk_command_buffer.setStencilReference(as<vk::StencilFaceFlagBits>(face), reference);
     }
 
     /////////////////////////////////////
@@ -995,7 +995,7 @@ namespace stormkit::gpu {
         const auto vk_copy_regions
             = buffer_image_copies | std::views::transform([](auto&& buffer_image_copy) noexcept {
                   const auto image_subresource = vk::ImageSubresourceLayers {
-                      .aspectMask = narrow<vk::ImageAspectFlagBits>(
+                      .aspectMask = as<vk::ImageAspectFlagBits>(
                           buffer_image_copy.subresource_layers.aspect_mask),
                       .mipLevel       = buffer_image_copy.subresource_layers.mip_level,
                       .baseArrayLayer = buffer_image_copy.subresource_layers.base_array_layer,
@@ -1036,7 +1036,7 @@ namespace stormkit::gpu {
         const auto vk_copy_regions
             = buffer_image_copies | std::views::transform([](auto&& buffer_image_copy) noexcept {
                   const auto image_subresource = vk::ImageSubresourceLayers {
-                      .aspectMask = narrow<vk::ImageAspectFlagBits>(
+                      .aspectMask = as<vk::ImageAspectFlagBits>(
                           buffer_image_copy.subresource_layers.aspect_mask),
                       .mipLevel       = buffer_image_copy.subresource_layers.mip_level,
                       .baseArrayLayer = buffer_image_copy.subresource_layers.base_array_layer,
@@ -1073,14 +1073,14 @@ namespace stormkit::gpu {
         expects(m_state == State::Recording);
 
         const auto vk_src_subresource_layers = vk::ImageSubresourceLayers {
-            .aspectMask     = narrow<vk::ImageAspectFlagBits>(src_subresource_layers.aspect_mask),
+            .aspectMask     = as<vk::ImageAspectFlagBits>(src_subresource_layers.aspect_mask),
             .mipLevel       = src_subresource_layers.mip_level,
             .baseArrayLayer = src_subresource_layers.base_array_layer,
             .layerCount     = src_subresource_layers.layer_count
         };
 
         const auto vk_dst_subresource_layers = vk::ImageSubresourceLayers {
-            .aspectMask     = narrow<vk::ImageAspectFlagBits>(dst_subresource_layers.aspect_mask),
+            .aspectMask     = as<vk::ImageAspectFlagBits>(dst_subresource_layers.aspect_mask),
             .mipLevel       = dst_subresource_layers.mip_level,
             .baseArrayLayer = dst_subresource_layers.base_array_layer,
             .layerCount     = dst_subresource_layers.layer_count
@@ -1093,9 +1093,9 @@ namespace stormkit::gpu {
         };
 
         m_vk_command_buffer.copyImage(toVkHandle(src),
-                                      narrow<vk::ImageLayout>(src_layout),
+                                      as<vk::ImageLayout>(src_layout),
                                       toVkHandle(dst),
-                                      narrow<vk::ImageLayout>(dst_layout),
+                                      as<vk::ImageLayout>(dst_layout),
                                       vk_regions);
     }
 
@@ -1113,14 +1113,14 @@ namespace stormkit::gpu {
         const auto vk_extent = as<vk::Extent3D>(dst.extent());
 
         const auto vk_src_subresource_layers = vk::ImageSubresourceLayers {
-            .aspectMask     = narrow<vk::ImageAspectFlagBits>(src_subresource_layers.aspect_mask),
+            .aspectMask     = as<vk::ImageAspectFlagBits>(src_subresource_layers.aspect_mask),
             .mipLevel       = src_subresource_layers.mip_level,
             .baseArrayLayer = src_subresource_layers.base_array_layer,
             .layerCount     = src_subresource_layers.layer_count
         };
 
         const auto vk_dst_subresource_layers = vk::ImageSubresourceLayers {
-            .aspectMask     = narrow<vk::ImageAspectFlagBits>(dst_subresource_layers.aspect_mask),
+            .aspectMask     = as<vk::ImageAspectFlagBits>(dst_subresource_layers.aspect_mask),
             .mipLevel       = dst_subresource_layers.mip_level,
             .baseArrayLayer = dst_subresource_layers.base_array_layer,
             .layerCount     = dst_subresource_layers.layer_count
@@ -1133,9 +1133,9 @@ namespace stormkit::gpu {
         };
 
         m_vk_command_buffer.resolveImage(toVkHandle(src),
-                                         narrow<vk::ImageLayout>(src_layout),
+                                         as<vk::ImageLayout>(src_layout),
                                          toVkHandle(dst),
-                                         narrow<vk::ImageLayout>(dst_layout),
+                                         as<vk::ImageLayout>(dst_layout),
                                          vk_regions);
     }
 
@@ -1152,14 +1152,14 @@ namespace stormkit::gpu {
         const auto vk_regions
             = regions | std::views::transform([](auto&& region) noexcept {
                   const auto vk_src_subresource_layers = vk::ImageSubresourceLayers {
-                      .aspectMask     = narrow<vk::ImageAspectFlagBits>(region.src.aspect_mask),
+                      .aspectMask     = as<vk::ImageAspectFlagBits>(region.src.aspect_mask),
                       .mipLevel       = region.src.mip_level,
                       .baseArrayLayer = region.src.base_array_layer,
                       .layerCount     = region.src.layer_count
                   };
 
                   const auto vk_dst_subresource_layers = vk::ImageSubresourceLayers {
-                      .aspectMask     = narrow<vk::ImageAspectFlagBits>(region.dst.aspect_mask),
+                      .aspectMask     = as<vk::ImageAspectFlagBits>(region.dst.aspect_mask),
                       .mipLevel       = region.dst.mip_level,
                       .baseArrayLayer = region.dst.base_array_layer,
                       .layerCount     = region.dst.layer_count
@@ -1177,11 +1177,11 @@ namespace stormkit::gpu {
               | std::ranges::to<std::vector>();
 
         m_vk_command_buffer.blitImage(toVkHandle(src),
-                                      narrow<vk::ImageLayout>(src_layout),
+                                      as<vk::ImageLayout>(src_layout),
                                       toVkHandle(dst),
-                                      narrow<vk::ImageLayout>(dst_layout),
+                                      as<vk::ImageLayout>(dst_layout),
                                       vk_regions,
-                                      narrow<vk::Filter>(filter));
+                                      as<vk::Filter>(filter));
     }
 
     /////////////////////////////////////
@@ -1193,8 +1193,8 @@ namespace stormkit::gpu {
         const ImageSubresourceRange& subresource_range) -> void {
         expects(m_state == State::Recording);
 
-        const auto vk_src_layout = narrow<vk::ImageLayout>(src_layout);
-        const auto vk_dst_layout = narrow<vk::ImageLayout>(dst_layout);
+        const auto vk_src_layout = as<vk::ImageLayout>(src_layout);
+        const auto vk_dst_layout = as<vk::ImageLayout>(dst_layout);
 
         const auto& src_access = old_layout_access_map.find(vk_src_layout);
         const auto& dst_access = new_layout_access_map.find(vk_dst_layout);
@@ -1203,7 +1203,7 @@ namespace stormkit::gpu {
         const auto dst_stage = dst_access->second.second;
 
         const auto vk_subresource_range = vk::ImageSubresourceRange {
-            .aspectMask     = narrow<vk::ImageAspectFlagBits>(subresource_range.aspect_mask),
+            .aspectMask     = as<vk::ImageAspectFlagBits>(subresource_range.aspect_mask),
             .baseMipLevel   = subresource_range.base_mip_level,
             .levelCount     = subresource_range.level_count,
             .baseArrayLayer = subresource_range.base_array_layer,
@@ -1237,8 +1237,8 @@ namespace stormkit::gpu {
             = memory_barriers
               | std::views::transform([](auto&& barrier) noexcept -> decltype(auto) {
                     return vk::MemoryBarrier {
-                        .srcAccessMask = narrow<vk::AccessFlagBits>(barrier.src),
-                        .dstAccessMask = narrow<vk::AccessFlagBits>(barrier.dst),
+                        .srcAccessMask = as<vk::AccessFlagBits>(barrier.src),
+                        .dstAccessMask = as<vk::AccessFlagBits>(barrier.dst),
                     };
                 })
               | std::ranges::to<std::vector>();
@@ -1247,8 +1247,8 @@ namespace stormkit::gpu {
             = buffer_memory_barriers
               | std::views::transform([](auto&& barrier) noexcept -> decltype(auto) {
                     return vk::BufferMemoryBarrier {
-                        .srcAccessMask       = narrow<vk::AccessFlagBits>(barrier.src),
-                        .dstAccessMask       = narrow<vk::AccessFlagBits>(barrier.dst),
+                        .srcAccessMask       = as<vk::AccessFlagBits>(barrier.src),
+                        .dstAccessMask       = as<vk::AccessFlagBits>(barrier.dst),
                         .srcQueueFamilyIndex = barrier.src_queue_family_index,
                         .dstQueueFamilyIndex = barrier.dst_queue_family_index,
                         .buffer              = toVkHandle(barrier.buffer),
@@ -1262,7 +1262,7 @@ namespace stormkit::gpu {
             = image_memory_barriers
               | std::views::transform([](auto&& barrier) noexcept -> decltype(auto) {
                     const auto vk_subresource_range = vk::ImageSubresourceRange {
-                        .aspectMask   = narrow<vk::ImageAspectFlagBits>(barrier.range.aspect_mask),
+                        .aspectMask   = as<vk::ImageAspectFlagBits>(barrier.range.aspect_mask),
                         .baseMipLevel = barrier.range.base_mip_level,
                         .levelCount   = barrier.range.level_count,
                         .baseArrayLayer = barrier.range.base_array_layer,
@@ -1270,10 +1270,10 @@ namespace stormkit::gpu {
                     };
 
                     return vk::ImageMemoryBarrier {
-                        .srcAccessMask       = narrow<vk::AccessFlagBits>(barrier.src),
-                        .dstAccessMask       = narrow<vk::AccessFlagBits>(barrier.dst),
-                        .oldLayout           = narrow<vk::ImageLayout>(barrier.old_layout),
-                        .newLayout           = narrow<vk::ImageLayout>(barrier.new_layout),
+                        .srcAccessMask       = as<vk::AccessFlagBits>(barrier.src),
+                        .dstAccessMask       = as<vk::AccessFlagBits>(barrier.dst),
+                        .oldLayout           = as<vk::ImageLayout>(barrier.old_layout),
+                        .newLayout           = as<vk::ImageLayout>(barrier.new_layout),
                         .srcQueueFamilyIndex = barrier.src_queue_family_index,
                         .dstQueueFamilyIndex = barrier.dst_queue_family_index,
                         .image               = toVkHandle(barrier.image),
@@ -1282,9 +1282,9 @@ namespace stormkit::gpu {
                 })
               | std::ranges::to<std::vector>();
 
-        m_vk_command_buffer.pipelineBarrier(narrow<vk::PipelineStageFlagBits>(src_mask),
-                                            narrow<vk::PipelineStageFlagBits>(dst_mask),
-                                            narrow<vk::DependencyFlagBits>(dependency),
+        m_vk_command_buffer.pipelineBarrier(as<vk::PipelineStageFlagBits>(src_mask),
+                                            as<vk::PipelineStageFlagBits>(dst_mask),
+                                            as<vk::DependencyFlagBits>(dependency),
                                             vk_memory_barriers,
                                             vk_buffer_memory_barriers,
                                             vk_image_memory_barriers);
@@ -1300,7 +1300,7 @@ namespace stormkit::gpu {
         expects(not std::empty(data));
 
         m_vk_command_buffer.pushConstants<const Byte>(toVkHandle(pipeline_layout),
-                                                      narrow<vk::ShaderStageFlagBits>(stage),
+                                                      as<vk::ShaderStageFlagBits>(stage),
                                                       offset,
                                                       data);
     }

@@ -114,11 +114,11 @@ namespace stormkit::gpu {
         device.vkHandle()
             .createSwapchainKHR(create_info)
             .transform(core::monadic::set(m_vk_swapchain))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(), throwError()));
+            .transform_error(core::monadic::map(core::monadic::as<Result>(), throwError()));
 
         m_extent       = as<math::ExtentU>(swapchain_extent);
         m_image_count  = as<UInt32>(std::size(m_images));
-        m_pixel_format = narrow<PixelFormat>(format.format);
+        m_pixel_format = as<PixelFormat>(format.format);
         // clang-format off
         m_images       = m_vk_swapchain->getImages() 
         | std::views::transform([&, this](auto&& image) noexcept {
@@ -140,9 +140,9 @@ namespace stormkit::gpu {
                                                    vk::Result::eSuboptimalKHR };
 
         if (not std::ranges::any_of(possible_results, core::monadic::is(result))) [[likely]]
-            return std::unexpected { narrow<gpu::Result>(result) };
+            return std::unexpected { as<gpu::Result>(result) };
 
-        return std::make_pair(narrow<gpu::Result>(result), index);
+        return std::make_pair(as<gpu::Result>(result), index);
     }
 
 } // namespace stormkit::gpu
