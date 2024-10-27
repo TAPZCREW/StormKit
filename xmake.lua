@@ -369,6 +369,7 @@ add_shflags("clang::-fexperimental-library", { force = true })
 add_mxxflags("clang::-fexperimental-library", { force = true })
 
 add_defines("MAGIC_ENUM_USE_STD_MODULE")
+add_defines("MAGIC_ENUM_DEFAULT_ENABLE_ENUM_FORMAT=0")
 add_defines("FROZEN_USE_STD_MODULE")
 
 if get_config("sanitizers") then

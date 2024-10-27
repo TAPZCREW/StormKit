@@ -9,6 +9,7 @@ module;
 export module stormkit.Core:TypeSafe.Flags;
 
 import std;
+export import magic_enum;
 
 import :Meta;
 

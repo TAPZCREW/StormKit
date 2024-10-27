@@ -10,6 +10,14 @@
     struct stormkit::core::details::EnableBitmaskOperators<e> { \
         constexpr EnableBitmaskOperators() = default;           \
         static constexpr bool enable       = true;              \
+    };                                                          \
+    template<>                                                  \
+    struct magic_enum::customize::enum_range<e> {               \
+        static constexpr bool is_flags = true;                  \
     };
+
+#define DISABLE_DEFAULT_FORMATER_FOR_ENUM(e) \
+    template<>                       \
+    inline constexpr auto stormkit::core::DisableDefaultFormaterForEnum<e> = true;
 
 #endif

@@ -12,11 +12,16 @@ import :TypeSafe.Integer;
 import :Utils.Time;
 import :Utils.Math;
 
+export namespace stormkit::core {
+    template<IsEnumeration T>
+    inline constexpr auto DisableDefaultFormaterForEnum = false;
+}
+
 export namespace std {
-    template<class CharT>
-    struct formatter<std::byte, CharT>: formatter<int, CharT> {
+    template<IsStrict<std::byte> T, class CharT>
+    struct formatter<T, CharT>: formatter<int, CharT> {
         template<class FormatContext>
-        auto format(std::byte data, FormatContext& ctx) const -> decltype(ctx.out());
+        auto format(T data, FormatContext& ctx) const -> decltype(ctx.out());
     };
 
     template<class CharT>
@@ -39,6 +44,7 @@ export namespace std {
     };
 
     template<stormkit::core::IsEnumeration T, typename CharT>
+        requires(not stormkit::core::DisableDefaultFormaterForEnum<T>)
     struct formatter<T, CharT>: public formatter<basic_string_view<CharT>, CharT> {
         template<class FormatContext>
         auto format(const T& data, FormatContext& ctx) const -> decltype(ctx.out());
@@ -52,10 +58,9 @@ export namespace std {
 namespace std {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class CharT>
+    template<IsStrict<std::byte> T, class CharT>
     template<class FormatContext>
-    auto formatter<std::byte, CharT>::format(std::byte data, FormatContext& ctx) const
-        -> decltype(ctx.out()) {
+    auto formatter<T, CharT>::format(T data, FormatContext& ctx) const -> decltype(ctx.out()) {
         return formatter<int, CharT>::format(static_cast<int>(data), ctx);
     }
 
@@ -90,6 +95,7 @@ namespace std {
     /////////////////////////////////////
     /////////////////////////////////////
     template<stormkit::core::IsEnumeration T, typename CharT>
+        requires(not stormkit::core::DisableDefaultFormaterForEnum<T>)
     template<class FormatContext>
     auto formatter<T, CharT>::format(const T& data, FormatContext& ctx) const
         -> decltype(ctx.out()) {
