@@ -49,12 +49,11 @@ export namespace stormkit::core { inline namespace casts {
     template<typename To, typename From>
     constexpr auto isSafeNarrowing(const From& from) noexcept -> Boolean {
         if constexpr ((IsArithmetic<From> and IsByte<To>) or (IsByte<From> and IsArithmetic<To>))
-            return (static_cast<From>(static_cast<To>(from)) == from)
-                   or ((static_cast<To>(from) < To {}) != (from < From {}));
+            return (static_cast<From>(static_cast<To>(from)) == from);
         else if constexpr (IsArithmetic<From> and IsArithmetic<To>)
-            return (static_cast<From>(static_cast<To>(from)) != from)
+            return (static_cast<From>(static_cast<To>(from)) == from)
                    or (IsSigned<To> != IsUnsigned<From>
-                       and ((static_cast<To>(from) < To {}) != (from < From {})));
+                       and ((static_cast<To>(from) < To {}) == (from < From {})));
         else
             static_assert(
                 false,
@@ -156,25 +155,26 @@ export namespace stormkit::core { inline namespace casts {
                                     = std::source_location::current()) noexcept -> To;
 
     // to / from byte(s)
-    template<typename To, typename From>
-        requires(not IsPointer<CanonicalType<From>>
-                 and ((IsConst<std::remove_reference_t<From>> and IsStrict<To, ByteView>)
-                      or (not IsConst<std::remove_reference_t<From>>
-                          and IsStrictOneOf<To, ByteView, MutableByteView>)))
+    template<IsStrictOneOf<ByteView, MutableByteView> To, typename From>
+        requires(not IsPointer<CanonicalType<From>>)
     [[nodiscard]] constexpr auto as(STORMKIT_LIFETIMEBOUND From& value,
                                     const std::source_location&  location
                                     = std::source_location::current()) noexcept -> To;
 
-    template<typename To, typename From>
-        requires(IsPointer<CanonicalType<From>> and not IsMovedFancyPointer<From>
-                 and ((IsConst<std::remove_reference_t<From>> and IsStrict<To, ByteView>)
-                      or (not IsConst<std::remove_reference_t<From>>
-                          and IsStrictOneOf<To, ByteView, MutableByteView>)))
+    template<IsStrictOneOf<ByteView, MutableByteView> To, typename From>
+        requires(IsPointer<CanonicalType<From>> and not IsMovedFancyPointer<From>)
     [[nodiscard]] constexpr auto as(From&&                      value,
                                     const std::source_location& location
                                     = std::source_location::current()) noexcept -> To;
 
     template<IsViewPointer To, typename From>
+        requires(IsStrictOneOf<CanonicalType<From>, ByteView, MutableByteView>)
+    [[nodiscard]] constexpr auto as(From&&                      value,
+                                    const std::source_location& location
+                                    = std::source_location::current()) noexcept
+        -> std::conditional_t<IsRawPointer<To>, Ref<ElementType<To>>, To>;
+
+    template<IsLValueReference To, typename From>
         requires(IsStrictOneOf<CanonicalType<From>, ByteView, MutableByteView>)
     [[nodiscard]] constexpr auto as(From&&                      value,
                                     const std::source_location& location
@@ -260,9 +260,9 @@ namespace stormkit::core { inline namespace casts {
     STORMKIT_FORCE_INLINE constexpr auto is(const From& value) noexcept -> decltype(auto) {
         if constexpr (IsStrict<To, From>) return std::true_type {};
         else if constexpr (IsPolymorphicPointer<From> and IsPolymorphic<To>)
-            return dynamic_cast<const To * const>(std::to_address(value)) != nullptr;
+            return dynamic_cast<const To* const>(std::to_address(value)) != nullptr;
         else if constexpr (IsPolymorphic<From> and IsPolymorphic<To>)
-            return dynamic_cast<const To * const>(&value) != nullptr;
+            return dynamic_cast<const To* const>(&value) != nullptr;
         else if constexpr ((Is<From, std::nullptr_t> or requires {
                                *value;
                                From {};
@@ -413,11 +413,8 @@ namespace stormkit::core { inline namespace casts {
     // to / from byte(s)
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename To, typename From>
-        requires(not IsPointer<CanonicalType<From>>
-                 and ((IsConst<std::remove_reference_t<From>> and IsStrict<To, ByteView>)
-                      or (not IsConst<std::remove_reference_t<From>>
-                          and IsStrictOneOf<To, ByteView, MutableByteView>)))
+    template<IsStrictOneOf<ByteView, MutableByteView> To, typename From>
+        requires(not IsPointer<CanonicalType<From>>)
     STORMKIT_FORCE_INLINE constexpr auto as(From&                       value,
                                             const std::source_location& location) noexcept -> To {
         return as<To>(&value, location);
@@ -425,19 +422,20 @@ namespace stormkit::core { inline namespace casts {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename To, typename From>
-        requires(IsPointer<CanonicalType<From>> and not IsMovedFancyPointer<From>
-                 and ((IsConst<std::remove_reference_t<From>> and IsStrict<To, ByteView>)
-                      or (not IsConst<std::remove_reference_t<From>>
-                          and IsStrictOneOf<To, ByteView, MutableByteView>)))
-    STORMKIT_FORCE_INLINE constexpr auto
-        as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept -> To {
-        expects(value != nullptr);
+    template<IsStrictOneOf<ByteView, MutableByteView> To, typename From>
+        requires(IsPointer<CanonicalType<From>> and not IsMovedFancyPointer<From>)
+    STORMKIT_FORCE_INLINE constexpr auto as(From&&                      value,
+                                            const std::source_location& location) noexcept -> To {
+        using CanonicalFrom = CanonicalType<From>;
+        using ElementFrom   = ElementType<CanonicalFrom>;
+        using BytePtr       = ConstnessLike<ElementFrom, Byte>* const;
 
-        using CanonicalFrom = ElementType<CanonicalType<From>>;
-        using BytePtr       = ConstnessLike<From, Byte>*;
+        static_assert(not(IsStrict<To, MutableByteView> and IsConst<ElementType<CanonicalFrom>>),
+                      "as<MutableByteView, Pointer> call with a pointer of const type");
+        expects(value != nullptr, "as<Bytes, Pointer> called with a null pointer", location);
+
         return To { std::bit_cast<BytePtr>(std::to_address(value)),
-                    sizeof(Byte) * sizeof(CanonicalFrom) };
+                    sizeof(Byte) * sizeof(ElementFrom) };
     }
 
     /////////////////////////////////////
@@ -445,17 +443,33 @@ namespace stormkit::core { inline namespace casts {
     template<IsViewPointer To, typename From>
         requires(IsStrictOneOf<CanonicalType<From>, ByteView, MutableByteView>)
     STORMKIT_FORCE_INLINE constexpr auto
-        as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept -> To {
+        as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept
+        -> std::conditional_t<IsRawPointer<To>, Ref<ElementType<To>>, To> {
         using Type    = ElementType<To>;
         using Pointer = Type*;
-        return std::bit_cast<Pointer>(std::data(value));
+        using To_     = std::conditional_t<IsRawPointer<To>, Ref<ElementType<To>>, To>;
+
+        return To_ { std::bit_cast<Pointer>(std::data(std::forward<From>(value))) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<IsLValueReference To, typename From>
+        requires(IsStrictOneOf<CanonicalType<From>, ByteView, MutableByteView>)
+    STORMKIT_FORCE_INLINE constexpr auto
+        as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept -> To {
+        using Type    = RemoveIndirectionsType<To>;
+        using Pointer = Type*;
+
+        return To { *std::bit_cast<Pointer>(std::data(std::forward<From>(value))) };
     }
 
     // polymorphism
     template<IsPolymorphicIndirection To, typename From>
         requires(IsPolymorphicPointer<CanonicalType<From>> and not IsMovedFancyPointer<From>)
     STORMKIT_FORCE_INLINE constexpr auto
-        as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept -> decltype(auto) {
+        as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept
+        -> decltype(auto) {
         using CanonicalFrom = std::remove_reference_t<From>;
 
         const auto ptr = std::to_address(value);
@@ -478,13 +492,14 @@ namespace stormkit::core { inline namespace casts {
     template<IsPolymorphicIndirection To, typename From>
         requires(IsPolymorphic<CanonicalType<From>> and not IsRValueReference<From>)
     STORMKIT_FORCE_INLINE constexpr auto
-        as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept -> decltype(auto) {
+        as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept
+        -> decltype(auto) {
         using CanonicalFrom = std::remove_reference_t<From>;
 
         if constexpr (IsPointer<To>) {
-            using ToPointerType  = PointerType<To>;
-            using ToElementType  = ElementType<To>;
-            using To_            = std::conditional_t<IsRawPointer<To>, Ref<ToElementType>, To>;
+            using ToPointerType = PointerType<To>;
+            using ToElementType = ElementType<To>;
+            using To_           = std::conditional_t<IsRawPointer<To>, Ref<ToElementType>, To>;
             static_assert(Is<CanonicalFrom, ToElementType>, "Invalid Polymorphic cast !");
 
             return To_ { static_cast<ToPointerType>(&value) };
