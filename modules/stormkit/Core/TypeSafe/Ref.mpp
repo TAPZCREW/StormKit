@@ -137,7 +137,11 @@ namespace stormkit::core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    STORMKIT_FORCE_INLINE constexpr auto Ref<T>::operator=(Ref&&) noexcept -> Ref& = default;
+    STORMKIT_FORCE_INLINE constexpr auto Ref<T>::operator=(Ref&& other) noexcept -> Ref& {
+        // TODO improve
+        const_cast<CanonicalType<Ref<T>::PointerType>&>(m_value) = other.m_value;
+        return *this;
+    }
 
     /////////////////////////////////////
     /////////////////////////////////////
