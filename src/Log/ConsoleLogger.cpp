@@ -12,11 +12,26 @@ import std;
 
 import stormkit.Core;
 
-import :LogColorizer;
-
 using namespace std::literals;
 
 namespace stormkit::log {
+    auto makeStyle(Severity severity) noexcept -> ConsoleStyle {
+        auto bg = ConsoleStyle::White;
+        auto fg = ConsoleStyle::Black;
+        switch (severity) {
+            case Severity::Info: bg = ConsoleStyle::Green; break;
+            case Severity::Warning: bg = ConsoleStyle::Magenta; break;
+            case Severity::Error: bg = ConsoleStyle::Yellow; break;
+            case Severity::Fatal: bg = ConsoleStyle::Red; break;
+            case Severity::Debug: bg = ConsoleStyle::Cyan; break;
+            default: std::unreachable();
+        }
+        return {
+            .fg = fg,
+            .bg = bg,
+        };
+    }
+
     ////////////////////////////////////////
     ////////////////////////////////////////
     ConsoleLogger::ConsoleLogger(LogClock::time_point start) noexcept
@@ -45,8 +60,9 @@ namespace stormkit::log {
                 return std::format("[{}, {:%S}, {}]", severity, time, m.name);
         }();
 
-        const auto to_stderr = severity == Severity::Error or severity == Severity::Fatal;
-        auto       output    = (to_stderr) ? getSTDErr() : getSTDOut();
+        const auto is_error = severity == Severity::Error or severity == Severity::Fatal;
+        auto&      output   = (is_error) ? std::cerr : std::cout;
+        const auto style    = makeStyle(severity);
 
         // not yet
         /*
@@ -58,15 +74,13 @@ namespace stormkit::log {
         std::string out_string = std::string { MB_LEN_MAX };
         for (const auto &c : string) { std::c8rtomb(std::data(out_string), c, &state); }*/
 
-        details::colorifyBegin(severity, to_stderr);
-        std::print(output, "{}", str);
-        details::colorifyEnd(to_stderr);
+        std::print(output, "{}", style | str);
         std::println(output, " {}", string);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     auto ConsoleLogger::flush() noexcept -> void {
-        std::fflush(stdout);
+        std::fflush(std::cout);
     }
 } // namespace stormkit::log
