@@ -16,7 +16,7 @@ import :Meta.Traits;
 import :Console;
 import :Utils.Stacktrace;
 
-export namespace stormkit::core {
+export namespace stormkit::core::monadic {
     template<typename T>
     [[nodiscard]] constexpr auto ensuresWithMessage(std::string&&        message,
                                                     std::source_location location
@@ -53,7 +53,7 @@ export namespace stormkit::core {
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit::core::monadic {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
