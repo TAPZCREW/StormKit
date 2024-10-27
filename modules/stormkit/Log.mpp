@@ -36,9 +36,9 @@ export {
             Logger(LogClock::time_point start, Severity log_level) noexcept;
             virtual ~Logger();
 
-            virtual auto
-                write(Severity severity, const Module& module, const char* string) -> void = 0;
-            virtual auto flush() -> void                                                   = 0;
+            virtual auto write(Severity severity, const Module& module, const char* string) -> void
+                = 0;
+            virtual auto flush() -> void = 0;
 
             auto setLogLevel(Severity log_level) noexcept -> void;
 
@@ -49,8 +49,8 @@ export {
             [[nodiscard]] static auto createLoggerInstance(Args&&... param_args) -> T;
 
             template<class T, typename... Args>
-            [[nodiscard]] static auto
-                allocateLoggerInstance(Args&&... param_args) -> std::unique_ptr<T>;
+            [[nodiscard]] static auto allocateLoggerInstance(Args&&... param_args)
+                -> std::unique_ptr<T>;
 
             template<class... Args>
             static auto log(Severity         severity,
@@ -59,9 +59,8 @@ export {
                             Args&&... param_args) -> void;
 
             template<class... Args>
-            static auto log(Severity         severity,
-                            std::string_view format_string,
-                            Args&&... param_args) -> void;
+            static auto log(Severity severity, std::string_view format_string, Args&&... param_args)
+                -> void;
 
             template<class... Args>
             static auto dlog(Args&&... param_args) -> void;
@@ -122,8 +121,8 @@ export {
             FileLogger(FileLogger&&);
             auto operator=(FileLogger&&) -> FileLogger&;
 
-            auto
-                write(Severity severity, const Module& module, const char* string) -> void override;
+            auto write(Severity severity, const Module& module, const char* string)
+                -> void override;
             auto flush() -> void override;
 
           private:
@@ -139,8 +138,8 @@ export {
 
             ~ConsoleLogger() override;
 
-            auto
-                write(Severity severity, const Module& module, const char* string) -> void override;
+            auto write(Severity severity, const Module& module, const char* string)
+                -> void override;
             auto flush() noexcept -> void override;
         };
     } // namespace stormkit::log
@@ -148,12 +147,10 @@ export {
     FLAG_ENUM(stormkit::log::Severity)
 
     namespace std {
-        template<class CharT>
-        struct formatter<stormkit::log::Severity, CharT>
-            : formatter<basic_string_view<CharT>, CharT> {
+        template<stormkit::core::IsStrict<stormkit::log::Severity> T, class CharT>
+        struct formatter<T, CharT>: formatter<basic_string_view<CharT>, CharT> {
             template<class FormatContext>
-            auto format(stormkit::log::Severity data,
-                        FormatContext&          ctx) const -> decltype(ctx.out()) {
+            auto format(T data, FormatContext& ctx) const -> decltype(ctx.out()) {
                 return formatter<basic_string_view<CharT>, CharT>::format(
                     stormkit::log::toStringView(data),
                     ctx);
@@ -172,19 +169,19 @@ namespace stormkit::log {
             using namespace std::literals;
 
             return frozen::make_unordered_map<Severity, std::string_view>({
-                { Severity::Info, "Info"sv },
+                { Severity::Info,    "Info"sv    },
                 { Severity::Warning, "Warning"sv },
-                { Severity::Error, "Error"sv },
-                { Severity::Fatal, "Fatal"sv },
-                { Severity::Debug, "Debug"sv },
+                { Severity::Error,   "Error"sv   },
+                { Severity::Fatal,   "Fatal"sv   },
+                { Severity::Debug,   "Debug"sv   },
             });
         }();
     }} // namespace details
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE constexpr auto
-        toStringView(Severity severity) noexcept -> std::string_view {
+    STORMKIT_FORCE_INLINE constexpr auto toStringView(Severity severity) noexcept
+        -> std::string_view {
         const auto it = details::SEVERITY_TO_STRING.find(severity);
         expects(it != std::ranges::cend(details::SEVERITY_TO_STRING));
 
@@ -230,8 +227,8 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T, typename... Args>
-    STORMKIT_FORCE_INLINE auto
-        Logger::allocateLoggerInstance(Args&&... param_args) -> std::unique_ptr<T> {
+    STORMKIT_FORCE_INLINE auto Logger::allocateLoggerInstance(Args&&... param_args)
+        -> std::unique_ptr<T> {
         using LogClock = std::chrono::high_resolution_clock;
         static_assert(std::is_base_of<Logger, T>::value, "T must inherit Logger");
 
@@ -347,7 +344,7 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<ConstexprString str>
-    STORMKIT_FORCE_INLINE constexpr auto operator"" _module() -> stormkit::log::Module {
+    STORMKIT_FORCE_INLINE constexpr auto operator""_module() -> stormkit::log::Module {
         return Module { str.view() };
     }
 } // namespace stormkit::log

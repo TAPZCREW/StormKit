@@ -9,27 +9,21 @@ module;
 module stormkit.Log;
 
 import std;
+import frozen;
 
 import stormkit.Core;
 
 using namespace std::literals;
 
 namespace stormkit::log {
-    auto makeStyle(Severity severity) noexcept -> ConsoleStyle {
-        auto bg = ConsoleStyle::White;
-        auto fg = ConsoleStyle::Black;
-        switch (severity) {
-            case Severity::Info: bg = ConsoleStyle::Green; break;
-            case Severity::Warning: bg = ConsoleStyle::Magenta; break;
-            case Severity::Error: bg = ConsoleStyle::Yellow; break;
-            case Severity::Fatal: bg = ConsoleStyle::Red; break;
-            case Severity::Debug: bg = ConsoleStyle::Cyan; break;
-            default: std::unreachable();
-        }
-        return {
-            .fg = fg,
-            .bg = bg,
-        };
+    namespace {
+        constexpr auto StyleMap = frozen::make_unordered_map<Severity, ConsoleStyle>({
+            { Severity::Info,    ConsoleStyle { .bg = ConsoleColor::Green }   },
+            { Severity::Warning, ConsoleStyle { .bg = ConsoleColor::Magenta } },
+            { Severity::Error,   ConsoleStyle { .bg = ConsoleColor::Yellow }  },
+            { Severity::Fatal,   ConsoleStyle { .bg = ConsoleColor::Red }     },
+            { Severity::Debug,   ConsoleStyle { .bg = ConsoleColor::Cyan }    },
+        });
     }
 
     ////////////////////////////////////////
@@ -61,8 +55,7 @@ namespace stormkit::log {
         }();
 
         const auto is_error = severity == Severity::Error or severity == Severity::Fatal;
-        auto&      output   = (is_error) ? std::cerr : std::cout;
-        const auto style    = makeStyle(severity);
+        const auto output   = (is_error) ? getSTDErr() : getSTDOut();
 
         // not yet
         /*
@@ -74,13 +67,13 @@ namespace stormkit::log {
         std::string out_string = std::string { MB_LEN_MAX };
         for (const auto &c : string) { std::c8rtomb(std::data(out_string), c, &state); }*/
 
-        std::print(output, "{}", style | str);
-        std::println(output, " {}", string);
+        std::println(output, "{} {}", StyleMap.at(severity) | str, string);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     auto ConsoleLogger::flush() noexcept -> void {
-        std::fflush(std::cout);
+        std::fflush(getSTDOut());
+        std::fflush(getSTDErr());
     }
 } // namespace stormkit::log
