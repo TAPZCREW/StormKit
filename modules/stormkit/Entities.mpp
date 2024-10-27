@@ -51,8 +51,8 @@ export namespace stormkit::entities {
     constexpr auto componentHash(std::string_view str) noexcept -> Component::Type;
 
     namespace literals {
-        constexpr auto operator""_component_type(const char* str,
-                                                 RangeExtent size) -> Component::Type;
+        constexpr auto operator""_component_type(const char* str, RangeExtent size)
+            -> Component::Type;
     } // namespace literals
 
     struct Message {
@@ -108,9 +108,9 @@ export namespace stormkit::entities {
         auto removeEntity(Entity e) -> void;
 
         struct Predicate {
-            [[nodiscard]] auto
-                operator()(const std::unique_ptr<System>& s1,
-                           const std::unique_ptr<System>& s2) const noexcept -> bool {
+            [[nodiscard]] auto operator()(const std::unique_ptr<System>& s1,
+                                          const std::unique_ptr<System>& s2) const noexcept
+                -> bool {
                 return s1->priority() < s2->priority();
             }
         };
@@ -119,7 +119,7 @@ export namespace stormkit::entities {
         virtual auto onMessageReceived(const Message& message) -> void = 0;
 
         Ref<EntityManager> m_manager;
-        HashSet<Entity>         m_entities;
+        HashSet<Entity>    m_entities;
 
         friend class EntityManager;
 
@@ -164,14 +164,14 @@ export namespace stormkit::entities {
         auto entitiesWithComponent() const -> std::vector<Entity>;
 
         template<IsComponentTypeOrFail T, class Self>
-        auto getComponent(this Self& self, Entity entity) -> LikeType<Self, T&>;
+        auto getComponent(this Self& self, Entity entity) -> ConstnessLike<Self, T&>;
 
         template<class Self>
-        auto components(this Self& self,
-                        Entity     entity) -> std::vector<Ref<LikeType<Self, Component>>>;
+        auto components(this Self& self, Entity entity)
+            -> std::vector<Ref<ConstnessLike<Self, Component>>>;
 
         template<IsComponentTypeOrFail T, class Self>
-        auto componentsOfType(this Self& self) noexcept -> std::vector<Ref<LikeType<Self, T>>>;
+        auto componentsOfType(this Self& self) noexcept -> std::vector<Ref<ConstnessLike<Self, T>>>;
 
         template<Is<System> T, typename... Args>
         auto addSystem(Args&&... args) -> T&;
@@ -180,10 +180,10 @@ export namespace stormkit::entities {
         auto hasSystem() const noexcept -> bool;
 
         template<class Self>
-        auto systems(this Self& self) noexcept -> std::vector<Ref<LikeType<Self, System>>>;
+        auto systems(this Self& self) noexcept -> std::vector<Ref<ConstnessLike<Self, System>>>;
 
         template<Is<System> T, class Self>
-        auto getSystem(this Self& self) noexcept -> LikeType<Self, T&>;
+        auto getSystem(this Self& self) noexcept -> ConstnessLike<Self, T&>;
 
         auto step(Secondf delta) -> void;
 
@@ -194,8 +194,8 @@ export namespace stormkit::entities {
       private:
         using ComponentKey = UInt64;
 
-        static constexpr auto componentKeyFor(Entity          e,
-                                              Component::Type type) noexcept -> ComponentKey;
+        static constexpr auto componentKeyFor(Entity e, Component::Type type) noexcept
+            -> ComponentKey;
         static constexpr auto isKeyEntity(Entity e, ComponentKey key) noexcept -> bool;
 
         auto purposeToSystems(Entity e) -> void;
@@ -232,19 +232,19 @@ namespace stormkit::entities {
     /////////////////////////////////////
     template<class Result>
     constexpr auto componentHash(std::string_view str) noexcept -> Result {
-        return std::empty(str) ? 0xcbf29ce484222325UL
-                               : (as<Hash64>(str[0]) ^
-                                  componentHash<Result>(str.substr(1, std::size(str) - 1))) *
-                                     0x100000001b3UL;
+        return std::empty(str)
+                   ? 0xcbf29ce484222325UL
+                   : (as<Hash64>(str[0]) ^ componentHash<Result>(str.substr(1, std::size(str) - 1)))
+                         * 0x100000001b3UL;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     constexpr auto componentHash(const char* str, RangeExtent size) noexcept -> Component::Type {
         return size == 0 ? 0xcbf29ce484222325UL
-                         : (as<RangeExtent>(str[0]) ^
-                            componentHash(std::string_view { str + 1, size - 1 })) *
-                               0x100000001b3UL;
+                         : (as<RangeExtent>(str[0])
+                            ^ componentHash(std::string_view { str + 1, size - 1 }))
+                               * 0x100000001b3UL;
     }
 
     /////////////////////////////////////
@@ -256,8 +256,8 @@ namespace stormkit::entities {
     namespace literals {
         /////////////////////////////////////
         /////////////////////////////////////
-        constexpr auto operator""_component_type(const char* str,
-                                                 RangeExtent size) -> Component::Type {
+        constexpr auto operator""_component_type(const char* str, RangeExtent size)
+            -> Component::Type {
             return stormkit::entities::componentHash(str, size);
         }
     } // namespace literals
@@ -353,7 +353,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
     template<IsComponentTypeOrFail T, class Self>
-    auto EntityManager::getComponent(this Self& self, Entity entity) -> LikeType<Self, T&> {
+    auto EntityManager::getComponent(this Self& self, Entity entity) -> ConstnessLike<Self, T&> {
         expects(self.template hasComponent<T>(entity));
         expects(self.hasEntity(entity));
 
@@ -365,7 +365,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     template<class Self>
     auto EntityManager::components(this Self& self, Entity entity)
-        -> std::vector<Ref<LikeType<Self, Component>>> {
+        -> std::vector<Ref<ConstnessLike<Self, Component>>> {
         if (not self.hasEntity(entity)) [[unlikely]]
             return {};
         // clang-format off
@@ -383,7 +383,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     template<IsComponentTypeOrFail T, class Self>
     auto EntityManager::componentsOfType(this Self& self) noexcept
-        -> std::vector<Ref<LikeType<Self, T>>> {
+        -> std::vector<Ref<ConstnessLike<Self, T>>> {
         // clang-format off
         return self.m_entities 
                | std::views::filter(curry(&EntityManager::hasComponent<T>, &self))
@@ -418,7 +418,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     template<class Self>
     auto EntityManager::systems(this Self& self) noexcept
-        -> std::vector<Ref<LikeType<Self, System>>> {
+        -> std::vector<Ref<ConstnessLike<Self, System>>> {
         // clang-format off
         return self.m_systems 
                | std::views::transform(monadic::forwardLike<Self>())
@@ -430,12 +430,12 @@ namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
     template<Is<System> T, class Self>
-    auto EntityManager::getSystem(this Self& self) noexcept -> LikeType<Self, T&> {
+    auto EntityManager::getSystem(this Self& self) noexcept -> ConstnessLike<Self, T&> {
         expects(self.template hasSystem<T>());
 
         auto it = std::ranges::find_if(self.m_systems, monadic::is<T>());
 
-        return as<LikeType<Self, T&>>(*it->get());
+        return as<ConstnessLike<Self, T&>>(*it->get());
     }
 
     /////////////////////////////////////
@@ -446,8 +446,8 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    constexpr auto EntityManager::componentKeyFor(Entity          e,
-                                                  Component::Type type) noexcept -> ComponentKey {
+    constexpr auto EntityManager::componentKeyFor(Entity e, Component::Type type) noexcept
+        -> ComponentKey {
         return (static_cast<UInt64>(e) << 32) | static_cast<UInt64>(type);
     }
 
