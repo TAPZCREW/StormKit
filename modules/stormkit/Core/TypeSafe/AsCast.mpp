@@ -96,18 +96,6 @@ export namespace stormkit::core { inline namespace casts {
     [[nodiscard]] constexpr auto as(const std::source_location& location
                                     = std::source_location::current()) noexcept -> To;
 
-    /*requires((IsNarrowing<To, CanonicalType<From>>) or (IsStrict<To, CanonicalType<From>>)*/
-    /*         or (IsPolymorphic<To> and IsPolymorphicPointer<CanonicalType<From>>*/
-    /*             and Is<ElementType<From>, To> and not IsMovedFancyPointer<From>)*/
-    /*         or (IsPolymorphic<To> and IsPolymorphic<CanonicalType<From>>*/
-    /*             and not IsRValueReference<From>)*/
-    /**/
-    /*         or (IsBraceInitializableTo<To, CanonicalType<From>>*/
-    /*             and not IsNarrowing<To, CanonicalType<From>>*/
-    /*             and not IsStrict<To, CanonicalType<From>>)*/
-    /*         or (IsEnumeration<To> and IsIntegral<CanonicalType<From>>)*/
-    /*         or (IsIntegral<To> and IsEnumeration<CanonicalType<From>>)*/
-    /*         or (IsStrict<Underlying, To> and IsEnumeration<CanonicalType<From>>))*/
     template<typename To, typename From>
     constexpr auto as(From&&                      value,
                       const std::source_location& location
@@ -115,7 +103,7 @@ export namespace stormkit::core { inline namespace casts {
 
     // exact same type
     template<typename To, typename From>
-        requires(IsStrict<To, RemoveIndirectionsType<From>>)
+        requires(IsStrict<To, CanonicalType<From>>)
     [[nodiscard]] constexpr auto as(From&&                      value,
                                     const std::source_location& location
                                     = std::source_location::current()) noexcept
@@ -302,7 +290,20 @@ namespace stormkit::core { inline namespace casts {
     /////////////////////////////////////
     template<typename T1, HasEqualityOperator<T1> T2>
     STORMKIT_FORCE_INLINE constexpr auto is(const T1& first, T2&& second) noexcept -> Boolean {
-        if constexpr (IsNarrowing<T1, CanonicalType<T2>>)
+        using CanonicalT2 = CanonicalType<T2>;
+        if constexpr (IsFloatingPoint<T1> and IsFloatingPoint<CanonicalT2>) {
+            using T            = SafeNarrowHelperType<T1, CanonicalT2>;
+            using TO           = SafeNarrowHelperOtherType<T1, CanonicalT2>;
+            const auto first_  = as<T>(first);
+            const auto second_ = as<T>(second);
+            const auto epsilon = as<T>(Epsilon<TO>);
+            return std::abs(first_ - second_)
+                   <= epsilon * std::max({ T { 1 }, std::abs(first_), std::abs(second_) });
+        } else if constexpr (IsFloatingPoint<T1> or IsFloatingPoint<CanonicalT2>) {
+            using T = std::conditional_t<IsFloatingPoint<T1>, T1, CanonicalT2>;
+
+            return is(as<T>(first), as<T>(second));
+        } else if constexpr (IsNarrowing<T1, CanonicalT2>)
             return first == as<T1>(std::forward<T2>(second));
         else
             return first == std::forward<T2>(second);
@@ -334,7 +335,7 @@ namespace stormkit::core { inline namespace casts {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename To, typename From>
-        requires(IsStrict<To, RemoveIndirectionsType<From>>)
+        requires(IsStrict<To, CanonicalType<From>>)
     STORMKIT_FORCE_INLINE constexpr auto
         as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept
         -> ForwardLike<From, To> {
@@ -342,21 +343,6 @@ namespace stormkit::core { inline namespace casts {
     }
 
     // safe narrowing
-    template<IsFloatingPoint T1, IsFloatingPoint T2>
-    STORMKIT_FORCE_INLINE constexpr auto is(const T1& first, const T2& second) noexcept -> Boolean {
-        using T            = SafeNarrowHelperType<T1, T2>;
-        const auto first_  = static_cast<T>(first);
-        const auto second_ = static_cast<T>(second);
-
-        const auto diff   = std::abs(first_ - second_);
-        const auto max_ab = std::max(std::abs(first_), std::abs(second_));
-
-        if (max_ab >= T { 1 }) return diff <= (Epsilon<T> * max_ab);
-        else if (max_ab > T { 0 })
-            return (diff / max_ab) <= Epsilon<T>;
-        return false;
-    }
-
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename To, typename From>
