@@ -12,7 +12,7 @@ import std;
 
 import :Utils.Assert;
 import :TypeSafe.Integer;
-import :Utils.Byte;
+import :TypeSafe.Byte;
 
 export namespace stormkit::core {
     template<class T>

@@ -7,7 +7,7 @@ export module stormkit.Core:Containers.Utils;
 import std;
 
 import :Meta;
-import :Utils.Byte;
+import :TypeSafe.Byte;
 
 export namespace stormkit::core {
     template<std::ranges::range T, std::ranges::range... U>

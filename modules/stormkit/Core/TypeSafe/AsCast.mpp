@@ -11,7 +11,7 @@ export module stormkit.Core:TypeSafe.AsCast;
 import std;
 
 import :Utils.Assert;
-import :Utils.Byte;
+import :TypeSafe.Byte;
 import :Utils.FunctionRef;
 import :TypeSafe.Ref;
 import :Meta.Concepts;
