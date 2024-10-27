@@ -14,6 +14,7 @@ export module stormkit.Core:Utils.Assert;
 
 import std;
 
+import :Console.Style;
 import :Utils.Descriptors;
 import :Utils.Stacktrace;
 
@@ -123,11 +124,15 @@ namespace stormkit::core {
                              "      line:     {}\n"
                              "      function: {}\n"
                              "      message:  {}",
-                             toString(type),
-                             location.file_name(),
-                             location.line(),
-                             location.function_name(),
-                             message);
+                             ConsoleStyle { .fg        = ConsoleColor::Red,
+                                            .modifiers = StyleModifier::Bold | StyleModifier::Inverse }
+                                 | toString(type),
+                             ConsoleStyle { .fg = ConsoleColor::Yellow } | location.file_name(),
+                             ConsoleStyle { .fg = ConsoleColor::Blue } | location.line(),
+                             ConsoleStyle { .fg = ConsoleColor::Green } | location.function_name(),
+                             ConsoleStyle { .fg        = ConsoleColor::Red,
+                                            .modifiers = StyleModifier::Bold }
+                                 | message);
 
                 std::terminate();
             }

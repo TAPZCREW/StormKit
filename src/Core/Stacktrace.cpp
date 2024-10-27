@@ -12,6 +12,8 @@ module stormkit.Core;
 
 import std;
 
+import :Console.Style;
+
 namespace stormkit::core {
     /////////////////////////////////////
     /////////////////////////////////////
@@ -37,7 +39,22 @@ namespace stormkit::core {
                 i += 1;
                 continue;
             }
-            std::println(std::cerr, "{}# {}", (i++ - ignore_count), frame);
+            if (frame.line.has_value() and frame.column.has_value())
+                std::println(std::cerr,
+                             "{}# {} in {} at {}:{}:{}",
+                             (i++ - ignore_count),
+                             ConsoleStyle { .fg = ConsoleColor::Blue } | frame.object_address,
+                             ConsoleStyle { .fg = ConsoleColor::Yellow } | frame.symbol,
+                             ConsoleStyle { .fg = ConsoleColor::Green } | frame.filename,
+                             ConsoleStyle { .fg = ConsoleColor::Blue } | frame.line.value(),
+                             ConsoleStyle { .fg = ConsoleColor::Blue } | frame.column.value());
+            else
+                std::println(std::cerr,
+                             "{}# {} in {} at {}",
+                             (i++ - ignore_count),
+                             ConsoleStyle { .fg = ConsoleColor::Blue } | frame.object_address,
+                             ConsoleStyle { .fg = ConsoleColor::Yellow } | frame.symbol,
+                             ConsoleStyle { .fg = ConsoleColor::Green } | frame.symbol);
         }
     }
 } // namespace stormkit::core

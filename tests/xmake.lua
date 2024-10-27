@@ -1,7 +1,6 @@
 for name, _ in pairs(modules) do
 	if has_config("tests_" .. name) then
-		target(name .. "-tests")
-		do
+		target(name .. "-tests", function()
 			on_config(function(target)
 				function parseTestFile(filename)
 					local code = io.readfile(filename)
@@ -47,9 +46,9 @@ for name, _ in pairs(modules) do
 				add_shflags("-Wl,-fuse-ld=mold")
 			end
 
+			add_packages("frozen")
 			add_deps("stormkit-main")
 			add_deps("stormkit-" .. name)
-		end
-		target_end()
+		end)
 	end
 end

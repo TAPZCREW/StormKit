@@ -368,6 +368,9 @@ add_ldflags("clang::-fexperimental-library", { force = true })
 add_shflags("clang::-fexperimental-library", { force = true })
 add_mxxflags("clang::-fexperimental-library", { force = true })
 
+add_defines("MAGIC_ENUM_USE_STD_MODULE")
+add_defines("FROZEN_USE_STD_MODULE")
+
 if get_config("sanitizers") then
 	set_policy("build.sanitizer.address", true)
 	set_policy("build.sanitizer.undefined", true)
@@ -391,8 +394,7 @@ if get_config("lto") then
 	end
 end
 
-add_defines("MAGIC_ENUM_USE_STD_MODULE")
-
+add_requireconfs("frozen", { system = false })
 add_requires("cpptrace")
 
 ---------------------------- targets ----------------------------

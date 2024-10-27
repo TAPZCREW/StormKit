@@ -10,7 +10,6 @@ export module stormkit.Core:TypeSafe.Flags;
 
 import std;
 
-import :TypeSafe.AsCast;
 import :Meta;
 
 export {
@@ -20,11 +19,12 @@ export {
             template<stormkit::core::IsEnumeration T>
             struct EnableBitmaskOperators {
                 constexpr EnableBitmaskOperators() = default;
-                static constexpr auto enable       = false;
+                static constexpr auto enable                = false;
             };
 
             template<stormkit::core::IsEnumeration T>
-            inline constexpr auto EnableBitmaskOperatorsEnable = EnableBitmaskOperators<T>::enable;
+            inline constexpr auto EnableBitmaskOperatorsEnable
+                = EnableBitmaskOperators<T>::enable;
         } // namespace details
 
         template<class T>
@@ -32,7 +32,7 @@ export {
             = IsEnumeration<CanonicalType<T>> and details::EnableBitmaskOperatorsEnable<T>;
 
         /// \brief Check if a flag bit is enabled
-        /// \requires `Enum` to be an enumeration promoted as a flag with `FLAG_ENUM` macro
+        /// \requires `Enum` to be an enumeration promoted static_cast a flag with `FLAG_ENUM` macro
         /// \returns true if the flag big is set and false if not
         template<FlagsType T>
         [[nodiscard]] constexpr auto checkFlag(const T& value, const T& flag) noexcept -> bool;
@@ -80,7 +80,8 @@ namespace stormkit::core {
     /////////////////////////////////////
     template<FlagsType T>
     STORMKIT_FORCE_INLINE constexpr auto nextValue(const T& value) noexcept -> T {
-        return as<T>(as<Underlying>(value) << 1);
+        using Underlying = UnderlyingType<T>;
+        return static_cast<T>(static_cast<Underlying>(value) << 1);
     }
 } // namespace stormkit::core
 
@@ -92,7 +93,8 @@ STORMKIT_FORCE_INLINE constexpr auto operator|(const T& lhs, const T& rhs) noexc
     using namespace stormkit::core;
     namespace details = stormkit::core::details;
 
-    return as<T>(as<Underlying>(lhs) | as<Underlying>(rhs));
+    using Underlying = UnderlyingType<T>;
+    return static_cast<T>(static_cast<Underlying>(lhs) | static_cast<Underlying>(rhs));
 }
 
 /////////////////////////////////////
@@ -103,7 +105,8 @@ STORMKIT_FORCE_INLINE constexpr auto operator&(const T& lhs, const T& rhs) noexc
     using namespace stormkit::core;
     namespace details = stormkit::core::details;
 
-    return as<T>(as<Underlying>(lhs) & as<Underlying>(rhs));
+    using Underlying = UnderlyingType<T>;
+    return static_cast<T>(static_cast<Underlying>(lhs) & static_cast<Underlying>(rhs));
 }
 
 /////////////////////////////////////
@@ -114,7 +117,8 @@ STORMKIT_FORCE_INLINE constexpr auto operator^(const T& lhs, const T& rhs) noexc
     using namespace stormkit::core;
     namespace details = stormkit::core::details;
 
-    return as<T>(as<Underlying>(lhs) ^ as<Underlying>(rhs));
+    using Underlying = UnderlyingType<T>;
+    return static_cast<T>(static_cast<Underlying>(lhs) ^ static_cast<Underlying>(rhs));
 }
 
 /////////////////////////////////////
@@ -124,7 +128,8 @@ STORMKIT_FORCE_INLINE constexpr auto operator~(const T& lhs) noexcept -> decltyp
     using namespace stormkit::core;
     namespace details = stormkit::core::details;
 
-    return as<T>(~as<Underlying>(lhs));
+    using Underlying = UnderlyingType<T>;
+    return static_cast<T>(~static_cast<Underlying>(lhs));
 }
 
 /////////////////////////////////////
