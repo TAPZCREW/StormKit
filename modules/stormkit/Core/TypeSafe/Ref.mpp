@@ -185,7 +185,7 @@ namespace stormkit::core {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE constexpr auto Ref<T>::operator==(std::nullptr_t) const noexcept -> bool {
-        return m_value != nullptr;
+        return m_value == nullptr;
     }
 
     /////////////////////////////////////
