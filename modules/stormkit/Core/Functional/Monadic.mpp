@@ -6,14 +6,14 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:Utils.Monadic;
+export module stormkit.Core:Functional.Monadic;
 
 import std;
 
 import :Meta;
 
 import :TypeSafe.AsCast;
-import :Utils.Functional;
+import :Functional.Utils;
 import :TypeSafe.Ref;
 
 export namespace stormkit::core::monadic {

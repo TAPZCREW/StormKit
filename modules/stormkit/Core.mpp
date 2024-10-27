@@ -12,6 +12,7 @@ export import :Config;
 export import :Containers;
 export import :Console;
 export import :Coroutines;
+export import :Functional;
 export import :Hash;
 export import :Meta;
 export import :Parallelism;
