@@ -62,14 +62,14 @@ namespace stormkit::core {
         return [message  = std::move(message),
                 location = std::move(location)] NORETURN_LAMBDA() -> std::optional<T> {
             std::println(getSTDErr(),
-                         "[{}] failed in \n"
+                         "{} failed in \n"
                          "    > file:     {}\n"
                          "      line:     {}\n"
                          "      function: {}\n"
                          "      reason:  {}",
                          ConsoleStyle { .fg        = ConsoleColor::Red,
                                         .modifiers = StyleModifier::Bold | StyleModifier::Inverse }
-                             | "Ensures",
+                             | "[Ensures]",
                          ConsoleStyle { .fg = ConsoleColor::Yellow } | location.file_name(),
                          ConsoleStyle { .fg = ConsoleColor::Blue } | location.line(),
                          ConsoleStyle { .fg = ConsoleColor::Green } | location.function_name(),
@@ -86,14 +86,14 @@ namespace stormkit::core {
     constexpr auto expects(std::source_location location) noexcept -> decltype(auto) {
         return [location = std::move(location)] NORETURN_LAMBDA(auto&& error) -> std::optional<T> {
             std::println(getSTDErr(),
-                         "[{}] failed in \n"
+                         "{} failed in \n"
                          "    > file:     {}\n"
                          "      line:     {}\n"
                          "      function: {}\n"
                          "      error value:  {}",
                          ConsoleStyle { .fg        = ConsoleColor::Red,
                                         .modifiers = StyleModifier::Bold | StyleModifier::Inverse }
-                             | "Ensures",
+                             | "[Ensures]",
                          ConsoleStyle { .fg = ConsoleColor::Yellow } | location.file_name(),
                          ConsoleStyle { .fg = ConsoleColor::Blue } | location.line(),
                          ConsoleStyle { .fg = ConsoleColor::Green } | location.function_name(),
@@ -111,7 +111,7 @@ namespace stormkit::core {
         return [message = std::move(message), location = std::move(location)] NORETURN_LAMBDA(
                    auto&& error) -> std::expected<void, CanonicalType<decltype(error)>> {
             std::println(getSTDErr(),
-                         "[{}] failed in \n"
+                         "{} failed in \n"
                          "    > file:     {}\n"
                          "      line:     {}\n"
                          "      function: {}\n"
@@ -119,7 +119,7 @@ namespace stormkit::core {
                          "      error value:  {}",
                          ConsoleStyle { .fg        = ConsoleColor::Red,
                                         .modifiers = StyleModifier::Bold | StyleModifier::Inverse }
-                             | "Ensures",
+                             | "[Ensures]",
                          ConsoleStyle { .fg = ConsoleColor::Yellow } | location.file_name(),
                          ConsoleStyle { .fg = ConsoleColor::Blue } | location.line(),
                          ConsoleStyle { .fg = ConsoleColor::Green } | location.function_name(),
@@ -138,14 +138,14 @@ namespace stormkit::core {
         return [location = std::move(location)] NORETURN_LAMBDA(
                    auto&& error) -> std::expected<void, CanonicalType<decltype(error)>> {
             std::println(getSTDErr(),
-                         "[{}] failed in \n"
+                         "{} failed in \n"
                          "    > file:     {}\n"
                          "      line:     {}\n"
                          "      function: {}\n"
                          "      error value:  {}",
                          ConsoleStyle { .fg        = ConsoleColor::Red,
                                         .modifiers = StyleModifier::Bold | StyleModifier::Inverse }
-                             | "Ensures",
+                             | "[Ensures]",
                          ConsoleStyle { .fg = ConsoleColor::Yellow } | location.file_name(),
                          ConsoleStyle { .fg = ConsoleColor::Blue } | location.line(),
                          ConsoleStyle { .fg = ConsoleColor::Green } | location.function_name(),

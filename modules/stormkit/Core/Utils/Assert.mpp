@@ -118,14 +118,15 @@ namespace stormkit::core {
             if (not cond) [[unlikely]] {
                 auto lock = std::unique_lock { mutex };
                 std::println(getSTDErr(),
-                             "[{}] failed in \n"
+                             "{} failed in \n"
                              "    > file:     {}\n"
                              "      line:     {}\n"
                              "      function: {}\n"
                              "      reason:  {}",
-                             ConsoleStyle { .fg        = ConsoleColor::Red,
-                                            .modifiers = StyleModifier::Bold | StyleModifier::Inverse }
-                                 | toString(type),
+                             ConsoleStyle { .fg = ConsoleColor::Bright_Red,
+                                            .modifiers
+                                            = StyleModifier::Bold | StyleModifier::Inverse }
+                                 | "["s + toString(type) + "]",
                              ConsoleStyle { .fg = ConsoleColor::Yellow } | location.file_name(),
                              ConsoleStyle { .fg = ConsoleColor::Blue } | location.line(),
                              ConsoleStyle { .fg = ConsoleColor::Green } | location.function_name(),
