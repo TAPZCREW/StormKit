@@ -8,7 +8,7 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:Utils.Descriptors;
+export module stormkit.Core:Console.IO;
 
 import std;
 

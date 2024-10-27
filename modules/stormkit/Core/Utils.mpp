@@ -9,7 +9,6 @@ export import :Utils.Allocation;
 export import :Utils.App;
 export import :Utils.Assert;
 export import :Utils.Color;
-export import :Utils.Descriptors;
 export import :Utils.DeferInit;
 export import :Utils.DynamicLoader;
 export import :Utils.ErrorHandling;

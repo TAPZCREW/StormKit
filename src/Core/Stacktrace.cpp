@@ -12,7 +12,7 @@ module stormkit.Core;
 
 import std;
 
-import :Console.Style;
+import :Console;
 
 namespace stormkit::core {
     /////////////////////////////////////

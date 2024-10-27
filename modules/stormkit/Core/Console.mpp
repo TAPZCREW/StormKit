@@ -5,3 +5,4 @@
 export module stormkit.Core:Console;
 
 export import :Console.Style;
+export import :Console.IO;

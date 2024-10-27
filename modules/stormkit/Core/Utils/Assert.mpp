@@ -14,8 +14,7 @@ export module stormkit.Core:Utils.Assert;
 
 import std;
 
-import :Console.Style;
-import :Utils.Descriptors;
+import :Console;
 import :Utils.Stacktrace;
 
 export namespace stormkit::core {
@@ -118,12 +117,12 @@ namespace stormkit::core {
         if constexpr (STORMKIT_ASSERT == 1) {
             if (not cond) [[unlikely]] {
                 auto lock = std::unique_lock { mutex };
-                std::println(std::cerr,
+                std::println(getSTDErr(),
                              "[{}] failed in \n"
                              "    > file:     {}\n"
                              "      line:     {}\n"
                              "      function: {}\n"
-                             "      message:  {}",
+                             "      reason:  {}",
                              ConsoleStyle { .fg        = ConsoleColor::Red,
                                             .modifiers = StyleModifier::Bold | StyleModifier::Inverse }
                                  | toString(type),

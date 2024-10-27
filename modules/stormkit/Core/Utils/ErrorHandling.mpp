@@ -13,27 +13,28 @@ import std;
 import :Meta.Concepts;
 import :Meta.Traits;
 
+import :Console;
 import :Utils.Stacktrace;
 
 export namespace stormkit::core {
     template<typename T>
-    [[nodiscard]] constexpr auto
-        expectsWithMessage(std::string&&        message,
-                           std::source_location location = std::source_location::current()) noexcept
+    [[nodiscard]] constexpr auto expectsWithMessage(std::string&&        message,
+                                                    std::source_location location
+                                                    = std::source_location::current()) noexcept
         -> decltype(auto); // optional overload
 
     template<typename T>
-    [[nodiscard]] constexpr auto
-        expects(std::source_location location = std::source_location::current()) noexcept
+    [[nodiscard]] constexpr auto expects(std::source_location location
+                                         = std::source_location::current()) noexcept
         -> decltype(auto); // optional overload
 
-    [[nodiscard]] constexpr auto
-        expectsWithMessage(std::string&&        message,
-                           std::source_location location = std::source_location::current()) noexcept
+    [[nodiscard]] constexpr auto expectsWithMessage(std::string&&        message,
+                                                    std::source_location location
+                                                    = std::source_location::current()) noexcept
         -> decltype(auto);
 
-    [[nodiscard]] constexpr auto
-        expects(std::source_location location = std::source_location::current()) noexcept
+    [[nodiscard]] constexpr auto expects(std::source_location location
+                                         = std::source_location::current()) noexcept
         -> decltype(auto);
 
     [[nodiscard]] constexpr auto log(std::invocable auto&& logger, std::string&& message) noexcept
@@ -60,17 +61,20 @@ namespace stormkit::core {
         -> decltype(auto) {
         return [message  = std::move(message),
                 location = std::move(location)] NORETURN_LAMBDA() -> std::optional<T> {
-
-            std::println(std::cerr,
-                         "[Expects] failed in \n"
+            std::println(getSTDErr(),
+                         "[{}] failed in \n"
                          "    > file:     {}\n"
                          "      line:     {}\n"
                          "      function: {}\n"
-                         "      reason:   {}",
-                         location.file_name(),
-                         location.line(),
-                         location.function_name(),
-                         message);
+                         "      reason:  {}",
+                         ConsoleStyle { .fg        = ConsoleColor::Red,
+                                        .modifiers = StyleModifier::Bold | StyleModifier::Inverse }
+                             | "Ensures",
+                         ConsoleStyle { .fg = ConsoleColor::Yellow } | location.file_name(),
+                         ConsoleStyle { .fg = ConsoleColor::Blue } | location.line(),
+                         ConsoleStyle { .fg = ConsoleColor::Green } | location.function_name(),
+                         ConsoleStyle { .fg = ConsoleColor::Red, .modifiers = StyleModifier::Bold }
+                             | std::move(message));
 
             std::terminate();
         };
@@ -81,16 +85,20 @@ namespace stormkit::core {
     template<typename T>
     constexpr auto expects(std::source_location location) noexcept -> decltype(auto) {
         return [location = std::move(location)] NORETURN_LAMBDA(auto&& error) -> std::optional<T> {
-            std::println(std::cerr,
-                         "[Expects] failed in\n"
+            std::println(getSTDErr(),
+                         "[{}] failed in \n"
                          "    > file:     {}\n"
                          "      line:     {}\n"
                          "      function: {}\n"
-                         "      reason: {}\n",
-                         location.file_name(),
-                         location.line(),
-                         location.function_name(),
-                         error);
+                         "      error value:  {}",
+                         ConsoleStyle { .fg        = ConsoleColor::Red,
+                                        .modifiers = StyleModifier::Bold | StyleModifier::Inverse }
+                             | "Ensures",
+                         ConsoleStyle { .fg = ConsoleColor::Yellow } | location.file_name(),
+                         ConsoleStyle { .fg = ConsoleColor::Blue } | location.line(),
+                         ConsoleStyle { .fg = ConsoleColor::Green } | location.function_name(),
+                         ConsoleStyle { .fg = ConsoleColor::Red, .modifiers = StyleModifier::Bold }
+                             | std::forward<decltype(error)>(error));
 
             std::terminate();
         };
@@ -102,18 +110,23 @@ namespace stormkit::core {
         -> decltype(auto) {
         return [message = std::move(message), location = std::move(location)] NORETURN_LAMBDA(
                    auto&& error) -> std::expected<void, CanonicalType<decltype(error)>> {
-            std::println(std::cerr,
-                         "[Expects] failed in \n"
-                         "    > file:        {}\n"
-                         "      line:        {}\n"
-                         "      function:    {}\n"
-                         "      reason:      {}\n"
-                         "      error value: {}",
-                         location.file_name(),
-                         location.line(),
-                         location.function_name(),
-                         message,
-                         error);
+            std::println(getSTDErr(),
+                         "[{}] failed in \n"
+                         "    > file:     {}\n"
+                         "      line:     {}\n"
+                         "      function: {}\n"
+                         "      message:  {}\n",
+                         "      error value:  {}",
+                         ConsoleStyle { .fg        = ConsoleColor::Red,
+                                        .modifiers = StyleModifier::Bold | StyleModifier::Inverse }
+                             | "Ensures",
+                         ConsoleStyle { .fg = ConsoleColor::Yellow } | location.file_name(),
+                         ConsoleStyle { .fg = ConsoleColor::Blue } | location.line(),
+                         ConsoleStyle { .fg = ConsoleColor::Green } | location.function_name(),
+                         ConsoleStyle { .fg = ConsoleColor::Red, .modifiers = StyleModifier::Bold }
+                             | message,
+                         ConsoleStyle { .fg = ConsoleColor::Red, .modifiers = StyleModifier::Bold }
+                             | std::forward<decltype(error)>(error));
 
             std::terminate();
         };
@@ -124,16 +137,20 @@ namespace stormkit::core {
     constexpr auto expects(std::source_location location) noexcept -> decltype(auto) {
         return [location = std::move(location)] NORETURN_LAMBDA(
                    auto&& error) -> std::expected<void, CanonicalType<decltype(error)>> {
-            std::println(std::cerr,
-                         "[Expects] failed in\n"
-                         "    > file:        {}\n"
-                         "      line:        {}\n"
-                         "      function:    {}\n"
-                         "      error value: {}",
-                         location.file_name(),
-                         location.line(),
-                         location.function_name(),
-                         std::forward<decltype(error)>(error));
+            std::println(getSTDErr(),
+                         "[{}] failed in \n"
+                         "    > file:     {}\n"
+                         "      line:     {}\n"
+                         "      function: {}\n"
+                         "      error value:  {}",
+                         ConsoleStyle { .fg        = ConsoleColor::Red,
+                                        .modifiers = StyleModifier::Bold | StyleModifier::Inverse }
+                             | "Ensures",
+                         ConsoleStyle { .fg = ConsoleColor::Yellow } | location.file_name(),
+                         ConsoleStyle { .fg = ConsoleColor::Blue } | location.line(),
+                         ConsoleStyle { .fg = ConsoleColor::Green } | location.function_name(),
+                         ConsoleStyle { .fg = ConsoleColor::Red, .modifiers = StyleModifier::Bold }
+                             | std::forward<decltype(error)>(error));
 
             std::terminate();
         };
