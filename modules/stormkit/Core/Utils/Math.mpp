@@ -138,6 +138,27 @@ export {
             using glm::roll;
             using glm::yaw;
 
+            template<IsArithmetic T, IsArithmetic U>
+            [[nodiscard]] constexpr auto scale(const U& x,
+                                               const U& rmin,
+                                               const U& rmax,
+                                               const T& tmin,
+                                               const T& tmax) noexcept -> T;
+
+            template<IsIntegral T>
+            [[nodiscard]] constexpr auto scale(const T& x,
+                                               const T& rmin,
+                                               const T& rmax,
+                                               const T& tmin,
+                                               const T& tmax) noexcept -> T;
+
+            template<IsFloatingPoint T>
+            [[nodiscard]] constexpr auto scale(const T& x,
+                                               const T& rmin,
+                                               const T& rmax,
+                                               const T& tmin,
+                                               const T& tmax) noexcept -> T;
+
             template<core::RangeExtent size, class T>
             using Vector = glm::vec<size, T, glm::defaultp>;
 
@@ -464,6 +485,29 @@ export {
 
 namespace stormkit::core {
     namespace math {
+        template<IsArithmetic T, IsArithmetic U>
+        STORMKIT_FORCE_INLINE constexpr auto
+            scale(const U& x, const U& rmin, const U& rmax, const T& tmin, const T& tmax) noexcept
+            -> T {
+            return scale(as<T>(x), as<T>(rmin), as<T>(rmax), tmin, tmax);
+        }
+
+        template<IsIntegral T>
+        STORMKIT_FORCE_INLINE constexpr auto
+            scale(const T& x, const T& rmin, const T& rmax, const T& tmin, const T& tmax) noexcept
+            -> T {
+            return (x - rmin) * (tmax - tmin) / (rmax - rmin) + tmin;
+        }
+
+        template<IsFloatingPoint T>
+        STORMKIT_FORCE_INLINE constexpr auto
+            scale(const T& x, const T& rmin, const T& rmax, const T& tmin, const T& tmax) noexcept
+            -> T {
+            if (x < rmin) return rmin;
+            if (x > rmax) return rmax;
+            return ((x - rmin) * (tmax - tmin) / (rmax - rmin)) + tmin;
+        }
+
         /////////////////////////////////////
         /////////////////////////////////////
         template<IsArithmetic T>
