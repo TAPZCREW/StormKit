@@ -41,20 +41,34 @@ namespace stormkit::core {
             }
             if (frame.line.has_value() and frame.column.has_value())
                 std::println(std::cerr,
-                             "{}# {} in {} at {}:{}:{}",
+                             "{}# {}{} at {}:{}:{}",
                              (i++ - ignore_count),
-                             ConsoleStyle { .fg = ConsoleColor::Blue } | frame.object_address,
-                             ConsoleStyle { .fg = ConsoleColor::Yellow } | frame.symbol,
+                             ConsoleStyle { .fg = ConsoleColor::Blue }
+                                 | (frame.object_address == 0
+                                        ? "inlined"
+                                        : std::format("{:#010x}", frame.object_address)),
+                             (frame.symbol == "")
+                                 ? ""
+                                 : std::format(" in {}",
+                                               ConsoleStyle { .fg = ConsoleColor::Yellow }
+                                                   | frame.symbol),
                              ConsoleStyle { .fg = ConsoleColor::Green } | frame.filename,
                              ConsoleStyle { .fg = ConsoleColor::Blue } | frame.line.value(),
                              ConsoleStyle { .fg = ConsoleColor::Blue } | frame.column.value());
             else
                 std::println(std::cerr,
-                             "{}# {} in {} at {}",
+                             "{}# {}{} at {}",
                              (i++ - ignore_count),
-                             ConsoleStyle { .fg = ConsoleColor::Blue } | frame.object_address,
-                             ConsoleStyle { .fg = ConsoleColor::Yellow } | frame.symbol,
-                             ConsoleStyle { .fg = ConsoleColor::Green } | frame.symbol);
+                             ConsoleStyle { .fg = ConsoleColor::Blue }
+                                 | (frame.object_address == 0
+                                        ? "inlined"
+                                        : std::format("{:#010x}", frame.object_address)),
+                             (frame.symbol == "")
+                                 ? ""
+                                 : std::format(" in {}",
+                                               ConsoleStyle { .fg = ConsoleColor::Yellow }
+                                                   | frame.symbol),
+                             ConsoleStyle { .fg = ConsoleColor::Green } | frame.filename);
         }
     }
 } // namespace stormkit::core
