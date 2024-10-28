@@ -13,18 +13,18 @@ module;
 export module stormkit.Core:Utils.Assert;
 
 import std;
+import frozen;
 
 import :Console;
 import :Utils.Stacktrace;
+import :Meta.Concepts;
 
 export namespace stormkit::core {
     enum class AssertType {
-        Assert,
-        Expects,
-        Ensures
+        Assertion,
+        PreCondition,
+        PostCondition
     };
-
-    constexpr auto toString(AssertType t) noexcept -> std::string_view;
 
     auto assertBase(bool                        cond,
                     AssertType                  type,
@@ -64,29 +64,41 @@ export namespace stormkit::core {
                            = std::source_location::current()) noexcept -> void;
 } // namespace stormkit::core
 
+export namespace stormkit::core::casts {
+    template<core::IsStrictOneOf<std::string, std::string_view> To>
+    [[nodiscard]] constexpr auto as(core::AssertType t) noexcept -> To;
+}
+
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
 using namespace std::literals;
+using namespace frozen::string_literals;
+
+namespace stormkit::core::casts {
+    namespace {
+        constexpr auto AssertTypeToString
+            = frozen::make_unordered_map<core::AssertType, frozen::string>({
+                { core::AssertType::Assertion,     "Assertion"_s },
+                { core::AssertType::PreCondition,  "Expects"_s   },
+                { core::AssertType::PostCondition, "Ensures"_s   },
+        });
+    } // namespace
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<core::IsStrictOneOf<std::string, std::string_view> To>
+    constexpr auto as(core::AssertType t) noexcept -> To {
+        const auto val = AssertTypeToString.at(t);
+        return { std::ranges::cbegin(val), std::ranges::cend(val) };
+    }
+} // namespace stormkit::casts
 
 namespace stormkit::core {
     namespace {
         std::mutex mutex;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    constexpr auto toString(AssertType type) noexcept -> std::string_view {
-        switch (type) {
-            case AssertType::Assert: return "Assertion";
-            case AssertType::Expects: return "Expects";
-            case AssertType::Ensures: return "Ensures";
-            default: return "Unhandled";
-        }
-
-        std::unreachable();
-    }
+    } // namespace
 
     struct StringLiteral {
         std::array<char, 512> buff;
@@ -102,7 +114,7 @@ namespace stormkit::core {
     consteval auto generateConstevalMessage(AssertType type, std::string_view message) noexcept
         -> StringLiteral {
         auto       result = StringLiteral {};
-        const auto str    = "["s + toString(type) + "] " + std::string { message };
+        const auto str    = "["s + casts::as<std::string>(type) + "] " + std::string { message };
         std::ranges::copy(str, std::begin(result.buff));
         result.size = std::size(str);
         return result;
@@ -126,7 +138,7 @@ namespace stormkit::core {
                              ConsoleStyle { .fg = ConsoleColor::Bright_Red,
                                             .modifiers
                                             = StyleModifier::Bold | StyleModifier::Inverse }
-                                 | "["s + toString(type) + "]",
+                                 | "["s + casts::as<std::string>(type) + "]",
                              ConsoleStyle { .fg = ConsoleColor::Yellow } | location.file_name(),
                              ConsoleStyle { .fg = ConsoleColor::Blue } | location.line(),
                              ConsoleStyle { .fg = ConsoleColor::Green } | location.function_name(),
@@ -158,9 +170,9 @@ namespace stormkit::core {
 #else
         if consteval {
 #endif
-            compileTimeAssertBase(cond, AssertType::Assert, message);
+            compileTimeAssertBase(cond, AssertType::Assertion, message);
         } else {
-            assertBase(cond, AssertType::Assert, message, location);
+            assertBase(cond, AssertType::Assertion, message, location);
         }
     }
 
@@ -182,9 +194,9 @@ namespace stormkit::core {
 #else
         if consteval {
 #endif
-            compileTimeAssertBase(cond, AssertType::Expects, message);
+            compileTimeAssertBase(cond, AssertType::PreCondition, message);
         } else {
-            assertBase(cond, AssertType::Expects, message, location);
+            assertBase(cond, AssertType::PreCondition, message, location);
         }
     }
 
@@ -193,7 +205,7 @@ namespace stormkit::core {
     STORMKIT_FORCE_INLINE constexpr auto expects(bool                        cond,
                                                  const std::source_location& location) noexcept
         -> void {
-        expects(cond, "Condition check failed", location);
+        expects(cond, "Pre Condition check failed", location);
     }
 
     /////////////////////////////////////
@@ -206,9 +218,9 @@ namespace stormkit::core {
 #else
         if consteval {
 #endif
-            compileTimeAssertBase(cond, AssertType::Ensures, message);
+            compileTimeAssertBase(cond, AssertType::PostCondition, message);
         } else {
-            assertBase(cond, AssertType::Ensures, message, location);
+            assertBase(cond, AssertType::PostCondition, message, location);
         }
     }
 
@@ -217,6 +229,6 @@ namespace stormkit::core {
     STORMKIT_FORCE_INLINE constexpr auto ensures(bool                        cond,
                                                  const std::source_location& location) noexcept
         -> void {
-        ensures(cond, "Condition check failed", location);
+        ensures(cond, "Post Condition check failed", location);
     }
 } // namespace stormkit::core

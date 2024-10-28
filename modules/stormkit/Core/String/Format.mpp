@@ -9,6 +9,7 @@ import magic_enum;
 
 import :Meta;
 import :TypeSafe.Integer;
+import :TypeSafe.AsCast;
 import :Utils.Time;
 import :Utils.Math;
 
@@ -33,12 +34,18 @@ export namespace std {
 
     template<stormkit::core::math::IsVectorType T, typename CharT>
     struct formatter<T, CharT>: public formatter<basic_string<CharT>, CharT> {
+        template<class ParseContext>
+        constexpr auto parse(ParseContext& ctx) noexcept;
+
         template<class FormatContext>
         auto format(const T& data, FormatContext& ctx) const -> decltype(ctx.out());
     };
 
     template<stormkit::core::math::IsExtentLike T, typename CharT>
     struct formatter<T, CharT>: public formatter<basic_string<CharT>, CharT> {
+        template<class ParseContext>
+        constexpr auto parse(ParseContext& ctx) noexcept;
+
         template<class FormatContext>
         auto format(const T& data, FormatContext& ctx) const -> decltype(ctx.out());
     };
@@ -77,10 +84,26 @@ namespace std {
     /////////////////////////////////////
     /////////////////////////////////////
     template<stormkit::core::math::IsVectorType T, typename CharT>
+    template<class ParseContext>
+    constexpr auto formatter<T, CharT>::parse(ParseContext& ctx) noexcept {
+        return ctx.begin();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<stormkit::core::math::IsVectorType T, typename CharT>
     template<class FormatContext>
     auto formatter<T, CharT>::format(const T& data, FormatContext& ctx) const
         -> decltype(ctx.out()) {
-        return formatter<basic_string<CharT>, CharT>::format(stormkit::core::toString(data), ctx);
+        return std::format_to(ctx.out(), "{}", stormkit::core::as<std::string>(data));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<stormkit::core::math::IsExtentLike T, typename CharT>
+    template<class ParseContext>
+    constexpr auto formatter<T, CharT>::parse(ParseContext& ctx) noexcept {
+        return ctx.begin();
     }
 
     /////////////////////////////////////
@@ -89,7 +112,7 @@ namespace std {
     template<class FormatContext>
     auto formatter<T, CharT>::format(const T& data, FormatContext& ctx) const
         -> decltype(ctx.out()) {
-        return formatter<basic_string<CharT>, CharT>::format(stormkit::core::toString(data), ctx);
+        return std::format_to(ctx.out(), "{}", stormkit::core::as<std::string>(data));
     }
 
     /////////////////////////////////////

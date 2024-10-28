@@ -22,8 +22,6 @@ export namespace stormkit::core {
     [[nodiscard]] auto toUpper(std::string_view string,
                                std::locale locale = std::locale { "" }) noexcept -> std::string;
 
-    [[nodiscard]] constexpr auto toString(auto&& value) noexcept -> std::string;
-
     [[nodiscard]] auto toCZString(std::string_view value) noexcept -> const char*;
 
     template<std::size_t N>
@@ -91,25 +89,6 @@ namespace stormkit::core {
         facet.toupper(&result[0], &result[0] + result.size());
 
         return result;
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    STORMKIT_INLINE constexpr auto toString(auto&& value) noexcept -> std::string {
-        using Type = CanonicalType<decltype(value)>;
-        if constexpr (IsArithmetic<Type>) {
-            if consteval {
-                expects(IsIntegral<Type>,
-                        "Only integers are supported for constexpr toString");
-            }
-
-            static thread_local auto buf    = std::array<char, 20> {};
-            const auto               result = std::to_chars(std::begin(buf), std::end(buf), value);
-            ensures(result.ec != std::errc {}, std::make_error_code(result.ec).message());
-            return std::string { std::begin(buf),
-                                 static_cast<std::size_t>(result.ptr - std::begin(buf)) };
-        } else
-            return std::to_string(std::forward<decltype(value)>(value));
     }
 
     ////////////////////////////////////////

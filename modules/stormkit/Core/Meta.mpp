@@ -7,6 +7,7 @@ export module stormkit.Core:Meta;
 export import :Meta.Concepts;
 export import :Meta.Traits;
 export import :Meta.NamedType;
+export import :Meta.PriorityTag;
 
 export namespace stormkit::core {
     template<class... Ts>

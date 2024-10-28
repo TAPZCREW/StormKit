@@ -25,10 +25,7 @@ auto main(std::span<const std::string_view> args) -> int {
 
     const auto monitors = wsi::Window::getMonitorSettings();
     polling_logger.ilog("--- Monitors ---");
-    polling_logger.ilog("{}",
-                        monitors |
-                            std::views::transform([](auto&& v) { return wsi::toString(v); }) |
-                            std::views::join | std::ranges::to<std::string>());
+    polling_logger.ilog("{}", monitors);
 
     auto window = wsi::Window { "Hello world", { 800u, 600u }, wsi::WindowStyle::All };
 

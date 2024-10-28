@@ -176,7 +176,6 @@ namespace stormkit::image::details {
             std::ranges::transform(std::begin(previous_pixel.data),
                                    std::end(previous_pixel.data) - diff,
                                    std::back_inserter(output),
-                                   /*[](auto&& val) static noexcept { return as<Byte>(val); });*/
                                    monadic::as<Byte>());
         }
 
