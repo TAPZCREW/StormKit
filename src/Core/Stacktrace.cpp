@@ -52,36 +52,29 @@ namespace stormkit::core {
                              "basic_string<char, std::char_traits<char>, std::allocator<char>>",
                              "string");
 
-            if (frame.line.has_value() and frame.column.has_value())
+            const auto object_address
+                = (frame.object_address == 0 ? "inlined"
+                                             : std::format("{:#010x}", frame.object_address));
+
+            const auto formatted_symbol
+                = (frame.symbol == "") ? "" : std::format(" in {}", YellowTextStyle | symbol);
+
+            if (frame.line.has_value() and frame.column.has_value()) {
                 std::println(std::cerr,
                              "{}# {}{} at {}:{}:{}",
                              (i++ - ignore_count),
-                             ConsoleStyle { .fg = ConsoleColor::Blue }
-                                 | (frame.object_address == 0
-                                        ? "inlined"
-                                        : std::format("{:#010x}", frame.object_address)),
-                             (frame.symbol == "")
-                                 ? ""
-                                 : std::format(" in {}",
-                                               ConsoleStyle { .fg = ConsoleColor::Yellow }
-                                                   | symbol),
-                             ConsoleStyle { .fg = ConsoleColor::Green } | frame.filename,
-                             ConsoleStyle { .fg = ConsoleColor::Blue } | frame.line.value(),
-                             ConsoleStyle { .fg = ConsoleColor::Blue } | frame.column.value());
-            else
+                             BlueTextStyle | object_address,
+                             formatted_symbol,
+                             GreenTextStyle | frame.filename,
+                             BlueTextStyle | frame.line.value(),
+                             BlueTextStyle | frame.column.value());
+            } else
                 std::println(std::cerr,
                              "{}# {}{} at {}",
                              (i++ - ignore_count),
-                             ConsoleStyle { .fg = ConsoleColor::Blue }
-                                 | (frame.object_address == 0
-                                        ? "inlined"
-                                        : std::format("{:#010x}", frame.object_address)),
-                             (frame.symbol == "")
-                                 ? ""
-                                 : std::format(" in {}",
-                                               ConsoleStyle { .fg = ConsoleColor::Yellow }
-                                                   | symbol),
-                             ConsoleStyle { .fg = ConsoleColor::Green } | frame.filename);
+                             BlueTextStyle | object_address,
+                             formatted_symbol,
+                             GreenTextStyle | frame.filename);
         }
     }
 } // namespace stormkit::core
