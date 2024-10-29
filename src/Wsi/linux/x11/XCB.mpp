@@ -21,137 +21,74 @@ import stormkit.Core;
 
 import :Linux.X11.Log;
 
-#define STORMKIT_XCB_SCOPED(name, type)                                \
-    struct name##Scoped {                                              \
-        name##Scoped(type* handle) noexcept;                           \
-        ~name##Scoped() noexcept;                                      \
-                                                                       \
-        name##Scoped(const name##Scoped&)                    = delete; \
-        auto operator=(const name##Scoped&) -> name##Scoped& = delete; \
-                                                                       \
-        name##Scoped(name##Scoped&&) noexcept;                         \
-        auto operator=(name##Scoped&&) noexcept -> name##Scoped&;      \
-                                                                       \
-        operator type*() const noexcept {                              \
-            return m_handle;                                           \
-        }                                                              \
-                                                                       \
-      private:                                                         \
-        type* m_handle = nullptr;                                      \
-    }
-
 export namespace stormkit::wsi::linux::x11 {
-    using XCBErrorPtr = xcb_generic_error_t*;
-
-    STORMKIT_XCB_SCOPED(XCBConnection, xcb_connection_t);
-    STORMKIT_XCB_SCOPED(XCBErrorContext, xcb_errors_context_t);
-
     struct Error {
         std::string message;
     };
 
-    auto getXCBConnection() noexcept -> XCBConnectionScoped;
+    auto getXCBConnection() noexcept -> Ref<xcb_connection_t>;
     auto getXCBAtom(std::string_view name, bool only_if_exists) noexcept
         -> std::expected<xcb_atom_t, Error>;
     auto getXCBAtomName(xcb_atom_t atom) -> std::expected<std::string, Error>;
 
-    auto getXCBErrorContext() noexcept -> XCBErrorContextScoped;
-    auto getXCBError(XCBErrorPtr error) -> std::string;
+    auto getXCBErrorContext() noexcept -> Ref<xcb_errors_context_t>;
+    auto getXCBError(Ref<xcb_generic_error_t> error) -> std::string;
 
     auto getXIDeviceInfo(xcb_input_device_id_t device_id)
-        -> std::expected<xcb_input_xi_device_info_t*, Error>;
+        -> std::expected<Ref<xcb_input_xi_device_info_t>, Error>;
 } // namespace stormkit::wsi::linux::x11
 
-#undef STORMKIT_XCB_SCOPED
-
-#define STORMKIT_XCB_SCOPED(name, type, var, global, deleter)                       \
-    name##Scoped::name##Scoped(type* handle) noexcept : m_handle { handle } {       \
-        if (m_handle != nullptr) var++;                                             \
-    }                                                                               \
-                                                                                    \
-    name##Scoped::~name##Scoped() noexcept {                                        \
-        if (m_handle != nullptr) {                                                  \
-            var--;                                                                  \
-                                                                                    \
-            if (var == 0) {                                                         \
-                deleter(m_handle);                                                  \
-                m_handle = nullptr;                                                 \
-                global   = nullptr;                                                 \
-            }                                                                       \
-        }                                                                           \
-    }                                                                               \
-                                                                                    \
-    name##Scoped::name##Scoped(name##Scoped&& other) noexcept                       \
-        : m_handle { std::exchange(other.m_handle, nullptr) } {                     \
-    }                                                                               \
-                                                                                    \
-    auto name##Scoped::operator=(name##Scoped && other) noexcept -> name##Scoped& { \
-        if (this == &other) return *this;                                           \
-                                                                                    \
-        m_handle = std::exchange(other.m_handle, nullptr);                          \
-                                                                                    \
-        return *this;                                                               \
-    }
-
 namespace stormkit::wsi::linux::x11 {
-    using XCBConnectionPtr   = xcb_connection_t*;
-    using XCBErrorContextPtr = xcb_errors_context_t*;
-    using XCBErrorPtr        = xcb_generic_error_t*;
+    STORMKIT_RAII_CAPSULE(XCBConnection, xcb_connection_t, xcb_disconnect)
+    STORMKIT_RAII_CAPSULE(XCBErrorContext, xcb_errors_context_t, xcb_errors_context_free)
     STORMKIT_RAII_CAPSULE(XCBGenericError, xcb_generic_error_t, std::free)
+    STORMKIT_RAII_CAPSULE(XCBInternAtomReply, xcb_intern_atom_reply_t, std::free)
+    STORMKIT_RAII_CAPSULE(XCBGetAtomReply, xcb_get_atom_name_reply_t, std::free)
+    STORMKIT_RAII_CAPSULE(XCBInputXiQueryDeviceReply, xcb_input_xi_query_device_reply_t, std::free)
+
+    using XCBGenericErrorPtr = xcb_generic_error_t*;
 
     namespace {
-        constinit auto xcb_connection    = XCBConnectionPtr { nullptr };
-        constinit auto xcb_error_context = XCBErrorContextPtr { nullptr };
-
-        constinit auto xcb_connection_reference_count    = 0u;
-        constinit auto xcb_error_context_reference_count = 0u;
+        constinit auto xcb_connection    = XCBConnectionScoped {};
+        constinit auto xcb_error_context = XCBErrorContextScoped {};
 
         auto xcb_atoms = stormkit::StringHashMap<xcb_atom_t> {};
     } // namespace
 
-    STORMKIT_XCB_SCOPED(XCBConnection,
-                        xcb_connection_t,
-                        xcb_connection_reference_count,
-                        xcb_connection,
-                        xcb_disconnect)
-    STORMKIT_XCB_SCOPED(XCBErrorContext,
-                        xcb_errors_context_t,
-                        xcb_error_context_reference_count,
-                        xcb_error_context,
-                        xcb_errors_context_free)
-
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto getXCBConnection() noexcept -> XCBConnectionScoped {
+    STORMKIT_INLINE auto getXCBConnection() noexcept -> Ref<xcb_connection_t> {
         if (!xcb_connection) [[unlikely]] {
-            xcb_connection = xcb_connect(nullptr, nullptr);
-            dlog("New xcb connection {}", std::bit_cast<void*>(xcb_connection));
+            xcb_connection.reset(xcb_connect(nullptr, nullptr));
+            dlog("New xcb connection {}", std::bit_cast<void*>(xcb_connection.get()));
         }
 
-        ensures(xcb_connection);
-        return xcb_connection;
+        ensures(xcb_connection != nullptr and not xcb_connection_has_error(xcb_connection.get()),
+                "Failed to connect to X server");
+
+        return borrowMut(xcb_connection);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_INLINE auto getXCBAtom(std::string_view name, bool only_if_exists) noexcept
         -> std::expected<xcb_atom_t, Error> {
-        STORMKIT_RAII_CAPSULE(Reply, xcb_intern_atom_reply_t, std::free)
-
         auto it = xcb_atoms.find(name);
 
         if (it != std::ranges::end(xcb_atoms)) return it->second;
 
-        auto connection = getXCBConnection();
+        const auto connection = getXCBConnection();
 
-        auto cookie =
-            xcb_intern_atom(connection, (only_if_exists) ? 1 : 0, std::size(name), std::data(name));
-
-        auto error = XCBErrorPtr {};
-        auto reply = ReplyScoped { xcb_intern_atom_reply(connection, cookie, &error) };
+        const auto cookie = xcb_intern_atom(connection,
+                                            (only_if_exists) ? 1 : 0,
+                                            std::ranges::size(name),
+                                            std::ranges::data(name));
+        auto       error  = XCBGenericErrorPtr { nullptr };
+        const auto reply
+            = XCBInternAtomReplyScoped { xcb_intern_atom_reply(connection.get(), cookie, &error) };
 
         if (error || !reply)
-            return std::unexpected { Error { (error) ? getXCBError(error) : std::string { " " } } };
+            return std::unexpected { Error { (error) ? getXCBError(borrowMut(error)) : std::string { " " } } };
 
         auto atom = reply->atom;
         xcb_atoms.emplace(name, atom);
@@ -160,35 +97,37 @@ namespace stormkit::wsi::linux::x11 {
     }
 
     STORMKIT_INLINE auto getXCBAtomName(xcb_atom_t atom) -> std::expected<std::string, Error> {
-        STORMKIT_RAII_CAPSULE(Reply, xcb_get_atom_name_reply_t, std::free)
+        const auto connection = getXCBConnection();
 
-        auto connection = getXCBConnection();
+        const auto cookie = xcb_get_atom_name(connection, atom);
+        auto       error  = XCBGenericErrorPtr { nullptr };
+        const auto reply
+            = XCBGetAtomReplyScoped { xcb_get_atom_name_reply(connection, cookie, &error) };
 
-        auto error  = XCBErrorPtr {};
-        auto cookie = xcb_get_atom_name(connection, atom);
-        auto reply  = ReplyScoped { xcb_get_atom_name_reply(connection, cookie, &error) };
-
-        if (error) return std::unexpected { Error { getXCBError(error) } };
+        if (error) return std::unexpected { Error { getXCBError(borrowMut(error)) } };
 
         return std::string { xcb_get_atom_name_name(reply.get()),
-                             as<std::size_t>(xcb_get_atom_name_name_length(reply.get())) };
+                             as<RangeExtent>(xcb_get_atom_name_name_length(reply.get())) };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto getXCBErrorContext() noexcept -> XCBErrorContextScoped {
+    STORMKIT_INLINE auto getXCBErrorContext() noexcept -> Ref<xcb_errors_context_t> {
         if (!xcb_error_context) [[unlikely]] {
-            xcb_errors_context_new(getXCBConnection(), &xcb_error_context);
-            dlog("New xcb error context {}", std::bit_cast<void*>(xcb_error_context));
+            using XCBErrorCtxPtr = xcb_errors_context_t*;
+            auto ctx             = XCBErrorCtxPtr { nullptr };
+            xcb_errors_context_new(getXCBConnection(), &ctx);
+            xcb_error_context.reset(ctx);
+            dlog("New xcb error context {}", std::bit_cast<void*>(ctx));
         }
 
-        ensures(xcb_error_context);
-        return xcb_error_context;
+        ensures(xcb_error_context != nullptr, "Failed to allocate XCB errors context");
+        return borrowMut(xcb_error_context);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto getXCBError(XCBErrorPtr error) -> std::string {
+    STORMKIT_INLINE auto getXCBError(Ref<xcb_generic_error_t> error) -> std::string {
         expects(error);
 
         auto guard = XCBGenericErrorScoped { error };
@@ -196,11 +135,10 @@ namespace stormkit::wsi::linux::x11 {
         auto ctx = getXCBErrorContext();
 
         const auto major = xcb_errors_get_name_for_major_code(ctx, error->major_code);
-        const auto minor =
-            xcb_errors_get_name_for_minor_code(ctx, error->major_code, error->minor_code);
+        const auto minor
+            = xcb_errors_get_name_for_minor_code(ctx, error->major_code, error->minor_code);
 
-        using CStr            = const char*;
-        const auto* extension = CStr { nullptr };
+        const auto* extension = CZString { nullptr };
         const auto  str_error = xcb_errors_get_name_for_error(ctx, error->major_code, &extension);
 
         return std::format("{} extension: {} major: {} minor: {}\n",
@@ -213,22 +151,22 @@ namespace stormkit::wsi::linux::x11 {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_INLINE auto getXIDeviceInfo(xcb_input_device_id_t device_id)
-        -> std::expected<xcb_input_xi_device_info_t*, Error> {
-        STORMKIT_RAII_CAPSULE(Reply, xcb_input_xi_query_device_reply_t, std::free)
-
+        -> std::expected<Ref<xcb_input_xi_device_info_t>, Error> {
         auto connection = getXCBConnection();
 
-        auto error  = XCBErrorPtr {};
+        auto error  = XCBGenericErrorPtr {};
         auto cookie = xcb_input_xi_query_device(connection, device_id);
-        auto reply  = ReplyScoped { xcb_input_xi_query_device_reply(connection, cookie, &error) };
+        auto reply  = XCBInputXiQueryDeviceReplyScoped {
+            xcb_input_xi_query_device_reply(connection, cookie, &error)
+        };
 
-        if (error) return std::unexpected { Error { getXCBError(error) } };
+        if (error) return std::unexpected { Error { getXCBError(borrowMut(error)) } };
 
         auto device_info_it = xcb_input_xi_query_device_infos_iterator(reply.get());
         for (; device_info_it.rem; xcb_input_xi_device_info_next(&device_info_it)) {
             auto info = device_info_it.data;
 
-            if (info->deviceid == device_id) return info;
+            if (info->deviceid == device_id) return borrowMut(info);
         }
 
         return std::unexpected { Error { "Device ID not found" } };

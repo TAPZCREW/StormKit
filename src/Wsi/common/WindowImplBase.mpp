@@ -54,7 +54,7 @@ namespace stormkit::wsi::common {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_INLINE auto WindowImplBase::pollEvent(Event& event) noexcept -> bool {
-        auto has_event = !m_events.empty();
+        auto has_event = not m_events.empty();
 
         if (has_event) {
             event = m_events.front();
@@ -67,7 +67,7 @@ namespace stormkit::wsi::common {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_INLINE auto WindowImplBase::waitEvent(Event& event) noexcept -> bool {
-        auto has_event = !m_events.empty();
+        auto has_event = not m_events.empty();
 
         if (has_event) {
             event = m_events.front();

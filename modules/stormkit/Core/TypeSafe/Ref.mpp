@@ -51,6 +51,7 @@ export namespace stormkit::core {
         //     this Self&& self) noexcept;
 
         [[nodiscard]] constexpr operator ReferenceType() const noexcept;
+        [[nodiscard]] constexpr operator PointerType() const noexcept;
 
         [[nodiscard]] constexpr auto operator==(std::nullptr_t) const noexcept -> bool;
 
@@ -235,6 +236,13 @@ namespace stormkit::core {
     template<typename T>
     STORMKIT_FORCE_INLINE constexpr Ref<T>::operator ReferenceType() const noexcept {
         return *m_value;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    STORMKIT_FORCE_INLINE constexpr Ref<T>::operator PointerType() const noexcept {
+        return m_value;
     }
 
     /////////////////////////////////////

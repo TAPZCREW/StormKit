@@ -111,7 +111,7 @@ export namespace stormkit::wsi::linux::x11 {
 
         auto handleKeyEvent(xcb_keycode_t keycode, bool up) noexcept -> void;
 
-        XCBConnectionScoped      m_connection  = nullptr;
+        Ref<xcb_connection_t>    m_connection;
         common::XKBContextScoped m_xkb_context = nullptr;
         XCBWindowScoped          m_window;
         XCBKeySymbolsScoped      m_key_symbols;
@@ -245,8 +245,7 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    WindowImpl::WindowImpl() {
-        m_connection  = getXCBConnection();
+    WindowImpl::WindowImpl() : m_connection{getXCBConnection()} {
         m_xkb_context = common::getXKBContext();
     }
 
@@ -273,9 +272,13 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::create(std::string          title,
-                            const math::ExtentU& extent,
-                            WindowStyle          style) -> void {
+    auto WindowImpl::create(std::string title, const math::ExtentU& extent, WindowStyle style)
+        -> void {
+        if (xcb_connection_has_error(m_connection)) [[unlikely]] {
+            elog("ERROR {}", std::bit_cast<void*>(m_connection.get()));
+            return;
+        }
+
         static constexpr const auto EVENTS
             = XCB_EVENT_MASK_FOCUS_CHANGE | XCB_EVENT_MASK_BUTTON_PRESS
               | XCB_EVENT_MASK_BUTTON_RELEASE | XCB_EVENT_MASK_BUTTON_MOTION
@@ -305,8 +308,10 @@ namespace stormkit::wsi::linux::x11 {
                                         value_list);
 
         auto error = xcb_request_check(m_connection, cookie);
-        if (error) [[unlikely]]
-            elog("Failed to create window\n    > reason: {}", getXCBError(error));
+        if (error) [[unlikely]] {
+            elog("Failed to create window\n    > reason: {}", getXCBError(borrowMut(error)));
+            return;
+        }
 
         m_extent = extent;
 
@@ -315,17 +320,20 @@ namespace stormkit::wsi::linux::x11 {
 
         // init key_symbol map, this is needed to extract the keysymbol from event
         m_key_symbols.reset(xcb_key_symbols_alloc(m_connection));
+        ensures(m_key_symbols.get(), "Failed to initialize XKB symbols map");
 
         auto xkb_ext_reply = xcb_get_extension_data(m_connection, &xcb_xkb_id);
-        ensures(xkb_ext_reply);
+        ensures(xkb_ext_reply, "Failed to get XCB_XKB extension data");
         {
+            static constexpr auto major_version = XCB_XKB_MAJOR_VERSION;
+            static constexpr auto minor_version = XCB_XKB_MINOR_VERSION;
             STORMKIT_RAII_CAPSULE(Reply, xcb_xkb_use_extension_reply_t, std::free)
-            auto cookie
-                = xcb_xkb_use_extension(m_connection, XCB_XKB_MAJOR_VERSION, XCB_XKB_MINOR_VERSION);
+            auto cookie = xcb_xkb_use_extension(m_connection, major_version, minor_version);
             auto reply = ReplyScoped { xcb_xkb_use_extension_reply(m_connection, cookie, nullptr) };
 
-            ensures(reply != nullptr);
-            ensures(reply->supported, "The XKB extension is not supported on this X server");
+            ensures(reply != nullptr, "Failed to enable XCB_XKB extension");
+            ensures(reply->supported, "The XCB_XKB extension is not supported on this X server");
+            dlog("XCB_XKB extension loaded, version: {}.{}", major_version, minor_version);
         }
 
         auto xfixes_ext_reply = xcb_get_extension_data(m_connection, &xcb_xfixes_id);
@@ -337,7 +345,10 @@ namespace stormkit::wsi::linux::x11 {
             auto reply
                 = ReplyScoped { xcb_xfixes_query_version_reply(m_connection, cookie, nullptr) };
 
-            ensures(reply != nullptr);
+            ensures(reply != nullptr, "Failed to query XCB_XFIXES extension version");
+            dlog("XCB_XFIXES extension loaded, version: {}.{}",
+                 reply->major_version,
+                 reply->minor_version);
         }
 
         auto xcb_input_ext_reply = xcb_get_extension_data(m_connection, &xcb_input_id);
@@ -349,7 +360,10 @@ namespace stormkit::wsi::linux::x11 {
             auto reply
                 = ReplyScoped { xcb_input_xi_query_version_reply(m_connection, cookie, nullptr) };
 
-            ensures(reply != nullptr);
+            ensures(reply != nullptr, "Failed to query XCB_INPUT_XI extension version");
+            dlog("XCB_INPUT_XI extension loaded, version: {}.{}",
+                 reply->major_version,
+                 reply->minor_version);
 
             m_xi_opcode = xcb_input_ext_reply->major_opcode;
         }
