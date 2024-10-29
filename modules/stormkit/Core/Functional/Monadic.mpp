@@ -17,7 +17,7 @@ import :Functional.Utils;
 import :TypeSafe.Ref;
 import :TypeSafe.Byte;
 
-export namespace stormkit::core::monadic {
+export namespace stormkit { inline namespace core { namespace monadic {
     struct Anything {
         template<typename T>
         operator T&(this auto& self) noexcept;
@@ -56,7 +56,7 @@ export namespace stormkit::core::monadic {
 
     template<typename T>
     [[nodiscard]] constexpr auto either(meta::IsUnaryPredicate<T> auto&& predicate,
-                                        std::invocable<T> auto&&   true_,
+                                        std::invocable<T> auto&&         true_,
                                         std::invocable<T> auto&& false_) noexcept -> decltype(auto);
 
     [[nodiscard]] constexpr auto is() noexcept -> decltype(auto);
@@ -77,13 +77,13 @@ export namespace stormkit::core::monadic {
 
     template<typename T>
     [[nodiscard]] constexpr auto forwardLike() noexcept -> decltype(auto);
-} // namespace stormkit::core::monadic
+}}} // namespace stormkit::core::monadic
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core::monadic {
+namespace stormkit { inline namespace core { namespace monadic {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE constexpr auto value() noexcept -> decltype(auto) {
@@ -193,8 +193,8 @@ namespace stormkit::core::monadic {
         -> decltype(auto) {
         using First   = decltype(first);
         using Second  = decltype(second);
-        using FirstP  = core::meta::CanonicalType<First>;
-        using SecondP = core::meta::CanonicalType<Second>;
+        using FirstP  = meta::CanonicalType<First>;
+        using SecondP = meta::CanonicalType<Second>;
 
         return
             [first  = std::forward<First>(first),
@@ -208,8 +208,8 @@ namespace stormkit::core::monadic {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE constexpr auto either(meta::IsUnaryPredicate<T> auto&& predicate,
-                                                std::invocable<T> auto&&   true_,
-                                                std::invocable<T> auto&&   false_) noexcept
+                                                std::invocable<T> auto&&         true_,
+                                                std::invocable<T> auto&&         false_) noexcept
         -> decltype(auto) {
         [predicate = std::move(predicate), true_ = std::move(true_), false_ = std::move(false_)](
             auto&& elem) noexcept -> decltype(auto) {
@@ -299,4 +299,4 @@ namespace stormkit::core::monadic {
             return std::forward_like<T>(value);
         };
     }
-} // namespace stormkit::core::monadic
+}}} // namespace stormkit::core::monadic

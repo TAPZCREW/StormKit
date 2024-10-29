@@ -6,7 +6,7 @@ module stormkit.Core;
 
 import std;
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     namespace details {
         ////////////////////////////////////////
         ////////////////////////////////////////
@@ -17,7 +17,7 @@ namespace stormkit::core {
         ////////////////////////////////////////
         ////////////////////////////////////////
         auto getThreadName(pthread_t id) noexcept -> std::string {
-            auto name   = std::array<char, 256> {};
+            auto name = std::array<char, 256> {};
             pthread_getname_np(id, std::data(name), std::size(name));
             return std::string { std::begin(name),
                                  std::begin(name) + std::strlen(std::data(name)) };
@@ -65,4 +65,4 @@ namespace stormkit::core {
         const auto id = thread.native_handle();
         return details::getThreadName(id);
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core

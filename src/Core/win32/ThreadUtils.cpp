@@ -20,7 +20,7 @@ struct ThreadNameInfo {
 
 #pragma pack(pop)
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     namespace details {
         ////////////////////////////////////////
         ////////////////////////////////////////
@@ -123,4 +123,4 @@ namespace stormkit::core {
         const auto handle = getThreadHandle(thread);
         return details::getThreadName(handle);
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core

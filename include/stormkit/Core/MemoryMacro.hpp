@@ -32,9 +32,9 @@
     template<class y>                                              \
     using x##ConstWeakPtr = std::weak_ptr<const x<y>>;             \
     template<class y>                                              \
-    using x##Ref = stormkit::core::NakedRef<x<y>>;                 \
+    using x##Ref = stormkit::NakedRef<x<y>>;                 \
     template<class y>                                              \
-    using x##ConstRef = stormkit::core::NakedRef<const x<y>>;
+    using x##ConstRef = stormkit::NakedRef<const x<y>>;
 
 /// \exclude
 #define DECLARE_PTR_AND_REF_(x)                                    \
@@ -43,8 +43,8 @@
     using x##std::shared_ptr<Const> = std::shared_ptr<const x>;    \
     using x##WeakPtr                = std::weak_ptr<x>;            \
     using x##ConstWeakPtr           = std::weak_ptr<const x>;      \
-    using x##Ref                    = stormkit::core::NakedRef<x>; \
-    using x##ConstRef               = stormkit::core::NakedRef<const x>;
+    using x##Ref                    = stormkit::NakedRef<x>; \
+    using x##ConstRef               = stormkit::NakedRef<const x>;
 
 /// \brief Declare pointer and reference_wrapper aliases to a type
 /// \param type The type to declare aliases
@@ -56,7 +56,7 @@
 
 /// \brief Add padding to a struct or a class
 /// \param size The size of the padding
-#define PADDING(size) stormkit::core::Byte private____padding[size];
+#define PADDING(size) stormkit::Byte private____padding[size];
 
 /// \exclude
 #define STORMKIT_UNUSED(x) (void)(x);

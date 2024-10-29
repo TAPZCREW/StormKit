@@ -16,7 +16,7 @@ import :Meta.Traits;
 import :Console;
 import :Utils.Stacktrace;
 
-export namespace stormkit::core::monadic {
+export namespace stormkit { inline namespace core { namespace monadic {
     template<typename T>
     [[nodiscard]] constexpr auto ensuresWithMessage(std::string&&        message,
                                                     std::source_location location
@@ -41,7 +41,7 @@ export namespace stormkit::core::monadic {
         -> decltype(auto);
 
     [[nodiscard]] constexpr auto throwError() noexcept -> decltype(auto);
-} // namespace stormkit::core
+}}} // namespace stormkit::core::monadic
 
 #ifdef STORMKIT_COMPILER_CLANG
     #define NORETURN_LAMBDA [[noreturn]]
@@ -53,7 +53,7 @@ export namespace stormkit::core::monadic {
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core::monadic {
+namespace stormkit { inline namespace core { namespace monadic {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
@@ -171,9 +171,10 @@ namespace stormkit::core::monadic {
     ////////////////////////////////////////
     ////////////////////////////////////////
     constexpr auto throwError() noexcept -> decltype(auto) {
-        return [] NORETURN_LAMBDA(
-                   auto&& error) static -> std::expected<void, meta::CanonicalType<decltype(error)>> {
-            throw std::forward<decltype(error)>(error);
-        };
+        return
+            [] NORETURN_LAMBDA(
+                auto&& error) static -> std::expected<void, meta::CanonicalType<decltype(error)>> {
+                throw std::forward<decltype(error)>(error);
+            };
     }
-} // namespace stormkit::core
+}}} // namespace stormkit::core::monadic

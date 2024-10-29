@@ -8,7 +8,7 @@ import std;
 
 import :Utils.DynamicLoaderImpl;
 
-namespace stormkit::core {
+namespace stormkit {
     /////////////////////////////////////
     /////////////////////////////////////
     DynamicLoader::DynamicLoader() noexcept = default;
@@ -48,4 +48,4 @@ namespace stormkit::core {
     auto DynamicLoader::doGetFunc(std::string_view name) const -> Expected<void*> {
         return m_impl->doGetFunc(name);
     }
-} // namespace stormkit::core
+}// namespace stormkit::core

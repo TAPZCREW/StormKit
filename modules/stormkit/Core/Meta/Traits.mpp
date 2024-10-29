@@ -8,7 +8,7 @@ import std;
 
 import :Meta.Concepts;
 
-export namespace stormkit::core::meta {
+export namespace stormkit { inline namespace core { namespace meta {
     template<class T>
     using CanonicalType = std::remove_cvref_t<T>;
 
@@ -63,8 +63,8 @@ export namespace stormkit::core::meta {
     struct ForwardLikeTrait {
       private:
         using U1 = ConstnessLike<T, U>;
-        using U2
-            = std::conditional_t<std::is_lvalue_reference_v<T>, std::add_lvalue_reference_t<U1>, U1>;
+        using U2 = std::
+            conditional_t<std::is_lvalue_reference_v<T>, std::add_lvalue_reference_t<U1>, U1>;
         using U3 = std::
             conditional_t<std::is_rvalue_reference_v<T>, std::add_rvalue_reference_t<U2>, U2>;
 
@@ -75,10 +75,10 @@ export namespace stormkit::core::meta {
     template<class T, typename U>
     using ForwardLike = ForwardLikeTrait<T, U>::Type;
 
-    template<typename ... Ts>
+    template<typename... Ts>
     struct AlwaysTrue: std::false_type {};
 
-    template<typename ... Ts>
+    template<typename... Ts>
     struct AlwaysFalse: std::false_type {};
 
     template<typename T>
@@ -86,13 +86,13 @@ export namespace stormkit::core::meta {
 
     template<IsEnumeration T>
     using UnderlyingType = std::underlying_type_t<T>;
-} // namespace stormkit::core
+}}} // namespace stormkit::core::meta
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core::meta {
+namespace stormkit { inline namespace core { namespace meta {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<IsArithmetic T, IsArithmetic V>
@@ -102,4 +102,4 @@ namespace stormkit::core::meta {
         return static_cast<Type>(std::numeric_limits<T>::max())
                > static_cast<Type>(std::numeric_limits<V>::max());
     }
-} // namespace stormkit::core
+}}} // namespace stormkit::core::meta

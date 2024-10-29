@@ -4,9 +4,9 @@
 
 export module stormkit.Core:String.CString;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     using CZString  = const char*;
     using ZString   = char*;
     using CWZString = const wchar_t*;
     using WZString  = wchar_t*;
-} // namespace stormkit::core
+}} // namespace stormkit::core

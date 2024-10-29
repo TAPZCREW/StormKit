@@ -11,9 +11,9 @@
 #define HASH_FUNC(x, ...)                                                                        \
     template<>                                                                                   \
     struct STORMKIT_API std::hash<x> {                                                           \
-        [[nodiscard]] auto operator()(const x& value) const noexcept -> stormkit::core::Hash64 { \
-            auto hash = stormkit::core::Hash64 { 0 };                                            \
-            stormkit::core::hashCombine(hash, __VA_ARGS__);                                      \
+        [[nodiscard]] auto operator()(const x& value) const noexcept -> stormkit::Hash64 { \
+            auto hash = stormkit::Hash64 { 0 };                                            \
+            stormkit::hashCombine(hash, __VA_ARGS__);                                      \
             return hash;                                                                         \
         }                                                                                        \
     };
@@ -21,9 +21,9 @@
 #define CONSTRAINED_HASH_FUNC(x, ...)                                                            \
     template<x T>                                                                                \
     struct STORMKIT_API std::hash<T> {                                                           \
-        [[nodiscard]] auto operator()(const T& value) const noexcept -> stormkit::core::Hash64 { \
-            auto hash = stormkit::core::Hash64 { 0 };                                            \
-            stormkit::core::hashCombine(hash, __VA_ARGS__);                                      \
+        [[nodiscard]] auto operator()(const T& value) const noexcept -> stormkit::Hash64 { \
+            auto hash = stormkit::Hash64 { 0 };                                            \
+            stormkit::hashCombine(hash, __VA_ARGS__);                                      \
             return hash;                                                                         \
         }                                                                                        \
     };
@@ -32,9 +32,9 @@
     template<z y>                                                       \
     struct STORMKIT_API std::hash<x<y>> {                               \
         [[nodiscard]] auto operator()(const x<y>& value) const noexcept \
-            -> stormkit::core::Hash64 {                                 \
-            auto hash = stormkit::core::Hash64 { 0 };                   \
-            stormkit::core::hashCombine(hash, __VA_ARGS__);             \
+            -> stormkit::Hash64 {                                 \
+            auto hash = stormkit::Hash64 { 0 };                   \
+            stormkit::hashCombine(hash, __VA_ARGS__);             \
             return hash;                                                \
         }                                                               \
     };

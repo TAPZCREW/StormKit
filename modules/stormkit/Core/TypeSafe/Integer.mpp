@@ -13,7 +13,7 @@ import std;
 import :Meta.Concepts;
 
 export {
-    namespace stormkit::core {
+    namespace stormkit { inline namespace core {
         namespace cpp {
             using UChar     = unsigned short;
             using UShort    = unsigned short;
@@ -60,7 +60,7 @@ export {
 
         template<meta::IsIntegral T>
         Integer(T) -> Integer<T>;
-    } // namespace stormkit::core
+    }} // namespace stormkit::core
 
     template<class T, class CharT>
     struct std::formatter<stormkit::core::Integer<T>, CharT>: std::formatter<T, CharT> {
@@ -73,9 +73,6 @@ export {
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
-
-namespace stormkit::core {
-}
 
 /////////////////////////////////////
 /////////////////////////////////////

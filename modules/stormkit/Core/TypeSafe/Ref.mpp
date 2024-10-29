@@ -15,150 +15,152 @@ import :Meta.Traits;
 import :Utils.Assert;
 import :TypeSafe.Boolean;
 
-export namespace stormkit::core {
-    template<typename T>
-    class [[nodiscard]] [[gsl::Pointer]] Ref {
-      public:
-        using ElementType   = T;
-        using ReferenceType = ElementType&;
-        using PointerType   = ElementType* const;
+export {
+    namespace stormkit { inline namespace core {
+        template<typename T>
+        class [[nodiscard]] [[gsl::Pointer]] Ref {
+          public:
+            using ElementType   = T;
+            using ReferenceType = ElementType&;
+            using PointerType   = ElementType* const;
 
-        // STL compatible
-        using element_type = ElementType;
-        using pointer      = PointerType;
+            // STL compatible
+            using element_type = ElementType;
+            using pointer      = PointerType;
 
-        constexpr ~Ref() noexcept;
+            constexpr ~Ref() noexcept;
 
-        constexpr Ref(const Ref&) noexcept;
-        constexpr Ref(Ref&&) noexcept;
+            constexpr Ref(const Ref&) noexcept;
+            constexpr Ref(Ref&&) noexcept;
 
-        constexpr auto operator=(const Ref&) noexcept -> Ref& = delete;
-        constexpr auto operator=(Ref&&) noexcept -> Ref&;
+            constexpr auto operator=(const Ref&) noexcept -> Ref& = delete;
+            constexpr auto operator=(Ref&&) noexcept -> Ref&;
 
-        [[nodiscard]] constexpr auto get() const noexcept -> PointerType;
-        [[nodiscard]] constexpr auto operator->() const noexcept -> PointerType;
-        [[nodiscard]] constexpr auto operator*() const noexcept -> ReferenceType;
+            [[nodiscard]] constexpr auto get() const noexcept -> PointerType;
+            [[nodiscard]] constexpr auto operator->() const noexcept -> PointerType;
+            [[nodiscard]] constexpr auto operator*() const noexcept -> ReferenceType;
 
-        constexpr explicit           operator bool() const noexcept;
-        [[nodiscard]] constexpr auto hasValue() const noexcept -> Boolean;
+            constexpr explicit           operator bool() const noexcept;
+            [[nodiscard]] constexpr auto hasValue() const noexcept -> Boolean;
 
-        // template<typename Self>
-        // constexpr operator std::conditional_t<std::is_const_v<Self>, const T&, T&>(
-        //     this Self&& self) noexcept;
-        //
-        // template<typename Self>
-        // constexpr operator std::enable_if<not std::is_const_v<T>, Ref<const T>>(
-        //     this Self&& self) noexcept;
+            // template<typename Self>
+            // constexpr operator std::conditional_t<std::is_const_v<Self>, const T&, T&>(
+            //     this Self&& self) noexcept;
+            //
+            // template<typename Self>
+            // constexpr operator std::enable_if<not std::is_const_v<T>, Ref<const T>>(
+            //     this Self&& self) noexcept;
 
-        [[nodiscard]] constexpr operator ReferenceType() const noexcept;
-        [[nodiscard]] constexpr operator PointerType() const noexcept;
+            [[nodiscard]] constexpr operator ReferenceType() const noexcept;
+            [[nodiscard]] constexpr operator PointerType() const noexcept;
 
-        [[nodiscard]] constexpr auto operator==(std::nullptr_t) const noexcept -> bool;
+            [[nodiscard]] constexpr auto operator==(std::nullptr_t) const noexcept -> bool;
 
-      private:
-        constexpr Ref(ReferenceType value STORMKIT_LIFETIMEBOUND) noexcept;
-        constexpr Ref(PointerType value STORMKIT_LIFETIMEBOUND) noexcept;
+          private:
+            constexpr Ref(ReferenceType value STORMKIT_LIFETIMEBOUND) noexcept;
+            constexpr Ref(PointerType value STORMKIT_LIFETIMEBOUND) noexcept;
 
-        PointerType m_value;
+            PointerType m_value;
 
-        template<meta::IsRawPointer U>
-        friend constexpr auto borrow(const U& value STORMKIT_LIFETIMEBOUND) noexcept
+            template<meta::IsRawPointer U>
+            friend constexpr auto borrow(const U& value STORMKIT_LIFETIMEBOUND) noexcept
+                -> decltype(auto);
+
+            template<meta::IsFancyPointer U>
+            friend constexpr auto borrow(const U& value STORMKIT_LIFETIMEBOUND) noexcept
+                -> decltype(auto);
+
+            template<typename U>
+                requires(not meta::IsPointer<meta::CanonicalType<U>>)
+            friend constexpr auto borrow(T& value) noexcept -> decltype(auto);
+
+            template<meta::IsRawPointer U>
+                requires meta::IsNotConst<meta::ElementType<U>>
+            friend constexpr auto borrowMut(const U& value STORMKIT_LIFETIMEBOUND) noexcept
+                -> decltype(auto);
+
+            template<meta::IsFancyPointer U>
+                requires meta::IsNotConst<meta::ElementType<U>>
+            friend constexpr auto borrowMut(const U& value STORMKIT_LIFETIMEBOUND) noexcept
+                -> decltype(auto);
+
+            template<typename U>
+                requires(not meta::IsPointer<meta::CanonicalType<U>> and meta::IsNotConst<U>)
+            friend constexpr auto borrowMut(U& value) noexcept -> decltype(auto);
+        };
+
+        template<typename T>
+        using OptionalRef = std::optional<Ref<T>>;
+
+        template<meta::IsRawPointer T>
+        [[nodiscard]] constexpr auto borrow(const T& value STORMKIT_LIFETIMEBOUND) noexcept
             -> decltype(auto);
 
-        template<meta::IsFancyPointer U>
-        friend constexpr auto borrow(const U& value STORMKIT_LIFETIMEBOUND) noexcept
+        template<meta::IsFancyPointer T>
+        [[nodiscard]] constexpr auto borrow(const T& value STORMKIT_LIFETIMEBOUND) noexcept
             -> decltype(auto);
 
-        template<typename U>
-            requires(not meta::IsPointer<meta::CanonicalType<U>>)
-        friend constexpr auto borrow(T& value) noexcept -> decltype(auto);
+        template<typename T>
+            requires(not meta::IsPointer<meta::CanonicalType<T>>)
+        [[nodiscard]] constexpr auto borrow(const T& value) noexcept -> decltype(auto);
 
-        template<meta::IsRawPointer U>
-            requires meta::IsNotConst<meta::ElementType<U>>
-        friend constexpr auto borrowMut(const U& value STORMKIT_LIFETIMEBOUND) noexcept
+        template<meta::IsRawPointer T>
+            requires meta::IsNotConst<meta::ElementType<T>>
+        [[nodiscard]] constexpr auto borrowMut(const T& value STORMKIT_LIFETIMEBOUND) noexcept
             -> decltype(auto);
 
-        template<meta::IsFancyPointer U>
-            requires meta::IsNotConst<meta::ElementType<U>>
-        friend constexpr auto borrowMut(const U& value STORMKIT_LIFETIMEBOUND) noexcept
+        template<meta::IsFancyPointer T>
+            requires meta::IsNotConst<meta::ElementType<T>>
+        [[nodiscard]] constexpr auto borrowMut(const T& value STORMKIT_LIFETIMEBOUND) noexcept
             -> decltype(auto);
 
-        template<typename U>
-            requires(not meta::IsPointer<meta::CanonicalType<U>> and meta::IsNotConst<U>)
-        friend constexpr auto borrowMut(U& value) noexcept -> decltype(auto);
-    };
+        template<typename T>
+            requires(not meta::IsPointer<meta::CanonicalType<T>> and meta::IsNotConst<T>)
+        [[nodiscard]] constexpr auto borrowMut(T& value) noexcept -> decltype(auto);
 
-    template<typename T>
-    using OptionalRef = std::optional<Ref<T>>;
+        template<template<typename...> typename Out, typename... Args>
+            requires(meta::AreIndirections<Args...>)
+        [[nodiscard]] constexpr auto borrows(Args&&... args) noexcept -> decltype(auto);
+        template<template<typename, std::size_t> typename Out = std::array, typename... Args>
+            requires(meta::AreIndirections<Args...>)
+        [[nodiscard]] constexpr auto borrows(Args&&... args) noexcept -> decltype(auto);
 
-    template<meta::IsRawPointer T>
-    [[nodiscard]] constexpr auto borrow(const T& value STORMKIT_LIFETIMEBOUND) noexcept
-        -> decltype(auto);
+        template<template<typename...> class Out = std::vector, std::ranges::range T>
+            requires(std::ranges::range<Out<typename T::value_type>>)
+        [[nodiscard]] constexpr auto toRefs(T& range) noexcept -> decltype(auto);
 
-    template<meta::IsFancyPointer T>
-    [[nodiscard]] constexpr auto borrow(const T& value STORMKIT_LIFETIMEBOUND) noexcept
-        -> decltype(auto);
+        template<template<typename...> typename Out, typename... Args>
+            requires(meta::AreIndirections<Args...>)
+        [[nodiscard]] constexpr auto borrowMuts(Args&&... args) noexcept -> decltype(auto);
+        template<template<typename, std::size_t> typename Out = std::array, typename... Args>
+            requires(meta::AreIndirections<Args...>)
+        [[nodiscard]] constexpr auto borrowMuts(Args&&... args) noexcept -> decltype(auto);
 
-    template<typename T>
-        requires(not meta::IsPointer<meta::CanonicalType<T>>)
-    [[nodiscard]] constexpr auto borrow(const T& value) noexcept -> decltype(auto);
+        template<template<typename...> class Out = std::vector, std::ranges::range T>
+            requires(std::ranges::range<Out<typename T::value_type>>)
+        [[nodiscard]] constexpr auto toMutRefs(T& range) noexcept -> decltype(auto);
 
-    template<meta::IsRawPointer T>
-        requires meta::IsNotConst<meta::ElementType<T>>
-    [[nodiscard]] constexpr auto borrowMut(const T& value STORMKIT_LIFETIMEBOUND) noexcept
-        -> decltype(auto);
+        /*template<template<typename, std::size_t> class Out = std::array, std::ranges::range T>*/
+        /*    requires(std::ranges::range<Out<typename T::value_type>>)*/
+        /*[[nodiscard]] constexpr auto toRefs(T& range) noexcept -> decltype(auto);*/
+        /**/
+    }} // namespace stormkit::core
 
-    template<meta::IsFancyPointer T>
-        requires meta::IsNotConst<meta::ElementType<T>>
-    [[nodiscard]] constexpr auto borrowMut(const T& value STORMKIT_LIFETIMEBOUND) noexcept
-        -> decltype(auto);
-
-    template<typename T>
-        requires(not meta::IsPointer<meta::CanonicalType<T>> and meta::IsNotConst<T>)
-    [[nodiscard]] constexpr auto borrowMut(T& value) noexcept -> decltype(auto);
-
-    template<template<typename...> typename Out, typename... Args>
-        requires(meta::AreIndirections<Args...>)
-    [[nodiscard]] constexpr auto borrows(Args&&... args) noexcept -> decltype(auto);
-    template<template<typename, std::size_t> typename Out = std::array, typename... Args>
-        requires(meta::AreIndirections<Args...>)
-    [[nodiscard]] constexpr auto borrows(Args&&... args) noexcept -> decltype(auto);
-
-    template<template<typename...> class Out = std::vector, std::ranges::range T>
-        requires(std::ranges::range<Out<typename T::value_type>>)
-    [[nodiscard]] constexpr auto toRefs(T& range) noexcept -> decltype(auto);
-
-    template<template<typename...> typename Out, typename... Args>
-        requires(meta::AreIndirections<Args...>)
-    [[nodiscard]] constexpr auto borrowMuts(Args&&... args) noexcept -> decltype(auto);
-    template<template<typename, std::size_t> typename Out = std::array, typename... Args>
-        requires(meta::AreIndirections<Args...>)
-    [[nodiscard]] constexpr auto borrowMuts(Args&&... args) noexcept -> decltype(auto);
-
-    template<template<typename...> class Out = std::vector, std::ranges::range T>
-        requires(std::ranges::range<Out<typename T::value_type>>)
-    [[nodiscard]] constexpr auto toMutRefs(T& range) noexcept -> decltype(auto);
-
-    /*template<template<typename, std::size_t> class Out = std::array, std::ranges::range T>*/
-    /*    requires(std::ranges::range<Out<typename T::value_type>>)*/
-    /*[[nodiscard]] constexpr auto toRefs(T& range) noexcept -> decltype(auto);*/
-    /**/
-} // namespace stormkit::core
-
-export namespace std {
-    template<typename T>
-    struct pointer_traits<stormkit::core::Ref<T>> {
-        using pointer         = typename stormkit::core::Ref<T>::PointerType;
-        using element_type    = typename stormkit::core::Ref<T>::ElementType;
-        using difference_type = std::ptrdiff_t;
-    };
-} // namespace std
+    namespace std {
+        template<typename T>
+        struct pointer_traits<stormkit::core::Ref<T>> {
+            using pointer         = typename stormkit::core::Ref<T>::PointerType;
+            using element_type    = typename stormkit::core::Ref<T>::ElementType;
+            using difference_type = std::ptrdiff_t;
+        };
+    } // namespace std
+}
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
@@ -365,4 +367,4 @@ namespace stormkit::core {
     /*           | std::ranges::to<Out>();*/
     /*    // clang-format on*/
     /*}*/
-} // namespace stormkit::core
+}} // namespace stormkit::core

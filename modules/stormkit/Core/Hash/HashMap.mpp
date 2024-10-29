@@ -8,7 +8,7 @@ import std;
 
 import ankerl.unordered_dense;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     template<class Key,
              class T,
              class Hash                 = ankerl::unordered_dense::hash<Key>,
@@ -21,4 +21,4 @@ export namespace stormkit::core {
              class KeyEqual             = std::equal_to<Key>,
              class AllocatorOrContainer = std::allocator<Key>>
     using HashSet = ankerl::unordered_dense::set<Key, Hash, KeyEqual, AllocatorOrContainer>;
-} // namespace stormkit::core
+}} // namespace stormkit::core

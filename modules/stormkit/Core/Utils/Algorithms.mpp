@@ -8,8 +8,8 @@ import std;
 
 import :Meta;
 
-export namespace stormkit::core {
-    template<std::ranges::input_range                                       Range,
+export namespace stormkit { inline namespace core {
+    template<std::ranges::input_range                                             Range,
              meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type> Predicate>
     [[nodiscard]] constexpr auto copyIf(Range&& input, Predicate&& predicate) noexcept;
 
@@ -18,14 +18,14 @@ export namespace stormkit::core {
     [[nodiscard]] constexpr auto transform(Range&& input, Lambda&& lambda) noexcept;
 
     template<std::ranges::input_range                                               Range,
-             meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type>         Predicate,
+             meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type>   Predicate,
              std::invocable<const typename std::remove_cvref_t<Range>::value_type&> Lambda>
     [[nodiscard]] constexpr auto
         transformIf(Range&& input, Predicate&& predicate, Lambda&& lambda) noexcept;
 
     template<
         std::ranges::input_range                                               Range,
-        meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type>         Predicate,
+        meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type>   Predicate,
         std::invocable<const typename std::remove_cvref_t<Range>::value_type&> Lambda,
         std::output_iterator<
             std::invoke_result_t<Lambda, const typename std::remove_cvref_t<Range>::value_type&>>
@@ -33,16 +33,16 @@ export namespace stormkit::core {
     constexpr auto
         transformIf(Range&& input, Iterator&& it, Predicate&& predicate, Lambda&& lambda) noexcept
         -> void;
-} // namespace stormkit::core
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<std::ranges::input_range                                       Range,
+    template<std::ranges::input_range                                             Range,
              meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type> Predicate>
     constexpr auto copyIf(Range&& input, Predicate&& predicate) noexcept {
         auto output = std::vector<class std::remove_cvref_t<Range>::value_type> {};
@@ -73,7 +73,7 @@ namespace stormkit::core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<std::ranges::input_range                                               Range,
-             meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type>         Predicate,
+             meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type>   Predicate,
              std::invocable<const typename std::remove_cvref_t<Range>::value_type&> Lambda>
     constexpr auto transformIf(Range&& input, Predicate&& predicate, Lambda&& lambda) noexcept {
         auto output = std::vector<
@@ -93,7 +93,7 @@ namespace stormkit::core {
     /////////////////////////////////////
     template<
         std::ranges::input_range                                               Range,
-        meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type>         Predicate,
+        meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type>   Predicate,
         std::invocable<const typename std::remove_cvref_t<Range>::value_type&> Lambda,
         std::output_iterator<
             std::invoke_result_t<Lambda, const typename std::remove_cvref_t<Range>::value_type&>>
@@ -105,4 +105,4 @@ namespace stormkit::core {
             if (predicate(elem)) *it++ = lambda(elem);
         });
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core

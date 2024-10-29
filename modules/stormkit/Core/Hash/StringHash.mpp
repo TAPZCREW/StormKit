@@ -10,7 +10,7 @@ export module stormkit.Core:Hash.StringHash;
 
 import std;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     struct StringHash {
         using is_transparent = void;
 
@@ -39,13 +39,13 @@ export namespace stormkit::core {
 
     template<class Value = std::string>
     using StringHashSet = std::unordered_set<std::remove_cvref_t<Value>, StringHash, StringEqual>;
-} // namespace stormkit::core
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_INLINE auto StringHash::operator()(const std::string& value) const noexcept
@@ -87,4 +87,4 @@ namespace stormkit::core {
                                                  std::string_view b) const noexcept -> bool {
         return a.compare(b) == 0;
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core

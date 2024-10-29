@@ -9,15 +9,15 @@ export module stormkit.Core:Utils.SignalHandler;
 import std;
 import :Utils.Stacktrace;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     STORMKIT_API auto setupSignalHandler() noexcept -> void;
-}
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     extern "C" auto terminateHandler() noexcept -> void {
         printStacktrace(3);
     }
@@ -34,4 +34,4 @@ namespace stormkit::core {
         std::set_terminate(&terminateHandler);
         std::signal(SIGSEGV, &signalHandler);
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core

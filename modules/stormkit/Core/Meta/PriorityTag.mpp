@@ -6,10 +6,10 @@ export module stormkit.Core:Meta.PriorityTag;
 
 import std;
 
-export namespace stormkit::core::meta {
+export namespace stormkit { inline namespace core { namespace meta {
     template<std::size_t I>
     struct PriorityTag: PriorityTag<I - 1> {};
 
     template<>
     struct PriorityTag<0> {};
-} // namespace stormkit::core
+}}} // namespace stormkit::core::meta

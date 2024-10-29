@@ -19,7 +19,7 @@ import :Console;
 import :Utils.Stacktrace;
 import :Meta.Concepts;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     enum class AssertType {
         Assertion,
         PreCondition,
@@ -62,12 +62,12 @@ export namespace stormkit::core {
     constexpr auto ensures(bool                        cond,
                            const std::source_location& location
                            = std::source_location::current()) noexcept -> void;
-} // namespace stormkit::core
 
-export namespace stormkit::core::casts {
-    template<core::meta::IsStrictOneOf<std::string, std::string_view> To>
-    [[nodiscard]] constexpr auto as(core::AssertType t) noexcept -> To;
-}
+    namespace casts::core {
+        template<meta::IsStrictOneOf<std::string, std::string_view> To>
+        [[nodiscard]] constexpr auto as(AssertType t) noexcept -> To;
+    }
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
@@ -76,26 +76,26 @@ export namespace stormkit::core::casts {
 using namespace std::literals;
 using namespace frozen::string_literals;
 
-namespace stormkit::core::casts {
-    namespace {
-        constexpr auto AssertTypeToString
-            = frozen::make_unordered_map<core::AssertType, frozen::string>({
-                { core::AssertType::Assertion,     "Assertion"_s },
-                { core::AssertType::PreCondition,  "Expects"_s   },
-                { core::AssertType::PostCondition, "Ensures"_s   },
-        });
-    } // namespace
+namespace stormkit { inline namespace core {
+    namespace casts::core {
+        namespace {
+            constexpr auto AssertTypeToString
+                = frozen::make_unordered_map<AssertType, frozen::string>({
+                    { AssertType::Assertion,     "Assertion"_s },
+                    { AssertType::PreCondition,  "Expects"_s   },
+                    { AssertType::PostCondition, "Ensures"_s   },
+            });
+        } // namespace
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<core::meta::IsStrictOneOf<std::string, std::string_view> To>
-    constexpr auto as(core::AssertType t) noexcept -> To {
-        const auto val = AssertTypeToString.at(t);
-        return { std::ranges::cbegin(val), std::ranges::cend(val) };
-    }
-} // namespace stormkit::casts
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<meta::IsStrictOneOf<std::string, std::string_view> To>
+        constexpr auto as(AssertType t) noexcept -> To {
+            const auto val = AssertTypeToString.at(t);
+            return { std::ranges::cbegin(val), std::ranges::cend(val) };
+        }
+    } // namespace casts::core
 
-namespace stormkit::core {
     namespace {
         std::mutex mutex;
     } // namespace
@@ -114,7 +114,7 @@ namespace stormkit::core {
     consteval auto generateConstevalMessage(AssertType type, std::string_view message) noexcept
         -> StringLiteral {
         auto       result = StringLiteral {};
-        const auto str    = "["s + casts::as<std::string>(type) + "] " + std::string { message };
+        const auto str    = "["s + casts::core::as<std::string>(type) + "] " + std::string { message };
         std::ranges::copy(str, std::begin(result.buff));
         result.size = std::size(str);
         return result;
@@ -138,7 +138,7 @@ namespace stormkit::core {
                              ConsoleStyle { .fg = ConsoleColor::Bright_Red,
                                             .modifiers
                                             = StyleModifier::Bold | StyleModifier::Inverse }
-                                 | "["s + casts::as<std::string>(type) + "]",
+                                 | "["s + casts::core::as<std::string>(type) + "]",
                              ConsoleStyle { .fg = ConsoleColor::Yellow } | location.file_name(),
                              ConsoleStyle { .fg = ConsoleColor::Blue } | location.line(),
                              ConsoleStyle { .fg = ConsoleColor::Green } | location.function_name(),
@@ -231,4 +231,4 @@ namespace stormkit::core {
         -> void {
         ensures(cond, "Post Condition check failed", location);
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core

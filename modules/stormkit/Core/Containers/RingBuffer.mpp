@@ -15,7 +15,7 @@ import :TypeSafe.Integer;
 import :TypeSafe.Byte;
 import :Meta;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     template<class T>
     class RingBuffer {
       public:
@@ -71,13 +71,13 @@ export namespace stormkit::core {
         ExtentType m_write = 0;
         ExtentType m_read  = 0;
     };
-} // namespace stormkit::core
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T>
@@ -270,4 +270,4 @@ namespace stormkit::core {
 
         return std::launder(std::bit_cast<OutPtr>(addr));
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core

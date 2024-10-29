@@ -16,75 +16,74 @@ import :TypeSafe.Boolean;
 import :TypeSafe.Flags;
 import :Meta.Traits;
 
-export namespace stormkit::core {
-    enum class ConsoleColor {
-        Red,
-        Green,
-        Yellow,
-        Blue,
-        Magenta,
-        Cyan,
-        White,
-        Black,
-        Bright_Red,
-        Bright_Green,
-        Bright_Yellow,
-        Bright_Blue,
-        Bright_Magenta,
-        Bright_Cyan,
-        Bright_White,
-        Bright_Black,
-    };
-
-    enum class StyleModifier {
-        None      = 0x0,
-        Bold      = 0x1,
-        Faint     = 0x2,
-        Italic    = 0x4,
-        Inverse   = 0x8,
-        Underline = 0xA
-    };
-
-    template<typename T>
-    struct Stylized {
-        T                           value;
-        std::optional<ConsoleColor> fg;
-        std::optional<ConsoleColor> bg;
-        StyleModifier               modifiers = StyleModifier::None;
-    };
-
-    struct ConsoleStyle {
-        template<typename T>
-        [[nodiscard]] constexpr auto operator|(T&& value) const noexcept -> Stylized<T>;
-        std::optional<ConsoleColor>  fg;
-        std::optional<ConsoleColor>  bg;
-        StyleModifier                modifiers = StyleModifier::None;
-    };
-
-    inline constexpr auto RedTextStyle     = ConsoleStyle { .fg = ConsoleColor::Red };
-    inline constexpr auto GreenTextStyle   = ConsoleStyle { .fg = ConsoleColor::Green };
-    inline constexpr auto YellowTextStyle  = ConsoleStyle { .fg = ConsoleColor::Yellow };
-    inline constexpr auto BlueTextStyle    = ConsoleStyle { .fg = ConsoleColor::Blue };
-    inline constexpr auto MagentaTextStyle = ConsoleStyle { .fg = ConsoleColor::Magenta };
-    inline constexpr auto CyanTextStyle    = ConsoleStyle { .fg = ConsoleColor::Cyan };
-    inline constexpr auto WhiteTextStyle   = ConsoleStyle { .fg = ConsoleColor::White };
-    inline constexpr auto BlackTextStyle   = ConsoleStyle { .fg = ConsoleColor::Black };
-} // namespace stormkit::core
-
-//
 export {
-    FLAG_ENUM(stormkit::core::StyleModifier)
-}
+    namespace stormkit { inline namespace core {
+        enum class ConsoleColor {
+            Red,
+            Green,
+            Yellow,
+            Blue,
+            Magenta,
+            Cyan,
+            White,
+            Black,
+            Bright_Red,
+            Bright_Green,
+            Bright_Yellow,
+            Bright_Blue,
+            Bright_Magenta,
+            Bright_Cyan,
+            Bright_White,
+            Bright_Black,
+        };
 
-export namespace std {
-    template<typename T, class CharT>
-    struct formatter<stormkit::core::Stylized<T>, CharT>
-        : formatter<stormkit::core::meta::CanonicalType<T>, CharT> {
-        template<class FormatContext>
-        auto format(const stormkit::core::Stylized<T>& stylized, FormatContext& ctx) const noexcept
-            -> decltype(ctx.out());
-    };
-} // namespace std
+        enum class StyleModifier {
+            None      = 0x0,
+            Bold      = 0x1,
+            Faint     = 0x2,
+            Italic    = 0x4,
+            Inverse   = 0x8,
+            Underline = 0xA
+        };
+
+        template<typename T>
+        struct Stylized {
+            T                           value;
+            std::optional<ConsoleColor> fg;
+            std::optional<ConsoleColor> bg;
+            StyleModifier               modifiers = StyleModifier::None;
+        };
+
+        struct ConsoleStyle {
+            template<typename T>
+            [[nodiscard]] constexpr auto operator|(T&& value) const noexcept -> Stylized<T>;
+            std::optional<ConsoleColor>  fg;
+            std::optional<ConsoleColor>  bg;
+            StyleModifier                modifiers = StyleModifier::None;
+        };
+
+        inline constexpr auto RedTextStyle     = ConsoleStyle { .fg = ConsoleColor::Red };
+        inline constexpr auto GreenTextStyle   = ConsoleStyle { .fg = ConsoleColor::Green };
+        inline constexpr auto YellowTextStyle  = ConsoleStyle { .fg = ConsoleColor::Yellow };
+        inline constexpr auto BlueTextStyle    = ConsoleStyle { .fg = ConsoleColor::Blue };
+        inline constexpr auto MagentaTextStyle = ConsoleStyle { .fg = ConsoleColor::Magenta };
+        inline constexpr auto CyanTextStyle    = ConsoleStyle { .fg = ConsoleColor::Cyan };
+        inline constexpr auto WhiteTextStyle   = ConsoleStyle { .fg = ConsoleColor::White };
+        inline constexpr auto BlackTextStyle   = ConsoleStyle { .fg = ConsoleColor::Black };
+    }} // namespace stormkit::core
+
+    FLAG_ENUM(stormkit::core::StyleModifier)
+
+    namespace std {
+        template<typename T, class CharT>
+        struct formatter<stormkit::core::Stylized<T>, CharT>
+            : formatter<stormkit::meta::CanonicalType<T>, CharT> {
+            template<class FormatContext>
+            auto format(const stormkit::core::Stylized<T>& stylized,
+                        FormatContext& ctx) const noexcept -> decltype(ctx.out());
+        };
+    } // namespace std
+}
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
@@ -93,7 +92,7 @@ export namespace std {
 using namespace std::literals;
 using namespace frozen::string_literals;
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     namespace { namespace ecma48 {
         constexpr auto Foreground = frozen::make_unordered_map<ConsoleColor, frozen::string>({
             { ConsoleColor::Black,          "\x1B[30m"_s },
@@ -148,12 +147,11 @@ namespace stormkit::core {
         -> Stylized<T> {
         return { std::forward<T>(value), fg, bg, modifiers };
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core
 
-//
+using namespace stormkit;
+
 namespace std {
-    using namespace stormkit::core;
-
     template<typename T, class CharT>
     template<class FormatContext>
     STORMKIT_FORCE_INLINE auto

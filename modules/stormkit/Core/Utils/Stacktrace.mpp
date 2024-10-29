@@ -14,6 +14,6 @@ import std;
 
 import :Parallelism.ThreadUtils;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     STORMKIT_API auto printStacktrace(int ignore_count = 0) noexcept -> void;
-} // namespace stormkit::core
+}} // namespace stormkit::core

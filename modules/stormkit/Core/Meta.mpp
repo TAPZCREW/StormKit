@@ -9,7 +9,7 @@ export import :Meta.Traits;
 export import :Meta.NamedType;
 export import :Meta.PriorityTag;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     template<class... Ts>
     struct Overloaded: Ts... {
         using Ts::operator()...;
@@ -17,4 +17,4 @@ export namespace stormkit::core {
 
     template<class... Ts>
     Overloaded(Ts...) -> Overloaded<Ts...>;
-} // namespace stormkit::core
+}} // namespace stormkit::core

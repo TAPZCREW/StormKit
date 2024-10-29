@@ -13,10 +13,10 @@ import :TypeSafe.AsCast;
 import :Utils.Time;
 import :Utils.Math;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core { namespace meta {
     template<meta::IsEnumeration T>
     inline constexpr auto DisableDefaultFormaterForEnum = false;
-}
+}}} // namespace stormkit::core::meta
 
 export namespace std {
     template<meta::IsStrict<std::byte> T, class CharT>
@@ -26,13 +26,12 @@ export namespace std {
     };
 
     template<class CharT>
-    struct formatter<stormkit::core::Secondf, CharT>: formatter<float, CharT> {
+    struct formatter<stormkit::Secondf, CharT>: formatter<float, CharT> {
         template<class FormatContext>
-        auto format(const stormkit::core::Secondf& data, FormatContext& ctx) const
-            -> decltype(ctx.out());
+        auto format(const stormkit::Secondf& data, FormatContext& ctx) const -> decltype(ctx.out());
     };
 
-    template<stormkit::core::math::meta::IsVectorType T, typename CharT>
+    template<stormkit::math::meta::IsVectorType T, typename CharT>
     struct formatter<T, CharT>: public formatter<basic_string<CharT>, CharT> {
         template<class ParseContext>
         constexpr auto parse(ParseContext& ctx) noexcept;
@@ -41,7 +40,7 @@ export namespace std {
         auto format(const T& data, FormatContext& ctx) const -> decltype(ctx.out());
     };
 
-    template<stormkit::core::math::meta::IsExtentLike T, typename CharT>
+    template<stormkit::math::meta::IsExtentLike T, typename CharT>
     struct formatter<T, CharT>: public formatter<basic_string<CharT>, CharT> {
         template<class ParseContext>
         constexpr auto parse(ParseContext& ctx) noexcept;
@@ -50,8 +49,8 @@ export namespace std {
         auto format(const T& data, FormatContext& ctx) const -> decltype(ctx.out());
     };
 
-    template<stormkit::core::meta::IsEnumeration T, typename CharT>
-        requires(not stormkit::core::DisableDefaultFormaterForEnum<T>)
+    template<stormkit::meta::IsEnumeration T, typename CharT>
+        requires(not stormkit::meta::DisableDefaultFormaterForEnum<T>)
     struct formatter<T, CharT>: public formatter<basic_string_view<CharT>, CharT> {
         template<class FormatContext>
         auto format(const T& data, FormatContext& ctx) const -> decltype(ctx.out());
@@ -75,15 +74,15 @@ namespace std {
     /////////////////////////////////////
     template<class CharT>
     template<class FormatContext>
-    auto formatter<stormkit::core::Secondf, CharT>::format(const stormkit::core::Secondf& data,
-                                                           FormatContext&                 ctx) const
+    auto formatter<stormkit::Secondf, CharT>::format(const stormkit::Secondf& data,
+                                                     FormatContext&           ctx) const
         -> decltype(ctx.out()) {
         return formatter<float, CharT>::format(data.count(), ctx);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stormkit::core::math::meta::IsVectorType T, typename CharT>
+    template<stormkit::math::meta::IsVectorType T, typename CharT>
     template<class ParseContext>
     constexpr auto formatter<T, CharT>::parse(ParseContext& ctx) noexcept {
         return ctx.begin();
@@ -91,16 +90,16 @@ namespace std {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stormkit::core::math::meta::IsVectorType T, typename CharT>
+    template<stormkit::math::meta::IsVectorType T, typename CharT>
     template<class FormatContext>
     auto formatter<T, CharT>::format(const T& data, FormatContext& ctx) const
         -> decltype(ctx.out()) {
-        return std::format_to(ctx.out(), "{}", stormkit::core::as<std::string>(data));
+        return std::format_to(ctx.out(), "{}", stormkit::as<std::string>(data));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stormkit::core::math::meta::IsExtentLike T, typename CharT>
+    template<stormkit::math::meta::IsExtentLike T, typename CharT>
     template<class ParseContext>
     constexpr auto formatter<T, CharT>::parse(ParseContext& ctx) noexcept {
         return ctx.begin();
@@ -108,17 +107,17 @@ namespace std {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stormkit::core::math::meta::IsExtentLike T, typename CharT>
+    template<stormkit::math::meta::IsExtentLike T, typename CharT>
     template<class FormatContext>
     auto formatter<T, CharT>::format(const T& data, FormatContext& ctx) const
         -> decltype(ctx.out()) {
-        return std::format_to(ctx.out(), "{}", stormkit::core::as<std::string>(data));
+        return std::format_to(ctx.out(), "{}", stormkit::as<std::string>(data));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stormkit::core::meta::IsEnumeration T, typename CharT>
-        requires(not stormkit::core::DisableDefaultFormaterForEnum<T>)
+    template<stormkit::meta::IsEnumeration T, typename CharT>
+        requires(not stormkit::meta::DisableDefaultFormaterForEnum<T>)
     template<class FormatContext>
     auto formatter<T, CharT>::format(const T& data, FormatContext& ctx) const
         -> decltype(ctx.out()) {

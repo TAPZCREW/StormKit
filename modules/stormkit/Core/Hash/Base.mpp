@@ -8,12 +8,12 @@ import std;
 
 import :Meta;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     using Hash32 = std::uint32_t;
     using Hash64 = std::uint64_t;
 
     template<class T>
-    concept HashValue = core::meta::IsOneOf<T, Hash32, Hash64>;
+    concept HashValue = meta::IsOneOf<T, Hash32, Hash64>;
 
     template<HashValue OutputType = Hash32>
     constexpr auto hashCombine(auto&& value) -> OutputType;
@@ -24,13 +24,13 @@ export namespace stormkit::core {
 
     template<typename... Args>
     constexpr auto hashCombine(HashValue auto& hash, Args&&... args) noexcept;
-} // namespace stormkit::core
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     template<HashValue OutputType>
     constexpr auto hashCombine(auto&& value) -> OutputType {
         auto hash = OutputType { 0u };
@@ -42,8 +42,8 @@ namespace stormkit::core {
 
     constexpr auto hashCombine(HashValue auto& hash, meta::IsHashable auto&& value) noexcept {
         const auto hasher = std::hash<std::remove_cvref_t<decltype(value)>> {};
-        hash ^=
-            hasher(std::forward<decltype(value)>(value)) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+        hash ^= hasher(std::forward<decltype(value)>(value)) + 0x9e3779b9 + (hash << 6)
+                + (hash >> 2);
     }
 
     constexpr auto hashCombine(HashValue auto& hash, std::ranges::range auto&& range) noexcept {
@@ -54,4 +54,4 @@ namespace stormkit::core {
     constexpr auto hashCombine(HashValue auto& hash, Args&&... args) noexcept {
         (hashCombine(hash, std::forward<Args>(args)), ...);
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core

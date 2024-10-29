@@ -17,7 +17,7 @@ import std;
 import :Console;
 import :String.Operations;
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     auto printStacktrace(int ignore_count) noexcept -> void {
@@ -77,4 +77,4 @@ namespace stormkit::core {
                              GreenTextStyle | frame.filename);
         }
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core

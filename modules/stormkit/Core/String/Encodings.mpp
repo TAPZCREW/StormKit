@@ -16,7 +16,7 @@ import std;
 import :TypeSafe.AsCast;
 import :TypeSafe.Integer;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     auto asciiToUtf16(std::string_view) -> std::u16string;
     auto utf16ToAscii(std::u16string_view) -> std::string;
 
@@ -31,14 +31,14 @@ export namespace stormkit::core {
 #else
     auto toNativeEncoding(std::string_view) -> std::u8string;
 #endif
-} // namespace stormkit::core
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
 // TODO make proper support of char8_t / char16_t / char32_t on macOS / iOS / tvOS
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_INLINE auto asciiToUtf16(std::string_view input) -> std::u16string {
@@ -52,7 +52,8 @@ namespace stormkit::core {
         while ((len = std::mbrtoc16(std::bit_cast<char16_t*>(std::data(output)),
                                     input_it,
                                     MB_CUR_MAX,
-                                    &state)) > 0ull)
+                                    &state))
+               > 0ull)
             input_it += len;
 #else
         output = std::bit_cast<char16_t*>(std::data(input));
@@ -92,7 +93,8 @@ namespace stormkit::core {
         while ((len = std::mbrtoc16(std::bit_cast<char16_t*>(std::data(output)) + i++,
                                     input_it,
                                     MB_CUR_MAX,
-                                    &state)) > 0u)
+                                    &state))
+               > 0u)
             input_it += len;
 #elif defined(STORMKIT_COMPILER_CLANG)
         output = std::bit_cast<wchar_t*>(std::data(input));
@@ -100,7 +102,8 @@ namespace stormkit::core {
         while ((len = std::mbrtoc8(std::bit_cast<char8_t*>(std::data(output)) + i++,
                                    input_it,
                                    MB_CUR_MAX,
-                                   &state)) > 0ull)
+                                   &state))
+               > 0ull)
             input_it += len;
 #endif
 
@@ -144,7 +147,8 @@ namespace stormkit::core {
         while ((len = std::mbrtoc8(std::bit_cast<char8_t*>(std::data(output)) + i++,
                                    input_it,
                                    MB_CUR_MAX,
-                                   &state)) > 0ull)
+                                   &state))
+               > 0ull)
             input_it += len;
 #endif
 
@@ -187,4 +191,4 @@ namespace stormkit::core {
         return asciiToUtf8(input);
     }
 #endif
-} // namespace stormkit::core
+}} // namespace stormkit::core

@@ -14,7 +14,7 @@ import std;
 
 import :TypeSafe.Integer;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     class STORMKIT_API App {
       public:
         App() noexcept          = default;
@@ -28,4 +28,4 @@ export namespace stormkit::core {
 
         virtual auto run(std::span<const std::string_view> args) -> Int = 0;
     };
-} // namespace stormkit::core
+}} // namespace stormkit::core

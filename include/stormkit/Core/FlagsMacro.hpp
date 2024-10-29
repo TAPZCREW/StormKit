@@ -7,7 +7,7 @@
 
 #define FLAG_ENUM(e)                                            \
     template<>                                                  \
-    struct stormkit::core::details::EnableBitmaskOperators<e> { \
+    struct stormkit::details::EnableBitmaskOperators<e> { \
         constexpr EnableBitmaskOperators() = default;           \
         static constexpr bool enable       = true;              \
     };                                                          \
@@ -18,6 +18,6 @@
 
 #define DISABLE_DEFAULT_FORMATER_FOR_ENUM(e) \
     template<>                       \
-    inline constexpr auto stormkit::core::DisableDefaultFormaterForEnum<e> = true;
+    inline constexpr auto stormkit::meta::DisableDefaultFormaterForEnum<e> = true;
 
 #endif

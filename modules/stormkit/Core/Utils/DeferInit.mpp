@@ -13,7 +13,7 @@ import std;
 import :Meta.Traits;
 import :Utils.Assert;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     template<typename T>
     using DeferInitDefaultStorage = std::array<std::byte, sizeof(T)>;
 
@@ -69,13 +69,13 @@ export namespace stormkit::core {
         alignas(T) Storage m_data;
         PointerType m_pointer = nullptr;
     };
-} // namespace stormkit::core
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T, typename Storage>
@@ -219,4 +219,4 @@ namespace stormkit::core {
     STORMKIT_FORCE_INLINE constexpr DeferInit<T, Storage>::operator const T &() const noexcept {
         return get();
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core

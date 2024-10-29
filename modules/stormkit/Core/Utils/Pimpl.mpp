@@ -13,7 +13,7 @@ import std;
 import :Meta;
 import :Utils.Assert;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     template<class T, bool Defer = false>
     class Pimpl {
       public:
@@ -43,13 +43,13 @@ export namespace stormkit::core {
       private:
         std::unique_ptr<T> m_data;
     };
-} // namespace stormkit::core
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T, bool Defer>
@@ -138,4 +138,4 @@ namespace stormkit::core {
     STORMKIT_FORCE_INLINE Pimpl<T, Defer>::operator bool() const noexcept {
         return m_data != nullptr;
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core

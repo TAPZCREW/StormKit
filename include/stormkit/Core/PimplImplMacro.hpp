@@ -6,7 +6,7 @@
 #define STORMKIT_PIMPLIMPL_MACRO_HPP
 
 #define PIMPL_IMPLEMENTATION                                                   \
-    namespace stormkit::core {                                                 \
+    namespace stormkit { inline namespace core {                                                 \
         template<class T, bool Defer>                                          \
         Pimpl<T, Defer>::Pimpl() noexcept(not Defer) {                         \
             if constexpr (Defer) init();                                       \
@@ -57,6 +57,6 @@
         Pimpl<T, Defer>::operator bool() const noexcept {                      \
             return m_data != nullptr;                                          \
         }                                                                      \
-    } // namespace stormkit::core
+    }}
 
 #endif

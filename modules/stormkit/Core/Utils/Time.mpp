@@ -6,6 +6,6 @@ export module stormkit.Core:Utils.Time;
 
 import std;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     using Secondf = std::chrono::duration<float, std::chrono::seconds::period>;
-}
+}} // namespace stormkit::core

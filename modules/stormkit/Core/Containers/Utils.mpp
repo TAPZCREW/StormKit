@@ -9,27 +9,29 @@ import std;
 import :Meta;
 import :TypeSafe.Byte;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     template<std::ranges::range T, std::ranges::range... U>
     constexpr auto merge(T& output, const U&... ranges) noexcept -> void;
 
     template<std::ranges::range T, std::ranges::range... U>
-    constexpr auto concat(const T& first, const U&... others) noexcept -> std::vector<meta::RangeType<T>>;
+    constexpr auto concat(const T& first, const U&... others) noexcept
+        -> std::vector<meta::RangeType<T>>;
 
     template<std::ranges::range T, std::ranges::range... U>
     constexpr auto moveAndMerge(T& output, U&&... ranges) noexcept -> void;
 
     template<std::ranges::range T, std::ranges::range... U>
-    constexpr auto moveAndConcat(T&& first, U&&... others) noexcept -> std::vector<meta::RangeType<T>>;
+    constexpr auto moveAndConcat(T&& first, U&&... others) noexcept
+        -> std::vector<meta::RangeType<T>>;
 
     template<class T, typename... Args>
-        requires((core::meta::Is<T, Args> and ...) or (std::convertible_to<T, Args> and ...) or
-                 (std::constructible_from<T, Args> and ...))
+        requires((meta::Is<T, Args> and ...) or (std::convertible_to<T, Args> and ...)
+                 or (std::constructible_from<T, Args> and ...))
     constexpr auto makeStaticArray(T&& first, Args&&... args) noexcept -> decltype(auto);
 
     template<class T, typename... Args>
-        requires((core::meta::Is<T, Args> and ...) or (std::convertible_to<T, Args> and ...) or
-                 (std::constructible_from<T, Args> and ...))
+        requires((meta::Is<T, Args> and ...) or (std::convertible_to<T, Args> and ...)
+                 or (std::constructible_from<T, Args> and ...))
     constexpr auto makeArray(T&& first, Args&&... args) noexcept -> decltype(auto);
 
     template<std::ranges::range T>
@@ -39,7 +41,8 @@ export namespace stormkit::core {
     constexpr auto viewAsBytes(T& data) -> decltype(auto);
 
     template<typename T>
-    constexpr auto viewAs(std::span<core::meta::ConstnessLike<T, core::Byte>> data) -> decltype(auto);
+    constexpr auto viewAs(std::span<meta::ConstnessLike<T, core::Byte>> data)
+        -> decltype(auto);
 
     template<std::ranges::range R1,
              std::ranges::range R2,
@@ -51,11 +54,9 @@ export namespace stormkit::core {
                                             Pred,
                                             Proj1,
                                             Proj2>
-    constexpr auto findFirstNotOf(R1&&  first,
-                                  R2&&  second,
-                                  Pred  pred  = {},
-                                  Proj1 proj1 = {},
-                                  Proj2 proj2 = {}) -> decltype(auto) {
+    constexpr auto
+        findFirstNotOf(R1&& first, R2&& second, Pred pred = {}, Proj1 proj1 = {}, Proj2 proj2 = {})
+            -> decltype(auto) {
         auto first1 = std::ranges::begin(first);
         auto last1  = std::ranges::end(first);
         auto first2 = std::ranges::begin(second);
@@ -75,13 +76,13 @@ export namespace stormkit::core {
 
         return first2;
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<std::ranges::range T, std::ranges::range... U>
@@ -93,8 +94,8 @@ namespace stormkit::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<std::ranges::range T, std::ranges::range... U>
-    constexpr auto concat(const T& first,
-                          const U&... others) noexcept -> std::vector<meta::RangeType<T>> {
+    constexpr auto concat(const T& first, const U&... others) noexcept
+        -> std::vector<meta::RangeType<T>> {
         auto output = std::vector<meta::RangeType<T>> {};
         merge(output, first, others...);
 
@@ -112,7 +113,8 @@ namespace stormkit::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<std::ranges::range T, std::ranges::range... U>
-    constexpr auto moveAndConcat(T&& first, U&&... others) noexcept -> std::vector<meta::RangeType<T>> {
+    constexpr auto moveAndConcat(T&& first, U&&... others) noexcept
+        -> std::vector<meta::RangeType<T>> {
         auto output = std::vector<meta::RangeType<T>> {};
         moveAndMerge(output, std::forward<T>(first), std::forward<U>(others)...);
 
@@ -122,8 +124,8 @@ namespace stormkit::core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T, typename... Args>
-        requires((core::meta::Is<T, Args> and ...) or (std::convertible_to<T, Args> and ...) or
-                 (std::constructible_from<T, Args> and ...))
+        requires((meta::Is<T, Args> and ...) or (std::convertible_to<T, Args> and ...)
+                 or (std::constructible_from<T, Args> and ...))
     constexpr auto makeStaticArray(T&& first, Args&&... args) noexcept -> decltype(auto) {
         return std::array { std::forward<T>(first), static_cast<T>(std::forward<Args>(args))... };
     }
@@ -131,8 +133,8 @@ namespace stormkit::core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T, typename... Args>
-        requires((core::meta::Is<T, Args> and ...) or (std::convertible_to<T, Args> and ...) or
-                 (std::constructible_from<T, Args> and ...))
+        requires((meta::Is<T, Args> and ...) or (std::convertible_to<T, Args> and ...)
+                 or (std::constructible_from<T, Args> and ...))
     constexpr auto makeArray(T&& first, Args&&... args) noexcept -> decltype(auto) {
         return std::vector { std::forward<T>(first), static_cast<T>(std::forward<Args>(args))... };
     }
@@ -148,7 +150,7 @@ namespace stormkit::core {
     /////////////////////////////////////
     template<std::ranges::range T>
     constexpr auto viewAsBytes(T& data) -> decltype(auto) {
-        using Byte = core::meta::ConstnessLike<typename T::value_type, core::Byte>;
+        using Byte = meta::ConstnessLike<typename T::value_type, core::Byte>;
         return std::span<Byte> { std::bit_cast<Byte*>(std::ranges::data(data)),
                                  std::ranges::size(data) * sizeof(T) };
     }
@@ -156,8 +158,9 @@ namespace stormkit::core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    constexpr auto viewAs(std::span<core::meta::ConstnessLike<T, core::Byte>> data) -> decltype(auto) {
+    constexpr auto viewAs(std::span<meta::ConstnessLike<T, core::Byte>> data)
+        -> decltype(auto) {
         return std::span<T> { std::bit_cast<T*>(std::ranges::data(data)),
                               std::ranges::size(data) / sizeof(T) };
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core

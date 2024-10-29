@@ -15,9 +15,7 @@ import std;
 import :Utils.Assert;
 import :Utils.Pimpl;
 
-export namespace stormkit::core {
-    class DynamicLoader;
-
+export namespace stormkit { inline namespace core {
     class STORMKIT_API DynamicLoader {
       public:
         template<class T>
@@ -58,13 +56,13 @@ export namespace stormkit::core {
 
         Pimpl<DynamicLoaderImpl> m_impl;
     };
-} // namespace stormkit::core
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_INLINE auto DynamicLoader::load(std::filesystem::path filepath) noexcept
@@ -107,4 +105,4 @@ namespace stormkit::core {
     STORMKIT_INLINE auto DynamicLoader::filepath() const noexcept -> const std::filesystem::path& {
         return m_filepath;
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core

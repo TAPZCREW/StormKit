@@ -13,17 +13,17 @@ import std;
 import :Meta.Concepts;
 import :Meta.Traits;
 
-export namespace stormkit::core::meta {
+export namespace stormkit { inline namespace core { namespace meta {
     template<typename Predicate, template<typename...> class Variant, typename... Ts>
     constexpr auto variantTypeFindIf(const Variant<Ts...>&, Predicate&& predicate) noexcept
         -> std::size_t;
-} // namespace stormkit::core::meta
+}}} // namespace stormkit::core::meta
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core::meta {
+namespace stormkit { inline namespace core { namespace meta {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename... Ts, typename Predicate>
@@ -54,4 +54,4 @@ namespace stormkit::core::meta {
         -> std::size_t {
         return variantTypeFindIfImpl<Ts...>(std::forward<Predicate>(predicate));
     }
-} // namespace stormkit::core::meta
+}}} // namespace stormkit::core::meta

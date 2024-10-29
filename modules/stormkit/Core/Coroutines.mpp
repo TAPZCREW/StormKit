@@ -122,9 +122,9 @@ namespace std {
     } // namespace ranges
 
     template<class _Alloc>
-    static constexpr bool __allocator_needs_to_be_stored =
-        !std::allocator_traits<_Alloc>::is_always_equal::value ||
-        !std::is_default_constructible_v<_Alloc>;
+    static constexpr bool __allocator_needs_to_be_stored
+        = !std::allocator_traits<_Alloc>::is_always_equal::value
+          || !std::is_default_constructible_v<_Alloc>;
 
     // Round s up to next multiple of a.
     constexpr size_t __aligned_allocation_size(size_t s, size_t a) {
@@ -142,8 +142,8 @@ namespace std {
         }
 
         static _Alloc& __get_allocator(void* __frame, std::size_t __frameSize) noexcept {
-            return *reinterpret_cast<_Alloc*>(static_cast<char*>(__frame) +
-                                              __offset_of_allocator(__frameSize));
+            return *reinterpret_cast<_Alloc*>(static_cast<char*>(__frame)
+                                              + __offset_of_allocator(__frameSize));
         }
 
       public:
@@ -375,8 +375,8 @@ namespace std {
     // Type-erased allocator with default allocator behaviour.
     template<class _Ref, typename _Value, typename... _Args>
     struct coroutine_traits<generator<_Ref, _Value>, _Args...> {
-        using promise_type =
-            __generator_promise<generator<_Ref, _Value>, std::allocator<std::byte>>;
+        using promise_type
+            = __generator_promise<generator<_Ref, _Value>, std::allocator<std::byte>>;
     };
 
     // Type-erased allocator with std::allocator_arg parameter

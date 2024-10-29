@@ -17,7 +17,7 @@ import :TypeSafe.Integer;
 import :TypeSafe.AsCast;
 import :Utils.DynamicLoader;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     class DynamicLoader::DynamicLoaderImpl {
       public:
         template<class T>
@@ -87,4 +87,4 @@ export namespace stormkit::core {
       private:
         void* m_library_handle = nullptr;
     };
-} // namespace stormkit::core
+}} // namespace stormkit::core

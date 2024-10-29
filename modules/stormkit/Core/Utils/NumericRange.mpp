@@ -18,7 +18,7 @@ import :TypeSafe.Float;
 
 import :Coroutines;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     template<meta::IsArithmetic T>
     struct NumericsRange {
         using RangeType = T;
@@ -55,13 +55,13 @@ export namespace stormkit::core {
 
     template<meta::IsNumericsRangePure... Args>
     [[nodiscard]] constexpr auto multiRange(Args&&... args) noexcept -> decltype(auto);
-} // namespace stormkit::core
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
 #define FOR(a, b)  for (auto a = b.begin; a < b.end; a += b.step)
 #define YIELD(...) co_yield { __VA_ARGS__ };
 
@@ -292,4 +292,4 @@ namespace stormkit::core {
     STORMKIT_FORCE_INLINE constexpr auto multiRange(Args&&... args) noexcept -> decltype(auto) {
         return rangeImplementation(std::forward<Args>(args)...);
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core

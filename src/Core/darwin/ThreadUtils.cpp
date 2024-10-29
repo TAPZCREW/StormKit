@@ -8,7 +8,7 @@ import std;
 
 import :Parallelism.ThreadUtils;
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     auto setCurrentThreadName(std::string_view name) noexcept -> void {
@@ -48,4 +48,4 @@ namespace stormkit::core {
     auto getThreadName(std::jthread& _) noexcept -> std::string {
         return {};
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core

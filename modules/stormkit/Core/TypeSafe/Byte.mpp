@@ -10,7 +10,7 @@ import :Meta.Concepts;
 import :Meta.Traits;
 import :TypeSafe.Integer;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     using Byte            = std::byte;
     using ByteView        = std::span<const std::byte>;
     using MutableByteView = std::span<std::byte>;
@@ -43,13 +43,13 @@ export namespace stormkit::core {
         [[nodiscard]] constexpr auto operator""_gib(unsigned long long x) noexcept -> core::UInt64;
 
     } // namespace literals
-} // namespace stormkit::core
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     constexpr auto byteSwap(auto value) noexcept {
@@ -141,4 +141,4 @@ namespace stormkit::core {
             return 1024ULL * 1000ULL * 1024ULL * x;
         }
     } // namespace literals
-} // namespace stormkit::core
+}} // namespace stormkit::core

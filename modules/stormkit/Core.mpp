@@ -19,7 +19,3 @@ export import :Parallelism;
 export import :String;
 export import :TypeSafe;
 export import :Utils;
-
-export namespace stormkit {
-    using namespace stormkit::core;
-} // namespace stormkit

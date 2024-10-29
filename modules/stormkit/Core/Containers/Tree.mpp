@@ -14,7 +14,7 @@ import std;
 import :TypeSafe.Integer;
 import :Utils.Handle;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     class STORMKIT_API TreeNode {
       public:
         using IndexType    = Handle32<TreeNode>;
@@ -105,13 +105,13 @@ export namespace stormkit::core {
         std::vector<TreeNodeType>      m_tree;
         std::vector<TreeNodeIndexType> m_dirties;
     };
-} // namespace stormkit::core
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_INLINE auto TreeNode::name() const noexcept -> const std::string& {
@@ -506,4 +506,4 @@ namespace stormkit::core {
 
         stream.close();
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core

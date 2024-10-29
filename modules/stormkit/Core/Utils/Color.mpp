@@ -18,7 +18,7 @@ import :Utils.Math;
 import :Meta;
 
 export {
-    namespace stormkit::core {
+    namespace stormkit { inline namespace core {
         constexpr auto colorComponentAs(UInt8 component) noexcept -> float;
 
         constexpr auto colorComponentAs(float component) noexcept -> UInt8;
@@ -93,8 +93,8 @@ export {
         ///```
         namespace RGBColorDef {
             template<meta::IsColorComponent T>
-            inline constexpr auto Black =
-                RGBColor<T> { T { 0 }, T { 0 }, T { 0 }, maxColorComponentValue<T>() };
+            inline constexpr auto Black
+                = RGBColor<T> { T { 0 }, T { 0 }, T { 0 }, maxColorComponentValue<T>() };
 
             template<meta::IsColorComponent T>
             inline constexpr auto Gray = RGBColor<T> { maxColorComponentValue<T>() / T { 2 },
@@ -190,11 +190,10 @@ export {
             template<meta::IsColorComponent T>
             inline constexpr auto Transparent = RGBColor<T> { T { 0 }, T { 0 }, T { 0 }, T { 0 } };
         } // namespace RGBColorDef
-
-    } // namespace stormkit::core
+    }} // namespace stormkit::core
 
     TEMPLATED_HASH_EQUAL_FUNC(stormkit::core::RGBColor,
-                              stormkit::core::meta::IsColorComponent,
+                              stormkit::meta::IsColorComponent,
                               T,
                               value.r,
                               value.g,
@@ -206,7 +205,7 @@ export {
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     constexpr auto colorComponentAs(UInt8 component) noexcept -> float {
@@ -330,4 +329,4 @@ namespace stormkit::core {
     constexpr RGBColor<T>::operator std::array<ValueType, 4>() const noexcept {
         return { red, green, blue, alpha };
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core
