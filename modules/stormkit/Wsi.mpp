@@ -4,6 +4,7 @@
 
 module;
 
+#include <stormkit/Core/AsCastsMacro.hpp>
 #include <stormkit/Core/FlagsMacro.hpp>
 #include <stormkit/Core/PlatformMacro.hpp>
 
@@ -19,353 +20,341 @@ namespace stormkit::wsi {
 }
 
 export {
-    namespace stormkit {
-        namespace wsi {
-            enum class WM {
-                Win32,
-                Wayland,
-                X11,
-                Android,
-                macOS,
-                iOS,
-                tvOS,
-                Switch,
+    namespace stormkit { namespace wsi {
+        enum class WM {
+            Win32,
+            Wayland,
+            X11,
+            Android,
+            macOS,
+            iOS,
+            tvOS,
+            Switch,
+        };
+
+        using NativeHandle = void*;
+
+        enum class Key : UInt8 {
+            A = 0,
+            B,
+            C,
+            D,
+            E,
+            F,
+            G,
+            H,
+            I,
+            J,
+            K,
+            L,
+            M,
+            N,
+            O,
+            P,
+            Q,
+            R,
+            S,
+            T,
+            U,
+            V,
+            W,
+            X,
+            Y,
+            Z,
+            Num0,
+            Num1,
+            Num2,
+            Num3,
+            Num4,
+            Num5,
+            Num6,
+            Num7,
+            Num8,
+            Num9,
+            Escape,
+            L_Control,
+            L_Shift,
+            L_Alt,
+            L_System,
+            R_Control,
+            R_Shift,
+            R_Alt,
+            R_System,
+            Menu,
+            L_Bracket,
+            R_Bracket,
+            Semi_Colon,
+            Comma,
+            Period,
+            Quote,
+            Slash,
+            Back_Slash,
+            Tilde,
+            Equal,
+            Hyphen,
+            Space,
+            Enter,
+            Back_Space,
+            Tab,
+            Page_Up,
+            Page_Down,
+            Begin,
+            End,
+            Home,
+            Insert,
+            Delete,
+            Add,
+            Substract,
+            Multiply,
+            Divide,
+            Left,
+            Right,
+            Up,
+            Down,
+            Numpad0,
+            Numpad1,
+            Numpad2,
+            Numpad3,
+            Numpad4,
+            Numpad5,
+            Numpad6,
+            Numpad7,
+            Numpad8,
+            Numpad9,
+            F1,
+            F2,
+            F3,
+            F4,
+            F5,
+            F6,
+            F7,
+            F8,
+            F9,
+            F10,
+            F11,
+            F12,
+            F13,
+            F14,
+            F15,
+            Pause,
+            KeyCount,
+            Unknow = std::numeric_limits<Int8>::max(),
+        };
+        inline constexpr auto KEY_COUNT = as<Underlying>(Key::KeyCount);
+
+        enum class MouseButton : UInt8 {
+            Left,
+            Right,
+            Middle,
+            Button1,
+            Button2,
+            ButtonCount,
+            Unknow = std::numeric_limits<Int8>::max(),
+        };
+        inline constexpr auto MOUSE_BUTTON_COUNT = as<Underlying>(MouseButton::ButtonCount);
+
+        struct Monitor {
+            enum class Flags {
+                None = 0,
+                Primary
             };
 
-            using NativeHandle = void*;
+            Flags       flags = Flags::None;
+            std::string name;
 
-            enum class Key : UInt8 {
-                A = 0,
-                B,
-                C,
-                D,
-                E,
-                F,
-                G,
-                H,
-                I,
-                J,
-                K,
-                L,
-                M,
-                N,
-                O,
-                P,
-                Q,
-                R,
-                S,
-                T,
-                U,
-                V,
-                W,
-                X,
-                Y,
-                Z,
-                Num0,
-                Num1,
-                Num2,
-                Num3,
-                Num4,
-                Num5,
-                Num6,
-                Num7,
-                Num8,
-                Num9,
-                Escape,
-                L_Control,
-                L_Shift,
-                L_Alt,
-                L_System,
-                R_Control,
-                R_Shift,
-                R_Alt,
-                R_System,
-                Menu,
-                L_Bracket,
-                R_Bracket,
-                Semi_Colon,
-                Comma,
-                Period,
-                Quote,
-                Slash,
-                Back_Slash,
-                Tilde,
-                Equal,
-                Hyphen,
-                Space,
-                Enter,
-                Back_Space,
-                Tab,
-                Page_Up,
-                Page_Down,
-                Begin,
-                End,
-                Home,
-                Insert,
-                Delete,
-                Add,
-                Substract,
-                Multiply,
-                Divide,
-                Left,
-                Right,
-                Up,
-                Down,
-                Numpad0,
-                Numpad1,
-                Numpad2,
-                Numpad3,
-                Numpad4,
-                Numpad5,
-                Numpad6,
-                Numpad7,
-                Numpad8,
-                Numpad9,
-                F1,
-                F2,
-                F3,
-                F4,
-                F5,
-                F6,
-                F7,
-                F8,
-                F9,
-                F10,
-                F11,
-                F12,
-                F13,
-                F14,
-                F15,
-                Pause,
-                KeyCount,
-                Unknow = std::numeric_limits<Int8>::max(),
-            };
-            inline constexpr auto KEY_COUNT = as<Underlying>(Key::KeyCount);
+            std::vector<math::ExtentU> extents;
 
-            enum class MouseButton : UInt8 {
-                Left,
-                Right,
-                Middle,
-                Button1,
-                Button2,
-                ButtonCount,
-                Unknow = std::numeric_limits<Int8>::max(),
-            };
-            inline constexpr auto MOUSE_BUTTON_COUNT = as<Underlying>(MouseButton::ButtonCount);
+            void* handle = nullptr;
 
-            struct Monitor {
-                enum class Flags {
-                    None = 0,
-                    Primary
-                };
+            [[nodiscard]] constexpr auto operator<=>(const Monitor& other) const noexcept
+                -> std::strong_ordering;
+        };
 
-                Flags       flags = Flags::None;
-                std::string name;
+        enum class WindowStyle : UInt8 {
+            TitleBar    = 0b1,
+            Close       = TitleBar | 0b10,
+            Minimizable = TitleBar | 0b100,
+            Resizable   = TitleBar | 0b1000,
+            All         = Resizable | Minimizable | Close
+        };
 
-                std::vector<math::ExtentU> extents;
+        enum class EventType : UInt8 {
+            None,
+            Closed,
+            Resized,
+            Minimized,
+            Maximized,
+            KeyPressed,
+            KeyReleased,
+            MouseButtonPushed,
+            MouseButtonReleased,
+            MouseEntered,
+            MouseExited,
+            MouseMoved,
+            LostFocus,
+            GainedFocus,
+        };
 
-                void* handle = nullptr;
+        struct NoneEventData {
+            static constexpr auto TYPE = EventType::None;
+        };
 
-                [[nodiscard]] constexpr auto operator<=>(const Monitor& other) const noexcept
-                    -> std::strong_ordering;
-            };
+        struct ClosedEventData {
+            static constexpr auto TYPE = EventType::Closed;
+        };
 
-            enum class WindowStyle : UInt8 {
-                TitleBar    = 0b1,
-                Close       = TitleBar | 0b10,
-                Minimizable = TitleBar | 0b100,
-                Resizable   = TitleBar | 0b1000,
-                All         = Resizable | Minimizable | Close
-            };
+        struct ResizedEventData {
+            static constexpr auto TYPE = EventType::Resized;
+            math::ExtentU         extent;
+        };
 
-            enum class EventType : UInt8 {
-                None,
-                Closed,
-                Resized,
-                Minimized,
-                Maximized,
-                KeyPressed,
-                KeyReleased,
-                MouseButtonPushed,
-                MouseButtonReleased,
-                MouseEntered,
-                MouseExited,
-                MouseMoved,
-                LostFocus,
-                GainedFocus,
-            };
+        struct MinimizedEventData {
+            static constexpr auto TYPE = EventType::Minimized;
+        };
 
-            struct NoneEventData {
-                static constexpr auto TYPE = EventType::None;
-            };
+        struct MaximizedEventData {
+            static constexpr auto TYPE = EventType::Maximized;
+        };
 
-            struct ClosedEventData {
-                static constexpr auto TYPE = EventType::Closed;
-            };
+        struct KeyPressedEventData {
+            static constexpr auto TYPE = EventType::KeyPressed;
+            Key                   key;
+            char                  character;
+        };
 
-            struct ResizedEventData {
-                static constexpr auto TYPE = EventType::Resized;
-                math::ExtentU         extent;
-            };
+        struct KeyReleasedEventData {
+            static constexpr auto TYPE = EventType::KeyReleased;
+            Key                   key;
+            char                  character;
+        };
 
-            struct MinimizedEventData {
-                static constexpr auto TYPE = EventType::Minimized;
-            };
+        struct MouseButtonPushedEventData {
+            static constexpr auto TYPE = EventType::MouseButtonPushed;
+            math::Vector2I        position;
+            MouseButton           button;
+        };
 
-            struct MaximizedEventData {
-                static constexpr auto TYPE = EventType::Maximized;
-            };
+        struct MouseButtonReleasedEventData {
+            static constexpr auto TYPE = EventType::MouseButtonReleased;
+            math::Vector2I        position;
+            MouseButton           button;
+        };
 
-            struct KeyPressedEventData {
-                static constexpr auto TYPE = EventType::KeyPressed;
-                Key                   key;
-                char                  character;
-            };
+        struct MouseEnteredEventData {
+            static constexpr auto TYPE = EventType::MouseEntered;
+        };
 
-            struct KeyReleasedEventData {
-                static constexpr auto TYPE = EventType::KeyReleased;
-                Key                   key;
-                char                  character;
-            };
+        struct MouseExitedEventData {
+            static constexpr auto TYPE = EventType::MouseExited;
+        };
 
-            struct MouseButtonPushedEventData {
-                static constexpr auto TYPE = EventType::MouseButtonPushed;
-                math::Vector2I        position;
-                MouseButton           button;
-            };
+        struct MouseMovedEventData {
+            static constexpr auto TYPE = EventType::MouseMoved;
+            math::Vector2I        position;
+        };
 
-            struct MouseButtonReleasedEventData {
-                static constexpr auto TYPE = EventType::MouseButtonReleased;
-                math::Vector2I        position;
-                MouseButton           button;
-            };
+        struct LostFocusEventData {
+            static constexpr auto TYPE = EventType::LostFocus;
+        };
 
-            struct MouseEnteredEventData {
-                static constexpr auto TYPE = EventType::MouseEntered;
-            };
+        struct GainedFocusEventData {
+            static constexpr auto TYPE = EventType::GainedFocus;
+        };
 
-            struct MouseExitedEventData {
-                static constexpr auto TYPE = EventType::MouseExited;
-            };
+        using EventData = std::variant<NoneEventData,
+                                       ClosedEventData,
+                                       ResizedEventData,
+                                       MinimizedEventData,
+                                       MaximizedEventData,
+                                       KeyPressedEventData,
+                                       KeyReleasedEventData,
+                                       MouseButtonPushedEventData,
+                                       MouseButtonReleasedEventData,
+                                       MouseEnteredEventData,
+                                       MouseExitedEventData,
+                                       MouseMovedEventData,
+                                       LostFocusEventData,
+                                       GainedFocusEventData>;
 
-            struct MouseMovedEventData {
-                static constexpr auto TYPE = EventType::MouseMoved;
-                math::Vector2I        position;
-            };
+        struct Event {
+            EventType type = EventType::None;
+            EventData data = NoneEventData {};
+        };
 
-            struct LostFocusEventData {
-                static constexpr auto TYPE = EventType::LostFocus;
-            };
+        class STORMKIT_API Window {
+          public:
+            Window() noexcept;
+            Window(std::string title, const math::ExtentU& size, WindowStyle style) noexcept;
+            ~Window();
 
-            struct GainedFocusEventData {
-                static constexpr auto TYPE = EventType::GainedFocus;
-            };
+            Window(Window&&);
+            auto operator=(Window&&) -> Window&;
 
-            using EventData = std::variant<NoneEventData,
-                                           ClosedEventData,
-                                           ResizedEventData,
-                                           MinimizedEventData,
-                                           MaximizedEventData,
-                                           KeyPressedEventData,
-                                           KeyReleasedEventData,
-                                           MouseButtonPushedEventData,
-                                           MouseButtonReleasedEventData,
-                                           MouseEnteredEventData,
-                                           MouseExitedEventData,
-                                           MouseMovedEventData,
-                                           LostFocusEventData,
-                                           GainedFocusEventData>;
+            auto create(std::string title, const math::ExtentU& size, WindowStyle style) noexcept
+                -> void;
+            auto close() noexcept -> void;
 
-            struct Event {
-                EventType type = EventType::None;
-                EventData data = NoneEventData {};
-            };
+            [[nodiscard]] auto pollEvent(Event& event) noexcept -> bool;
+            [[nodiscard]] auto waitEvent(Event& event) noexcept -> bool;
 
-            class STORMKIT_API Window {
-              public:
-                Window() noexcept;
-                Window(std::string title, const math::ExtentU& size, WindowStyle style) noexcept;
-                ~Window();
+            auto setTitle(std::string title) noexcept -> void;
 
-                Window(Window&&);
-                auto operator=(Window&&) -> Window&;
+            auto setFullscreenEnabled(bool fullscreen) noexcept -> void;
 
-                auto create(std::string          title,
-                            const math::ExtentU& size,
-                            WindowStyle          style) noexcept -> void;
-                auto close() noexcept -> void;
+            auto setExtent(const math::ExtentU& extent) noexcept -> void;
 
-                [[nodiscard]] auto pollEvent(Event& event) noexcept -> bool;
-                [[nodiscard]] auto waitEvent(Event& event) noexcept -> bool;
+            auto lockMouse() noexcept -> void;
+            auto unlockMouse() noexcept -> void;
+            auto hideMouse() noexcept -> void;
 
-                auto setTitle(std::string title) noexcept -> void;
+            [[nodiscard]] auto extent() const noexcept -> const math::ExtentU&;
+            [[nodiscard]] auto title() const noexcept -> const std::string&;
 
-                auto setFullscreenEnabled(bool fullscreen) noexcept -> void;
+            [[nodiscard]] auto isOpen() const noexcept -> bool;
+            [[nodiscard]] auto visible() const noexcept -> bool;
 
-                auto setExtent(const math::ExtentU& extent) noexcept -> void;
+            [[nodiscard]] auto nativeHandle() const noexcept -> NativeHandle;
 
-                auto lockMouse() noexcept -> void;
-                auto unlockMouse() noexcept -> void;
-                auto hideMouse() noexcept -> void;
+            [[nodiscard]] auto mouseLocked() const noexcept -> bool;
+            [[nodiscard]] auto fullscreen() const noexcept -> bool;
 
-                [[nodiscard]] auto extent() const noexcept -> const math::ExtentU&;
-                [[nodiscard]] auto title() const noexcept -> const std::string&;
+            auto               setKeyRepeatEnabled(bool enabled) noexcept -> void;
+            [[nodiscard]] auto keyRepeatEnabled() const noexcept -> bool;
 
-                [[nodiscard]] auto isOpen() const noexcept -> bool;
-                [[nodiscard]] auto visible() const noexcept -> bool;
+            auto setVirtualKeyboardVisible(bool visible) noexcept -> void;
 
-                [[nodiscard]] auto nativeHandle() const noexcept -> NativeHandle;
+            auto        setMousePosition(const math::Vector2I& position) noexcept -> void;
+            static auto setMousePositionOnDesktop(const math::Vector2U& position) noexcept -> void;
 
-                [[nodiscard]] auto mouseLocked() const noexcept -> bool;
-                [[nodiscard]] auto fullscreen() const noexcept -> bool;
+            [[nodiscard]] static auto getMonitorSettings() -> std::vector<Monitor>;
+            [[nodiscard]] static auto getPrimaryMonitorSettings() -> Monitor;
 
-                auto               setKeyRepeatEnabled(bool enabled) noexcept -> void;
-                [[nodiscard]] auto keyRepeatEnabled() const noexcept -> bool;
+            [[nodiscard]] static auto wm() noexcept -> WM;
 
-                auto setVirtualKeyboardVisible(bool visible) noexcept -> void;
+          private:
+            using WindowImplPimpl = Pimpl<WindowImpl>;
+            WindowImplPimpl m_impl;
+        };
 
-                auto        setMousePosition(const math::Vector2I& position) noexcept -> void;
-                static auto setMousePositionOnDesktop(const math::Vector2U& position) noexcept
-                    -> void;
+        STORMKIT_API auto parseArgs(std::span<const std::string_view> args) noexcept -> void;
 
-                [[nodiscard]] static auto getMonitorSettings() -> std::vector<Monitor>;
-                [[nodiscard]] static auto getPrimaryMonitorSettings() -> Monitor;
+        struct STORMKIT_API EventHandler {
+            using Callback = std::function<void(const Event&)>;
 
-                [[nodiscard]] static auto wm() noexcept -> WM;
+            auto update(Window& window) -> void;
 
-              private:
-                using WindowImplPimpl = Pimpl<WindowImpl>;
-                WindowImplPimpl m_impl;
-            };
+            auto setCallback(EventType event_type, Callback callback) -> void;
+            auto setCallbacks(std::vector<std::pair<EventType, Callback>> callbacks) -> void;
+            auto clearCallbacks(EventType event_type) -> void;
 
-            STORMKIT_API auto parseArgs(std::span<const std::string_view> args) noexcept -> void;
-
-            struct STORMKIT_API EventHandler {
-                using Callback = std::function<void(const Event&)>;
-
-                auto update(Window& window) -> void;
-
-                auto setCallback(EventType event_type, Callback callback) -> void;
-                auto setCallbacks(std::vector<std::pair<EventType, Callback>> callbacks) -> void;
-                auto clearCallbacks(EventType event_type) -> void;
-
-              private:
-                HashMap<EventType, std::vector<Callback>> m_callback;
-            };
-        } // namespace wsi
-
-        namespace casts {
-            template<core::meta::IsStrict<std::string> To, core::meta::IsStrict<wsi::Monitor> From>
-            struct AsCaster<To, From> {
-                static constexpr auto operator()(const From&                 data,
-                                                 const std::source_location& location) noexcept
-                    -> To;
-            };
-        } // namespace casts
-    } // namespace stormkit
+          private:
+            HashMap<EventType, std::vector<Callback>> m_callback;
+        };
+    }} // namespace stormkit::wsi
 
     FLAG_ENUM(stormkit::wsi::Monitor::Flags)
     FLAG_ENUM(stormkit::wsi::WindowStyle)
+    ASCASTER_STRICT_DECLARE(std::string, stormkit::wsi::Monitor)
 
     namespace std {
         template<class CharT>
@@ -388,86 +377,75 @@ export {
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit {
-    namespace casts {
-        /////////////////////////////////////
-        /////////////////////////////////////
-        template<core::meta::IsStrict<std::string> To, core::meta::IsStrict<wsi::Monitor> From>
-        STORMKIT_FORCE_INLINE constexpr auto
-            AsCaster<To, From>::operator()(const From& data, const std::source_location&) noexcept
-            -> To {
-            if (data.flags == stormkit::wsi::Monitor::Flags::None)
-                return std::format("[Monitor: name = {}, extents = {}]", data.name, data.extents);
+ASCASTER_STRICT_DEFINE(std::string, stormkit::wsi::Monitor) {
+    if (from.flags == stormkit::wsi::Monitor::Flags::None)
+        return std::format("[Monitor: name = {}, extents = {}]", from.name, from.extents);
 
-            return std::format("[Monitor: flags = {}, name = {}, extents = {}]",
-                               data.flags,
-                               data.name,
-                               data.extents);
-        }
+    return std::format("[Monitor: flags = {}, name = {}, extents = {}]",
+                       from.flags,
+                       from.name,
+                       from.extents);
+}
 
-    } // namespace casts
-
-    namespace wsi {
-        ////////////////////////////////////////
-        ////////////////////////////////////////
-        STORMKIT_INLINE constexpr auto Monitor::operator<=>(const Monitor& other) const noexcept
-            -> std::strong_ordering {
-            if (auto ret = flags <=> other.flags; ret != 0) return ret;
+namespace stormkit { namespace wsi {
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_INLINE constexpr auto Monitor::operator<=>(const Monitor& other) const noexcept
+        -> std::strong_ordering {
+        if (auto ret = flags <=> other.flags; ret != 0) return ret;
 
 #ifdef STORMKIT_COMPILER_CLANG
-            if (auto ret = name.compare(other.name); ret != 0) {
-                if (ret < 0) return std::strong_ordering::less;
-                else if (ret > 0)
-                    return std::strong_ordering::greater;
-            }
+        if (auto ret = name.compare(other.name); ret != 0) {
+            if (ret < 0) return std::strong_ordering::less;
+            else if (ret > 0)
+                return std::strong_ordering::greater;
+        }
 #else
-            if (auto ret = name <=> other.name; ret != 0) return ret;
+        if (auto ret = name <=> other.name; ret != 0) return ret;
 #endif
 
-            if (auto ret = std::size(extents) <=> std::size(other.extents); ret != 0) return ret;
+        if (auto ret = std::size(extents) <=> std::size(other.extents); ret != 0) return ret;
 
-            for (auto i : range(std::size(extents))) {
-                if (auto ret = extents[i].width <=> other.extents[i].width; ret != 0) return ret;
-                if (auto ret = extents[i].height <=> other.extents[i].height; ret != 0) return ret;
-            }
-
-            return std::strong_ordering::equal;
+        for (auto i : range(std::size(extents))) {
+            if (auto ret = extents[i].width <=> other.extents[i].width; ret != 0) return ret;
+            if (auto ret = extents[i].height <=> other.extents[i].height; ret != 0) return ret;
         }
 
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_INLINE auto EventHandler::update(Window& window) -> void {
-            auto event = Event {};
+        return std::strong_ordering::equal;
+    }
 
-            while (window.pollEvent(event)) {
-                const auto event_type = event.type;
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_INLINE auto EventHandler::update(Window& window) -> void {
+        auto event = Event {};
 
-                if (m_callback.find(event_type) == std::ranges::cend(m_callback)) continue;
+        while (window.pollEvent(event)) {
+            const auto event_type = event.type;
 
-                for (auto&& callback : m_callback.at(event_type)) callback(event);
-            }
+            if (m_callback.find(event_type) == std::ranges::cend(m_callback)) continue;
+
+            for (auto&& callback : m_callback.at(event_type)) callback(event);
         }
+    }
 
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE auto EventHandler::setCallback(EventType event_type,
-                                                             Callback  callback) -> void {
-            m_callback[event_type].emplace_back(std::move(callback));
-        }
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto EventHandler::setCallback(EventType event_type, Callback callback)
+        -> void {
+        m_callback[event_type].emplace_back(std::move(callback));
+    }
 
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE auto
-            EventHandler::setCallbacks(std::vector<std::pair<EventType, Callback>> callbacks)
-                -> void {
-            for (auto&& [event_type, callback] : callbacks)
-                setCallback(event_type, std::move(callback));
-        }
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto
+        EventHandler::setCallbacks(std::vector<std::pair<EventType, Callback>> callbacks) -> void {
+        for (auto&& [event_type, callback] : callbacks)
+            setCallback(event_type, std::move(callback));
+    }
 
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE auto EventHandler::clearCallbacks(EventType event_type) -> void {
-            m_callback[event_type].clear();
-        }
-    } // namespace wsi
-} // namespace stormkit
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto EventHandler::clearCallbacks(EventType event_type) -> void {
+        m_callback[event_type].clear();
+    }
+}} // namespace stormkit::wsi
