@@ -19,10 +19,10 @@ export namespace stormkit::core {
 
     [[nodiscard]] constexpr auto asByteView(std::ranges::range auto& container);
 
-    [[nodiscard]] constexpr auto asByteView(IsPointer auto ptr, RangeExtent size = 1);
+    [[nodiscard]] constexpr auto asByteView(meta::IsPointer auto ptr, RangeExtent size = 1);
 
     template<class T>
-        requires(not std::ranges::range<T> and not IsPointer<T>)
+        requires(not std::ranges::range<T> and not meta::IsPointer<T>)
     [[nodiscard]] constexpr auto asByteView(T& value);
 
     [[nodiscard]] constexpr auto makeStaticByteArray(auto... bytes) noexcept -> decltype(auto);
@@ -68,15 +68,15 @@ namespace stormkit::core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    constexpr auto asByteView(IsPointer auto ptr, std::size_t size) {
+    constexpr auto asByteView(meta::IsPointer auto ptr, std::size_t size) {
         auto raw_ptr = std::to_address(ptr);
 
         using PtrType     = decltype(raw_ptr);
-        using ElementType = ElementType<PtrType>;
-        using ByteType    = ConstnessLike<ElementType, core::Byte>;
+        using ElementType = meta::ElementType<PtrType>;
+        using ByteType    = meta::ConstnessLike<ElementType, core::Byte>;
 
         constexpr auto byte_count = []() {
-            if constexpr (Is<ElementType, void>) return 1;
+            if constexpr (meta::Is<ElementType, void>) return 1;
             else
                 return sizeof(ElementType);
         }();
@@ -87,7 +87,7 @@ namespace stormkit::core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T>
-        requires(not std::ranges::range<T> and not IsPointer<T>)
+        requires(not std::ranges::range<T> and not meta::IsPointer<T>)
     constexpr auto asByteView(T& value) {
         return asByteView(&value, 1);
     }

@@ -45,7 +45,7 @@ export {
         using RangeExtent = std::size_t;
         using RangeOffset = std::ptrdiff_t;
 
-        template<IsIntegral T>
+        template<meta::IsIntegral T>
         class Integer {
           public:
             using Type = T;
@@ -58,7 +58,7 @@ export {
             T m_value;
         };
 
-        template<IsIntegral T>
+        template<meta::IsIntegral T>
         Integer(T) -> Integer<T>;
     } // namespace stormkit::core
 

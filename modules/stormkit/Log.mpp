@@ -148,7 +148,7 @@ export {
     FLAG_ENUM(stormkit::log::Severity)
 
     namespace std {
-        template<stormkit::core::IsStrict<stormkit::log::Severity> T, class CharT>
+        template<stormkit::core::meta::IsStrict<stormkit::log::Severity> T, class CharT>
         struct formatter<T, CharT>: formatter<basic_string_view<CharT>, CharT> {
             template<class FormatContext>
             auto format(T data, FormatContext& ctx) const -> decltype(ctx.out()) {

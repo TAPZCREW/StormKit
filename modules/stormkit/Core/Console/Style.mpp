@@ -79,7 +79,7 @@ export {
 export namespace std {
     template<typename T, class CharT>
     struct formatter<stormkit::core::Stylized<T>, CharT>
-        : formatter<stormkit::core::CanonicalType<T>, CharT> {
+        : formatter<stormkit::core::meta::CanonicalType<T>, CharT> {
         template<class FormatContext>
         auto format(const stormkit::core::Stylized<T>& stylized, FormatContext& ctx) const noexcept
             -> decltype(ctx.out());

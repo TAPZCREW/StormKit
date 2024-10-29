@@ -65,7 +65,7 @@ export namespace stormkit::core {
 } // namespace stormkit::core
 
 export namespace stormkit::core::casts {
-    template<core::IsStrictOneOf<std::string, std::string_view> To>
+    template<core::meta::IsStrictOneOf<std::string, std::string_view> To>
     [[nodiscard]] constexpr auto as(core::AssertType t) noexcept -> To;
 }
 
@@ -88,7 +88,7 @@ namespace stormkit::core::casts {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::IsStrictOneOf<std::string, std::string_view> To>
+    template<core::meta::IsStrictOneOf<std::string, std::string_view> To>
     constexpr auto as(core::AssertType t) noexcept -> To {
         const auto val = AssertTypeToString.at(t);
         return { std::ranges::cbegin(val), std::ranges::cend(val) };

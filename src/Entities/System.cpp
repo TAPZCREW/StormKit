@@ -12,7 +12,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
     System::System(EntityManager& manager, UInt32 priority, ComponentTypes types)
-        : m_manager { &manager }, m_priority { priority }, m_types { std::move(types) } {
+        : m_manager { borrowMut(manager) }, m_priority { priority }, m_types { std::move(types) } {
     }
 
     /////////////////////////////////////

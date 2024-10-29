@@ -355,7 +355,7 @@ export {
         } // namespace wsi
 
         namespace casts {
-            template<core::IsStrict<std::string> To, core::IsStrict<wsi::Monitor> From>
+            template<core::meta::IsStrict<std::string> To, core::meta::IsStrict<wsi::Monitor> From>
             struct AsCaster<To, From> {
                 static constexpr auto operator()(const From&                 data,
                                                  const std::source_location& location) noexcept
@@ -392,7 +392,7 @@ namespace stormkit {
     namespace casts {
         /////////////////////////////////////
         /////////////////////////////////////
-        template<core::IsStrict<std::string> To, core::IsStrict<wsi::Monitor> From>
+        template<core::meta::IsStrict<std::string> To, core::meta::IsStrict<wsi::Monitor> From>
         STORMKIT_FORCE_INLINE constexpr auto
             AsCaster<To, From>::operator()(const From& data, const std::source_location&) noexcept
             -> To {

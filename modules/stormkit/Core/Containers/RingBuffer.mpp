@@ -13,6 +13,7 @@ import std;
 import :Utils.Assert;
 import :TypeSafe.Integer;
 import :TypeSafe.Byte;
+import :Meta;
 
 export namespace stormkit::core {
     template<class T>
@@ -41,7 +42,8 @@ export namespace stormkit::core {
         [[nodiscard]] auto size() const noexcept -> ExtentType;
         [[nodiscard]] auto capacity() const noexcept -> ExtentType;
 
-        template<Is<CanonicalType<ValueType>> U>
+        template<typename U>
+            requires meta::Is<T, meta::CanonicalType<U>>
         auto push(U&& value) noexcept(std::is_nothrow_constructible_v<ValueType, U>) -> void;
 
         template<class... Args>
@@ -199,7 +201,8 @@ namespace stormkit::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T>
-    template<Is<CanonicalType<typename RingBuffer<T>::ValueType>> U>
+    template<typename U>
+        requires meta::Is<T, meta::CanonicalType<U>>
     auto RingBuffer<T>::push(U&& value) noexcept(std::is_nothrow_constructible_v<ValueType, U>)
         -> void {
         emplace(std::forward(value));
@@ -262,8 +265,8 @@ namespace stormkit::core {
     template<class T>
     template<class Self>
     auto RingBuffer<T>::getPtr(this Self& self, ExtentType pos) noexcept -> decltype(auto) {
-        using OutPtr    = ConstnessLike<Self, T*>;
-        auto addr = std::forward_like<Self>(&(self.m_buffer[pos * sizeof(ValueType)]));
+        using OutPtr = meta::ConstnessLike<Self, T*>;
+        auto addr    = std::forward_like<Self>(&(self.m_buffer[pos * sizeof(ValueType)]));
 
         return std::launder(std::bit_cast<OutPtr>(addr));
     }

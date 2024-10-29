@@ -20,12 +20,12 @@ export {
 
             constexpr Boolean(bool value) noexcept;
 
-            template<IsIntegral T>
+            template<meta::IsIntegral T>
             constexpr Boolean(T) noexcept = delete;
 
             constexpr auto operator=(bool value) noexcept -> Boolean&;
 
-            template<IsIntegral T>
+            template<meta::IsIntegral T>
             constexpr auto operator=(T) noexcept -> Boolean& = delete;
 
             constexpr      operator bool() const noexcept;

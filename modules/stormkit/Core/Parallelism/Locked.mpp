@@ -10,6 +10,7 @@ export module stormkit.Core:Parallelism.Locked;
 
 import std;
 
+import :Meta;
 import :TypeSafe.Integer;
 import :TypeSafe.Ref;
 
@@ -27,7 +28,7 @@ export namespace stormkit::core {
         Read_Write
     };
 
-    template<IsNotRawIndirection T, class Mutex = DefaultMutex>
+    template<meta::IsNotRawIndirection T, class Mutex = DefaultMutex>
     class STORMKIT_API Locked {
       public:
         using ValueType          = T;
@@ -85,7 +86,7 @@ export namespace stormkit::core {
             noexcept(std::is_nothrow_assignable_v<ValueType, ValueType&&>)) -> void;
 
         template<typename Self>
-        auto unsafe(this Self& self) noexcept -> ConstnessLike<Self, ReferenceType>;
+        auto unsafe(this Self& self) noexcept -> meta::ConstnessLike<Self, ReferenceType>;
 
         auto mutex() const noexcept -> const MutexType&;
 
@@ -110,10 +111,10 @@ export namespace stormkit::core {
             explicit Access(Locked& locked, LockArgs&&... args) noexcept;
 
             template<class Self>
-            auto operator->(this Self&& self) noexcept -> ConstnessLike<Self, PointerType>;
+            auto operator->(this Self&& self) noexcept -> meta::ConstnessLike<Self, PointerType>;
 
             template<class Self>
-            auto operator*(this Self&& self) noexcept -> ConstnessLike<Self, ReferenceType>;
+            auto operator*(this Self&& self) noexcept -> meta::ConstnessLike<Self, ReferenceType>;
 
             mutable Lock<MutexType> lock;
 
@@ -136,13 +137,13 @@ export namespace stormkit::core {
 namespace stormkit::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<IsNotRawIndirection T, class Mutex>
+    template<meta::IsNotRawIndirection T, class Mutex>
     STORMKIT_FORCE_INLINE Locked<T, Mutex>::Locked() noexcept(
         noexcept(std::is_nothrow_default_constructible_v<ValueType>)) = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<IsNotRawIndirection T, class Mutex>
+    template<meta::IsNotRawIndirection T, class Mutex>
     template<typename... Args>
     STORMKIT_FORCE_INLINE Locked<T, Mutex>::Locked(Args&&... args) noexcept(
         noexcept(std::is_nothrow_constructible_v<ValueType, Args...>))
@@ -151,13 +152,13 @@ namespace stormkit::core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<IsNotRawIndirection T, class Mutex>
+    template<meta::IsNotRawIndirection T, class Mutex>
     template<LockAccessMode Mode, template<class> class Lock, typename... LockArgs, class Self>
     STORMKIT_FORCE_INLINE auto
         Locked<T, Mutex>::access(this Self& self,
                                  LockArgs&&... lock_args) noexcept -> Access<Lock, Mode> {
         static_assert(not(Mode == LockAccessMode::Read_Only and
-                          not std::is_const_v<RemoveIndirectionsType<Self>>),
+                          not std::is_const_v<meta::RemoveIndirectionsType<Self>>),
                       "can't get read access on const Locked<T>");
         using AccessType = Access<Lock, Mode>;
         return AccessType { self, std::forward<LockArgs>(lock_args)... };
@@ -165,7 +166,7 @@ namespace stormkit::core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<IsNotRawIndirection T, class Mutex>
+    template<meta::IsNotRawIndirection T, class Mutex>
     template<template<class> class Lock, typename... LockArgs>
     STORMKIT_FORCE_INLINE auto
         Locked<T, Mutex>::read(LockArgs&&... lock_args) const noexcept -> ReadAccess<Lock> {
@@ -174,7 +175,7 @@ namespace stormkit::core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<IsNotRawIndirection T, class Mutex>
+    template<meta::IsNotRawIndirection T, class Mutex>
     template<template<class> class Lock, typename... LockArgs>
     STORMKIT_FORCE_INLINE auto
         Locked<T, Mutex>::write(LockArgs&&... lock_args) noexcept -> WriteAccess<Lock> {
@@ -183,7 +184,7 @@ namespace stormkit::core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<IsNotRawIndirection T, class Mutex>
+    template<meta::IsNotRawIndirection T, class Mutex>
     template<template<class> class Lock, typename... LockArgs>
     STORMKIT_FORCE_INLINE auto
         Locked<T, Mutex>::copy(LockArgs&&... lock_args) const noexcept -> ValueType {
@@ -192,7 +193,7 @@ namespace stormkit::core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<IsNotRawIndirection T, class Mutex>
+    template<meta::IsNotRawIndirection T, class Mutex>
     template<template<class> class Lock, typename... LockArgs>
     STORMKIT_FORCE_INLINE auto
         Locked<T, Mutex>::assign(ConstReferenceType value, LockArgs&&... lock_args) noexcept(
@@ -202,7 +203,7 @@ namespace stormkit::core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<IsNotRawIndirection T, class Mutex>
+    template<meta::IsNotRawIndirection T, class Mutex>
     template<template<class> class Lock, typename... LockArgs>
     STORMKIT_FORCE_INLINE auto
         Locked<T, Mutex>::assign(ValueType&& value, LockArgs&&... lock_args) noexcept(
@@ -212,23 +213,23 @@ namespace stormkit::core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<IsNotRawIndirection T, class Mutex>
+    template<meta::IsNotRawIndirection T, class Mutex>
     template<typename Self>
     STORMKIT_FORCE_INLINE auto
-        Locked<T, Mutex>::unsafe(this Self& self) noexcept -> ConstnessLike<Self, ReferenceType> {
+        Locked<T, Mutex>::unsafe(this Self& self) noexcept -> meta::ConstnessLike<Self, ReferenceType> {
         return self.m_value;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<IsNotRawIndirection T, class Mutex>
+    template<meta::IsNotRawIndirection T, class Mutex>
     STORMKIT_FORCE_INLINE auto Locked<T, Mutex>::mutex() const noexcept -> const MutexType& {
         return m_mutex;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<IsNotRawIndirection T, class Mutex>
+    template<meta::IsNotRawIndirection T, class Mutex>
     template<template<class> class Lock, LockAccessMode Mode>
     template<typename... LockArgs>
     STORMKIT_FORCE_INLINE
@@ -240,7 +241,7 @@ namespace stormkit::core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<IsNotRawIndirection T, class Mutex>
+    template<meta::IsNotRawIndirection T, class Mutex>
     template<template<class> class Lock, LockAccessMode Mode>
     template<typename... LockArgs>
     STORMKIT_FORCE_INLINE
@@ -251,7 +252,7 @@ namespace stormkit::core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<IsNotRawIndirection T, class Mutex>
+    template<meta::IsNotRawIndirection T, class Mutex>
     template<template<class> class Lock, LockAccessMode Mode>
     template<typename... LockArgs>
     STORMKIT_FORCE_INLINE
@@ -262,21 +263,21 @@ namespace stormkit::core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<IsNotRawIndirection T, class Mutex>
+    template<meta::IsNotRawIndirection T, class Mutex>
     template<template<class> class Lock, LockAccessMode Mode>
     template<class Self>
     STORMKIT_FORCE_INLINE auto Locked<T, Mutex>::Access<Lock, Mode>::operator->(
-        this Self&& self) noexcept -> ConstnessLike<Self, PointerType> {
+        this Self&& self) noexcept -> meta::ConstnessLike<Self, PointerType> {
         return self.m_value.get();
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<IsNotRawIndirection T, class Mutex>
+    template<meta::IsNotRawIndirection T, class Mutex>
     template<template<class> class Lock, LockAccessMode Mode>
     template<class Self>
     STORMKIT_FORCE_INLINE auto Locked<T, Mutex>::Access<Lock, Mode>::operator*(
-        this Self&& self) noexcept -> ConstnessLike<Self, ReferenceType> {
+        this Self&& self) noexcept -> meta::ConstnessLike<Self, ReferenceType> {
         return *self.m_value;
     }
 } // namespace stormkit::core

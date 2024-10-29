@@ -13,21 +13,22 @@ import std;
 import :Meta.Concepts;
 import :Meta.Traits;
 
-export namespace stormkit::core {
+export namespace stormkit::core::meta {
     template<typename Predicate, template<typename...> class Variant, typename... Ts>
     constexpr auto variantTypeFindIf(const Variant<Ts...>&, Predicate&& predicate) noexcept
         -> std::size_t;
-} // namespace stormkit::core
+} // namespace stormkit::core::meta
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit::core::meta {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename... Ts, typename Predicate>
-    STORMKIT_FORCE_INLINE constexpr auto variantTypeFindIfImpl(Predicate&& predicate) noexcept -> std::size_t {
+    STORMKIT_FORCE_INLINE constexpr auto variantTypeFindIfImpl(Predicate&& predicate) noexcept
+        -> std::size_t {
         auto found = std::variant_npos;
         [&]<std::size_t... Indices>(std::index_sequence<Indices...>) noexcept {
             if constexpr ((requires {
@@ -48,8 +49,9 @@ namespace stormkit::core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Predicate, template<typename...> class Variant, typename... Ts>
-    STORMKIT_FORCE_INLINE constexpr auto variantTypeFindIf(const Variant<Ts...>&, Predicate&& predicate) noexcept
+    STORMKIT_FORCE_INLINE constexpr auto variantTypeFindIf(const Variant<Ts...>&,
+                                                           Predicate&& predicate) noexcept
         -> std::size_t {
         return variantTypeFindIfImpl<Ts...>(std::forward<Predicate>(predicate));
     }
-} // namespace stormkit::core
+} // namespace stormkit::core::meta

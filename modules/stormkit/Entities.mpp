@@ -17,6 +17,7 @@ import stormkit.Core;
 export namespace stormkit::entities {
     using Entity                                  = UInt32;
     STORMKIT_INLINE constexpr auto INVALID_ENTITY = Entity { 0 };
+    class System;
 
     struct EntityHashFunc {
         [[nodiscard]] auto operator()(Entity k) const noexcept -> Hash64;
@@ -29,19 +30,14 @@ export namespace stormkit::entities {
         static constexpr Type TYPE         = INVALID_TYPE;
     };
 
-    template<typename T>
-    struct IsComponentTypeError: std::false_type {
-        static_assert(AlwaysFalse<T> {}, "T need to be a Component !");
-    };
+    namespace meta {
+        template<typename T>
+        concept IsComponentType
+            = core::meta::Is<Component, T> and requires(T&& component) { T::TYPE; };
 
-    template<typename T>
-    concept IsComponentType = requires(T&& component) {
-        Is<Component, T>;
-        T::TYPE;
-    };
-
-    template<typename T>
-    concept IsComponentTypeOrFail = IsComponentType<T> or IsComponentTypeError<T>::value;
+        template<typename T>
+        concept IsSystem = core::meta::Is<T, System>;
+    } // namespace meta
 
     template<class Result>
     constexpr auto componentHash(std::string_view str) noexcept -> Result;
@@ -147,43 +143,45 @@ export namespace stormkit::entities {
         auto destroyAllEntities() -> void;
         auto hasEntity(Entity entity) const -> bool;
 
-        template<IsComponentTypeOrFail T, typename... Args>
+        template<meta::IsComponentType T, typename... Args>
         auto addComponent(Entity entity, Args&&... args) -> T&;
 
-        template<IsComponentTypeOrFail T>
+        template<meta::IsComponentType T>
         auto destroyComponent(Entity entity) -> void;
 
-        template<IsComponentTypeOrFail T>
+        template<meta::IsComponentType T>
         auto hasComponent(Entity entity) const -> bool;
 
         auto hasComponent(Entity entity, Component::Type type) const -> bool;
 
         auto entities() const noexcept -> const std::vector<Entity>&;
 
-        template<IsComponentTypeOrFail T>
+        template<meta::IsComponentType T>
         auto entitiesWithComponent() const -> std::vector<Entity>;
 
-        template<IsComponentTypeOrFail T, class Self>
-        auto getComponent(this Self& self, Entity entity) -> ConstnessLike<Self, T&>;
+        template<meta::IsComponentType T, class Self>
+        auto getComponent(this Self& self, Entity entity) -> core::meta::ConstnessLike<Self, T&>;
 
         template<class Self>
         auto components(this Self& self, Entity entity)
-            -> std::vector<Ref<ConstnessLike<Self, Component>>>;
+            -> std::vector<Ref<core::meta::ConstnessLike<Self, Component>>>;
 
-        template<IsComponentTypeOrFail T, class Self>
-        auto componentsOfType(this Self& self) noexcept -> std::vector<Ref<ConstnessLike<Self, T>>>;
+        template<meta::IsComponentType T, class Self>
+        auto componentsOfType(this Self& self) noexcept
+            -> std::vector<Ref<core::meta::ConstnessLike<Self, T>>>;
 
-        template<Is<System> T, typename... Args>
+        template<meta::IsSystem T, typename... Args>
         auto addSystem(Args&&... args) -> T&;
 
-        template<Is<System> T>
+        template<meta::IsSystem T>
         auto hasSystem() const noexcept -> bool;
 
         template<class Self>
-        auto systems(this Self& self) noexcept -> std::vector<Ref<ConstnessLike<Self, System>>>;
+        auto systems(this Self& self) noexcept
+            -> std::vector<Ref<core::meta::ConstnessLike<Self, System>>>;
 
-        template<Is<System> T, class Self>
-        auto getSystem(this Self& self) noexcept -> ConstnessLike<Self, T&>;
+        template<meta::IsSystem T, class Self>
+        auto getSystem(this Self& self) noexcept -> core::meta::ConstnessLike<Self, T&>;
 
         auto step(Secondf delta) -> void;
 
@@ -282,7 +280,7 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsComponentTypeOrFail T, typename... Args>
+    template<meta::IsComponentType T, typename... Args>
     auto EntityManager::addComponent(Entity entity, Args&&... args) -> T& {
         static_assert(std::is_base_of<Component, T>::value, "T must be a Component");
         static_assert(T::TYPE != Component::INVALID_TYPE, "T must have T::type defined");
@@ -303,7 +301,7 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsComponentTypeOrFail T>
+    template<meta::IsComponentType T>
     auto EntityManager::destroyComponent(Entity entity) -> void {
         static_assert(std::is_base_of<Component, T>::value, "T must be a Component");
         static_assert(T::TYPE != Component::INVALID_TYPE, "T must have T::type defined");
@@ -320,7 +318,7 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsComponentTypeOrFail T>
+    template<meta::IsComponentType T>
     auto EntityManager::hasComponent(Entity entity) const -> bool {
         static_assert(std::is_base_of<Component, T>::value, "T must be a Component");
         static_assert(T::TYPE != Component::INVALID_TYPE, "T must have T::type defined");
@@ -341,7 +339,7 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsComponentTypeOrFail T>
+    template<meta::IsComponentType T>
     auto EntityManager::entitiesWithComponent() const -> std::vector<Entity> {
         // clang-format off
         return entities() 
@@ -352,8 +350,9 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsComponentTypeOrFail T, class Self>
-    auto EntityManager::getComponent(this Self& self, Entity entity) -> ConstnessLike<Self, T&> {
+    template<meta::IsComponentType T, class Self>
+    auto EntityManager::getComponent(this Self& self, Entity entity)
+        -> core::meta::ConstnessLike<Self, T&> {
         expects(self.template hasComponent<T>(entity));
         expects(self.hasEntity(entity));
 
@@ -365,7 +364,7 @@ namespace stormkit::entities {
     /////////////////////////////////////
     template<class Self>
     auto EntityManager::components(this Self& self, Entity entity)
-        -> std::vector<Ref<ConstnessLike<Self, Component>>> {
+        -> std::vector<Ref<core::meta::ConstnessLike<Self, Component>>> {
         if (not self.hasEntity(entity)) [[unlikely]]
             return {};
         // clang-format off
@@ -381,9 +380,9 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsComponentTypeOrFail T, class Self>
+    template<meta::IsComponentType T, class Self>
     auto EntityManager::componentsOfType(this Self& self) noexcept
-        -> std::vector<Ref<ConstnessLike<Self, T>>> {
+        -> std::vector<Ref<core::meta::ConstnessLike<Self, T>>> {
         // clang-format off
         return self.m_entities 
                | std::views::filter(curry(&EntityManager::hasComponent<T>, &self))
@@ -396,7 +395,7 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<Is<System> T, typename... Args>
+    template<meta::IsSystem T, typename... Args>
     auto EntityManager::addSystem(Args&&... args) -> T& {
         m_systems.emplace(std::make_unique<T>(std::forward<Args>(args)..., *this));
 
@@ -409,7 +408,7 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<Is<System> T>
+    template<meta::IsSystem T>
     auto EntityManager::hasSystem() const noexcept -> bool {
         return std::ranges::any_of(m_systems, monadic::is<T>());
     }
@@ -418,24 +417,31 @@ namespace stormkit::entities {
     /////////////////////////////////////
     template<class Self>
     auto EntityManager::systems(this Self& self) noexcept
-        -> std::vector<Ref<ConstnessLike<Self, System>>> {
+        -> std::vector<Ref<core::meta::ConstnessLike<Self, System>>> {
+        const auto borrower = [] {
+            if constexpr(core::meta::IsConst<Self>)
+                return monadic::borrow();
+            else
+                return monadic::borrowMut();
+        }();
+
         // clang-format off
         return self.m_systems 
                | std::views::transform(monadic::forwardLike<Self>())
-               | std::views::transform(monadic::borrow())
+               | std::views::transform(borrower)
                | std::ranges::to<std::vector>();
         // clang-format on
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<Is<System> T, class Self>
-    auto EntityManager::getSystem(this Self& self) noexcept -> ConstnessLike<Self, T&> {
+    template<meta::IsSystem T, class Self>
+    auto EntityManager::getSystem(this Self& self) noexcept -> core::meta::ConstnessLike<Self, T&> {
         expects(self.template hasSystem<T>());
 
         auto it = std::ranges::find_if(self.m_systems, monadic::is<T>());
 
-        return as<ConstnessLike<Self, T&>>(*it->get());
+        return as<core::meta::ConstnessLike<Self, T&>>(*it->get());
     }
 
     /////////////////////////////////////

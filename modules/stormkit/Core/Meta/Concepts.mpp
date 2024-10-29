@@ -6,7 +6,7 @@ export module stormkit.Core:Meta.Concepts;
 
 import std;
 
-namespace stormkit::core {
+namespace stormkit::core::meta {
     namespace details {
         template<class T>
         concept IsBooleanTestable = std::convertible_to<T, bool>;
@@ -112,7 +112,8 @@ namespace stormkit::core {
             = IsPointer<T> and IsPolymorphic<typename std::pointer_traits<T>::element_type>;
 
         template<class T>
-        concept IsPolymorphicReference = IsReference<T> and IsPolymorphic<std::remove_reference_t<T>>;
+        concept IsPolymorphicReference
+            = IsReference<T> and IsPolymorphic<std::remove_reference_t<T>>;
 
         template<class T>
         concept IsPolymorphicIndirection = IsPolymorphicReference<T> or IsPolymorphicPointer<T>;
@@ -214,7 +215,7 @@ namespace stormkit::core {
         concept IsConst = std::is_const_v<T>;
 
         template<class T>
-        concept IsNotConst = std::is_const_v<T>;
+        concept IsNotConst = not IsConst<T>;
 
         template<class From, typename To>
         concept IsBraceInitializableTo = requires(From&& from) { To { std::forward<From>(from) }; };
@@ -238,7 +239,4 @@ namespace stormkit::core {
             { first == second } -> IsBooleanTestable;
         };
     } // namespace stormkit::core
-
-#ifndef STORMKIT_NO_MODULES
-}
-#endif
+} // namespace stormkit::core::meta

@@ -43,6 +43,6 @@ export namespace stormkit::core {
 #endif
     using Float = Float32;
 
-    template<IsFloatingPoint T>
+    template<meta::IsFloatingPoint T>
     inline constexpr auto Epsilon = std::numeric_limits<T>::epsilon();
 } // namespace stormkit::core

@@ -109,7 +109,7 @@ namespace stormkit::core::monadic {
     constexpr auto ensuresWithMessage(std::string&& message, std::source_location location) noexcept
         -> decltype(auto) {
         return [message = std::move(message), location = std::move(location)] NORETURN_LAMBDA(
-                   auto&& error) -> std::expected<void, CanonicalType<decltype(error)>> {
+                   auto&& error) -> std::expected<void, meta::CanonicalType<decltype(error)>> {
             std::println(getSTDErr(),
                          "{} failed in \n"
                          "    > file:     {}\n"
@@ -136,7 +136,7 @@ namespace stormkit::core::monadic {
     ////////////////////////////////////////
     constexpr auto ensures(std::source_location location) noexcept -> decltype(auto) {
         return [location = std::move(location)] NORETURN_LAMBDA(
-                   auto&& error) -> std::expected<void, CanonicalType<decltype(error)>> {
+                   auto&& error) -> std::expected<void, meta::CanonicalType<decltype(error)>> {
             std::println(getSTDErr(),
                          "{} failed in \n"
                          "    > file:     {}\n"
@@ -161,7 +161,7 @@ namespace stormkit::core::monadic {
     constexpr auto log(std::invocable auto&& logger, std::string&& message) noexcept
         -> decltype(auto) {
         return [logger = std::forward<decltype(logger)>, message = std::move(message)](
-                   auto&& error) -> std::expected<void, CanonicalType<decltype(error)>> {
+                   auto&& error) -> std::expected<void, meta::CanonicalType<decltype(error)>> {
             logger(message, error);
 
             return {};
@@ -172,7 +172,7 @@ namespace stormkit::core::monadic {
     ////////////////////////////////////////
     constexpr auto throwError() noexcept -> decltype(auto) {
         return [] NORETURN_LAMBDA(
-                   auto&& error) static -> std::expected<void, CanonicalType<decltype(error)>> {
+                   auto&& error) static -> std::expected<void, meta::CanonicalType<decltype(error)>> {
             throw std::forward<decltype(error)>(error);
         };
     }

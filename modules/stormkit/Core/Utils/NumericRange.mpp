@@ -19,7 +19,7 @@ import :TypeSafe.Float;
 import :Coroutines;
 
 export namespace stormkit::core {
-    template<IsArithmetic T>
+    template<meta::IsArithmetic T>
     struct NumericsRange {
         using RangeType = T;
         T begin;
@@ -27,30 +27,33 @@ export namespace stormkit::core {
         T step = T { 1 };
     };
 
-    template<class T>
-    concept IsNumericsRange = requires(const T& t) {
-        t.begin;
-        t.end;
-        t.step;
-        typename T::RangeType;
-    };
+    namespace meta {
+        template<class T>
+        concept IsNumericsRange = requires(const T& t) {
+            t.begin;
+            t.end;
+            t.step;
+            typename T::RangeType;
+        };
 
-    template<class T>
-    concept IsNumericsRangePure = IsNumericsRange<CanonicalType<T>>;
+        template<class T>
+        concept IsNumericsRangePure = IsNumericsRange<CanonicalType<T>>;
+    } // namespace meta
 
-    template<IsArithmetic T>
+    template<meta::IsArithmetic T>
     [[nodiscard]] constexpr auto range(const T& end) noexcept -> decltype(auto);
 
-    template<IsArithmetic T, IsArithmetic U, IsArithmetic V = U>
+    template<meta::IsArithmetic T, meta::IsArithmetic U, meta::IsArithmetic V = U>
     [[nodiscard]] constexpr auto
         range(const T& begin, const U& end, const V& step = V { 1 }) noexcept -> decltype(auto);
 
-    [[nodiscard]] constexpr auto range(IsNumericsRangePure auto&& range) noexcept -> decltype(auto);
+    [[nodiscard]] constexpr auto range(meta::IsNumericsRangePure auto&& range) noexcept
+        -> decltype(auto);
 
-    template<IsArithmetic... Args>
+    template<meta::IsArithmetic... Args>
     [[nodiscard]] constexpr auto multiRange(const Args&... args) noexcept -> decltype(auto);
 
-    template<IsNumericsRangePure... Args>
+    template<meta::IsNumericsRangePure... Args>
     [[nodiscard]] constexpr auto multiRange(Args&&... args) noexcept -> decltype(auto);
 } // namespace stormkit::core
 
@@ -64,7 +67,7 @@ namespace stormkit::core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsNumericsRange T, IsNumericsRange U>
+    template<meta::IsNumericsRange T, meta::IsNumericsRange U>
     auto rangeImplementation(T a, U b) noexcept
         -> std::generator<std::tuple<decltype(a.begin), decltype(b.begin)>> {
         FOR(i, a)
@@ -74,7 +77,7 @@ namespace stormkit::core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsNumericsRange T, IsNumericsRange U, IsNumericsRange V>
+    template<meta::IsNumericsRange T, meta::IsNumericsRange U, meta::IsNumericsRange V>
     auto rangeImplementation(T a, U b, V c) noexcept
         -> std::generator<std::tuple<decltype(a.begin), decltype(b.begin), decltype(c.begin)>> {
         FOR(i, a)
@@ -85,7 +88,10 @@ namespace stormkit::core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsNumericsRange T, IsNumericsRange U, IsNumericsRange V, IsNumericsRange W>
+    template<meta::IsNumericsRange T,
+             meta::IsNumericsRange U,
+             meta::IsNumericsRange V,
+             meta::IsNumericsRange W>
     auto rangeImplementation(T a, U b, V c, W d) noexcept -> std::generator<
         std::tuple<decltype(a.begin), decltype(b.begin), decltype(c.begin), decltype(d.begin)>> {
         FOR(i, a)
@@ -97,11 +103,11 @@ namespace stormkit::core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsNumericsRange T,
-             IsNumericsRange U,
-             IsNumericsRange V,
-             IsNumericsRange W,
-             IsNumericsRange X>
+    template<meta::IsNumericsRange T,
+             meta::IsNumericsRange U,
+             meta::IsNumericsRange V,
+             meta::IsNumericsRange W,
+             meta::IsNumericsRange X>
     auto rangeImplementation(T a, U b, V c, W d, X e) noexcept
         -> std::generator<std::tuple<decltype(a.begin),
                                      decltype(b.begin),
@@ -118,12 +124,12 @@ namespace stormkit::core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsNumericsRange T,
-             IsNumericsRange U,
-             IsNumericsRange V,
-             IsNumericsRange W,
-             IsNumericsRange X,
-             IsNumericsRange Y>
+    template<meta::IsNumericsRange T,
+             meta::IsNumericsRange U,
+             meta::IsNumericsRange V,
+             meta::IsNumericsRange W,
+             meta::IsNumericsRange X,
+             meta::IsNumericsRange Y>
     auto rangeImplementation(T a, U b, V c, W d, X e, Y f) noexcept
         -> std::generator<std::tuple<decltype(a.begin),
                                      decltype(b.begin),
@@ -142,13 +148,13 @@ namespace stormkit::core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsNumericsRange T,
-             IsNumericsRange U,
-             IsNumericsRange V,
-             IsNumericsRange W,
-             IsNumericsRange X,
-             IsNumericsRange Y,
-             IsNumericsRange Z>
+    template<meta::IsNumericsRange T,
+             meta::IsNumericsRange U,
+             meta::IsNumericsRange V,
+             meta::IsNumericsRange W,
+             meta::IsNumericsRange X,
+             meta::IsNumericsRange Y,
+             meta::IsNumericsRange Z>
     auto rangeImplementation(T a, U b, V c, W d, X e, Y f, Z g) noexcept
         -> std::generator<std::tuple<decltype(a.begin),
                                      decltype(b.begin),
@@ -248,7 +254,7 @@ namespace stormkit::core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE constexpr auto range(IsNumericsRangePure auto&& range) noexcept
+    STORMKIT_FORCE_INLINE constexpr auto range(meta::IsNumericsRangePure auto&& range) noexcept
         -> decltype(auto) {
         // return ranges::views::iota(range.begin, range.end) | ranges::view::stride(range.step);
         return Range { std::forward<decltype(range)>(range) };
@@ -256,10 +262,10 @@ namespace stormkit::core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsArithmetic T, IsArithmetic U, IsArithmetic V>
+    template<meta::IsArithmetic T, meta::IsArithmetic U, meta::IsArithmetic V>
     STORMKIT_FORCE_INLINE constexpr auto range(const T& begin, const U& end, const V& step) noexcept
         -> decltype(auto) {
-        using Type = SafeNarrowHelperType<SafeNarrowHelperType<T, U>, V>;
+        using Type = meta::SafeNarrowHelperType<meta::SafeNarrowHelperType<T, U>, V>;
         return range(NumericsRange<Type> { .begin = as<Type>(begin),
                                            .end   = as<Type>(end),
                                            .step  = as<Type>(step) });
@@ -267,14 +273,14 @@ namespace stormkit::core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsArithmetic T>
+    template<meta::IsArithmetic T>
     STORMKIT_FORCE_INLINE constexpr auto range(const T& end) noexcept -> decltype(auto) {
         return range(T { 0 }, end);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsArithmetic... Args>
+    template<meta::IsArithmetic... Args>
     STORMKIT_FORCE_INLINE constexpr auto multiRange(const Args&... args) noexcept
         -> decltype(auto) {
         return rangeImplementation(NumericsRange<Args> { .begin = 0, .end = args }...);
@@ -282,7 +288,7 @@ namespace stormkit::core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsNumericsRangePure... Args>
+    template<meta::IsNumericsRangePure... Args>
     STORMKIT_FORCE_INLINE constexpr auto multiRange(Args&&... args) noexcept -> decltype(auto) {
         return rangeImplementation(std::forward<Args>(args)...);
     }

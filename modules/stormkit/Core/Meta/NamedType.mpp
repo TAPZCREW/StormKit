@@ -15,7 +15,7 @@ import std;
 import :TypeSafe.Integer;
 
 export {
-    namespace stormkit::core {
+    namespace stormkit::core::meta {
         class NamedTypeBase {};
 
         template<class T, class Tag> //, class... Skills>
@@ -189,7 +189,7 @@ export {
                                BitWiseLeftShiftable,
                                BitWiseRightShiftable,
                                Comparable {};
-    } // namespace stormkit::core
+    } // namespace stormkit::core::meta
 
     // CONSTRAINED_HASH_FUNC(stormkit::core::IsNamedType)
 }
@@ -198,24 +198,26 @@ export {
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit::core::meta {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T, class Tag>
     constexpr NamedType<T, Tag>::NamedType() noexcept(
-        std::is_nothrow_default_constructible_v<ElementType>) = default;
+        std::is_nothrow_default_constructible_v<ElementType>)
+        = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T, class Tag>
-    constexpr NamedType<T, Tag>::~NamedType() noexcept(
-        std::is_nothrow_destructible_v<ElementType>) = default;
+    constexpr NamedType<T, Tag>::~NamedType() noexcept(std::is_nothrow_destructible_v<ElementType>)
+        = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T, class Tag>
     constexpr NamedType<T, Tag>::NamedType(const NamedType&) noexcept(
-        std::is_nothrow_copy_constructible_v<ElementType>) = default;
+        std::is_nothrow_copy_constructible_v<ElementType>)
+        = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
@@ -227,7 +229,8 @@ namespace stormkit::core {
     ////////////////////////////////////////
     template<class T, class Tag>
     constexpr NamedType<T, Tag>::NamedType(NamedType&&) noexcept(
-        std::is_nothrow_move_constructible_v<ElementType>) = default;
+        std::is_nothrow_move_constructible_v<ElementType>)
+        = default;
 
     // clang-format off
     ////////////////////////////////////////
@@ -292,8 +295,8 @@ namespace stormkit::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     constexpr auto BinaryAddable::operator+(this auto&& self, auto&& other) -> decltype(auto) {
-        return std::forward<decltype(self)>(self).get() +
-               std::forward<decltype(other)>(other).get();
+        return std::forward<decltype(self)>(self).get()
+               + std::forward<decltype(other)>(other).get();
     }
 
     ////////////////////////////////////////
@@ -313,8 +316,8 @@ namespace stormkit::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     constexpr auto BinarySubtractable::operator-(this auto&& self, auto&& other) -> decltype(auto) {
-        return std::forward<decltype(self)>(self).get() -
-               std::forward<decltype(other)>(other).get();
+        return std::forward<decltype(self)>(self).get()
+               - std::forward<decltype(other)>(other).get();
     }
 
     ////////////////////////////////////////
@@ -335,8 +338,8 @@ namespace stormkit::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     constexpr auto Multiplicable::operator*(this auto&& self, auto&& other) -> decltype(auto) {
-        return std::forward<decltype(self)>(self).get() *
-               std::forward<decltype(other)>(other).get();
+        return std::forward<decltype(self)>(self).get()
+               * std::forward<decltype(other)>(other).get();
     }
 
     ////////////////////////////////////////
@@ -350,8 +353,8 @@ namespace stormkit::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     constexpr auto Divisible::operator/(this auto&& self, auto&& other) -> decltype(auto) {
-        return std::forward<decltype(self)>(self).get() /
-               std::forward<decltype(other)>(other).get();
+        return std::forward<decltype(self)>(self).get()
+               / std::forward<decltype(other)>(other).get();
     }
 
     ////////////////////////////////////////
@@ -365,8 +368,8 @@ namespace stormkit::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     constexpr auto Modulable::operator%(this auto&& self, auto&& other) -> decltype(auto) {
-        return std::forward<decltype(self)>(self).get() %
-               std::forward<decltype(other)>(other).get();
+        return std::forward<decltype(self)>(self).get()
+               % std::forward<decltype(other)>(other).get();
     }
 
     ////////////////////////////////////////
@@ -386,8 +389,8 @@ namespace stormkit::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     constexpr auto BitWiseAndable::operator&(this auto&& self, auto&& other) -> decltype(auto) {
-        return std::forward<decltype(self)>(self).get() &
-               std::forward<decltype(other)>(other).get();
+        return std::forward<decltype(self)>(self).get()
+               & std::forward<decltype(other)>(other).get();
     }
 
     ////////////////////////////////////////
@@ -401,8 +404,8 @@ namespace stormkit::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     constexpr auto BitWiseOrable::operator|(this auto&& self, auto&& other) -> decltype(auto) {
-        return std::forward<decltype(self)>(self).get() |
-               std::forward<decltype(other)>(other).get();
+        return std::forward<decltype(self)>(self).get()
+               | std::forward<decltype(other)>(other).get();
     }
 
     ////////////////////////////////////////
@@ -416,8 +419,8 @@ namespace stormkit::core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     constexpr auto BitWiseXorable::operator^(this auto&& self, auto&& other) -> decltype(auto) {
-        return std::forward<decltype(self)>(self).get() |
-               std::forward<decltype(other)>(other).get();
+        return std::forward<decltype(self)>(self).get()
+               | std::forward<decltype(other)>(other).get();
     }
 
     ////////////////////////////////////////
@@ -449,8 +452,8 @@ namespace stormkit::core {
     ////////////////////////////////////////
     constexpr auto BitWiseRightShiftable::operator>>(this auto&& self, auto&& other)
         -> decltype(auto) {
-        return std::forward<decltype(self)>(self).get() >>
-               std::forward<decltype(other)>(other).get();
+        return std::forward<decltype(self)>(self).get()
+               >> std::forward<decltype(other)>(other).get();
     }
 
     ////////////////////////////////////////
@@ -466,8 +469,8 @@ namespace stormkit::core {
     ////////////////////////////////////////
     constexpr auto Comparable::operator<=>(this auto&& self, auto&& other) noexcept
         -> std::strong_ordering {
-        return std::forward<decltype(self)>(self).get() <=>
-               std::forward<decltype(other)>(other).get();
+        return std::forward<decltype(self)>(self).get()
+               <=> std::forward<decltype(other)>(other).get();
     }
 
     ////////////////////////////////////////

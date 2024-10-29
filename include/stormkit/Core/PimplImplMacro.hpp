@@ -14,7 +14,7 @@
         template<class T, bool Defer>                                          \
         Pimpl<T, Defer>::~Pimpl() = default;                                   \
         template<class T, bool Defer>                                          \
-        template<IsNot<T> First, class... Args>                                \
+        template<meta::IsNot<T> First, class... Args>                                \
         Pimpl<T, Defer>::Pimpl(First&& first, Args&&... args) {                \
             init(std::forward<First>(first), std::forward<Args>(args)...);     \
         }                                                                      \

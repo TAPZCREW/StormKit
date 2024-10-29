@@ -17,12 +17,10 @@ import :TypeSafe.Integer;
 export namespace stormkit::core {
     [[nodiscard]] constexpr auto split(std::string_view string, char delim) noexcept
         -> std::vector<std::string>;
-    [[nodiscard]] constexpr auto toLower(std::string_view string,
-                                         std::locale      locale = std::locale { "" }) noexcept
-        -> std::string;
-    [[nodiscard]] constexpr auto toUpper(std::string_view string,
-                                         std::locale      locale = std::locale { "" }) noexcept
-        -> std::string;
+    [[nodiscard]] constexpr auto toLower(std::string_view string) noexcept -> std::string;
+    [[nodiscard]] constexpr auto toUpper(std::string_view string) noexcept -> std::string;
+    [[nodiscard]] auto toLower(std::string_view string, const std::locale &locale) noexcept -> std::string;
+    [[nodiscard]] auto toUpper(std::string_view string, const std::locale &locale) noexcept -> std::string;
 
     [[nodiscard]] constexpr auto toCZString(std::string_view value) noexcept -> const char*;
 
@@ -57,6 +55,16 @@ export namespace stormkit::core {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit::core {
+    STORMKIT_FORCE_INLINE constexpr auto toUpper(char c) -> char {
+        if (c >= 'a' && c <= 'z') return c - 32;
+        return c;
+    }
+
+    STORMKIT_FORCE_INLINE constexpr auto toLower(char c) -> char {
+        if (c >= 'A' && c <= 'Z') return c + 32;
+        return c;
+    }
+
     STORMKIT_INLINE constexpr auto split(std::string_view string, char delim) noexcept
         -> std::vector<std::string> {
         auto output = std::vector<std::string> {};
@@ -75,24 +83,42 @@ namespace stormkit::core {
         return output;
     }
 
-    STORMKIT_INLINE constexpr auto toLower(std::string_view string, std::locale locale) noexcept
-        -> std::string {
-        auto& facet = std::use_facet<std::ctype<typename std::string_view::value_type>>(locale);
-
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_INLINE constexpr auto toLower(std::string_view string) noexcept -> std::string {
         auto result = std::string { string };
-        facet.tolower(&result[0], &result[0] + result.size());
+        for (auto& c : result) c = toLower(c);
+        return result;
 
         return result;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto constexpr toUpper(std::string_view string, std::locale locale) noexcept
-        -> std::string {
-        auto& facet = std::use_facet<std::ctype<typename std::string_view::value_type>>(locale);
+    STORMKIT_INLINE auto toLower(std::string_view   string,
+                                           const std::locale& locale) noexcept -> std::string {
+        auto  result = std::string { string };
+        auto& facet  = std::use_facet<std::ctype<typename std::string_view::value_type>>(locale);
+        facet.tolower(&result[0], &result[0] + std::ranges::size(result));
 
+        return result;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_INLINE auto constexpr toUpper(std::string_view string) noexcept -> std::string {
         auto result = std::string { string };
-        facet.toupper(&result[0], &result[0] + result.size());
+        for (auto& c : result) c = toUpper(c);
+        return result;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_INLINE auto toUpper(std::string_view   string,
+                                           const std::locale& locale) noexcept -> std::string {
+        auto  result = std::string { string };
+        auto& facet  = std::use_facet<std::ctype<typename std::string_view::value_type>>(locale);
+        facet.toupper(&result[0], &result[0] + std::ranges::size(result));
 
         return result;
     }

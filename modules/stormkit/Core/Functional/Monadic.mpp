@@ -15,6 +15,7 @@ import :Meta;
 import :TypeSafe.AsCast;
 import :Functional.Utils;
 import :TypeSafe.Ref;
+import :TypeSafe.Byte;
 
 export namespace stormkit::core::monadic {
     struct Anything {
@@ -54,7 +55,7 @@ export namespace stormkit::core::monadic {
         either(std::regular_invocable<Anything> auto&&... visitors) noexcept -> decltype(auto);
 
     template<typename T>
-    [[nodiscard]] constexpr auto either(IsUnaryPredicate<T> auto&& predicate,
+    [[nodiscard]] constexpr auto either(meta::IsUnaryPredicate<T> auto&& predicate,
                                         std::invocable<T> auto&&   true_,
                                         std::invocable<T> auto&& false_) noexcept -> decltype(auto);
 
@@ -72,6 +73,7 @@ export namespace stormkit::core::monadic {
     [[nodiscard]] constexpr auto init(Args&&... args) noexcept -> decltype(auto);
 
     [[nodiscard]] constexpr auto borrow() noexcept -> decltype(auto);
+    [[nodiscard]] constexpr auto borrowMut() noexcept -> decltype(auto);
 
     template<typename T>
     [[nodiscard]] constexpr auto forwardLike() noexcept -> decltype(auto);
@@ -85,7 +87,7 @@ namespace stormkit::core::monadic {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE constexpr auto value() noexcept -> decltype(auto) {
-        return []<IsFancyPointer T>(T&& value) static noexcept -> decltype(auto) {
+        return []<meta::IsFancyPointer T>(T&& value) static noexcept -> decltype(auto) {
             return std::forward_like<T>(value.get());
         };
     }
@@ -191,8 +193,8 @@ namespace stormkit::core::monadic {
         -> decltype(auto) {
         using First   = decltype(first);
         using Second  = decltype(second);
-        using FirstP  = core::CanonicalType<First>;
-        using SecondP = core::CanonicalType<Second>;
+        using FirstP  = core::meta::CanonicalType<First>;
+        using SecondP = core::meta::CanonicalType<Second>;
 
         return
             [first  = std::forward<First>(first),
@@ -205,7 +207,7 @@ namespace stormkit::core::monadic {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    STORMKIT_FORCE_INLINE constexpr auto either(IsUnaryPredicate<T> auto&& predicate,
+    STORMKIT_FORCE_INLINE constexpr auto either(meta::IsUnaryPredicate<T> auto&& predicate,
                                                 std::invocable<T> auto&&   true_,
                                                 std::invocable<T> auto&&   false_) noexcept
         -> decltype(auto) {
@@ -248,7 +250,7 @@ namespace stormkit::core::monadic {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE constexpr auto clone() noexcept -> decltype(auto) {
         return []<typename T>(auto&& value) static noexcept(
-                   noexcept(std::is_nothrow_copy_constructible_v<CanonicalType<T>>)) {
+                   noexcept(std::is_nothrow_copy_constructible_v<meta::CanonicalType<T>>)) {
             return auto(std::forward<T>(value));
         };
     }
@@ -278,6 +280,14 @@ namespace stormkit::core::monadic {
     STORMKIT_FORCE_INLINE constexpr auto borrow() noexcept -> decltype(auto) {
         return []<typename T>(T&& value) static noexcept {
             return core::borrow(std::forward<T>(value));
+        };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto borrowMut() noexcept -> decltype(auto) {
+        return []<typename T>(T&& value) static noexcept {
+            return core::borrowMut(std::forward<T>(value));
         };
     }
 

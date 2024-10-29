@@ -139,21 +139,21 @@ export {
             using glm::roll;
             using glm::yaw;
 
-            template<IsArithmetic T, IsArithmetic U>
+            template<core::meta::IsArithmetic T, meta::IsArithmetic U>
             [[nodiscard]] constexpr auto scale(const U& x,
                                                const U& rmin,
                                                const U& rmax,
                                                const T& tmin,
                                                const T& tmax) noexcept -> T;
 
-            template<IsIntegral T>
+            template<meta::IsIntegral T>
             [[nodiscard]] constexpr auto scale(const T& x,
                                                const T& rmin,
                                                const T& rmax,
                                                const T& tmin,
                                                const T& tmax) noexcept -> T;
 
-            template<IsFloatingPoint T>
+            template<meta::IsFloatingPoint T>
             [[nodiscard]] constexpr auto scale(const T& x,
                                                const T& rmin,
                                                const T& rmax,
@@ -217,32 +217,34 @@ export {
             /// \unique_name Vector4I
             using Vector4I = Vector4<Int32>;
 
-            template<typename T>
-            concept IsVector2Like = requires(T&& value) {
-                value.x;
-                value.y;
-            };
+            namespace meta {
+                template<typename T>
+                concept IsVector2Like = requires(T&& value) {
+                    value.x;
+                    value.y;
+                };
 
-            template<typename T>
-            concept IsVector3Like = IsVector2Like<T> and requires(T&& value) { value.z; };
+                template<typename T>
+                concept IsVector3Like = IsVector2Like<T> and requires(T&& value) { value.z; };
 
-            template<typename T>
-            concept IsVector4Like = IsVector3Like<T> and requires(T&& value) { value.w; };
+                template<typename T>
+                concept IsVector4Like = IsVector3Like<T> and requires(T&& value) { value.w; };
 
-            template<typename T>
-            concept IsVectorLike = IsVector2Like<T> or IsVector3Like<T> or IsVector4Like<T>;
+                template<typename T>
+                concept IsVectorLike = IsVector2Like<T> or IsVector3Like<T> or IsVector4Like<T>;
 
-            template<class T>
-            concept IsVectorType = IsOneOf<T,
-                                           Vector2F,
-                                           Vector3F,
-                                           Vector4F,
-                                           Vector2U,
-                                           Vector3U,
-                                           Vector4U,
-                                           Vector2I,
-                                           Vector3I,
-                                           Vector4I>;
+                template<class T>
+                concept IsVectorType = core::meta::IsOneOf<T,
+                                                           Vector2F,
+                                                           Vector3F,
+                                                           Vector4F,
+                                                           Vector2U,
+                                                           Vector3U,
+                                                           Vector4U,
+                                                           Vector2I,
+                                                           Vector3I,
+                                                           Vector4I>;
+            } // namespace meta
 
             /// \group matrices-types Math matrices types.
             ///
@@ -275,13 +277,14 @@ export {
             /// \requires `T` need to be an arithmetic type (satisfy std::floating_point or
             /// std::integral).
             /// \unique_name ExtentBase<T>
-            template<IsArithmetic T>
+            template<core::meta::IsArithmetic T>
             struct Extent {
                 using ValueType  = T;
                 using value_type = ValueType;
 
-                using OrderingType = std::
-                    conditional_t<std::floating_point<T>, std::weak_ordering, std::strong_ordering>;
+                using OrderingType = std::conditional_t<core::meta::IsFloatingPoint<T>,
+                                                        std::weak_ordering,
+                                                        std::strong_ordering>;
 
                 /// \output_section Public Special Member Functions
                 /// \brief Default construct an extent.
@@ -330,7 +333,7 @@ export {
                 /// \param other ValueType extent converted.
                 /// \requires `U` need to be an arithmetic type (satisfy std::is_floating_point or
                 /// std::is_integral).
-                template<IsArithmetic U>
+                template<core::meta::IsArithmetic U>
                 constexpr Extent(const Extent<U>& other) noexcept;
 
                 /// \output_section Publics operators members
@@ -402,94 +405,96 @@ export {
             /// \unique_name ExtentF
             using ExtentF = Extent<Float32>;
 
-            template<class T>
-            concept IsExtent2Like = requires(T&& value) {
-                value.width;
-                value.height;
-            };
+            namespace meta {
+                template<class T>
+                concept IsExtent2Like = requires(T&& value) {
+                    value.width;
+                    value.height;
+                };
 
-            template<class T>
-            concept IsExtent3Like = IsExtent2Like<T> and requires(T&& value) { value.depth; };
+                template<class T>
+                concept IsExtent3Like = IsExtent2Like<T> and requires(T&& value) { value.depth; };
 
-            template<class T>
-            concept IsExtentLike = IsExtent2Like<T> or IsExtent3Like<T>;
+                template<class T>
+                concept IsExtentLike = IsExtent2Like<T> or IsExtent3Like<T>;
+            } // namespace meta
         } // namespace core::math
 
         namespace casts {
-            template<core::IsStrict<std::string> To, core::math::IsVector2Like From>
+            template<core::meta::IsStrict<std::string> To, core::math::meta::IsVector2Like From>
             struct AsCaster<To, From> {
                 static constexpr auto operator()(const From& data,
                                                  const std::source_location&) noexcept -> To;
             };
 
-            template<core::IsStrict<std::string> To, core::math::IsVector3Like From>
+            template<core::meta::IsStrict<std::string> To, core::math::meta::IsVector3Like From>
             struct AsCaster<To, From> {
                 static constexpr auto operator()(const From& data,
                                                  const std::source_location&) noexcept -> To;
             };
 
-            template<core::IsStrict<std::string> To, core::math::IsVector4Like From>
+            template<core::meta::IsStrict<std::string> To, core::math::meta::IsVector4Like From>
             struct AsCaster<To, From> {
                 static constexpr auto operator()(const From& data,
                                                  const std::source_location&) noexcept -> To;
             };
 
-            template<core::IsStrict<std::string> To, core::math::IsExtent2Like From>
+            template<core::meta::IsStrict<std::string> To, core::math::meta::IsExtent2Like From>
             struct AsCaster<To, From> {
                 static constexpr auto operator()(const From& data,
                                                  const std::source_location&) noexcept -> To;
             };
 
-            template<core::IsStrict<std::string> To, core::math::IsExtent3Like From>
+            template<core::meta::IsStrict<std::string> To, core::math::meta::IsExtent3Like From>
             struct AsCaster<To, From> {
                 static constexpr auto operator()(const From& data,
                                                  const std::source_location&) noexcept -> To;
             };
 
-            template<core::math::IsExtentLike To, core::math::IsExtentLike From>
-                requires(not core::IsStrict<To, From>)
+            template<core::math::meta::IsExtentLike To, core::math::meta::IsExtentLike From>
+                requires(not core::meta::IsStrict<To, From>)
             struct AsCaster<To, From> {
                 static constexpr auto operator()(const From& data,
                                                  const std::source_location&) noexcept -> To;
             };
 
-            template<core::math::IsExtentLike To, core::math::IsVectorLike From>
+            template<core::math::meta::IsExtentLike To, core::math::meta::IsVectorLike From>
             struct AsCaster<To, From> {
                 static constexpr auto operator()(const From& data,
                                                  const std::source_location&) noexcept -> To;
             };
 
-            template<core::math::IsVectorLike To, core::math::IsVectorLike From>
-                requires(not core::IsStrict<To, From>)
+            template<core::math::meta::IsVectorLike To, core::math::meta::IsVectorLike From>
+                requires(not core::meta::IsStrict<To, From>)
             struct AsCaster<To, From> {
                 static constexpr auto operator()(const From& data,
                                                  const std::source_location&) noexcept -> To;
             };
 
-            template<core::math::IsVectorLike To, core::math::IsExtentLike From>
+            template<core::math::meta::IsVectorLike To, core::math::meta::IsExtentLike From>
             struct AsCaster<To, From> {
                 static constexpr auto operator()(const From& data,
                                                  const std::source_location&) noexcept -> To;
             };
 
-            template<core::math::IsExtentLike To, core::math::IsExtentLike From>
-                requires(not core::IsStrict<To, From>)
+            template<core::math::meta::IsExtentLike To, core::math::meta::IsExtentLike From>
+                requires(not core::meta::IsStrict<To, From>)
             struct NarrowCaster<To, From> {
                 static constexpr auto operator()(const From& data) noexcept -> To;
             };
 
-            template<core::math::IsExtentLike To, core::math::IsVectorLike From>
+            template<core::math::meta::IsExtentLike To, core::math::meta::IsVectorLike From>
             struct NarrowCaster<To, From> {
                 static constexpr auto operator()(const From& data) noexcept -> To;
             };
 
-            template<core::math::IsVectorLike To, core::math::IsVectorLike From>
-                requires(not core::IsStrict<To, From>)
+            template<core::math::meta::IsVectorLike To, core::math::meta::IsVectorLike From>
+                requires(not core::meta::IsStrict<To, From>)
             struct NarrowCaster<To, From> {
                 static constexpr auto operator()(const From& data) noexcept -> To;
             };
 
-            template<core::math::IsVectorLike To, core::math::IsExtentLike From>
+            template<core::math::meta::IsVectorLike To, core::math::meta::IsExtentLike From>
             struct NarrowCaster<To, From> {
                 static constexpr auto operator()(const From& data) noexcept -> To;
             };
@@ -497,25 +502,25 @@ export {
     } // namespace stormkit
 
     TEMPLATED_HASH_FUNC(stormkit::core::math::Vector2,
-                        stormkit::core::IsArithmetic,
+                        stormkit::core::meta::IsArithmetic,
                         T,
                         value.x,
                         value.y)
     TEMPLATED_HASH_FUNC(stormkit::core::math::Vector3,
-                        stormkit::core::IsArithmetic,
+                        stormkit::core::meta::IsArithmetic,
                         T,
                         value.x,
                         value.y,
                         value.z)
     TEMPLATED_HASH_FUNC(stormkit::core::math::Vector4,
-                        stormkit::core::IsArithmetic,
+                        stormkit::core::meta::IsArithmetic,
                         T,
                         value.x,
                         value.y,
                         value.z,
                         value.w)
     TEMPLATED_HASH_FUNC(stormkit::core::math::Extent,
-                        stormkit::core::IsArithmetic,
+                        stormkit::core::meta::IsArithmetic,
                         T,
                         value.width,
                         value.height,
@@ -528,21 +533,21 @@ export {
 
 namespace stormkit {
     namespace core::math {
-        template<IsArithmetic T, IsArithmetic U>
+        template<core::meta::IsArithmetic T, core::meta::IsArithmetic U>
         STORMKIT_FORCE_INLINE constexpr auto
             scale(const U& x, const U& rmin, const U& rmax, const T& tmin, const T& tmax) noexcept
             -> T {
             return scale(as<T>(x), as<T>(rmin), as<T>(rmax), tmin, tmax);
         }
 
-        template<IsIntegral T>
+        template<core::meta::IsIntegral T>
         STORMKIT_FORCE_INLINE constexpr auto
             scale(const T& x, const T& rmin, const T& rmax, const T& tmin, const T& tmax) noexcept
             -> T {
             return (x - rmin) * (tmax - tmin) / (rmax - rmin) + tmin;
         }
 
-        template<IsFloatingPoint T>
+        template<core::meta::IsFloatingPoint T>
         STORMKIT_FORCE_INLINE constexpr auto
             scale(const T& x, const T& rmin, const T& rmax, const T& tmin, const T& tmax) noexcept
             -> T {
@@ -553,21 +558,21 @@ namespace stormkit {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<IsArithmetic T>
+        template<core::meta::IsArithmetic T>
         constexpr Extent<T>::Extent() noexcept : Extent { 0, 0 } {
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<IsArithmetic T>
+        template<core::meta::IsArithmetic T>
         constexpr Extent<T>::Extent(ValueType _width, ValueType _height, ValueType _depth) noexcept
             : width { _width }, height { _height }, depth { _depth } {
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<IsArithmetic T>
-        template<IsArithmetic U>
+        template<core::meta::IsArithmetic T>
+        template<core::meta::IsArithmetic U>
         constexpr Extent<T>::Extent(const Extent<U>& other) noexcept
             : width { narrow<ValueType>(other.width) }, height { narrow<ValueType>(other.height) },
               depth { narrow<ValueType>(other.depth) } {
@@ -575,7 +580,7 @@ namespace stormkit {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<IsArithmetic T>
+        template<core::meta::IsArithmetic T>
         constexpr auto Extent<T>::operator<=>(const Extent<T>& other) const noexcept
             -> OrderingType {
             if (auto ret = width <=> other.width; ret != 0) return ret;
@@ -587,7 +592,7 @@ namespace stormkit {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<IsArithmetic T>
+        template<core::meta::IsArithmetic T>
         constexpr auto Extent<T>::operator==(const Extent<T>& other) const noexcept -> bool {
             return core::is<T>(width, other.width) and core::is<T>(height, other.height)
                    and core::is<T>(depth, other.depth);
@@ -595,21 +600,21 @@ namespace stormkit {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<IsArithmetic T>
+        template<core::meta::IsArithmetic T>
         constexpr auto Extent<T>::operator*(ValueType factor) const noexcept -> Extent {
             return Extent { width, height, depth } *= factor;
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<IsArithmetic T>
+        template<core::meta::IsArithmetic T>
         constexpr auto Extent<T>::operator/(ValueType factor) const noexcept -> Extent {
             return Extent { width, height, depth } /= factor;
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<IsArithmetic T>
+        template<core::meta::IsArithmetic T>
         constexpr auto Extent<T>::operator*=(ValueType factor) noexcept -> Extent& {
             width *= factor;
             height *= factor;
@@ -619,7 +624,7 @@ namespace stormkit {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<IsArithmetic T>
+        template<core::meta::IsArithmetic T>
         constexpr auto Extent<T>::operator/=(ValueType factor) noexcept -> Extent& {
             width /= factor;
             height /= factor;
@@ -631,7 +636,7 @@ namespace stormkit {
     namespace casts {
         /////////////////////////////////////
         /////////////////////////////////////
-        template<core::IsStrict<std::string> To, core::math::IsVector2Like From>
+        template<core::meta::IsStrict<std::string> To, core::math::meta::IsVector2Like From>
         STORMKIT_FORCE_INLINE constexpr auto
             AsCaster<To, From>::operator()(const From& data, const std::source_location&) noexcept
             -> To {
@@ -640,7 +645,7 @@ namespace stormkit {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<core::IsStrict<std::string> To, core::math::IsVector3Like From>
+        template<core::meta::IsStrict<std::string> To, core::math::meta::IsVector3Like From>
         STORMKIT_FORCE_INLINE constexpr auto
             AsCaster<To, From>::operator()(const From& data, const std::source_location&) noexcept
             -> To {
@@ -649,7 +654,7 @@ namespace stormkit {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<core::IsStrict<std::string> To, core::math::IsVector4Like From>
+        template<core::meta::IsStrict<std::string> To, core::math::meta::IsVector4Like From>
         STORMKIT_FORCE_INLINE constexpr auto
             AsCaster<To, From>::operator()(const From& data, const std::source_location&) noexcept
             -> To {
@@ -662,7 +667,7 @@ namespace stormkit {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<core::IsStrict<std::string> To, core::math::IsExtent2Like From>
+        template<core::meta::IsStrict<std::string> To, core::math::meta::IsExtent2Like From>
         STORMKIT_FORCE_INLINE constexpr auto
             AsCaster<To, From>::operator()(const From& data, const std::source_location&) noexcept
             -> To {
@@ -671,7 +676,7 @@ namespace stormkit {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<core::IsStrict<std::string> To, core::math::IsExtent3Like From>
+        template<core::meta::IsStrict<std::string> To, core::math::meta::IsExtent3Like From>
         STORMKIT_FORCE_INLINE constexpr auto
             AsCaster<To, From>::operator()(const From& data, const std::source_location&) noexcept
             -> To {
@@ -683,8 +688,8 @@ namespace stormkit {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<core::math::IsExtentLike To, core::math::IsExtentLike From>
-            requires(not core::IsStrict<To, From>)
+        template<core::math::meta::IsExtentLike To, core::math::meta::IsExtentLike From>
+            requires(not core::meta::IsStrict<To, From>)
         STORMKIT_FORCE_INLINE constexpr auto
             AsCaster<To, From>::operator()(const From&                 from,
                                            const std::source_location& location) noexcept -> To {
@@ -693,7 +698,8 @@ namespace stormkit {
             to.width             = core::as<UnderlyingType>(from.width, location);
             to.height            = core::as<UnderlyingType>(from.height, location);
 
-            if constexpr (core::math::IsExtent3Like<To> and core::math::IsExtent3Like<From>)
+            if constexpr (core::math::meta::IsExtent3Like<To>
+                          and core::math::meta::IsExtent3Like<From>)
                 to.depth = core::as<UnderlyingType>(from.depth, location);
 
             return to;
@@ -701,7 +707,7 @@ namespace stormkit {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<core::math::IsExtentLike To, core::math::IsVectorLike From>
+        template<core::math::meta::IsExtentLike To, core::math::meta::IsVectorLike From>
         STORMKIT_FORCE_INLINE constexpr auto
             AsCaster<To, From>::operator()(const From&                 from,
                                            const std::source_location& location) noexcept -> To {
@@ -710,7 +716,8 @@ namespace stormkit {
             to.width             = core::as<UnderlyingType>(from.x, location);
             to.height            = core::as<UnderlyingType>(from.y, location);
 
-            if constexpr (core::math::IsExtent3Like<To> and core::math::IsVector3Like<From>)
+            if constexpr (core::math::meta::IsExtent3Like<To>
+                          and core::math::meta::IsVector3Like<From>)
                 to.depth = core::as<UnderlyingType>(from.z, location);
 
             return to;
@@ -718,8 +725,8 @@ namespace stormkit {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<core::math::IsVectorLike To, core::math::IsVectorLike From>
-            requires(not core::IsStrict<To, From>)
+        template<core::math::meta::IsVectorLike To, core::math::meta::IsVectorLike From>
+            requires(not core::meta::IsStrict<To, From>)
         STORMKIT_FORCE_INLINE constexpr auto
             AsCaster<To, From>::operator()(const From&                 from,
                                            const std::source_location& location) noexcept -> To {
@@ -728,9 +735,11 @@ namespace stormkit {
             to.x                 = core::as<UnderlyingType>(from.x, location);
             to.y                 = core::as<UnderlyingType>(from.y, location);
 
-            if constexpr (core::math::IsVector3Like<To> and core::math::IsVector3Like<From>)
+            if constexpr (core::math::meta::IsVector3Like<To>
+                          and core::math::meta::IsVector3Like<From>)
                 to.z = core::as<UnderlyingType>(from.z, location);
-            else if constexpr (core::math::IsVector4Like<To> and core::math::IsVector4Like<From>)
+            else if constexpr (core::math::meta::IsVector4Like<To>
+                               and core::math::meta::IsVector4Like<From>)
                 to.w = core::as<UnderlyingType>(from.w, location);
 
             return to;
@@ -738,7 +747,7 @@ namespace stormkit {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<core::math::IsVectorLike To, core::math::IsExtentLike From>
+        template<core::math::meta::IsVectorLike To, core::math::meta::IsExtentLike From>
         STORMKIT_FORCE_INLINE constexpr auto
             AsCaster<To, From>::operator()(const From&                 from,
                                            const std::source_location& location) noexcept -> To {
@@ -747,7 +756,8 @@ namespace stormkit {
             to.x                 = core::as<UnderlyingType>(from.width, location);
             to.y                 = core::as<UnderlyingType>(from.height, location);
 
-            if constexpr (core::math::IsVector3Like<To> and core::math::IsExtent3Like<From>)
+            if constexpr (core::math::meta::IsVector3Like<To>
+                          and core::math::meta::IsExtent3Like<From>)
                 to.z = core::as<UnderlyingType>(from.depth, location);
 
             return to;
@@ -755,8 +765,8 @@ namespace stormkit {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<core::math::IsExtentLike To, core::math::IsExtentLike From>
-            requires(not core::IsStrict<To, From>)
+        template<core::math::meta::IsExtentLike To, core::math::meta::IsExtentLike From>
+            requires(not core::meta::IsStrict<To, From>)
         STORMKIT_FORCE_INLINE constexpr auto
             NarrowCaster<To, From>::operator()(const From& from) noexcept -> To {
             using UnderlyingType = decltype(std::declval<To>().x);
@@ -764,7 +774,8 @@ namespace stormkit {
             to.width             = core::narrow<UnderlyingType>(from.width);
             to.height            = core::narrow<UnderlyingType>(from.height);
 
-            if constexpr (core::math::IsExtent3Like<To> and core::math::IsExtent3Like<From>)
+            if constexpr (core::math::meta::IsExtent3Like<To>
+                          and core::math::meta::IsExtent3Like<From>)
                 to.depth = core::narrow<UnderlyingType>(from.depth);
 
             return to;
@@ -772,7 +783,7 @@ namespace stormkit {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<core::math::IsExtentLike To, core::math::IsVectorLike From>
+        template<core::math::meta::IsExtentLike To, core::math::meta::IsVectorLike From>
         STORMKIT_FORCE_INLINE constexpr auto
             NarrowCaster<To, From>::operator()(const From& from) noexcept -> To {
             using UnderlyingType = decltype(std::declval<To>().x);
@@ -780,7 +791,8 @@ namespace stormkit {
             to.width             = core::narrow<UnderlyingType>(from.x);
             to.height            = core::narrow<UnderlyingType>(from.y);
 
-            if constexpr (core::math::IsExtent3Like<To> and core::math::IsVector3Like<From>)
+            if constexpr (core::math::meta::IsExtent3Like<To>
+                          and core::math::meta::IsVector3Like<From>)
                 to.depth = core::narrow<UnderlyingType>(from.z);
 
             return to;
@@ -788,8 +800,8 @@ namespace stormkit {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<core::math::IsVectorLike To, core::math::IsVectorLike From>
-            requires(not core::IsStrict<To, From>)
+        template<core::math::meta::IsVectorLike To, core::math::meta::IsVectorLike From>
+            requires(not core::meta::IsStrict<To, From>)
         STORMKIT_FORCE_INLINE constexpr auto
             NarrowCaster<To, From>::operator()(const From& from) noexcept -> To {
             using UnderlyingType = decltype(std::declval<To>().x);
@@ -797,9 +809,11 @@ namespace stormkit {
             to.x                 = core::narrow<UnderlyingType>(from.x);
             to.y                 = core::narrow<UnderlyingType>(from.y);
 
-            if constexpr (core::math::IsVector3Like<To> and core::math::IsVector3Like<From>)
+            if constexpr (core::math::meta::IsVector3Like<To>
+                          and core::math::meta::IsVector3Like<From>)
                 to.z = core::narrow<UnderlyingType>(from.z);
-            else if constexpr (core::math::IsVector4Like<To> and core::math::IsVector4Like<From>)
+            else if constexpr (core::math::meta::IsVector4Like<To>
+                               and core::math::meta::IsVector4Like<From>)
                 to.w = core::narrow<UnderlyingType>(from.w);
 
             return to;
@@ -807,7 +821,7 @@ namespace stormkit {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<core::math::IsVectorLike To, core::math::IsExtentLike From>
+        template<core::math::meta::IsVectorLike To, core::math::meta::IsExtentLike From>
         STORMKIT_FORCE_INLINE constexpr auto
             NarrowCaster<To, From>::operator()(const From& from) noexcept -> To {
             using UnderlyingType = decltype(std::declval<To>().x);
@@ -815,7 +829,8 @@ namespace stormkit {
             to.x                 = core::narrow<UnderlyingType>(from.width);
             to.y                 = core::narrow<UnderlyingType>(from.height);
 
-            if constexpr (core::math::IsVector3Like<To> and core::math::IsExtent3Like<From>)
+            if constexpr (core::math::meta::IsVector3Like<To>
+                          and core::math::meta::IsExtent3Like<From>)
                 to.z = core::narrow<UnderlyingType>(from.depth);
 
             return to;

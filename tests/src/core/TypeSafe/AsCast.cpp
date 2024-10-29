@@ -205,14 +205,14 @@ namespace {
               } },
           { "AsCast.as_arithmetic",
               [] static noexcept {
-                  static_assert(IsSignNarrowing<int, unsigned int>);
-                  static_assert(IsSignNarrowing<unsigned int, int>);
-                  static_assert(not IsSignNarrowing<char, unsigned int>);
-                  static_assert(IsSignNarrowing<unsigned int, char>);
-                  static_assert(IsNarrowing<short, int>);
-                  static_assert(not IsNarrowing<int, short>);
-                  static_assert(IsNarrowing<int, unsigned int>);
-                  static_assert(IsNarrowing<unsigned int, int>);
+                  static_assert(meta::IsSignNarrowing<int, unsigned int>);
+                  static_assert(meta::IsSignNarrowing<unsigned int, int>);
+                  static_assert(not meta::IsSignNarrowing<char, unsigned int>);
+                  static_assert(meta::IsSignNarrowing<unsigned int, char>);
+                  static_assert(meta::IsNarrowing<short, int>);
+                  static_assert(not meta::IsNarrowing<int, short>);
+                  static_assert(meta::IsNarrowing<int, unsigned int>);
+                  static_assert(meta::IsNarrowing<unsigned int, int>);
 
                   using schar = signed char;
                   expects(as<signed char>(127) == schar { 127 });
@@ -231,8 +231,8 @@ namespace {
                   using uchar = unsigned char;
                   using schar = signed char;
 
-                  static_assert(IsByteNarrowing<std::byte, int>);
-                  static_assert(not IsByteNarrowing<int, std::byte>);
+                  static_assert(meta::IsByteNarrowing<std::byte, int>);
+                  static_assert(not meta::IsByteNarrowing<int, std::byte>);
 
                   static_assert(isSafeNarrowing<std::byte>(5));
                   static_assert(not isSafeNarrowing<std::byte>(-5));
