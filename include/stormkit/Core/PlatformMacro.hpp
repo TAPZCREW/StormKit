@@ -19,26 +19,49 @@
 
 #if defined(_MSC_VER) and not defined(__clang__)
     #pragma warning(disable: 4251)
-    #define STORMKIT_COMPILER_MSVC "MSVC " + std::to_string(_MSC_VER)
-    #define STORMKIT_COMPILER      STORMKIT_COMPILER_MSVC
-    #define STORMKIT_EXPORT        __declspec(dllexport)
-    #define STORMKIT_IMPORT        __declspec(dllimport)
-    #define STORMKIT_RESTRICT      __restrict
+    #define STORMKIT_COMPILER_MSSTL  "MSSTL"
+    #define STORMKIT_COMPILER_CXXLIB STORMKIT_COMPILER_MSSTL
+    #define STORMKIT_COMPILER_MSVC   "MSVC " + std::to_string(_MSC_VER)
+    #define STORMKIT_COMPILER        STORMKIT_COMPILER_MSVC
+    #define STORMKIT_EXPORT          __declspec(dllexport)
+    #define STORMKIT_IMPORT          __declspec(dllimport)
+    #define STORMKIT_RESTRICT        __restrict
     #define STORMKIT_PRIVATE
     #define STORMKIT_FORCE_INLINE_IMPL __forceinline
 #elif defined(_MSC_VER) and defined(__clang__)
+    #if defined(_LIBCPP_VERSION)
+        #define STORMKIT_COMPILER_LIBCPP "libc++"
+        #define STORMKIT_COMPILER_CXXLIB STORMKIT_COMPILER_LIBCPP
+    #else
+        #define STORMKIT_COMPILER_MSSTL  "MSSTL"
+        #define STORMKIT_COMPILER_CXXLIB STORMKIT_COMPILER_MSSTL
+    #endif
     #define STORMKIT_EXPORT            __declspec(dllexport)
     #define STORMKIT_IMPORT            __declspec(dllimport)
     #define STORMKIT_PRIVATE           [[gnu::visibility("hidden")]]
     #define STORMKIT_RESTRICT          __restrict
     #define STORMKIT_FORCE_INLINE_IMPL [[gnu::always_inline]] inline
 #elif defined(__MINGW32__)
+    #if defined(_LIBCPP_VERSION)
+        #define STORMKIT_COMPILER_LIBCPP "libc++"
+        #define STORMKIT_COMPILER_CXXLIB STORMKIT_COMPILER_LIBCPP
+    #else
+        #define STORMKIT_COMPILER_LIBSTDCPP "libstdc++"
+        #define STORMKIT_COMPILER_CXXLIB    STORMKIT_COMPILER_LIBSTDCPP
+    #endif
     #define STORMKIT_EXPORT __declspec(dllexport)
     #define STORMKIT_IMPORT __declspec(dllimport)
     #define STORMKIT_PRIVATE
     #define STORMKIT_RESTRICT          __restrict inline
     #define STORMKIT_FORCE_INLINE_IMPL [[gnu::always_inline]] inline
 #else
+    #if defined(_LIBCPP_VERSION)
+        #define STORMKIT_COMPILER_LIBCPP "libc++"
+        #define STORMKIT_COMPILER_CXXLIB STORMKIT_COMPILER_LIBCPP
+    #else
+        #define STORMKIT_COMPILER_LIBSTDCPP "libstdc++"
+        #define STORMKIT_COMPILER_CXXLIB    STORMKIT_COMPILER_LIBSTDCPP
+    #endif
     #define STORMKIT_IMPORT            [[gnu::visibility("default")]]
     #define STORMKIT_EXPORT            [[gnu::visibility("default")]]
     #define STORMKIT_PRIVATE           [[gnu::visibility("hidden")]]

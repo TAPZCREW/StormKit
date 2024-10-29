@@ -8,11 +8,14 @@ module;
     #include <cpptrace/cpptrace.hpp>
 #endif
 
+#include <stormkit/Core/PlatformMacro.hpp>
+
 module stormkit.Core;
 
 import std;
 
 import :Console;
+import :String.Operations;
 
 namespace stormkit::core {
     /////////////////////////////////////
@@ -39,6 +42,16 @@ namespace stormkit::core {
                 i += 1;
                 continue;
             }
+            auto symbol = frame.symbol;
+#ifdef STORMKIT_COMPILER_LIBCPP
+            symbol = replace(symbol, "::__1::", "::");
+#endif
+            symbol
+                = replace(symbol, "basic_string_view<char, std::char_traits<char>>", "string_view");
+            symbol = replace(symbol,
+                             "basic_string<char, std::char_traits<char>, std::allocator<char>>",
+                             "string");
+
             if (frame.line.has_value() and frame.column.has_value())
                 std::println(std::cerr,
                              "{}# {}{} at {}:{}:{}",
@@ -51,7 +64,7 @@ namespace stormkit::core {
                                  ? ""
                                  : std::format(" in {}",
                                                ConsoleStyle { .fg = ConsoleColor::Yellow }
-                                                   | frame.symbol),
+                                                   | symbol),
                              ConsoleStyle { .fg = ConsoleColor::Green } | frame.filename,
                              ConsoleStyle { .fg = ConsoleColor::Blue } | frame.line.value(),
                              ConsoleStyle { .fg = ConsoleColor::Blue } | frame.column.value());
@@ -67,7 +80,7 @@ namespace stormkit::core {
                                  ? ""
                                  : std::format(" in {}",
                                                ConsoleStyle { .fg = ConsoleColor::Yellow }
-                                                   | frame.symbol),
+                                                   | symbol),
                              ConsoleStyle { .fg = ConsoleColor::Green } | frame.filename);
         }
     }
