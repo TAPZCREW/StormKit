@@ -61,6 +61,14 @@ export namespace stormkit::core {
         StyleModifier                modifiers = StyleModifier::None;
     };
 
+    inline constexpr auto RedTextStyle     = ConsoleStyle { .fg = ConsoleColor::Red };
+    inline constexpr auto GreenTextStyle   = ConsoleStyle { .fg = ConsoleColor::Green };
+    inline constexpr auto YellowTextStyle  = ConsoleStyle { .fg = ConsoleColor::Yellow };
+    inline constexpr auto BlueTextStyle    = ConsoleStyle { .fg = ConsoleColor::Blue };
+    inline constexpr auto MagentaTextStyle = ConsoleStyle { .fg = ConsoleColor::Magenta };
+    inline constexpr auto CyanTextStyle    = ConsoleStyle { .fg = ConsoleColor::Cyan };
+    inline constexpr auto WhiteTextStyle   = ConsoleStyle { .fg = ConsoleColor::White };
+    inline constexpr auto BlackTextStyle   = ConsoleStyle { .fg = ConsoleColor::Black };
 } // namespace stormkit::core
 
 //
