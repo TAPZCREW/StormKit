@@ -221,7 +221,7 @@ namespace stormkit::gpu {
             .and_then(bindFront(&Instance::doInitDebugReportCallback, this))
             .and_then(bindFront(&Instance::doRetrievePhysicalDevices, this))
             .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
+                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////

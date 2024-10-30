@@ -102,7 +102,7 @@ namespace stormkit::gpu {
             .createFence(create_info)
             .transform(core::monadic::set(m_vk_fence))
             .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
+                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////
@@ -197,7 +197,7 @@ namespace stormkit::gpu {
             .createSemaphore(create_info)
             .transform(core::monadic::set(m_vk_semaphore))
             .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
+                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
     };
 
     /////////////////////////////////////

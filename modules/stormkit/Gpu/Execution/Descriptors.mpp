@@ -288,7 +288,7 @@ namespace stormkit::gpu {
         device.vkHandle()
             .createDescriptorSetLayout(create_info)
             .transform(core::monadic::set(m_vk_descriptor_set_layout))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
+            .transform_error(core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////
@@ -374,7 +374,7 @@ namespace stormkit::gpu {
         device.vkHandle()
             .createDescriptorPool(create_info)
             .transform(core::monadic::set(m_vk_descriptor_pool))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
+            .transform_error(core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////

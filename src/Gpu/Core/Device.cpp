@@ -211,7 +211,7 @@ namespace stormkit::gpu {
                 return {};
             })
             .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
+                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
 
         if (raster_queue.id)
             m_raster_queue = QueueEntry { .id    = *raster_queue.id,

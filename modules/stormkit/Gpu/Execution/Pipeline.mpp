@@ -181,7 +181,7 @@ namespace stormkit::gpu {
                bindFront(&PipelineCache::readPipelineCache, this, std::cref(device)),
                bindFront(&PipelineCache::createNewPipelineCache, this, std::cref(device)))
             .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
+                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////
@@ -250,7 +250,7 @@ namespace stormkit::gpu {
             .createPipelineLayout(create_info)
             .transform(core::monadic::set(m_vk_pipeline_layout))
             .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
+                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////
@@ -301,7 +301,7 @@ namespace stormkit::gpu {
         : m_type { Type::Raster }, m_state { state } {
         doInitRasterPipeline(device, layout, render_pass, std::move(cache))
             .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
+                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////

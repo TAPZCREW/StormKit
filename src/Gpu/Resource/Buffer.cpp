@@ -49,7 +49,7 @@ namespace stormkit::gpu {
                 return {};
             })
             .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
+                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////

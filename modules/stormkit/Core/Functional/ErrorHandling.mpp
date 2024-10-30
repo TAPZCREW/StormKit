@@ -31,7 +31,7 @@ export namespace stormkit { inline namespace core { namespace monadic {
     [[nodiscard]] constexpr auto log(std::invocable auto&& logger, std::string&& message) noexcept
         -> decltype(auto);
 
-    [[nodiscard]] constexpr auto throwError() noexcept -> decltype(auto);
+    [[nodiscard]] constexpr auto throwAsException() noexcept -> decltype(auto);
 }}} // namespace stormkit::core::monadic
 
 #ifdef STORMKIT_COMPILER_CLANG
@@ -93,7 +93,7 @@ namespace stormkit { inline namespace core { namespace monadic {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE constexpr auto throwError() noexcept -> decltype(auto) {
+    STORMKIT_FORCE_INLINE constexpr auto throwAsException() noexcept -> decltype(auto) {
         return
             [] NORETURN_LAMBDA(
                 auto&& error) static -> std::expected<void, meta::CanonicalType<decltype(error)>> {

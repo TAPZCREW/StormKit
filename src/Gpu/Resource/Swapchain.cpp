@@ -114,7 +114,7 @@ namespace stormkit::gpu {
         device.vkHandle()
             .createSwapchainKHR(create_info)
             .transform(core::monadic::set(m_vk_swapchain))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
+            .transform_error(core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
 
         m_extent       = as<math::ExtentU>(swapchain_extent);
         m_image_count  = as<UInt32>(std::size(m_images));

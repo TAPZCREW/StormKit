@@ -386,7 +386,7 @@ namespace stormkit::gpu {
             .getQueue(entry.id, 0)
             .transform(core::monadic::set(m_vk_queue))
             .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
+                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////
@@ -1345,7 +1345,7 @@ namespace stormkit::gpu {
                          | vk::CommandPoolCreateFlagBits::eResetCommandBuffer })
             .transform(core::monadic::set(m_vk_command_pool))
             .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
+                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////

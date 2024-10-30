@@ -202,7 +202,7 @@ namespace stormkit::gpu {
             .createFramebuffer(create_info)
             .transform(core::monadic::set(m_vk_framebuffer))
             .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
+                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////
@@ -270,7 +270,7 @@ namespace stormkit::gpu {
     RenderPass::RenderPass(const Device& device, const RenderPassDescription& description, Tag)
         : m_description { description } {
         doInitRenderPass(device).transform_error(
-            core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
+            core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////

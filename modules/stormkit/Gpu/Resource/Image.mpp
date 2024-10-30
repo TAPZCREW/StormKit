@@ -219,7 +219,7 @@ namespace stormkit::gpu {
                   .borderColor      = narrow<vk::BorderColor>(m_settings.border_color),
                   .unnormalizedCoordinates = m_settings.unnormalized_coordinates })
             .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
+                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////
@@ -291,7 +291,7 @@ namespace stormkit::gpu {
         })
             .transform(core::monadic::set(m_vk_image_view))
             .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
+                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////
@@ -395,7 +395,7 @@ namespace stormkit::gpu {
                 return {};
             })
             .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
+                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////
