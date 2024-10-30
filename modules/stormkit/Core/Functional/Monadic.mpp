@@ -87,7 +87,7 @@ namespace stormkit { inline namespace core { namespace monadic {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE constexpr auto value() noexcept -> decltype(auto) {
-        return []<meta::IsFancyPointer T>(T&& value) static noexcept -> decltype(auto) {
+        return []<meta::IsOwningPointer T>(T&& value) static noexcept -> decltype(auto) {
             return std::forward_like<T>(value.get());
         };
     }

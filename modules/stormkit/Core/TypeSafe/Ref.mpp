@@ -66,7 +66,7 @@ export {
             friend constexpr auto borrow(const U& value STORMKIT_LIFETIMEBOUND) noexcept
                 -> decltype(auto);
 
-            template<meta::IsFancyPointer U>
+            template<meta::IsOwningPointer U>
             friend constexpr auto borrow(const U& value STORMKIT_LIFETIMEBOUND) noexcept
                 -> decltype(auto);
 
@@ -79,7 +79,7 @@ export {
             friend constexpr auto borrowMut(const U& value STORMKIT_LIFETIMEBOUND) noexcept
                 -> decltype(auto);
 
-            template<meta::IsFancyPointer U>
+            template<meta::IsOwningPointer U>
                 requires meta::IsNotConst<meta::ElementType<U>>
             friend constexpr auto borrowMut(const U& value STORMKIT_LIFETIMEBOUND) noexcept
                 -> decltype(auto);
@@ -96,7 +96,7 @@ export {
         [[nodiscard]] constexpr auto borrow(const T& value STORMKIT_LIFETIMEBOUND) noexcept
             -> decltype(auto);
 
-        template<meta::IsFancyPointer T>
+        template<meta::IsOwningPointer T>
         [[nodiscard]] constexpr auto borrow(const T& value STORMKIT_LIFETIMEBOUND) noexcept
             -> decltype(auto);
 
@@ -109,7 +109,7 @@ export {
         [[nodiscard]] constexpr auto borrowMut(const T& value STORMKIT_LIFETIMEBOUND) noexcept
             -> decltype(auto);
 
-        template<meta::IsFancyPointer T>
+        template<meta::IsOwningPointer T>
             requires meta::IsNotConst<meta::ElementType<T>>
         [[nodiscard]] constexpr auto borrowMut(const T& value STORMKIT_LIFETIMEBOUND) noexcept
             -> decltype(auto);
@@ -263,7 +263,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsFancyPointer T>
+    template<meta::IsOwningPointer T>
     STORMKIT_FORCE_INLINE constexpr auto borrow(const T& value) noexcept -> decltype(auto) {
         return borrow(std::to_address(value));
     }
@@ -286,7 +286,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsFancyPointer T>
+    template<meta::IsOwningPointer T>
         requires meta::IsNotConst<meta::ElementType<T>>
     STORMKIT_FORCE_INLINE constexpr auto borrowMut(const T& value) noexcept -> decltype(auto) {
         return borrowMut(std::to_address(value));

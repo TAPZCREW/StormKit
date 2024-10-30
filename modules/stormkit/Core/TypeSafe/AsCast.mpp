@@ -173,12 +173,12 @@ export namespace stormkit { inline namespace core {
 
             template<meta::IsStrictOneOf<ByteView, MutableByteView> To, typename From>
                 requires(meta::IsPointer<meta::CanonicalType<From>>
-                         and not meta::IsMovedFancyPointer<From>)
+                         and not meta::IsMovedOwningPointer<From>)
             [[nodiscard]] constexpr auto as(From&&                      value,
                                             const std::source_location& location
                                             = std::source_location::current()) noexcept -> To;
 
-            template<meta::IsViewPointer To, typename From>
+            template<meta::IsNonOwningPointer To, typename From>
                 requires(meta::IsStrictOneOf<meta::CanonicalType<From>, ByteView, MutableByteView>)
             [[nodiscard]] constexpr auto as(From&&                      value,
                                             const std::source_location& location
@@ -194,7 +194,7 @@ export namespace stormkit { inline namespace core {
             // polymorphism
             template<meta::IsPolymorphicIndirection To, typename From>
                 requires(meta::IsPolymorphicPointer<meta::CanonicalType<From>>
-                         and not meta::IsMovedFancyPointer<From>)
+                         and not meta::IsMovedOwningPointer<From>)
             [[nodiscard]] constexpr auto as(From&&                      value,
                                             const std::source_location& location
                                             = std::source_location::current()) noexcept
@@ -545,7 +545,7 @@ namespace stormkit { inline namespace core {
         /////////////////////////////////////
         template<meta::IsStrictOneOf<ByteView, MutableByteView> To, typename From>
             requires(meta::IsPointer<meta::CanonicalType<From>>
-                     and not meta::IsMovedFancyPointer<From>)
+                     and not meta::IsMovedOwningPointer<From>)
         STORMKIT_FORCE_INLINE constexpr auto as(From&&                      value,
                                                 const std::source_location& location) noexcept
             -> To {
@@ -564,7 +564,7 @@ namespace stormkit { inline namespace core {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        template<meta::IsViewPointer To, typename From>
+        template<meta::IsNonOwningPointer To, typename From>
             requires(meta::IsStrictOneOf<meta::CanonicalType<From>, ByteView, MutableByteView>)
         STORMKIT_FORCE_INLINE constexpr auto
             as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept
@@ -591,7 +591,7 @@ namespace stormkit { inline namespace core {
         // polymorphism
         template<meta::IsPolymorphicIndirection To, typename From>
             requires(meta::IsPolymorphicPointer<meta::CanonicalType<From>>
-                     and not meta::IsMovedFancyPointer<From>)
+                     and not meta::IsMovedOwningPointer<From>)
         STORMKIT_FORCE_INLINE constexpr auto
             as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept
             -> decltype(auto) {

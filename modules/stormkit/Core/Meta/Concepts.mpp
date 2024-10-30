@@ -19,7 +19,7 @@ namespace stormkit { inline namespace core { namespace meta::details {
     constexpr auto isSpecializationOfWithHelper(const T<T2, Args...>&) noexcept -> std::true_type {
         return {};
     }
-}}} // namespace stormkit::meta::details
+}}} // namespace stormkit::core::meta::details
 
 export namespace stormkit { inline namespace core { namespace meta {
     template<class T>
@@ -58,7 +58,7 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsRawPointer = std::is_pointer_v<T>;
 
     template<class T>
-        concept IsViewPointer = IsRawPointer<T> or (requires {
+        concept IsNonOwningPointer = IsRawPointer<T> or (requires {
             typename T::element_type;
         } and requires(T a) {
             { a.operator->() } -> std::convertible_to<decltype(&*a)>;
@@ -67,12 +67,12 @@ export namespace stormkit { inline namespace core { namespace meta {
         });
 
     template<class T>
-    concept IsFancyPointer = IsViewPointer<T> and requires(T a) {
+    concept IsOwningPointer = IsNonOwningPointer<T> and requires(T a) {
         { a.reset() };
     };
 
     template<class T>
-    concept IsPointer = IsViewPointer<T> or IsFancyPointer<T>;
+    concept IsPointer = IsNonOwningPointer<T> or IsOwningPointer<T>;
 
     // clang-format off
         template<class T>
@@ -89,7 +89,12 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsReference = IsLValueReference<T> or IsRValueReference<T>;
 
     template<class T>
-    concept IsMovedFancyPointer = IsFancyPointer<T> and IsRValueReference<T>;
+    concept IsMovedOwningPointer = IsOwningPointer<T> and IsRValueReference<T>;
+
+    template<class T>
+    concept IsViewPointer
+        = (IsOwningPointer<std::remove_cvref_t<T>> and not IsMovedOwningPointer<T>)
+          or IsNonOwningPointer<std::remove_cvref_t<T>>;
 
     // clang-format off
         template<class T>
