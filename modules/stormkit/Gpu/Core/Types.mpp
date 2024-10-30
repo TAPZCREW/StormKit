@@ -4,6 +4,7 @@
 
 module;
 
+#include <stormkit/Core/AsCastsMacro.hpp>
 #include <stormkit/Core/FlagsMacro.hpp>
 #include <stormkit/Core/HashMacro.hpp>
 #include <stormkit/Core/PlatformMacro.hpp>
@@ -252,18 +253,18 @@ export {
         enum class ImageLayout : UInt32 {
             General                  = as<UInt32>(vk::ImageLayout::eGeneral),
             Color_Attachment_Optimal = as<UInt32>(vk::ImageLayout::eColorAttachmentOptimal),
-            Depth_Stencil_Attachment_Optimal =
-                as<UInt32>(vk::ImageLayout::eDepthStencilAttachmentOptimal),
-            Depth_Stencil_Read_Only_Optimal =
-                as<UInt32>(vk::ImageLayout::eDepthStencilReadOnlyOptimal),
+            Depth_Stencil_Attachment_Optimal
+                = as<UInt32>(vk::ImageLayout::eDepthStencilAttachmentOptimal),
+            Depth_Stencil_Read_Only_Optimal
+                = as<UInt32>(vk::ImageLayout::eDepthStencilReadOnlyOptimal),
             Shader_Read_Only_Optimal = as<UInt32>(vk::ImageLayout::eShaderReadOnlyOptimal),
             Transfer_Src_Optimal     = as<UInt32>(vk::ImageLayout::eTransferSrcOptimal),
             Transfer_Dst_Optimal     = as<UInt32>(vk::ImageLayout::eTransferDstOptimal),
             Preinitialized           = as<UInt32>(vk::ImageLayout::ePreinitialized),
-            Depth_Read_Only_Stencil_Attachment_Optimal =
-                as<UInt32>(vk::ImageLayout::eDepthReadOnlyStencilAttachmentOptimal),
-            Depth_Attachment_Stencil_Read_Only_Optimal =
-                as<UInt32>(vk::ImageLayout::eDepthAttachmentStencilReadOnlyOptimal),
+            Depth_Read_Only_Stencil_Attachment_Optimal
+                = as<UInt32>(vk::ImageLayout::eDepthReadOnlyStencilAttachmentOptimal),
+            Depth_Attachment_Stencil_Read_Only_Optimal
+                = as<UInt32>(vk::ImageLayout::eDepthAttachmentStencilReadOnlyOptimal),
             Present_Src    = as<UInt32>(vk::ImageLayout::ePresentSrcKHR),
             Shared_Present = as<UInt32>(vk::ImageLayout::eSharedPresentKHR),
             Undefined      = as<UInt32>(vk::ImageLayout::eUndefined),
@@ -289,11 +290,11 @@ export {
             Mutable_Format   = as<UInt16>(vk::ImageCreateFlagBits::eMutableFormat),
             Cube_Compatible  = as<UInt16>(vk::ImageCreateFlagBits::eCubeCompatible),
             Alias            = as<UInt16>(vk::ImageCreateFlagBits::eAlias),
-            Split_Instance_Bind_Regions =
-                as<UInt16>(vk::ImageCreateFlagBits::eSplitInstanceBindRegions),
+            Split_Instance_Bind_Regions
+                = as<UInt16>(vk::ImageCreateFlagBits::eSplitInstanceBindRegions),
             Array_2D_Compatible = as<UInt16>(vk::ImageCreateFlagBits::e2DArrayCompatible),
-            Block_Texel_View_Compatible =
-                as<UInt16>(vk::ImageCreateFlagBits::eBlockTexelViewCompatible),
+            Block_Texel_View_Compatible
+                = as<UInt16>(vk::ImageCreateFlagBits::eBlockTexelViewCompatible),
             Extended_Usage = as<UInt16>(vk::ImageCreateFlagBits::eExtendedUsage),
             Protected      = as<UInt16>(vk::ImageCreateFlagBits::eProtected),
             Disjoint       = as<UInt16>(vk::ImageCreateFlagBits::eDisjoint),
@@ -406,15 +407,14 @@ export {
         };
 
         enum class ImageUsageFlag : UInt16 {
-            Transfer_Src     = as<UInt16>(vk::ImageUsageFlagBits::eTransferSrc),
-            Transfer_Dst     = as<UInt16>(vk::ImageUsageFlagBits::eTransferDst),
-            Sampled          = as<UInt16>(vk::ImageUsageFlagBits::eSampled),
-            Storage          = as<UInt16>(vk::ImageUsageFlagBits::eStorage),
-            Color_Attachment = as<UInt16>(vk::ImageUsageFlagBits::eColorAttachment),
-            Depth_Stencil_Attachment =
-                as<UInt16>(vk::ImageUsageFlagBits::eDepthStencilAttachment),
-            Transient_Attachment = as<UInt16>(vk::ImageUsageFlagBits::eTransientAttachment),
-            Input_Attachment     = as<UInt16>(vk::ImageUsageFlagBits::eInputAttachment),
+            Transfer_Src             = as<UInt16>(vk::ImageUsageFlagBits::eTransferSrc),
+            Transfer_Dst             = as<UInt16>(vk::ImageUsageFlagBits::eTransferDst),
+            Sampled                  = as<UInt16>(vk::ImageUsageFlagBits::eSampled),
+            Storage                  = as<UInt16>(vk::ImageUsageFlagBits::eStorage),
+            Color_Attachment         = as<UInt16>(vk::ImageUsageFlagBits::eColorAttachment),
+            Depth_Stencil_Attachment = as<UInt16>(vk::ImageUsageFlagBits::eDepthStencilAttachment),
+            Transient_Attachment     = as<UInt16>(vk::ImageUsageFlagBits::eTransientAttachment),
+            Input_Attachment         = as<UInt16>(vk::ImageUsageFlagBits::eInputAttachment),
         };
 
         enum class MemoryPropertyFlag : UInt8 {
@@ -505,8 +505,8 @@ export {
             Error_Out_Of_Pool_Memory      = as<Int32>(vk::Result::eErrorOutOfPoolMemory),
             Error_Invalid_EXTernal_Handle = as<Int32>(vk::Result::eErrorInvalidExternalHandle),
             Error_Fragmentation           = as<Int32>(vk::Result::eErrorFragmentation),
-            Error_Invalid_Opaque_Capture_Address =
-                as<Int32>(vk::Result::eErrorInvalidOpaqueCaptureAddress),
+            Error_Invalid_Opaque_Capture_Address
+                = as<Int32>(vk::Result::eErrorInvalidOpaqueCaptureAddress),
             Error_Surface_Lost         = as<Int32>(vk::Result::eErrorSurfaceLostKHR),
             Error_Native_Window_In_Use = as<Int32>(vk::Result::eErrorNativeWindowInUseKHR),
             Suboptimal                 = as<Int32>(vk::Result::eSuboptimalKHR),
@@ -515,8 +515,8 @@ export {
             Error_Validation_Failed    = as<Int32>(vk::Result::eErrorValidationFailedEXT),
             Error_Not_Permitted        = as<Int32>(vk::Result::eErrorNotPermittedEXT),
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
-            Error_Fullscreen_Exclusive_Mode_Lost =
-                as<Int32>(vk::Result::eErrorFullScreenExclusiveModeLostEXT),
+            Error_Fullscreen_Exclusive_Mode_Lost
+                = as<Int32>(vk::Result::eErrorFullScreenExclusiveModeLostEXT),
 #endif
             Thread_Idle               = as<Int32>(vk::Result::eThreadIdleKHR),
             Thread_Done               = as<Int32>(vk::Result::eThreadDoneKHR),
@@ -585,10 +585,10 @@ export {
             Shader_Write           = as<UInt32>(vk::AccessFlagBits::eShaderWrite),
             Color_Attachment_Read  = as<UInt32>(vk::AccessFlagBits::eColorAttachmentRead),
             Color_Attachment_Write = as<UInt32>(vk::AccessFlagBits::eColorAttachmentWrite),
-            Depth_Stencil_Attachment_Read =
-                as<UInt32>(vk::AccessFlagBits::eDepthStencilAttachmentRead),
-            Depth_Stencil_Attachment_Write =
-                as<UInt32>(vk::AccessFlagBits::eDepthStencilAttachmentWrite),
+            Depth_Stencil_Attachment_Read
+                = as<UInt32>(vk::AccessFlagBits::eDepthStencilAttachmentRead),
+            Depth_Stencil_Attachment_Write
+                = as<UInt32>(vk::AccessFlagBits::eDepthStencilAttachmentWrite),
             Transfer_Read  = as<UInt32>(vk::AccessFlagBits::eTransferRead),
             Transfer_Write = as<UInt32>(vk::AccessFlagBits::eTransferWrite),
             Host_Read      = as<UInt32>(vk::AccessFlagBits::eHostRead),
@@ -603,22 +603,21 @@ export {
             Draw_Indirect = as<UInt32>(vk::PipelineStageFlagBits::eDrawIndirect),
             Vertex_Input  = as<UInt32>(vk::PipelineStageFlagBits::eVertexInput),
             Vertex_Shader = as<UInt32>(vk::PipelineStageFlagBits::eVertexShader),
-            Tessellation_Control_Shader =
-                as<UInt32>(vk::PipelineStageFlagBits::eTessellationControlShader),
-            Tessellation_Evaluation_Shader =
-                as<UInt32>(vk::PipelineStageFlagBits::eTessellationEvaluationShader),
-            Geometry_Shader      = as<UInt32>(vk::PipelineStageFlagBits::eGeometryShader),
-            Fragment_Shader      = as<UInt32>(vk::PipelineStageFlagBits::eFragmentShader),
-            Early_Fragment_Tests = as<UInt32>(vk::PipelineStageFlagBits::eEarlyFragmentTests),
-            Late_Fragment_Tests  = as<UInt32>(vk::PipelineStageFlagBits::eLateFragmentTests),
-            Color_Attachment_Output =
-                as<UInt32>(vk::PipelineStageFlagBits::eColorAttachmentOutput),
-            Compute_Shader = as<UInt32>(vk::PipelineStageFlagBits::eComputeShader),
-            Transfer       = as<UInt32>(vk::PipelineStageFlagBits::eTransfer),
-            Bottom_Of_Pipe = as<UInt32>(vk::PipelineStageFlagBits::eBottomOfPipe),
-            Host           = as<UInt32>(vk::PipelineStageFlagBits::eHost),
-            All_Graphics   = as<UInt32>(vk::PipelineStageFlagBits::eAllGraphics),
-            All_Commands   = as<UInt32>(vk::PipelineStageFlagBits::eAllCommands),
+            Tessellation_Control_Shader
+                = as<UInt32>(vk::PipelineStageFlagBits::eTessellationControlShader),
+            Tessellation_Evaluation_Shader
+                = as<UInt32>(vk::PipelineStageFlagBits::eTessellationEvaluationShader),
+            Geometry_Shader         = as<UInt32>(vk::PipelineStageFlagBits::eGeometryShader),
+            Fragment_Shader         = as<UInt32>(vk::PipelineStageFlagBits::eFragmentShader),
+            Early_Fragment_Tests    = as<UInt32>(vk::PipelineStageFlagBits::eEarlyFragmentTests),
+            Late_Fragment_Tests     = as<UInt32>(vk::PipelineStageFlagBits::eLateFragmentTests),
+            Color_Attachment_Output = as<UInt32>(vk::PipelineStageFlagBits::eColorAttachmentOutput),
+            Compute_Shader          = as<UInt32>(vk::PipelineStageFlagBits::eComputeShader),
+            Transfer                = as<UInt32>(vk::PipelineStageFlagBits::eTransfer),
+            Bottom_Of_Pipe          = as<UInt32>(vk::PipelineStageFlagBits::eBottomOfPipe),
+            Host                    = as<UInt32>(vk::PipelineStageFlagBits::eHost),
+            All_Graphics            = as<UInt32>(vk::PipelineStageFlagBits::eAllGraphics),
+            All_Commands            = as<UInt32>(vk::PipelineStageFlagBits::eAllCommands),
         };
 
         enum class DependencyFlag : UInt8 {
@@ -660,8 +659,8 @@ export {
 
         enum class GeometryFlag : UInt8 {
             Opaque = as<UInt8>(vk::GeometryFlagBitsKHR::eOpaque),
-            No_Duplicate_Any_Hit_Invocation =
-                as<UInt8>(vk::GeometryFlagBitsKHR::eNoDuplicateAnyHitInvocation)
+            No_Duplicate_Any_Hit_Invocation
+                = as<UInt8>(vk::GeometryFlagBitsKHR::eNoDuplicateAnyHitInvocation)
         };
 
         enum class ColorSpace : UInt32 {
@@ -686,13 +685,12 @@ export {
         };
 
         enum class PresentMode : UInt32 {
-            Immediate             = as<UInt32>(vk::PresentModeKHR::eImmediate),
-            Mailbox               = as<UInt32>(vk::PresentModeKHR::eMailbox),
-            Fifo                  = as<UInt32>(vk::PresentModeKHR::eFifo),
-            Fifo_Relaxed          = as<UInt32>(vk::PresentModeKHR::eFifoRelaxed),
-            Shared_Demand_Refresh = as<UInt32>(vk::PresentModeKHR::eSharedDemandRefresh),
-            Shared_Continuous_Refresh =
-                as<UInt32>(vk::PresentModeKHR::eSharedContinuousRefresh),
+            Immediate                 = as<UInt32>(vk::PresentModeKHR::eImmediate),
+            Mailbox                   = as<UInt32>(vk::PresentModeKHR::eMailbox),
+            Fifo                      = as<UInt32>(vk::PresentModeKHR::eFifo),
+            Fifo_Relaxed              = as<UInt32>(vk::PresentModeKHR::eFifoRelaxed),
+            Shared_Demand_Refresh     = as<UInt32>(vk::PresentModeKHR::eSharedDemandRefresh),
+            Shared_Continuous_Refresh = as<UInt32>(vk::PresentModeKHR::eSharedContinuousRefresh),
         };
 
         struct SurfaceFormat {
@@ -990,19 +988,8 @@ export {
 
     } // namespace stormkit::gpu
 
-    namespace stormkit::core { inline namespace casts {
-        template<>
-        struct AsCaster<vk::Viewport, const gpu::Viewport&> {
-            [[nodiscard]] static constexpr auto operator()(const gpu::Viewport& from) noexcept
-                -> vk::Viewport;
-        };
-
-        template<>
-        struct AsCaster<vk::Rect2D, const gpu::Scissor&> {
-            [[nodiscard]] static constexpr auto operator()(const gpu::Scissor& from) noexcept
-                -> vk::Rect2D;
-        };
-    }} // namespace stormkit::core::casts
+    ASCASTER_STRICT_DECLARE(vk::Viewport, stormkit::gpu::Viewport)
+    ASCASTER_STRICT_DECLARE(vk::Rect2D, stormkit::gpu::Scissor)
 
     FLAG_ENUM(stormkit::gpu::QueueFlag)
     FLAG_ENUM(stormkit::gpu::ShaderStageFlag)
@@ -1031,15 +1018,15 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE constexpr auto isDepthOnlyFormat(PixelFormat format) noexcept -> bool {
-        return format == PixelFormat::Depth16 or format == PixelFormat::Depth24 or
-               format == PixelFormat::Depth32F;
+        return format == PixelFormat::Depth16 or format == PixelFormat::Depth24
+               or format == PixelFormat::Depth32F;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE constexpr auto isDepthStencilFormat(PixelFormat format) noexcept -> bool {
-        return format == PixelFormat::Depth16_Stencil8 or format == PixelFormat::Depth24_Stencil8 or
-               format == PixelFormat::Depth32F_Stencil8;
+        return format == PixelFormat::Depth16_Stencil8 or format == PixelFormat::Depth24_Stencil8
+               or format == PixelFormat::Depth32F_Stencil8;
     }
 
     /////////////////////////////////////
@@ -1215,8 +1202,7 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE auto computeMipLevel(const math::ExtentU& extent) noexcept -> UInt32 {
         const auto as_float = math::ExtentF { extent };
 
-        return as<UInt32>(math::floor(math::log2(math::max(as_float.width, as_float.height)))) +
-               1;
+        return as<UInt32>(math::floor(math::log2(math::max(as_float.width, as_float.height)))) + 1;
     }
 
     /////////////////////////////////////
@@ -1257,20 +1243,14 @@ namespace stormkit::gpu {
     }
 } // namespace stormkit::gpu
 
-namespace stormkit::core { inline namespace casts {
-    /////////////////////////////////////
-    /////////////////////////////////////
-    constexpr auto
-        AsCaster<vk::Viewport, const gpu::Viewport&>::operator()(const gpu::Viewport& from) noexcept
-        -> vk::Viewport {
-        return from.operator vk::Viewport();
-    }
+/////////////////////////////////////
+/////////////////////////////////////
+ASCASTER_STRICT_DEFINE(vk::Viewport, stormkit::gpu::Viewport) {
+    return from.operator vk::Viewport();
+}
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    constexpr auto
-        AsCaster<vk::Rect2D, const gpu::Scissor&>::operator()(const gpu::Scissor& from) noexcept
-        -> vk::Rect2D {
-        return from.operator vk::Rect2D();
-    }
-}} // namespace stormkit::core::casts
+/////////////////////////////////////
+/////////////////////////////////////
+ASCASTER_STRICT_DEFINE(vk::Rect2D, stormkit::gpu::Scissor) {
+    return from.operator vk::Rect2D();
+}

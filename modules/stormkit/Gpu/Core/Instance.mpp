@@ -38,13 +38,13 @@ export {
             Instance(Instance&&) noexcept;
             auto operator=(Instance&&) noexcept -> Instance&;
 
-            [[nodiscard]] static auto
-                create(std::string app_name = "",
-                       bool        verbose  = (STORMKIT_BUILD_TYPE == "DEBUG")) noexcept
+            [[nodiscard]] static auto create(std::string app_name = "",
+                                             bool        verbose
+                                             = (STORMKIT_BUILD_TYPE == "DEBUG")) noexcept
                 -> Expected<Instance>;
-            [[nodiscard]] static auto
-                allocate(std::string app_name = "",
-                         bool        verbose  = (STORMKIT_BUILD_TYPE == "DEBUG")) noexcept
+            [[nodiscard]] static auto allocate(std::string app_name = "",
+                                               bool        verbose
+                                               = (STORMKIT_BUILD_TYPE == "DEBUG")) noexcept
                 -> Expected<std::unique_ptr<Instance>>;
 
             [[nodiscard]] auto physicalDevices() const noexcept
@@ -220,7 +220,8 @@ namespace stormkit::gpu {
         doInitInstance()
             .and_then(curry(&Instance::doInitDebugReportCallback, this))
             .and_then(curry(&Instance::doRetrievePhysicalDevices, this))
-            .transform_error(core::monadic::map(core::monadic::as<Result>(), throwError()));
+            .transform_error(
+                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
     }
 
     /////////////////////////////////////

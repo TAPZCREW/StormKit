@@ -92,6 +92,6 @@ namespace stormkit::gpu {
 
         create_surface()
             .transform(core::monadic::set(m_vk_surface))
-            .transform_error(core::monadic::map(core::monadic::as<Result>(), throwError()));
+            .transform_error(core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
     }
 } // namespace stormkit::gpu

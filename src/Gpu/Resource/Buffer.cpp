@@ -21,34 +21,35 @@ namespace stormkit::gpu {
           m_is_persistently_mapped { persistently_mapped } {
         device.vkHandle()
             .createBuffer({ .size        = m_size,
-                            .usage       = as<vk::BufferUsageFlagBits>(m_usages),
+                            .usage       = narrow<vk::BufferUsageFlagBits>(m_usages),
                             .sharingMode = vk::SharingMode::eExclusive })
             .transform(core::monadic::set(m_vk_buffer))
             .transform([this, &info, &device]() noexcept -> VulkanExpected<void> {
                 const auto requirements = m_vk_buffer->getMemoryRequirements();
 
                 auto allocate_info = vma::AllocationCreateInfo {}.setRequiredFlags(
-                    as<vk::MemoryPropertyFlagBits>(info.property));
+                    narrow<vk::MemoryPropertyFlagBits>(info.property));
 
                 auto&& allocator = device.vmaAllocator();
 
-                auto&& [error, vma_allocation] =
-                    allocator.allocateMemoryUnique(requirements, allocate_info);
+                auto&& [error, vma_allocation]
+                    = allocator.allocateMemoryUnique(requirements, allocate_info);
                 if (error != vk::Result::eSuccess)
-                    return std::unexpected { as<vk::Result>(error) };
+                    return std::unexpected { narrow<vk::Result>(error) };
 
                 m_vma_allocation = std::move(vma_allocation);
 
                 error = allocator.bindBufferMemory(*m_vma_allocation, *m_vk_buffer.get());
                 if (error != vk::Result::eSuccess)
-                    return std::unexpected { as<vk::Result>(error) };
+                    return std::unexpected { narrow<vk::Result>(error) };
 
                 if (m_is_persistently_mapped) [[maybe_unused]]
                     auto _ = map(device, 0u);
 
                 return {};
             })
-            .transform_error(core::monadic::map(core::monadic::as<Result>(), throwError()));
+            .transform_error(
+                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
     }
 
     /////////////////////////////////////
@@ -59,8 +60,8 @@ namespace stormkit::gpu {
                                 [[maybe_unused]] const vk::MemoryRequirements& mem_requirements)
         -> UInt {
         for (auto i : range(mem_properties.memoryTypeCount)) {
-            if ((type_filter & (1 << i)) and
-                (checkFlag(mem_properties.memoryTypes[i].propertyFlags, properties)))
+            if ((type_filter & (1 << i))
+                and (checkFlag(mem_properties.memoryTypes[i].propertyFlags, properties)))
                 return i;
         }
 

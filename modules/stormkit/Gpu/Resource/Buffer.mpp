@@ -71,7 +71,7 @@ export namespace stormkit::gpu {
 
         auto upload(const Device& device, std::span<const Byte> data, RangeOffset offset = 0)
             -> void;
-        template<IsNot<std::span<const Byte>> T>
+        template<meta::IsNot<std::span<const Byte>> T>
         auto upload(const Device& device, const T& data, RangeOffset offset = 0) -> void;
 
         [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::Buffer&;
@@ -83,7 +83,7 @@ export namespace stormkit::gpu {
                                    const vk::MemoryRequirements& mem_requirements) -> UInt;
 
         DeferInit<vk::raii::Buffer> m_vk_buffer;
-        vma::raii::Allocation       m_vma_allocation;
+        vma::UniqueAllocation       m_vma_allocation;
 
         BufferUsageFlag m_usages = {};
         RangeExtent     m_size   = 0;
@@ -196,7 +196,7 @@ namespace stormkit::gpu {
         expects(self.m_vma_allocation.operator bool());
         expects(self.m_mapped_pointer);
 
-        using Byte = LikeCV<decltype(self), Byte>;
+        using Byte = meta::ConstnessLike<decltype(self), Byte>;
 
         return std::bit_cast<Byte*>(self.m_mapped_pointer);
     }
@@ -208,7 +208,7 @@ namespace stormkit::gpu {
         expects(self.m_vma_allocation.operator bool());
         expects(self.m_mapped_pointer);
 
-        using Byte = LikeCV<decltype(self), Byte>;
+        using Byte = meta::ConstnessLike<decltype(self), Byte>;
 
         return std::span<Byte> { std::bit_cast<Byte*>(self.m_mapped_pointer), size };
     }
@@ -219,7 +219,7 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE auto Buffer::dataAs(this auto& self) noexcept -> decltype(auto) {
         expects(self.m_vma_allocation.operator bool());
 
-        using Type = LikeCV<decltype(self), T>;
+        using Type = meta::ConstnessLike<decltype(self), T>;
 
         return std::bit_cast<Type*>(self.data());
     }
@@ -260,7 +260,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<IsNot<std::span<const Byte>> T>
+    template<meta::IsNot<std::span<const Byte>> T>
     STORMKIT_FORCE_INLINE auto
         Buffer::upload(const Device& device, const T& data, RangeOffset offset) -> void {
         const auto bytes = asByteView(data);

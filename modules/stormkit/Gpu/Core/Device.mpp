@@ -105,7 +105,7 @@ export namespace stormkit::gpu {
         std::optional<QueueEntry> m_async_transfert_queue;
         std::optional<QueueEntry> m_async_compute_queue;
 
-        vma::raii::Allocator m_vma_allocator;
+        vma::UniqueAllocator m_vma_allocator;
         vma::VulkanFunctions m_vma_function_table;
     };
 } // namespace stormkit::gpu
@@ -250,7 +250,7 @@ namespace stormkit::gpu {
         if (!vkHandle().getDispatcher()->vkSetDebugUtilsObjectNameEXT) return;
 
         const auto info = vk::DebugUtilsObjectNameInfoEXT {}
-                              .setObjectType(as<vk::ObjectType>(type))
+                              .setObjectType(narrow<vk::ObjectType>(type))
                               .setObjectHandle(object)
                               .setPObjectName(std::data(name));
 

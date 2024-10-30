@@ -184,7 +184,7 @@ namespace stormkit::gpu {
         device.vkHandle()
             .createShaderModule(create_info)
             .transform(core::monadic::set(m_vk_shader_module))
-            .transform_error(core::monadic::map(core::monadic::as<Result>(), throwError()));
+            .transform_error(core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
     }
 
     /////////////////////////////////////

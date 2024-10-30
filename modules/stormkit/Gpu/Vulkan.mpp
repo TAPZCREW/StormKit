@@ -13,5 +13,5 @@ import std;
 import stormkit.Core;
 
 export import vulkan_hpp;
-export import vma;
+export import vk_mem_alloc_hpp;
 export import :Utils;

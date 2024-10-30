@@ -24,11 +24,11 @@ modules = {
          ]],
 				}, { configs = { languages = "c++23" }, includes = { "stacktrace" } })
 
-        if not has_stacktrace then
-					  print("No std C++23 stacktrace, falling back to cpptrace")
-            target:add("packages", "cpptrace", "libdwarf")
-        end
-      end)
+				if not has_stacktrace then
+					print("No std C++23 stacktrace, falling back to cpptrace")
+					target:add("packages", "cpptrace", "libdwarf")
+				end
+			end)
 			on_config(function(target)
 				local output, errors = os.iorunv("git", { "rev-parse", "--abbrev-ref", "HEAD" })
 
@@ -136,7 +136,11 @@ modules = {
 	gpu = {
 		modulename = "Gpu",
 		has_headers = true,
-		public_packages = { "vulkan-headers", "vulkan-memory-allocator", "vulkan-memory-allocator-hpp" },
+		public_packages = {
+			"vulkan-headers v1.3.297",
+			"vulkan-memory-allocator >= 3.1.0",
+			"vulkan-memory-allocator-hpp",
+		},
 		public_deps = { "stormkit-core", "stormkit-log", "stormkit-wsi", "stormkit-image" },
 		packages = is_plat("linux") and {
 			"libxcb",
@@ -151,6 +155,11 @@ modules = {
 			"VULKAN_HPP_NO_UNION_CONSTRUCTORS",
 			"VULKAN_HPP_NO_EXCEPTIONS",
 			"VULKAN_HPP_NO_CONSTRUCTORS",
+			-- "VULKAN_HPP_NO_SMART_HANDLE",
+			"VULKAN_HPP_STD_MODULE=std.compat",
+			"VULKAN_HPP_ENABLE_STD_MODULE",
+			"VMA_HPP_ENABLE_VULKAN_HPP_MODULE",
+			"VMA_HPP_ENABLE_STD_MODULE",
 		},
 		custom = function()
 			on_load(function(target)
@@ -335,7 +344,7 @@ set_optimize("fastest")
 if is_mode("debug") then
 	set_symbols("debug", "hidden")
 	add_cxflags("-ggdb3", { tools = { "clang", "gcc" } })
-  add_cxflags("-D_GLIBCXX_DEBUG", { tools = { "gcc" } })
+	add_cxflags("-D_GLIBCXX_DEBUG", { tools = { "gcc" } })
 	add_mxflags("-ggdb3", { tools = { "clang", "gcc" } })
 elseif is_mode("releasedbg") then
 	set_optimize("fast")
@@ -378,12 +387,9 @@ if get_config("sanitizers") then
 end
 
 if not is_plat("wasm") then
-    add_requireconfs("vulkan-headers", { override = true, system = false })
-    add_requireconfs("vulkan-memory-allocator", { override = true, version = "master", system = false })
-    add_requireconfs(
-      "vulkan-memory-allocator-hpp",
-      { override = true, version = "master", system = false, configs = { use_vulkanheaders = true } }
-    )
+	add_requireconfs("vulkan-headers", { system = false })
+	add_requireconfs("vulkan-memory-allocator")
+	add_requireconfs("vulkan-memory-allocator-hpp", { system = false, configs = { use_vulkanheaders = true } })
 end
 
 add_requireconfs("*", { configs = { modules = true, std_import = true } })
@@ -400,11 +406,10 @@ add_requires("cpptrace")
 
 ---------------------------- targets ----------------------------
 for name, module in pairs(modules) do
-
 	local modulename = module.modulename
 
 	if name == "core" or name == "main" or get_config("" .. name) then
-    add_requires(table.join(module.packages or {}, module.public_packages or {}))
+		add_requires(table.join(module.packages or {}, module.public_packages or {}))
 		target("stormkit-" .. name, function()
 			set_group("libraries")
 
@@ -524,11 +529,21 @@ for name, module in pairs(modules) do
 			end
 
 			if module.public_packages then
-				add_packages(module.public_packages, { public = true })
+				local packages = {}
+				for _, package in ipairs(module.public_packages) do
+					table.insert(packages, package:split(" ")[1])
+				end
+
+				add_packages(packages, { public = true })
 			end
 
 			if module.packages then
-				add_packages(module.packages, { public = is_kind("static") })
+				local packages = {}
+				for _, package in ipairs(module.packages) do
+					table.insert(packages, package:split(" ")[1])
+				end
+
+				add_packages(packages, { public = is_kind("static") })
 			end
 
 			if module.frameworks then

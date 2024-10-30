@@ -73,6 +73,7 @@ export namespace stormkit::gpu {
     };
 
     class Image;
+
     class STORMKIT_API ImageView {
         struct Tag {};
 
@@ -92,18 +93,16 @@ export namespace stormkit::gpu {
         ImageView(ImageView&&) noexcept;
         auto operator=(ImageView&&) noexcept -> ImageView&;
 
-        [[nodiscard]] static auto
-            create(const Device&                device,
-                   const Image&                 image,
-                   ImageViewType                type              = ImageViewType::T2D,
-                   const ImageSubresourceRange& subresource_range = {}) noexcept
-            -> Expected<ImageView>;
-        [[nodiscard]] static auto
-            allocate(const Device&                device,
-                     const Image&                 image,
-                     ImageViewType                type              = ImageViewType::T2D,
-                     const ImageSubresourceRange& subresource_range = {}) noexcept
-            -> Expected<std::unique_ptr<ImageView>>;
+        [[nodiscard]] static auto create(const Device&                device,
+                                         const Image&                 image,
+                                         ImageViewType                type = ImageViewType::T2D,
+                                         const ImageSubresourceRange& subresource_range
+                                         = {}) noexcept -> Expected<ImageView>;
+        [[nodiscard]] static auto allocate(const Device&                device,
+                                           const Image&                 image,
+                                           ImageViewType                type = ImageViewType::T2D,
+                                           const ImageSubresourceRange& subresource_range
+                                           = {}) noexcept -> Expected<std::unique_ptr<ImageView>>;
 
         [[nodiscard]] auto type() const noexcept -> ImageViewType;
         [[nodiscard]] auto subresourceRange() const noexcept -> const ImageSubresourceRange&;
@@ -129,8 +128,8 @@ export namespace stormkit::gpu {
             ImageType       type       = ImageType::T2D;
             ImageCreateFlag flags      = ImageCreateFlag::None;
             SampleCountFlag samples    = SampleCountFlag::C1;
-            ImageUsageFlag  usages     = ImageUsageFlag::Sampled | ImageUsageFlag::Transfer_Dst |
-                                    ImageUsageFlag::Transfer_Src;
+            ImageUsageFlag  usages     = ImageUsageFlag::Sampled | ImageUsageFlag::Transfer_Dst
+                                    | ImageUsageFlag::Transfer_Src;
             ImageTiling        tiling   = ImageTiling::Optimal;
             MemoryPropertyFlag property = MemoryPropertyFlag::Device_Local;
         };
@@ -175,7 +174,7 @@ export namespace stormkit::gpu {
         ImageUsageFlag  m_usages     = {};
 
         DeferInit<vk::raii::Image> m_vk_image;
-        vma::raii::Allocation      m_vma_allocation;
+        vma::UniqueAllocation      m_vma_allocation;
     };
 
     struct ImageMemoryBarrier {
@@ -204,22 +203,23 @@ namespace stormkit::gpu {
         : m_settings { settings } {
         device.vkHandle()
             .createSampler(
-                { .magFilter        = as<vk::Filter>(m_settings.mag_filter),
-                  .minFilter        = as<vk::Filter>(m_settings.min_filter),
-                  .mipmapMode       = as<vk::SamplerMipmapMode>(m_settings.mipmap_mode),
-                  .addressModeU     = as<vk::SamplerAddressMode>(m_settings.address_mode_u),
-                  .addressModeV     = as<vk::SamplerAddressMode>(m_settings.address_mode_v),
-                  .addressModeW     = as<vk::SamplerAddressMode>(m_settings.address_mode_w),
+                { .magFilter        = narrow<vk::Filter>(m_settings.mag_filter),
+                  .minFilter        = narrow<vk::Filter>(m_settings.min_filter),
+                  .mipmapMode       = narrow<vk::SamplerMipmapMode>(m_settings.mipmap_mode),
+                  .addressModeU     = narrow<vk::SamplerAddressMode>(m_settings.address_mode_u),
+                  .addressModeV     = narrow<vk::SamplerAddressMode>(m_settings.address_mode_v),
+                  .addressModeW     = narrow<vk::SamplerAddressMode>(m_settings.address_mode_w),
                   .mipLodBias       = m_settings.mip_lod_bias,
                   .anisotropyEnable = m_settings.enable_anisotropy,
                   .maxAnisotropy    = m_settings.max_anisotropy,
                   .compareEnable    = m_settings.compare_enable,
-                  .compareOp        = as<vk::CompareOp>(m_settings.compare_operation),
+                  .compareOp        = narrow<vk::CompareOp>(m_settings.compare_operation),
                   .minLod           = m_settings.min_lod,
                   .maxLod           = m_settings.max_lod,
-                  .borderColor      = as<vk::BorderColor>(m_settings.border_color),
+                  .borderColor      = narrow<vk::BorderColor>(m_settings.border_color),
                   .unnormalizedCoordinates = m_settings.unnormalized_coordinates })
-            .transform_error(core::monadic::map(core::monadic::as<Result>(), throwError()));
+            .transform_error(
+                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
     }
 
     /////////////////////////////////////
@@ -270,27 +270,28 @@ namespace stormkit::gpu {
                                                const ImageSubresourceRange& subresource_range,
                                                Tag)
         : m_type { type }, m_subresource_range { subresource_range } {
-        const auto vk_subresource_range =
-            vk::ImageSubresourceRange {}
-                .setAspectMask(as<vk::ImageAspectFlagBits>(m_subresource_range.aspect_mask))
-                .setBaseMipLevel(m_subresource_range.base_mip_level)
-                .setLevelCount(m_subresource_range.level_count)
-                .setBaseArrayLayer(m_subresource_range.base_array_layer)
-                .setLayerCount(m_subresource_range.layer_count);
+        const auto vk_subresource_range
+            = vk::ImageSubresourceRange {}
+                  .setAspectMask(narrow<vk::ImageAspectFlagBits>(m_subresource_range.aspect_mask))
+                  .setBaseMipLevel(m_subresource_range.base_mip_level)
+                  .setLevelCount(m_subresource_range.level_count)
+                  .setBaseArrayLayer(m_subresource_range.base_array_layer)
+                  .setLayerCount(m_subresource_range.layer_count);
 
         device.vkHandle()
             .createImageView({
                 .image            = *image.vkHandle(),
-                .viewType         = as<vk::ImageViewType>(m_type),
-                .format           = as<vk::Format>(image.format()),
+                .viewType         = narrow<vk::ImageViewType>(m_type),
+                .format           = narrow<vk::Format>(image.format()),
                 .components       = { .r = vk::ComponentSwizzle::eR,
-                                      .g = vk::ComponentSwizzle::eG,
-                                      .b = vk::ComponentSwizzle::eB,
-                                      .a = vk::ComponentSwizzle::eA },
+                                     .g = vk::ComponentSwizzle::eG,
+                                     .b = vk::ComponentSwizzle::eB,
+                                     .a = vk::ComponentSwizzle::eA },
                 .subresourceRange = vk_subresource_range,
-            })
+        })
             .transform(core::monadic::set(m_vk_image_view))
-            .transform_error(core::monadic::map(core::monadic::as<Result>(), throwError()));
+            .transform_error(
+                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
     }
 
     /////////////////////////////////////
@@ -355,15 +356,15 @@ namespace stormkit::gpu {
           m_flags { info.flags }, m_samples { info.samples }, m_usages { info.usages } {
         if (core::checkFlag(m_flags, gpu::ImageCreateFlag::Cube_Compatible)) m_faces = 6u;
         const auto create_info = vk::ImageCreateInfo {}
-                                     .setFlags(as<vk::ImageCreateFlagBits>(m_flags))
-                                     .setImageType(as<vk::ImageType>(m_type))
-                                     .setFormat(as<vk::Format>(m_format))
+                                     .setFlags(narrow<vk::ImageCreateFlagBits>(m_flags))
+                                     .setImageType(narrow<vk::ImageType>(m_type))
+                                     .setFormat(narrow<vk::Format>(m_format))
                                      .setExtent({ m_extent.width, m_extent.height, m_extent.depth })
                                      .setMipLevels(m_mip_levels)
                                      .setArrayLayers(m_layers * m_faces)
-                                     .setSamples(as<vk::SampleCountFlagBits>(m_samples))
-                                     .setTiling(as<vk::ImageTiling>(info.tiling))
-                                     .setUsage(as<vk::ImageUsageFlagBits>(m_usages))
+                                     .setSamples(narrow<vk::SampleCountFlagBits>(m_samples))
+                                     .setTiling(narrow<vk::ImageTiling>(info.tiling))
+                                     .setUsage(narrow<vk::ImageUsageFlagBits>(m_usages))
                                      .setSharingMode(vk::SharingMode::eExclusive)
                                      .setInitialLayout(vk::ImageLayout::eUndefined);
 
@@ -374,26 +375,27 @@ namespace stormkit::gpu {
                 const auto requirements = m_vk_image->getMemoryRequirements();
 
                 const auto allocate_info = vma::AllocationCreateInfo {}.setRequiredFlags(
-                    as<vk::MemoryPropertyFlagBits>(info.property));
+                    narrow<vk::MemoryPropertyFlagBits>(info.property));
 
                 auto&& allocator = device.vmaAllocator();
 
-                auto&& [error, allocation] =
-                    allocator.allocateMemoryUnique(requirements, allocate_info);
+                auto&& [error, allocation]
+                    = allocator.allocateMemoryUnique(requirements, allocate_info);
 
                 m_vma_allocation = std::move(allocation);
 
                 if (error != vk::Result::eSuccess) [[unlikely]]
-                    return std::unexpected { as<vk::Result>(error) };
+                    return std::unexpected { narrow<vk::Result>(error) };
 
                 error = allocator.bindImageMemory(*m_vma_allocation, **m_vk_image);
 
                 if (error != vk::Result::eSuccess) [[unlikely]]
-                    return std::unexpected { as<vk::Result>(error) };
+                    return std::unexpected { narrow<vk::Result>(error) };
 
                 return {};
             })
-            .transform_error(core::monadic::map(core::monadic::as<Result>(), throwError()));
+            .transform_error(
+                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
     }
 
     /////////////////////////////////////

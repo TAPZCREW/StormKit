@@ -41,10 +41,10 @@ namespace stormkit::gpu {
         out.reserve(count);
 
         if (create_count > 0) {
-            const auto allocate_info =
-                vk::CommandBufferAllocateInfo { .commandPool = *vkHandle(),
-                                                .level = as<vk::CommandBufferLevel>(level),
-                                                .commandBufferCount = as<UInt32>(count) };
+            const auto allocate_info
+                = vk::CommandBufferAllocateInfo { .commandPool = *vkHandle(),
+                                                  .level = narrow<vk::CommandBufferLevel>(level),
+                                                  .commandBufferCount = as<UInt32>(count) };
 
             // TODO handle error here
             moveAndMerge(out, device.vkHandle().allocateCommandBuffers(allocate_info).value());
