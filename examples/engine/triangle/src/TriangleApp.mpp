@@ -47,9 +47,9 @@ TriangleApp::~TriangleApp() = default;
 ////////////////////////////////////////
 auto TriangleApp::run(std::span<const std::string_view> _) -> Int {
     m_application = engine::Application::create(APPLICATION_NAME, { 800u, 600u }, WINDOW_TITLE)
-                        .transform_error(expectsWithMessage("Failed to initialize Render engine"))
+                        .transform_error(assert("Failed to initialize Render engine"))
                         .value();
-    m_application->setUpdateFrameGraphCallback(curry(&TriangleApp::updateFrameGraph, this));
+    m_application->setUpdateFrameGraphCallback(bindFront(&TriangleApp::updateFrameGraph, this));
 
     auto& window        = m_application->window();
     auto& event_handler = m_application->eventHandler();
@@ -60,16 +60,16 @@ auto TriangleApp::run(std::span<const std::string_view> _) -> Int {
 
     m_vertex_shader =
         gpu::Shader::fromBytes(renderer.device(), SHADER_DATA, gpu::ShaderStageFlag::Vertex)
-            .transform_error(expectsWithMessage("Failed to load vertex shader"))
+            .transform_error(assert("Failed to load vertex shader"))
             .value();
 
     m_fragment_shader =
         gpu::Shader::fromBytes(renderer.device(), SHADER_DATA, gpu::ShaderStageFlag::Fragment)
-            .transform_error(expectsWithMessage("Failed to load fragment shader"))
+            .transform_error(assert("Failed to load fragment shader"))
             .value();
 
     m_pipeline_layout = gpu::PipelineLayout::create(renderer.device(), {})
-                            .transform_error(expectsWithMessage("Failed to create pipeline layout"))
+                            .transform_error(assert("Failed to create pipeline layout"))
                             .value();
 
     event_handler.setCallbacks(
@@ -132,7 +132,7 @@ auto TriangleApp::updateFrameGraph(engine::FrameGraphBuilder& graph,
                                                                      m_fragment_shader) } },
                             m_pipeline_layout,
                             *render_pass)
-                            .transform_error(expectsWithMessage("Failed to create pipeline"))
+                            .transform_error(assert("Failed to create pipeline"))
                             .value();
                 }
 

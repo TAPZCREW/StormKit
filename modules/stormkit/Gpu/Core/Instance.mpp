@@ -218,8 +218,8 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE Instance::Instance(std::string app_name, bool enable_validation, Tag)
         : m_app_name { std::move(app_name) }, m_validation_layers_enabled { enable_validation } {
         doInitInstance()
-            .and_then(curry(&Instance::doInitDebugReportCallback, this))
-            .and_then(curry(&Instance::doRetrievePhysicalDevices, this))
+            .and_then(bindFront(&Instance::doInitDebugReportCallback, this))
+            .and_then(bindFront(&Instance::doRetrievePhysicalDevices, this))
             .transform_error(
                 core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwError()));
     }

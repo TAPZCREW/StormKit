@@ -1395,7 +1395,7 @@ namespace stormkit::gpu {
                    [this, &level](vk::raii::CommandBuffer&& cmb) noexcept -> decltype(auto) {
                        return CommandBuffer::create(level,
                                                     std::move(cmb),
-                                                    curry(&CommandPool::deleteVkCommandBuffer,
+                                                    bindFront(&CommandPool::deleteVkCommandBuffer,
                                                           const_cast<CommandPool*>(this)));
                    })
                | std::ranges::to<std::vector>();
@@ -1422,7 +1422,7 @@ namespace stormkit::gpu {
                    [this, &level](vk::raii::CommandBuffer&& cmb) noexcept -> decltype(auto) {
                        return CommandBuffer::allocate(level,
                                                       std::move(cmb),
-                                                      curry(&CommandPool::deleteVkCommandBuffer,
+                                                      bindFront(&CommandPool::deleteVkCommandBuffer,
                                                             const_cast<CommandPool*>(this)));
                    })
                | std::ranges::to<std::vector>();

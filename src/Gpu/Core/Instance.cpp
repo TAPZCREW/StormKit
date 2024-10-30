@@ -185,7 +185,7 @@ namespace stormkit::gpu {
 
         return m_vk_context->createInstance(create_info)
             .transform(core::monadic::set(m_vk_instance))
-            .and_then(curry(&Instance::doInitDebugReportCallback, this))
+            .and_then(bindFront(&Instance::doInitDebugReportCallback, this))
             .transform(
                 [this]() noexcept { VULKAN_HPP_DEFAULT_DISPATCHER.init(*m_vk_instance.get()); });
     }

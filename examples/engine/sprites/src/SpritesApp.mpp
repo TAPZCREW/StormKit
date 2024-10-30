@@ -40,7 +40,7 @@ SpritesApp::~SpritesApp() = default;
 ////////////////////////////////////////
 auto SpritesApp::run(std::span<const std::string_view> _) -> Int {
     m_application = engine::Application::create(APPLICATION_NAME, { 800u, 600u }, WINDOW_TITLE)
-                        .transform_error(expectsWithMessage("Failed to initialize Render engine"))
+                        .transform_error(assert("Failed to initialize Render engine"))
                         .value();
 
     auto& window        = m_application->window();
@@ -50,7 +50,7 @@ auto SpritesApp::run(std::span<const std::string_view> _) -> Int {
 
     auto& render_system = world.addSystem<engine::SpriteRenderSystem>(renderer, window.extent());
     m_application->setUpdateFrameGraphCallback(
-        curry(&engine::SpriteRenderSystem::updateFrameGraph, &render_system));
+        bindFront(&engine::SpriteRenderSystem::updateFrameGraph, &render_system));
 
     engine::makeSprite(world, { 32.f, 32.f });
 

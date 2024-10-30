@@ -33,7 +33,11 @@ export namespace stormkit { inline namespace core {
 
     template<typename Func, typename... Args>
     // requires(std::invocable<Func, Args...>)
-    [[nodiscard]] constexpr auto curry(Func&& func, Args&&... args) noexcept -> decltype(auto);
+    [[nodiscard]] constexpr auto bindFront(Func&& func, Args&&... args) noexcept -> decltype(auto);
+
+    template<typename Func, typename... Args>
+    // requires(std::invocable<Func, Args...>)
+    [[nodiscard]] constexpr auto bindBack(Func&& func, Args&&... args) noexcept -> decltype(auto);
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -69,7 +73,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename Func, typename... Args>
     // requires(std::invocable<Func, Args...>)
-    STORMKIT_FORCE_INLINE constexpr auto curry(Func&& func, Args&&... args) noexcept
+    STORMKIT_FORCE_INLINE constexpr auto bindFront(Func&& func, Args&&... args) noexcept
         -> decltype(auto) {
         return std::bind_front(std::forward<Func>(func), std::forward<Args>(args)...);
     }
@@ -78,13 +82,17 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename Func, typename... Args>
     // requires(std::invocable<Func, Args...>)
-    STORMKIT_FORCE_INLINE constexpr auto curryBack(Func&& func, Args&&... args) noexcept
+    STORMKIT_FORCE_INLINE constexpr auto bindBack(Func&& func, Args&&... args) noexcept
         -> decltype(auto) {
+#if defined(__cpp_lib_bind_back) and __cpp_lib_bind_back >= 202202L
+        return std::bind_back(std::forward<Func>(func), std::forward<Args>(args)...);
+#else
         return [&]<typename... CallArgs>(CallArgs&&... call_args) noexcept(
                    std::is_nothrow_invocable_v<Func, CallArgs..., Args...>) -> decltype(auto) {
             return std::invoke(std::forward<Func>(func),
                                std::forward<CallArgs>(call_args)...,
                                std::forward<Args>(args)...);
         };
+#endif
     }
 }} // namespace stormkit::core
