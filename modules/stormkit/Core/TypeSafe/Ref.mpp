@@ -62,83 +62,72 @@ export {
 
             PointerType m_value;
 
-            template<meta::IsRawPointer U>
-            friend constexpr auto borrow(const U& value STORMKIT_LIFETIMEBOUND) noexcept
-                -> decltype(auto);
+            template<meta::IsNonOwningPointer U>
+            friend constexpr auto borrow(const U& value) noexcept -> decltype(auto);
 
             template<meta::IsOwningPointer U>
-            friend constexpr auto borrow(const U& value STORMKIT_LIFETIMEBOUND) noexcept
-                -> decltype(auto);
+            friend constexpr auto borrow(const U& value) noexcept -> decltype(auto);
 
-            template<typename U>
-                requires(not meta::IsPointer<meta::CanonicalType<U>>)
-            friend constexpr auto borrow(T& value) noexcept -> decltype(auto);
+            template<meta::IsNotPointer U>
+            friend constexpr auto borrow(const U& value) noexcept -> decltype(auto);
 
-            template<meta::IsRawPointer U>
+            template<meta::IsNonOwningPointer U>
                 requires meta::IsNotConst<meta::ElementType<U>>
-            friend constexpr auto borrowMut(const U& value STORMKIT_LIFETIMEBOUND) noexcept
-                -> decltype(auto);
+            friend constexpr auto borrowMut(const U& value) noexcept -> decltype(auto);
 
             template<meta::IsOwningPointer U>
                 requires meta::IsNotConst<meta::ElementType<U>>
-            friend constexpr auto borrowMut(const U& value STORMKIT_LIFETIMEBOUND) noexcept
-                -> decltype(auto);
+            friend constexpr auto borrowMut(const U& value) noexcept -> decltype(auto);
 
-            template<typename U>
-                requires(not meta::IsPointer<meta::CanonicalType<U>> and meta::IsNotConst<U>)
+            template<meta::IsNotPointer U>
+                requires meta::IsNotConst<U>
             friend constexpr auto borrowMut(U& value) noexcept -> decltype(auto);
         };
 
         template<typename T>
         using OptionalRef = std::optional<Ref<T>>;
 
-        template<meta::IsRawPointer T>
-        [[nodiscard]] constexpr auto borrow(const T& value STORMKIT_LIFETIMEBOUND) noexcept
-            -> decltype(auto);
-
-        template<meta::IsOwningPointer T>
-        [[nodiscard]] constexpr auto borrow(const T& value STORMKIT_LIFETIMEBOUND) noexcept
-            -> decltype(auto);
-
-        template<typename T>
-            requires(not meta::IsPointer<meta::CanonicalType<T>>)
+        template<meta::IsNonOwningPointer T>
         [[nodiscard]] constexpr auto borrow(const T& value) noexcept -> decltype(auto);
 
-        template<meta::IsRawPointer T>
-            requires meta::IsNotConst<meta::ElementType<T>>
-        [[nodiscard]] constexpr auto borrowMut(const T& value STORMKIT_LIFETIMEBOUND) noexcept
+        template<meta::IsOwningPointer T>
+        [[nodiscard]] constexpr auto borrow(const T& value STORMKIT_LIFETIMEBOUND) noexcept
             -> decltype(auto);
+
+        template<meta::IsNotPointer T>
+        [[nodiscard]] constexpr auto borrow(const T& value STORMKIT_LIFETIMEBOUND) noexcept
+            -> decltype(auto);
+
+        template<meta::IsNonOwningPointer T>
+            requires meta::IsNotConst<meta::ElementType<T>>
+        [[nodiscard]] constexpr auto borrowMut(const T& value) noexcept -> decltype(auto);
 
         template<meta::IsOwningPointer T>
             requires meta::IsNotConst<meta::ElementType<T>>
         [[nodiscard]] constexpr auto borrowMut(const T& value STORMKIT_LIFETIMEBOUND) noexcept
             -> decltype(auto);
 
-        template<typename T>
-            requires(not meta::IsPointer<meta::CanonicalType<T>> and meta::IsNotConst<T>)
-        [[nodiscard]] constexpr auto borrowMut(T& value) noexcept -> decltype(auto);
+        template<meta::IsNotPointer T>
+            requires meta::IsNotConst<T>
+        [[nodiscard]] constexpr auto borrowMut(T& value STORMKIT_LIFETIMEBOUND) noexcept
+            -> decltype(auto);
 
         template<template<typename...> typename Out, typename... Args>
-            requires(meta::AreIndirections<Args...>)
-        [[nodiscard]] constexpr auto borrows(Args&&... args) noexcept -> decltype(auto);
+        [[nodiscard]] constexpr auto borrows(const Args&... args) noexcept -> decltype(auto);
         template<template<typename, std::size_t> typename Out = std::array, typename... Args>
-            requires(meta::AreIndirections<Args...>)
-        [[nodiscard]] constexpr auto borrows(Args&&... args) noexcept -> decltype(auto);
-
+        [[nodiscard]] constexpr auto borrows(const Args&... args) noexcept -> decltype(auto);
         template<template<typename...> class Out = std::vector, std::ranges::range T>
             requires(std::ranges::range<Out<typename T::value_type>>)
-        [[nodiscard]] constexpr auto toRefs(T& range) noexcept -> decltype(auto);
+        [[nodiscard]] constexpr auto toRefs(const T& range) noexcept -> decltype(auto);
 
         template<template<typename...> typename Out, typename... Args>
-            requires(meta::AreIndirections<Args...>)
         [[nodiscard]] constexpr auto borrowMuts(Args&&... args) noexcept -> decltype(auto);
         template<template<typename, std::size_t> typename Out = std::array, typename... Args>
-            requires(meta::AreIndirections<Args...>)
         [[nodiscard]] constexpr auto borrowMuts(Args&&... args) noexcept -> decltype(auto);
 
         template<template<typename...> class Out = std::vector, std::ranges::range T>
             requires(std::ranges::range<Out<typename T::value_type>>)
-        [[nodiscard]] constexpr auto toMutRefs(T& range) noexcept -> decltype(auto);
+        [[nodiscard]] constexpr auto toMutRefs(const T& range) noexcept -> decltype(auto);
 
         /*template<template<typename, std::size_t> class Out = std::array, std::ranges::range T>*/
         /*    requires(std::ranges::range<Out<typename T::value_type>>)*/
@@ -256,9 +245,9 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsRawPointer T>
+    template<meta::IsNonOwningPointer T>
     STORMKIT_FORCE_INLINE constexpr auto borrow(const T& value) noexcept -> decltype(auto) {
-        return Ref<const meta::ElementType<T>> { *value };
+        return Ref<const meta::ElementType<T>> { std::to_address(value) };
     }
 
     /////////////////////////////////////
@@ -270,18 +259,21 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T>
-        requires(not meta::IsPointer<meta::CanonicalType<T>>)
+    template<meta::IsNotPointer T>
     STORMKIT_FORCE_INLINE constexpr auto borrow(const T& value) noexcept -> decltype(auto) {
-        return borrow(&value);
+        if constexpr (meta::IsOptionalType<T>) {
+            expects(value != std::nullopt);
+            return borrow(&value.get());
+        } else
+            return borrow(&value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsRawPointer T>
+    template<meta::IsNonOwningPointer T>
         requires meta::IsNotConst<meta::ElementType<T>>
     STORMKIT_FORCE_INLINE constexpr auto borrowMut(const T& value) noexcept -> decltype(auto) {
-        return Ref<meta::ElementType<T>> { *value };
+        return Ref<meta::ElementType<T>> { std::to_address(value) };
     }
 
     /////////////////////////////////////
@@ -294,35 +286,37 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T>
-        requires(not meta::IsPointer<meta::CanonicalType<T>> and meta::IsNotConst<T>)
+    template<meta::IsNotPointer T>
+        requires meta::IsNotConst<T>
     STORMKIT_FORCE_INLINE constexpr auto borrowMut(T& value) noexcept -> decltype(auto) {
-        return borrowMut(&value);
+        if constexpr (meta::IsOptionalType<T>) {
+            expects(value != std::nullopt);
+            return borrowMut(&value.get());
+        } else
+            return borrowMut(&value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<template<typename...> typename Out, typename... Args>
-        requires(meta::AreIndirections<Args...>)
-    STORMKIT_FORCE_INLINE constexpr auto borrows(Args&&... args) noexcept -> decltype(auto) {
-        return Out { { borrow(std::forward<Args>(args))... } };
+    STORMKIT_FORCE_INLINE constexpr auto borrows(const Args&... args) noexcept -> decltype(auto) {
+        return Out { { borrow(args)... } };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<template<typename, std::size_t> typename Out = std::array, typename... Args>
-        requires(meta::AreIndirections<Args...>)
-    STORMKIT_FORCE_INLINE constexpr auto borrows(Args&&... args) noexcept -> decltype(auto) {
-        return Out { borrow(std::forward<Args>(args))... };
+    STORMKIT_FORCE_INLINE constexpr auto borrows(const Args&... args) noexcept -> decltype(auto) {
+        return Out { borrow(args)... };
     }
 
     template<template<typename...> class Out = std::vector, std::ranges::range T>
         requires(std::ranges::range<Out<typename T::value_type>>)
-    STORMKIT_FORCE_INLINE constexpr auto toRefs(T& args) noexcept -> decltype(auto) {
+    STORMKIT_FORCE_INLINE constexpr auto toRefs(const T& args) noexcept -> decltype(auto) {
         // clang-format off
         return args
-               | std::views::transform([]<class U>(U&& val) static noexcept -> decltype(auto) {
-                   return borrow(std::forward<U>(val));
+               | std::views::transform([]<class U>(const U& val) static noexcept -> decltype(auto) {
+                   return borrow(val);
                }) 
                | std::ranges::to<Out>();
         // clang-format on
@@ -331,7 +325,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<template<typename...> typename Out, typename... Args>
-        requires(meta::AreIndirections<Args...>)
     STORMKIT_FORCE_INLINE constexpr auto borrowMuts(Args&&... args) noexcept -> decltype(auto) {
         return Out { { borrowMut(std::forward<Args>(args))... } };
     }
@@ -339,18 +332,17 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<template<typename, std::size_t> typename Out = std::array, typename... Args>
-        requires(meta::AreIndirections<Args...>)
     STORMKIT_FORCE_INLINE constexpr auto borrowMuts(Args&&... args) noexcept -> decltype(auto) {
-        return Out { borrowMut(std::forward<Args>(args))... };
+        return Out { { borrowMut(std::forward<Args>(args))... } };
     }
 
     template<template<typename...> class Out = std::vector, std::ranges::range T>
         requires(std::ranges::range<Out<typename T::value_type>>)
-    STORMKIT_FORCE_INLINE constexpr auto toMutRefs(T& args) noexcept -> decltype(auto) {
+    STORMKIT_FORCE_INLINE constexpr auto toMutRefs(const T& args) noexcept -> decltype(auto) {
         // clang-format off
         return args
-               | std::views::transform([]<class U>(U&& val) static noexcept -> decltype(auto) {
-                   return borrowMut(std::forward<U>(val));
+               | std::views::transform([]<class U>(U& val) static noexcept -> decltype(auto) {
+                   return borrowMut(val);
                }) 
                | std::ranges::to<Out>();
         // clang-format on

@@ -427,7 +427,6 @@ namespace stormkit::entities {
 
         // clang-format off
         return self.m_systems 
-               | std::views::transform(monadic::forwardLike<Self>())
                | std::views::transform(borrower)
                | std::ranges::to<std::vector>();
         // clang-format on
