@@ -6,4 +6,12 @@ export module stormkit.Core:Config;
 
 import std;
 
+#if defined(__clang__)
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Winclude-angled-in-module-purview"
+#endif
 #include <stormkit/Core/Config.hpp>
+#if defined(__clang__)
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Winclude-angled-in-module-purview"
+#endif
