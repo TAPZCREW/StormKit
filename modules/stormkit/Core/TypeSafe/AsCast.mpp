@@ -247,6 +247,9 @@ export namespace stormkit { inline namespace core {
             template<meta::IsStrictOneOf<std::string, std::string_view> To, meta::IsArithmetic From>
             [[nodiscard]] constexpr auto as(const From& value) -> To;
 
+            template<meta::IsArithmetic To, meta::Is<std::string_view> From>
+            [[nodiscard]] constexpr auto as(const From& value) noexcept -> To;
+
             template<typename To, typename From>
             [[nodiscard]] constexpr auto narrow(From&& value) noexcept -> To;
         } // namespace core
@@ -751,11 +754,23 @@ namespace stormkit { inline namespace core {
         /////////////////////////////////////
         /////////////////////////////////////
         template<meta::IsStrict<std::string> To, meta::IsArithmetic From>
-        [[nodiscard]] constexpr auto as(const From& value) -> To {
-            static thread_local auto buf    = std::array<char, 20> {};
-            const auto               result = std::to_chars(std::begin(buf), std::end(buf), value);
+        STORMKIT_FORCE_INLINE constexpr auto as(const From& value) noexcept -> To {
+            static thread_local auto buf = std::array<char, 20> {};
+            const auto               result
+                = std::to_chars(std::ranges::begin(buf), std::ranges::end(buf), value);
             ensures(result.ec != std::errc {}, std::make_error_code(result.ec).message());
             return To { std::begin(buf), static_cast<std::size_t>(result.ptr - std::begin(buf)) };
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<meta::IsArithmetic To, meta::Is<std::string_view> From>
+        STORMKIT_FORCE_INLINE constexpr auto as(const From& value) noexcept -> To {
+            auto       out = To {};
+            const auto result
+                = std::from_chars(std::ranges::cbegin(value), std::ranges::cend(value), out);
+            ensures(result.ec != std::errc {}, std::make_error_code(result.ec).message());
+            return out;
         }
 
         /////////////////////////////////////
