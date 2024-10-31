@@ -47,7 +47,6 @@ modules = {
 		end,
 	},
 	log = {
-		public_packages = { "frozen" },
 		modulename = "Log",
 		public_deps = { "stormkit-core" },
 		has_headers = true,
@@ -57,7 +56,6 @@ modules = {
 		public_deps = { "stormkit-core" },
 	},
 	image = {
-		public_packages = { "frozen" },
 		packages = { "libktx", "libpng", "libjpeg-turbo" },
 		modulename = "Image",
 		public_deps = { "stormkit-core" },
