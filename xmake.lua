@@ -8,8 +8,9 @@ modules = {
 				add_packages("wil")
 			end
 
-			set_configdir("$(buildir)/.gens/include/stormkit/Core")
-			add_configfiles("include/stormkit/Core/(**.hpp.in)")
+			set_configdir("$(buildir)/.gens/include/")
+			add_configfiles("include/(stormkit/Core/**.hpp.in)")
+      add_headerfiles("$(buildir)/.gens/include/(stormkit/Core/**.hpp)")
 
 			add_files("modules/stormkit/Core.mpp")
 			add_includedirs("$(buildir)/.gens/include", { public = true })
@@ -189,8 +190,9 @@ local allowedmodes = {
 }
 
 add_repositories("nazara-engine-repo https://github.com/NazaraEngine/xmake-repo")
+add_repositories("tapzcrew-repo https://github.com/Tapzcrew/xmake-repo main")
 
-set_xmakever("2.7.4")
+set_xmakever("2.9.5")
 set_project("StormKit")
 
 set_version("0.1.0", { build = "%Y%m%d%H%M" })
@@ -438,7 +440,7 @@ for name, module in pairs(modules) do
 
 			local src_path = path.join("src", modulename)
 			local module_path = path.join("modules", "stormkit", modulename)
-			local include_path = path.join("include", "stormkit", modulename)
+			local include_path = path.join("include", "(stormkit", modulename)
 
 			for _, file in ipairs(os.files(path.join(src_path, "**.mpp"))) do
 				add_files(file)
@@ -469,11 +471,10 @@ for name, module in pairs(modules) do
 				end
 			end
 
-			for _, file in ipairs(os.files(path.join(include_path, "**.inl"))) do
-				add_headerfiles(file)
-			end
-			for _, file in ipairs(os.files(path.join(include_path, "**.hpp"))) do
-				add_headerfiles(file)
+      local _include_path = include_path:gsub("%(", "")
+      if os.exists(_include_path) then
+        add_headerfiles(path.join(include_path, "**.inl)"))
+        add_headerfiles(path.join(include_path, "**.hpp)"))
 			end
 
 			if is_plat("windows") or is_plat("mingw") then

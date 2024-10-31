@@ -758,7 +758,7 @@ namespace stormkit { inline namespace core {
             static thread_local auto buf = std::array<char, 20> {};
             const auto               result
                 = std::to_chars(std::ranges::begin(buf), std::ranges::end(buf), value);
-            ensures(result.ec != std::errc {}, std::make_error_code(result.ec).message());
+            ensures(result.ec == std::errc {}, std::make_error_code(result.ec).message());
             return To { std::begin(buf), static_cast<std::size_t>(result.ptr - std::begin(buf)) };
         }
 
@@ -769,7 +769,7 @@ namespace stormkit { inline namespace core {
             auto       out = To {};
             const auto result
                 = std::from_chars(std::ranges::cbegin(value), std::ranges::cend(value), out);
-            ensures(result.ec != std::errc {}, std::make_error_code(result.ec).message());
+            ensures(result.ec == std::errc {}, std::make_error_code(result.ec).message());
             return out;
         }
 
