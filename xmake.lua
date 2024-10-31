@@ -135,7 +135,7 @@ modules = {
         has_headers = true,
         public_packages = {
             "vulkan-headers v1.3.297",
-            "vulkan-memory-allocator >= 3.1.0",
+            "vulkan-memory-allocator >=3.1.0",
             "vulkan-memory-allocator-hpp",
         },
         public_deps = { "stormkit-core", "stormkit-log", "stormkit-wsi", "stormkit-image" },
