@@ -59,6 +59,9 @@ export namespace stormkit { inline namespace core { namespace monadic {
                                         std::invocable<T> auto&&         true_,
                                         std::invocable<T> auto&& false_) noexcept -> decltype(auto);
 
+    template<auto Index>
+    [[nodiscard]] constexpr auto get() noexcept -> decltype(auto);
+
     [[nodiscard]] constexpr auto is() noexcept -> decltype(auto);
 
     template<typename T>
@@ -220,6 +223,15 @@ namespace stormkit { inline namespace core { namespace monadic {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    template<auto Index>
+    STORMKIT_FORCE_INLINE constexpr auto get() noexcept -> decltype(auto) {
+        return []<typename U>(U&& value) static noexcept -> decltype(auto) {
+            return std::get<Index>(std::forward<U>(value));
+        };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     STORMKIT_FORCE_INLINE constexpr auto is() noexcept -> decltype(auto) {
         return []<typename T, typename U>(T&& first, U&& second) static noexcept {
             return core::is(std::forward<T>(first), std::forward<U>(second));
@@ -239,8 +251,8 @@ namespace stormkit { inline namespace core { namespace monadic {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE constexpr auto
         either(std::regular_invocable<Anything> auto&&... visitors) noexcept -> decltype(auto) {
-        return [... visitors
-                = std::forward<decltype(visitors)>(visitors)](auto&& variant) mutable noexcept {
+        return [... visitors = std::forward<decltype(visitors)>(visitors)](
+                   auto&& variant) mutable noexcept -> decltyp(auto) {
             return std::visit(core::Overloaded { std::forward<decltype(visitors)>(visitors)... },
                               std::forward<decltype(variant)>(variant));
         };
