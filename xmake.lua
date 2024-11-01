@@ -410,7 +410,6 @@ for name, module in pairs(modules) do
             add_defines("STORMKIT_BUILD")
             if is_mode("debug") then
                 add_defines("STORMKIT_BUILD_DEBUG")
-                add_defines("STORMKIT_ASSERT=1")
                 set_suffixname("-d")
             else
                 add_defines("STORMKIT_ASSERT=0")
