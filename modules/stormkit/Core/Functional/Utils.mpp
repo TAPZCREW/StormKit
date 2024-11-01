@@ -95,12 +95,13 @@ namespace stormkit { inline namespace core {
 #if defined(__cpp_lib_bind_back) and __cpp_lib_bind_back >= 202306L
         return std::bind_back<Func>(std::forward<Args>(args)...);
 #else
-        if constexpr (meta::IsPointer<decltype(Func)> or std::is_member_pointer_v<decltype(Func)>)
+        using FuncType = decltype(Func);
+        if constexpr (meta::IsPointer<FuncType> or std::is_member_pointer_v<FuncType>)
             static_assert(Func != nullptr);
         return
             [... bound_args(std::forward<Args>(args))]<typename Self, typename... CallArgs>(
                 this Self&&,
-                CallArgs&&... call_args) noexcept(std::is_nothrow_invocable_v<decltype(Func),
+                CallArgs&&... call_args) noexcept(std::is_nothrow_invocable_v<FuncType,
                                                                               CallArgs...,
                                                                               meta::ForwardLike<
                                                                                   Self,
