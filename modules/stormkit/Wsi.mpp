@@ -307,7 +307,11 @@ export {
             auto unlockMouse() noexcept -> void;
             auto hideMouse() noexcept -> void;
 
+#ifdef STORMKIT_OS_MACOS
+            [[nodiscard]] auto extent() const noexcept -> math::ExtentU;
+#else
             [[nodiscard]] auto extent() const noexcept -> const math::ExtentU&;
+#endif
             [[nodiscard]] auto title() const noexcept -> const std::string&;
 
             [[nodiscard]] auto isOpen() const noexcept -> bool;

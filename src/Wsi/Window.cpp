@@ -157,7 +157,11 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
+#ifdef STORMKIT_OS_MACOS
+    auto Window::extent() const noexcept -> math::ExtentU {
+#else
     auto Window::extent() const noexcept -> const math::ExtentU& {
+#endif
         return m_impl->extent();
     }
 
@@ -187,19 +191,19 @@ namespace stormkit::wsi {
 #elif defined(STORMKIT_OS_MACOS)
         return WM::macOS;
 #elif defined(STORMKIT_OS_IOS)
-        return WM::iOS;
+    return WM::iOS;
 #elif defined(STORMKIT_OS_ANDROID)
-        return WM::Android;
+    return WM::Android;
 #elif defined(STORMKIT_OS_SWITCH)
-        return WM::Switch;
+    return WM::Switch;
 #elif defined(STORMKIT_OS_LINUX)
-        auto is_wayland = std::getenv("WAYLAND_DISPLAY") != nullptr;
+    auto is_wayland = std::getenv("WAYLAND_DISPLAY") != nullptr;
 
-        if (wm_hint) return wm_hint.value();
-        else if (is_wayland)
-            return WM::Wayland;
-        else
-            return WM::X11;
+    if (wm_hint) return wm_hint.value();
+    else if (is_wayland)
+        return WM::Wayland;
+    else
+        return WM::X11;
 #endif
     }
 

@@ -256,7 +256,7 @@ namespace stormkit::wsi::macos {
         return macOSWindow::getMonitorSettings()
                | std::views::transform([](auto&& monitor) noexcept {
                      return Monitor {
-                         .flags   = as<Monitor::Flags>(monitor.flags),
+                         .flags   = narrow<Monitor::Flags>(monitor.flags),
                          .name    = std::move(monitor.name),
                          .extents = monitor.extents
                                     | std::views::transform([](auto&& extent) noexcept {

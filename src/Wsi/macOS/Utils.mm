@@ -7,6 +7,8 @@
 #include <cstdint>
 #include <utility>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-enum-enum-conversion"
 #import <AppKit/NSEvent.h>
 
 #import <Carbon/Carbon.h>
