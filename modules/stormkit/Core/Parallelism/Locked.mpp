@@ -238,7 +238,7 @@ namespace stormkit { inline namespace core {
         Locked<T, Mutex>::Access<Lock, Mode>::Access(ReferenceType value,
                                                      MutexType&    mutex,
                                                      LockArgs&&... lock_args) noexcept
-        : lock { mutex, std::forward<LockArgs>(lock_args)... }, m_value { value } {
+        : lock { mutex, std::forward<LockArgs>(lock_args)... }, m_value { borrowLike(value) } {
     }
 
     ////////////////////////////////////////

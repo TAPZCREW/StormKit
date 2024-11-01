@@ -82,6 +82,15 @@ export {
             template<meta::IsNotPointer U>
                 requires meta::IsNotConst<U>
             friend constexpr auto borrowMut(U& value) noexcept -> decltype(auto);
+
+            template<meta::IsNonOwningPointer U>
+            friend constexpr auto borrowLike(const U& value) noexcept -> decltype(auto);
+
+            template<meta::IsOwningPointer U>
+            friend constexpr auto borrowLike(const U& value) noexcept -> decltype(auto);
+
+            template<meta::IsNotPointer U>
+            friend constexpr auto borrowLike(U& value) noexcept -> decltype(auto);
         };
 
         template<typename T>
@@ -110,6 +119,17 @@ export {
         template<meta::IsNotPointer T>
             requires meta::IsNotConst<T>
         [[nodiscard]] constexpr auto borrowMut(T& value STORMKIT_LIFETIMEBOUND) noexcept
+            -> decltype(auto);
+
+        template<meta::IsNonOwningPointer T>
+        [[nodiscard]] constexpr auto borrowLike(const T& value) noexcept -> decltype(auto);
+
+        template<meta::IsOwningPointer T>
+        [[nodiscard]] constexpr auto borrowLike(const T& value STORMKIT_LIFETIMEBOUND) noexcept
+            -> decltype(auto);
+
+        template<meta::IsNotPointer T>
+        [[nodiscard]] constexpr auto borrowLike(T& value STORMKIT_LIFETIMEBOUND) noexcept
             -> decltype(auto);
 
         template<template<typename...> typename Out, typename... Args>
@@ -266,6 +286,31 @@ namespace stormkit { inline namespace core {
             return borrow(&value.get());
         } else
             return borrow(&value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsNonOwningPointer T>
+    STORMKIT_FORCE_INLINE constexpr auto borrowLike(const T& value) noexcept -> decltype(auto) {
+        return Ref<meta::ElementType<T>> { std::to_address(value) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsOwningPointer T>
+    STORMKIT_FORCE_INLINE constexpr auto borrowLike(const T& value) noexcept -> decltype(auto) {
+        return borrowLike(std::to_address(value));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsNotPointer T>
+    STORMKIT_FORCE_INLINE constexpr auto borrowLike(T& value) noexcept -> decltype(auto) {
+        if constexpr (meta::IsOptionalType<T>) {
+            expects(value != std::nullopt);
+            return borrowLike(&value.get());
+        } else
+            return borrowLike(&value);
     }
 
     /////////////////////////////////////
