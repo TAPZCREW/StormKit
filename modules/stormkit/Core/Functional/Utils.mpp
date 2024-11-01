@@ -92,7 +92,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<auto Func, typename... Args>
     STORMKIT_FORCE_INLINE constexpr auto bindBack(Args&&... args) noexcept -> decltype(auto) {
-#if defined(__cpp_lib_bind_back) and __cpp_lib_bind_back >= 202202L
+#if defined(__cpp_lib_bind_back) and __cpp_lib_bind_back >= 202306L
         return std::bind_back<Func>(std::forward<Args>(args)...);
 #else
         if constexpr (meta::IsPointer<decltype(Func)> or std::is_member_pointer_v<decltype(Func)>)
@@ -119,24 +119,6 @@ namespace stormkit { inline namespace core {
     template<typename Func, typename... Args>
     STORMKIT_FORCE_INLINE constexpr auto bindBack(Func&& func, Args&&... args) noexcept
         -> decltype(auto) {
-#if defined(__cpp_lib_bind_back) and __cpp_lib_bind_back >= 202202L
         return std::bind_back(std::forward<Func>(func), std::forward<Args>(args)...);
-#else
-        return
-            [func = std::forward<Func>(func),
-             ... bound_args(std::forward<Args>(args))]<typename Self, typename... CallArgs>(
-                this Self&&,
-                CallArgs&&... call_args) noexcept(std::is_nothrow_invocable_v<Func,
-                                                                              CallArgs...,
-                                                                              meta::ForwardLike<
-                                                                                  Self,
-                                                                                  meta::DecayType<
-                                                                                      Args>>...>)
-                -> decltype(auto) {
-                return std::invoke(func,
-                                   std::forward<CallArgs>(call_args)...,
-                                   std::forward_like<Self>(bound_args)...);
-            };
-#endif
     }
 }} // namespace stormkit::core
