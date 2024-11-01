@@ -411,8 +411,6 @@ for name, module in pairs(modules) do
             if is_mode("debug") then
                 add_defines("STORMKIT_BUILD_DEBUG")
                 set_suffixname("-d")
-            else
-                add_defines("STORMKIT_ASSERT=0")
             end
 
             if is_kind("static") then add_defines("STORMKIT_STATIC", { public = true }) end
