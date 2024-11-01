@@ -6,7 +6,7 @@
 ////////////////////////////////////////
 ////////////////////////////////////////
 void setThreadName(NSThread *id, const char *name) {
-    [id setName:[NSString stringWithCString:name]];
+    [id setName:[NSString stringWithCString:name encoding:NSASCIIStringEncoding]];
 }
 
 ////////////////////////////////////////

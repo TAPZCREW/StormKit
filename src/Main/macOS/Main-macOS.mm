@@ -7,6 +7,11 @@
 
 extern auto userMain(std::span<const std::string_view>) -> int;
 
+namespace stormkit {
+    extern auto setupSignalHandler() noexcept -> int;
+    extern auto setCurrentThreadName(std::string_view) noexcept -> void;
+} // namespace stormkit
+
 auto main(const int argc, const char **argv) -> int {
     [[NSFileManager defaultManager]
         changeCurrentDirectoryPath:[[NSBundle mainBundle] resourcePath]];
@@ -16,7 +21,7 @@ auto main(const int argc, const char **argv) -> int {
 
     auto args = std::vector<std::string_view> {};
 
-    for (auto i = 0u; i < argc; ++i) args.emplace_back(argv[i]);
+    for (auto i = 0u; i < static_cast<std::size_t>(argc); ++i) args.emplace_back(argv[i]);
 
     return userMain(args);
 }
