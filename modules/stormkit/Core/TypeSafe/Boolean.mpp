@@ -16,8 +16,7 @@ export {
     namespace stormkit { inline namespace core {
         class Boolean {
           public:
-            Boolean() = delete;
-
+            constexpr Boolean() noexcept;
             constexpr Boolean(bool value) noexcept;
 
             template<meta::IsIntegral T>
@@ -32,7 +31,7 @@ export {
             constexpr auto operator!() const noexcept -> Boolean;
 
           private:
-            bool m_value;
+            bool m_value = false;
         };
 
         constexpr auto operator==(Boolean first, Boolean second) noexcept -> bool;
@@ -54,6 +53,10 @@ export {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit { inline namespace core {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    constexpr Boolean::Boolean() noexcept = default;
+
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE constexpr Boolean::Boolean(bool value) noexcept : m_value { value } {
