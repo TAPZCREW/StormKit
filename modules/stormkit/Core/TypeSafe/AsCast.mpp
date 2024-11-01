@@ -308,7 +308,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, typename U>
-    constexpr auto is(T&& first, U&& second) noexcept -> decltype(auto) {
+    STORMKIT_FORCE_INLINE constexpr auto is(T&& first, U&& second) noexcept -> decltype(auto) {
         if constexpr (details::HasCustomIsQueryier<meta::CanonicalType<T>, meta::CanonicalType<U>>)
             return stormkit::casts::IsQueryier<meta::CanonicalType<T>, meta::CanonicalType<U>>::
                 operator()(std::forward<T>(first), std::forward<U>(second));
@@ -320,7 +320,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, typename U>
-    constexpr auto is(U&& value) noexcept -> decltype(auto) {
+    STORMKIT_FORCE_INLINE constexpr auto is(U&& value) noexcept -> decltype(auto) {
         if constexpr (details::HasCustomIsQueryier<T, meta::CanonicalType<U>>)
             return stormkit::casts::IsQueryier<T, meta::CanonicalType<U>>::operator()(
                 std::forward<U>(value));
@@ -331,7 +331,9 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, typename U>
-    constexpr auto as(U&& value, const std::source_location& location) noexcept -> decltype(auto) {
+    STORMKIT_FORCE_INLINE constexpr auto as(U&&                         value,
+                                            const std::source_location& location) noexcept
+        -> decltype(auto) {
         if constexpr (details::HasCustomAsCast<T, meta::CanonicalType<U>>)
             return stormkit::casts::AsCaster<T, meta::CanonicalType<U>>::operator()(std::forward<U>(
                                                                                         value),
@@ -343,7 +345,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, typename U>
-    constexpr auto narrow(U&& value) noexcept -> decltype(auto) {
+    STORMKIT_FORCE_INLINE constexpr auto narrow(U&& value) noexcept -> decltype(auto) {
         if constexpr (details::HasCustomNarrowCast<T, meta::CanonicalType<U>>)
             return stormkit::casts::NarrowCaster<T, meta::CanonicalType<U>>::operator()(
                 std::forward<U>(value));
@@ -457,7 +459,8 @@ namespace stormkit { inline namespace core {
         /////////////////////////////////////
         template<meta::IsStrictOneOf<bool, Boolean> To, typename From>
             requires std::convertible_to<To, meta::CanonicalType<From>>
-        constexpr auto as(From&& value, const std::source_location&) noexcept -> To {
+        STORMKIT_FORCE_INLINE constexpr auto as(From&& value, const std::source_location&) noexcept
+            -> To {
             return static_cast<bool>(std::forward<From>(value));
         }
 
