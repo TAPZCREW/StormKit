@@ -122,6 +122,13 @@ export namespace stormkit { inline namespace core {
                               const std::source_location& location
                               = std::source_location::current()) noexcept -> void;
 
+            // cast to boolean
+            template<meta::IsStrictOneOf<bool, Boolean> To, typename From>
+                requires std::convertible_to<To, meta::CanonicalType<From>>
+            constexpr auto as(From&&                      value,
+                              const std::source_location& location
+                              = std::source_location::current()) noexcept -> To;
+
             // exact same type
             template<typename To, typename From>
                 requires(meta::IsStrict<To, meta::CanonicalType<From>>)
@@ -444,6 +451,14 @@ namespace stormkit { inline namespace core {
             as([[maybe_unused]] From&&                      value,
                [[maybe_unused]] const std::source_location& location) noexcept -> void {
             static_assert(false, "no as caster for this type !");
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<meta::IsStrictOneOf<bool, Boolean> To, typename From>
+            requires std::convertible_to<To, meta::CanonicalType<From>>
+        constexpr auto as(From&& value, const std::source_location&) noexcept -> To {
+            return static_cast<bool>(std::forward<From>(value));
         }
 
         /////////////////////////////////////
