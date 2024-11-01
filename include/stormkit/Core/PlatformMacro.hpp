@@ -175,6 +175,10 @@ extern "C" {
     #define STORMKIT_POSIX
 #endif
 
+#ifdef __GLIBC__
+    #define STORMKIT_GLIBC
+#endif
+
 #ifdef _LIBCPP_VERSION
     #define STORMKIT_LIBCXX "libc++"
 inline constexpr auto STORMKIT_CXX_LIBRARY = STORMKIT_LIBCXX;
