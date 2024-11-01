@@ -124,9 +124,8 @@ namespace stormkit::wsi::macos {
         m_window->mouseUpEvent = [this](int button, Int32 x, Int32 y) noexcept {
             WindowImplBase::mouseUpEvent(as<MouseButton>(as<UInt8>(button)), x, y);
         };
-        m_window->mouseMoveEvent = [this](Int32 x, Int32 y) noexcept {
-            WindowImplBase::mouseMoveEvent(x, y);
-        };
+        m_window->mouseMoveEvent
+            = [this](Int32 x, Int32 y) noexcept { WindowImplBase::mouseMoveEvent(x, y); };
         m_window->mouseEnteredEvent = [this]() noexcept { WindowImplBase::mouseEnteredEvent(); };
         m_window->mouseExitedEvent  = [this]() noexcept { WindowImplBase::mouseExitedEvent(); };
         m_window->keyDownEvent      = [this](int key, char c) noexcept {
@@ -254,20 +253,20 @@ namespace stormkit::wsi::macos {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto WindowImpl::getMonitorSettings([[maybe_unused]] WM wm)
         -> std::vector<Monitor> {
-        return macOSWindow::getMonitorSettings() |
-               std::views::transform([](auto&& monitor) noexcept {
-                   return Monitor {
-                       .flags   = as<Monitor::Flags>(monitor.flags),
-                       .name    = std::move(monitor.name),
-                       .extents = monitor.extents |
-                                  std::views::transform([](auto&& extent) noexcept {
-                                      return math::ExtentU { extent.width, extent.height };
-                                  }) |
-                                  std::ranges::to<std::vector>(),
-                       .handle = monitor.handle,
-                   };
-               }) |
-               std::ranges::to<std::vector>();
+        return macOSWindow::getMonitorSettings()
+               | std::views::transform([](auto&& monitor) noexcept {
+                     return Monitor {
+                         .flags   = as<Monitor::Flags>(monitor.flags),
+                         .name    = std::move(monitor.name),
+                         .extents = monitor.extents
+                                    | std::views::transform([](auto&& extent) noexcept {
+                                          return math::ExtentU { extent.width, extent.height };
+                                      })
+                                    | std::ranges::to<std::vector>(),
+                         .handle = monitor.handle,
+                     };
+                 })
+               | std::ranges::to<std::vector>();
     }
 
     /////////////////////////////////////

@@ -15,7 +15,7 @@ import std;
 export namespace stormkit { inline namespace core {
     [[nodiscard]] auto getSTDErr() noexcept -> std::FILE*;
     [[nodiscard]] auto getSTDOut() noexcept -> std::FILE*;
-}} // namespace stormkit { inline namespace core {
+}} // namespace stormkit::core
 
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
@@ -29,4 +29,4 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE auto getSTDOut() noexcept -> std::FILE* {
         return std::bit_cast<std::FILE*>(stdout);
     }
-}}
+}} // namespace stormkit::core

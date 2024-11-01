@@ -83,7 +83,10 @@ namespace stormkit::wsi::common {
         WindowImplBase::mouseDownEvent(MouseButton button, Int32 x, Int32 y) noexcept -> void {
         auto event = Event {};
         event.type = EventType::MouseButtonPushed;
-        event.data = MouseButtonPushedEventData { .position = { x, y }, .button = button };
+        event.data = MouseButtonPushedEventData {
+            .position = { x, y },
+            .button   = button
+        };
 
         pushEvent(event);
     }
@@ -94,7 +97,10 @@ namespace stormkit::wsi::common {
         -> void {
         auto event = Event {};
         event.type = EventType::MouseButtonReleased;
-        event.data = MouseButtonReleasedEventData { .position = { x, y }, .button = button };
+        event.data = MouseButtonReleasedEventData {
+            .position = { x, y },
+            .button   = button
+        };
 
         pushEvent(event);
     }
@@ -104,7 +110,9 @@ namespace stormkit::wsi::common {
     STORMKIT_INLINE auto WindowImplBase::mouseMoveEvent(Int32 x, Int32 y) noexcept -> void {
         auto event = Event {};
         event.type = EventType::MouseMoved;
-        event.data = MouseMovedEventData { .position = { x, y } };
+        event.data = MouseMovedEventData {
+            .position = { x, y }
+        };
 
         pushEvent(event);
     }
@@ -164,7 +172,9 @@ namespace stormkit::wsi::common {
     STORMKIT_INLINE auto WindowImplBase::resizeEvent(UInt32 width, UInt32 height) noexcept -> void {
         auto event = Event {};
         event.type = EventType::Resized;
-        event.data = ResizedEventData { .extent { width, height } };
+        event.data = ResizedEventData {
+            .extent { width, height }
+        };
 
         pushEvent(event);
     }

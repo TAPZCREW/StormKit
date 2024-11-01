@@ -8,35 +8,34 @@
 #include <stormkit/Core/PlatformMacro.hpp>
 
 /// \brief `HASH_FUNC` declare hash func and define an operator== for a given `x` type
-#define HASH_FUNC(x, ...)                                                                        \
-    template<>                                                                                   \
-    struct STORMKIT_API std::hash<x> {                                                           \
+#define HASH_FUNC(x, ...)                                                                  \
+    template<>                                                                             \
+    struct STORMKIT_API std::hash<x> {                                                     \
         [[nodiscard]] auto operator()(const x& value) const noexcept -> stormkit::Hash64 { \
             auto hash = stormkit::Hash64 { 0 };                                            \
             stormkit::hashCombine(hash, __VA_ARGS__);                                      \
-            return hash;                                                                         \
-        }                                                                                        \
+            return hash;                                                                   \
+        }                                                                                  \
     };
 
-#define CONSTRAINED_HASH_FUNC(x, ...)                                                            \
-    template<x T>                                                                                \
-    struct STORMKIT_API std::hash<T> {                                                           \
+#define CONSTRAINED_HASH_FUNC(x, ...)                                                      \
+    template<x T>                                                                          \
+    struct STORMKIT_API std::hash<T> {                                                     \
         [[nodiscard]] auto operator()(const T& value) const noexcept -> stormkit::Hash64 { \
             auto hash = stormkit::Hash64 { 0 };                                            \
             stormkit::hashCombine(hash, __VA_ARGS__);                                      \
-            return hash;                                                                         \
-        }                                                                                        \
+            return hash;                                                                   \
+        }                                                                                  \
     };
 
-#define TEMPLATED_HASH_FUNC(x, z, y, ...)                               \
-    template<z y>                                                       \
-    struct STORMKIT_API std::hash<x<y>> {                               \
-        [[nodiscard]] auto operator()(const x<y>& value) const noexcept \
-            -> stormkit::Hash64 {                                 \
-            auto hash = stormkit::Hash64 { 0 };                   \
-            stormkit::hashCombine(hash, __VA_ARGS__);             \
-            return hash;                                                \
-        }                                                               \
+#define TEMPLATED_HASH_FUNC(x, z, y, ...)                                                     \
+    template<z y>                                                                             \
+    struct STORMKIT_API std::hash<x<y>> {                                                     \
+        [[nodiscard]] auto operator()(const x<y>& value) const noexcept -> stormkit::Hash64 { \
+            auto hash = stormkit::Hash64 { 0 };                                               \
+            stormkit::hashCombine(hash, __VA_ARGS__);                                         \
+            return hash;                                                                      \
+        }                                                                                     \
     };
 
 #define EQUAL_FUNC(x)                                                                           \

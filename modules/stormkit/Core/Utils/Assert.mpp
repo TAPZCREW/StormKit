@@ -114,7 +114,7 @@ namespace stormkit { inline namespace core {
     consteval auto generateConstevalMessage(AssertType type, std::string_view message) noexcept
         -> StringLiteral {
         auto       result = StringLiteral {};
-        const auto str    = "["s + casts::core::as<std::string>(type) + "] " + std::string { message };
+        const auto str = "["s + casts::core::as<std::string>(type) + "] " + std::string { message };
         std::ranges::copy(str, std::begin(result.buff));
         result.size = std::size(str);
         return result;

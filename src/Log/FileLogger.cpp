@@ -67,8 +67,8 @@ namespace stormkit::log {
                            [[maybe_unused]] const Module& m,
                            [[maybe_unused]] const char*   string) -> void {
         const auto now = LogClock::now();
-        const auto time =
-            std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time).count();
+        const auto time
+            = std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time).count();
 
         auto filepath = m_base_path / std::filesystem::path { toNativeEncoding(LOG_FILE_NAME) };
         if (not std::empty(m.name)) {

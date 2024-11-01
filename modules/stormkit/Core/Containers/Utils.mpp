@@ -41,8 +41,7 @@ export namespace stormkit { inline namespace core {
     constexpr auto viewAsBytes(T& data) -> decltype(auto);
 
     template<typename T>
-    constexpr auto viewAs(std::span<meta::ConstnessLike<T, core::Byte>> data)
-        -> decltype(auto);
+    constexpr auto viewAs(std::span<meta::ConstnessLike<T, core::Byte>> data) -> decltype(auto);
 
     template<std::ranges::range R1,
              std::ranges::range R2,
@@ -158,8 +157,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    constexpr auto viewAs(std::span<meta::ConstnessLike<T, core::Byte>> data)
-        -> decltype(auto) {
+    constexpr auto viewAs(std::span<meta::ConstnessLike<T, core::Byte>> data) -> decltype(auto) {
         return std::span<T> { std::bit_cast<T*>(std::ranges::data(data)),
                               std::ranges::size(data) / sizeof(T) };
     }

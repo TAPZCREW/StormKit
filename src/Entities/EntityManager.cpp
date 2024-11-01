@@ -70,8 +70,8 @@ namespace stormkit::entities {
     auto EntityManager::hasEntity(Entity entity) const -> bool {
         expects(entity != INVALID_ENTITY);
 
-        return std::ranges::any_of(entities(), monadic::is(entity)) or
-               std::ranges::any_of(m_added_entities, monadic::is(entity));
+        return std::ranges::any_of(entities(), monadic::is(entity))
+               or std::ranges::any_of(m_added_entities, monadic::is(entity));
     }
 
     /////////////////////////////////////

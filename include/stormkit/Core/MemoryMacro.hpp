@@ -32,18 +32,18 @@
     template<class y>                                              \
     using x##ConstWeakPtr = std::weak_ptr<const x<y>>;             \
     template<class y>                                              \
-    using x##Ref = stormkit::NakedRef<x<y>>;                 \
+    using x##Ref = stormkit::NakedRef<x<y>>;                       \
     template<class y>                                              \
     using x##ConstRef = stormkit::NakedRef<const x<y>>;
 
 /// \exclude
-#define DECLARE_PTR_AND_REF_(x)                                    \
-    using x##OwnedPtr               = std::unique_ptr<x>;          \
-    using x##SharedPtr              = std::shared_ptr<x>;          \
-    using x##std::shared_ptr<Const> = std::shared_ptr<const x>;    \
-    using x##WeakPtr                = std::weak_ptr<x>;            \
-    using x##ConstWeakPtr           = std::weak_ptr<const x>;      \
-    using x##Ref                    = stormkit::NakedRef<x>; \
+#define DECLARE_PTR_AND_REF_(x)                                 \
+    using x##OwnedPtr               = std::unique_ptr<x>;       \
+    using x##SharedPtr              = std::shared_ptr<x>;       \
+    using x##std::shared_ptr<Const> = std::shared_ptr<const x>; \
+    using x##WeakPtr                = std::weak_ptr<x>;         \
+    using x##ConstWeakPtr           = std::weak_ptr<const x>;   \
+    using x##Ref                    = stormkit::NakedRef<x>;    \
     using x##ConstRef               = stormkit::NakedRef<const x>;
 
 /// \brief Declare pointer and reference_wrapper aliases to a type

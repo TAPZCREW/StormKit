@@ -18,11 +18,16 @@ using namespace std::literals;
 namespace stormkit::log {
     namespace {
         constexpr auto StyleMap = frozen::make_unordered_map<Severity, ConsoleStyle>({
-            { Severity::Info,    ConsoleStyle { .fg = ConsoleColor::Green, .modifiers = StyleModifier::Inverse }   },
-            { Severity::Warning, ConsoleStyle { .fg = ConsoleColor::Magenta, .modifiers = StyleModifier::Inverse } },
-            { Severity::Error,   ConsoleStyle { .fg = ConsoleColor::Yellow, .modifiers = StyleModifier::Inverse }  },
-            { Severity::Fatal,   ConsoleStyle { .fg = ConsoleColor::Red, .modifiers = StyleModifier::Inverse }     },
-            { Severity::Debug,   ConsoleStyle { .fg = ConsoleColor::Cyan, .modifiers = StyleModifier::Inverse }    },
+            { Severity::Info,
+             ConsoleStyle { .fg = ConsoleColor::Green, .modifiers = StyleModifier::Inverse }   },
+            { Severity::Warning,
+             ConsoleStyle { .fg = ConsoleColor::Magenta, .modifiers = StyleModifier::Inverse } },
+            { Severity::Error,
+             ConsoleStyle { .fg = ConsoleColor::Yellow, .modifiers = StyleModifier::Inverse }  },
+            { Severity::Fatal,
+             ConsoleStyle { .fg = ConsoleColor::Red, .modifiers = StyleModifier::Inverse }     },
+            { Severity::Debug,
+             ConsoleStyle { .fg = ConsoleColor::Cyan, .modifiers = StyleModifier::Inverse }    },
         });
     }
 

@@ -419,8 +419,7 @@ namespace stormkit::entities {
     auto EntityManager::systems(this Self& self) noexcept
         -> std::vector<Ref<core::meta::ConstnessLike<Self, System>>> {
         const auto borrower = [] {
-            if constexpr(core::meta::IsConst<Self>)
-                return monadic::borrow();
+            if constexpr (core::meta::IsConst<Self>) return monadic::borrow();
             else
                 return monadic::borrowMut();
         }();
