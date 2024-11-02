@@ -321,7 +321,8 @@ add_cxflags(
     "clang::-Wno-missing-field-initializers",
     "clang::-Wno-include-angled-in-module-purview",
     "clang::-Wno-unknown-attributes",
-    "-Wno-deprecated-declarations"
+    "-Wno-deprecated-declarations",
+    "clang::-Wno-overriding-option" -- for libktx
 )
 add_mxflags("clang::-Wno-missing-field-initializers")
 
