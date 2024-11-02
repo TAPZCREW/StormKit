@@ -82,15 +82,11 @@ jobs:
           repo-name: llvm
           keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
 
-      - name: Install LLVM and Clang
-        uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: clang libc++-dev libc++1 libc++abi-dev libc++abi1 mold llvm-runtime llvm libxkbcommon-x11-dev libxkbcommon-x11 libktx-dev libktx xutils-dev x11proto-dev libxau-dev libxdmcp-dev libxcb1-dev libxcb-damage0-dev libxcb-render0-dev libxcb-randr0-dev libxcb-xrm-dev libxcb-xinput-dev libxcb-dpms0-dev libxcb-xvmc0-dev libxcb-xv0-dev libxcb-xtest0-dev libxcb-xfreedri0-dev libxcb-dri3-dev libxcb-glx0-dev libxcb-shape0-dev libxcb-present-dev libxcb-xkb-dev libxcb-xfixes0-dev libxcb-xevie0-dev libxcb-shm0-dev libxcb-dri2-0-dev libxcb-sync0-dev libxcb-composite0-dev libxcb-xinerama0-dev libxcb-screensaver-dev libxcb-record0-dev libxau-dev build-essential cmake libzstd-dev ninja-build doxygen graphviz opencl-c-headers mesa-opencl-icd
-
       - name: Configure & Build
         id: build
         run: |
-          xmake f -v -a ${{ (matrix.arch  == 'x64') && 'x86_64' || (matrix.arch == 'arm64') && 'aarch64' || matrix.arch }} --yes -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --sanitizers=${{ matrix.mode == 'debug' && 'y' || 'n' }} --examples=y --tests=y --toolchain=llvm --mold=y --runtimes="c++_shared"
+          sudo apt install pkg-config clang libc++-dev libc++1 libc++abi-dev libc++abi1 mold llvm-runtime llvm libxkbcommon-x11-dev xutils-dev x11proto-dev libxcb1-dev libxcb-randr0-dev libxcb-xinput-dev libxcb-xf86dri0-dev libxcb-dri3-dev libxcb-xkb-dev libxcb-xfixes0-dev libxau-dev build-essential cmake libzstd-dev ninja-build doxygen graphviz opencl-c-headers mesa-opencl-icd libjpeg-turbo8-dev libpng-dev zlib1g-dev
+          xmake f -vD -a ${{ (matrix.arch  == 'x64') && 'x86_64' || (matrix.arch == 'arm64') && 'aarch64' || matrix.arch }} --yes -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --sanitizers=${{ matrix.mode == 'debug' && 'y' || 'n' }} --examples=y --tests=y --toolchain=llvm --mold=y --runtimes="c++_shared"
           xmake b -v
 
       - name: Tests
