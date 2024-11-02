@@ -29,15 +29,16 @@ on:
 
 jobs:
   build:
-    name: ${{ matrix.os }}-x64 ( ${{ matrix.kind }}-${{ matrix.mode }} )
+    name: ${{ matrix.os }}-${{ matrix.arch }} ( ${{ matrix.kind }}-${{ matrix.mode }} )
     strategy:
       fail-fast: false
       matrix:
-        os: [macOS-latest]
+        os: [macOS-15]
+        arch: [x86_64, arm64]
         kind: [static, shared]
         mode: [release, debug]
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}${{ (matrix.arch == 'x86_64') && '-large' || '' }}
 
     concurrency:
       group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-macOS-${{ matrix.kind }}-${{ matrix.mode }}
