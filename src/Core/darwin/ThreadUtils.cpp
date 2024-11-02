@@ -1,6 +1,8 @@
 module;
 
+extern "C" {
 #include "ThreadUtilsImpl.h"
+}
 
 module stormkit.Core;
 
@@ -12,7 +14,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     auto setCurrentThreadName(std::string_view name) noexcept -> void {
-        ::setCurrentThreadName(std::data(name));
+        setCurrentNSThreadName(std::data(name));
     }
 
     ////////////////////////////////////////

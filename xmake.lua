@@ -67,6 +67,7 @@ modules = {
             add_cxflags("-Wno-main")
             set_strip("debug")
         end,
+        frameworks = is_plat("macosx") and { "CoreFoundation" } or nil,
     },
     wsi = {
         modulename = "Wsi",

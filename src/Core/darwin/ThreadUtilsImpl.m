@@ -5,13 +5,13 @@
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-void setThreadName(NSThread *id, const char *name) {
+void setNSThreadName(NSThread *id, const char *name) {
     [id setName:[NSString stringWithCString:name encoding:NSASCIIStringEncoding]];
 }
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-void setCurrentThreadName(const char *name) {
+void setCurrentNSThreadName(const char *name) {
     NSThread *id = [NSThread currentThread];
-    setThreadName(id, name);
+    setNSThreadName(id, name);
 }

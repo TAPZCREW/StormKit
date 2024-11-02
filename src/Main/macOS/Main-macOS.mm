@@ -5,19 +5,16 @@
 #include <string_view>
 #include <vector>
 
-extern auto userMain(std::span<const std::string_view>) -> int;
+#include "stormkit-Core.hpp"
 
-namespace stormkit {
-    extern auto setupSignalHandler() noexcept -> int;
-    extern auto setCurrentThreadName(std::string_view) noexcept -> void;
-} // namespace stormkit
+extern auto userMain(std::span<const std::string_view>) -> int;
 
 auto main(const int argc, const char **argv) -> int {
     [[NSFileManager defaultManager]
         changeCurrentDirectoryPath:[[NSBundle mainBundle] resourcePath]];
 
-    stormkit::setupSignalHandler();
-    stormkit::setCurrentThreadName("MainThread");
+    setupSignalHandler();
+    setCurrentThreadName("MainThread");
 
     auto args = std::vector<std::string_view> {};
 
