@@ -75,7 +75,6 @@ modules = {
         deps = { "stormkit-log" },
         packages = is_plat("linux") and {
             "libxkbcommon",
-            "libxkbcommon-x11",
             "libxcb",
             "xcb-util-keysyms",
             "xcb-util",
@@ -386,6 +385,7 @@ if get_config("lto") then
     if get_config("kind") == "static" then add_defines("STORMKIT_LTO") end
 end
 
+add_requireconfs("libxkbcommon", { configs = { ["x11"] = true, wayland = true } })
 add_requireconfs("frozen", { system = false })
 add_requires("cpptrace")
 
