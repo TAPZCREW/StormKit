@@ -43,7 +43,7 @@ jobs:
     runs-on: ${{ matrix.os }}-${{ matrix.arch }}
 
     concurrency:
-      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-Linux-${{ matrix.kind }}-${{ matrix.mode }}
+      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.kind }}-${{ matrix.mode }}
 
     steps:
       - name: Get current date as package key
