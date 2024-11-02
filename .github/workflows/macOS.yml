@@ -29,7 +29,7 @@ on:
 
 jobs:
   build:
-    name: ${{ matrix.os }}-${{ matrix.arch }} ( ${{ matrix.kind }}-${{ matrix.mode }} )
+    name: ${{ matrix.os }}-${{ matrix.arch }} (${{ matrix.kind }}-${{ matrix.mode }})
     strategy:
       fail-fast: false
       matrix:
