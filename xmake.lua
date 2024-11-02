@@ -169,6 +169,8 @@ modules = {
             if is_plat("linux") then
                 add_defines("VK_USE_PLATFORM_XCB_KHR", { public = true })
                 add_defines("VK_USE_PLATFORM_WAYLAND_KHR", { public = true })
+            elseif is_plat("macosx") then
+                add_defines("VK_USE_PLATFORM_MACOS_MVK", { public = true })
             elseif is_plat("windows") then
                 add_defines("VK_USE_PLATFORM_WIN32_KHR", { public = true })
             end
