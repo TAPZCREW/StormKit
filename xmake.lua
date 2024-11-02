@@ -287,7 +287,7 @@ option("vsxmake", { default = false, category = "root menu/support" })
 ---------------------------- global configs ----------------------------
 set_allowedmodes(allowedmodes)
 set_allowedplats("windows", "mingw", "linux", "macosx", "wasm")
-set_allowedarchs("windows|x64", "mingw|x86_64", "linux|x86_64", "macosx|x86_64")
+set_allowedarchs("windows|x64", "mingw|x86_64", "linux|x86_64", "linux|aarch64", "macosx|x86_64", "macosx|arm64")
 
 -- set_runtimes(is_mode("debug") and "MDd" or "MD")
 add_cxxflags(
