@@ -4,10 +4,6 @@
 
 export module stormkit.Core;
 
-// clang-format off
-
-// clang-format on
-
 export import :Config;
 export import :Containers;
 export import :Console;
