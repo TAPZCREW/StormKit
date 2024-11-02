@@ -1,44 +1,46 @@
+---
 name: Linux
 
 on:
   pull_request:
     branches: [main, develop]
     paths-ignore:
-      - '.github/workflows/Windows-LLVM.yml'
-      - '.github/workflows/Windows-MSVC.yml'
-      - '.github/workflows/macOS.yml'
-      - '.github/workflows/iOS.yml'
-      - '.github/workflows/Android.yml'
-      - '.github/workflows/AutoMerger.yml'
-      - '.gitignore'
-      - 'LICENSE'
-      - 'README.md'
+      - .github/workflows/Windows-LLVM.yml
+      - .github/workflows/Windows-MSVC.yml
+      - .github/workflows/macOS.yml
+      - .github/workflows/iOS.yml
+      - .github/workflows/Android.yml
+      - .github/workflows/AutoMerger.yml
+      - .gitignore
+      - LICENSE
+      - README.md
 
   push:
     branches: [develop]
     paths-ignore:
-      - '.github/workflows/Windows-MSVC.yml'
-      - '.github/workflows/Linux.yml'
-      - '.github/workflows/macOS.yml'
-      - '.github/workflows/iOS.yml'
-      - '.github/workflows/Android.yml'
-      - '.github/workflows/AutoMerger.yml'
-      - '.gitignore'
-      - 'LICENSE'
-      - 'README.md'
+      - .github/workflows/Windows-LLVM.yml
+      - .github/workflows/Windows-MSVC.yml
+      - .github/workflows/macOS.yml
+      - .github/workflows/iOS.yml
+      - .github/workflows/Android.yml
+      - .github/workflows/AutoMerger.yml
+      - .gitignore
+      - LICENSE
+      - README.md
 
 jobs:
   build:
-    name: ${{ matrix.os }}-x64 ( ${{ matrix.kind }}-${{ matrix.mode }} )
+    name: ${{ matrix.os }}-${{ matrix.arch }} ( ${{ matrix.kind }}-${{ matrix.mode }} )
 
     strategy:
       fail-fast: false
       matrix:
         os: [Linux]
+        arch: [x64, arm64]
         kind: [static, shared]
-        mode: [release, debug, asan]
+        mode: [release, debug]
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}-${{ matrix.arch }}
 
     concurrency:
       group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-Linux-${{ matrix.kind }}-${{ matrix.mode }}
@@ -52,44 +54,48 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-  
-      - name: Set xmake env
-        run: echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" >> $GITHUB_ENV
 
       - name: Install XMake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: branch@dev
-          actions-cache-folder: .xmake-cache-${{ steps.cache_key.outputs.key }}
+          xmake-version: Arthapz/xmake#branch@fix-xlinker-rpath-deduplication
+          actions-cache-folder: .xmake-cache
+          actions-cache-key: linux-${{ matrix.arch }}-ci
 
-      - name: Update xmake to patched xmake
-        run: xmake update -s https://github.com/Arthapz/xmake.git#modules
+      - name: Update xmake repository
+        run: xmake repo --update -v
 
       - name: Retrieve dependencies hash
         id: dep_hash
         run: echo "hash=$(xmake l utils.ci.packageskey)" >> $GITHUB_OUTPUT
 
-      - name: Retrieve cached xmake dependencies
-        uses: actions/cache@v4
+      # - name: Retrieve cached xmake dependencies
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
+      #     key: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ steps.dep_hash.outputs.hash }}-${{ steps.cache_key.outputs.key }}
+      
+      - name: Install LLVM and Clang
+        uses: KyleMayes/install-llvm-action@v2
         with:
-          path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
-          key: ${{ matrix.os }}-${{ matrix.mode }}-${{ steps.dep_hash.outputs.hash }}-${{ steps.cache_key.outputs.key }}
+          version: "19.1.3"
+          directory: ${{ runner.temp }}/llvm
 
       - name: Configure & Build
         id: build
         run: |
-          xmake f -v --yes -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --sanitizers=${{ matrix.mode == 'asan' && 'y' || 'n' }} --examples=y --tests=y --toolchain=llvm --mold=y --runtimes="c++_shared" --sdk="/opt/llvm-git/usr"
+          xmake f -v --yes -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --sanitizers=${{ matrix.mode == 'debug' && 'y' || 'n' }} --examples=y --tests=y --toolchain=llvm --mold=y --runtimes="c++_shared" --sdk="${{ runner.temp }}/llvm"
           xmake b -v
 
       - name: Tests
-        run: LD_LIBRARY_PATH="/opt/llvm-git/usr/lib" xmake test -v
+        run: xmake test -v
 
       - name: Installation
         run: xmake install -v --installdir="${{ runner.workspace }}/output"
 
       - name: Upload artifacts
         id: upload
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           name: Linux-x64-${{ matrix.kind }}-${{ matrix.mode }}
           path: ${{ runner.workspace }}/output
