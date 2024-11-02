@@ -30,17 +30,17 @@ on:
 
 jobs:
   build:
-    name: ${{ matrix.os }}-${{ matrix.arch }} ( ${{ matrix.kind }}-${{ matrix.mode }} )
+    name: Linux-${{ matrix.arch }} ( ${{ matrix.kind }}-${{ matrix.mode }} )
 
     strategy:
       fail-fast: false
       matrix:
-        os: [Linux]
+        os: [ubuntu-24.04]
         arch: [x64, arm64]
         kind: [static, shared]
         mode: [release, debug]
 
-    runs-on: ${{ matrix.os }}-${{ matrix.arch }}
+    runs-on: ${{ matrix.os }}
 
     concurrency:
       group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.kind }}-${{ matrix.mode }}
