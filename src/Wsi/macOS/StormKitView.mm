@@ -7,9 +7,11 @@
 
 #include "Utils.hpp"
 
+extern "C" {
 #import <AppKit/NSScreen.h>
 #import <AppKit/NSTrackingArea.h>
 #import <AppKit/NSWindow.h>
+}
 
 using namespace stormkit::wsi::macos;
 

@@ -14,6 +14,62 @@
 #include <string>
 #include <vector>
 
+static io_service_t IOServicePortFromCGDisplayID(CGDirectDisplayID displayID) {
+    io_iterator_t iter;
+    io_service_t serv, servicePort = 0;
+
+    CFMutableDictionaryRef matching = IOServiceMatching("IODisplayConnect");
+
+    // releases matching for us
+    kern_return_t err = IOServiceGetMatchingServices(kIOMainPortDefault, matching, &iter);
+    if (err) return 0;
+
+    while ((serv = IOIteratorNext(iter)) != 0) {
+        CFDictionaryRef info;
+        CFIndex vendorID, productID, serialNumber;
+        CFNumberRef vendorIDRef, productIDRef, serialNumberRef;
+        Boolean success;
+
+        info = IODisplayCreateInfoDictionary(serv, kIODisplayOnlyPreferredName);
+
+        vendorIDRef
+            = reinterpret_cast<CFNumberRef>(CFDictionaryGetValue(info, CFSTR(kDisplayVendorID)));
+        productIDRef
+            = reinterpret_cast<CFNumberRef>(CFDictionaryGetValue(info, CFSTR(kDisplayProductID)));
+        serialNumberRef = reinterpret_cast<CFNumberRef>(
+            CFDictionaryGetValue(info, CFSTR(kDisplaySerialNumber)));
+
+        success = CFNumberGetValue(vendorIDRef, kCFNumberCFIndexType, &vendorID);
+        success &= CFNumberGetValue(productIDRef, kCFNumberCFIndexType, &productID);
+        success &= CFNumberGetValue(serialNumberRef, kCFNumberCFIndexType, &serialNumber);
+
+        if (!success) {
+            CFRelease(info);
+            continue;
+        }
+
+        // If the vendor and product id along with the serial don't match
+        // then we are not looking at the correct monitor.
+        // NOTE: The serial number is important in cases where two monitors
+        //       are the exact same.
+        if (CGDisplayVendorNumber(displayID) != vendorID
+            || CGDisplayModelNumber(displayID) != productID
+            || CGDisplaySerialNumber(displayID) != serialNumber) {
+            CFRelease(info);
+            continue;
+        }
+
+        // The VendorID, Product ID, and the Serial Number all Match Up!
+        // Therefore we have found the appropriate display io_service
+        servicePort = serv;
+        CFRelease(info);
+        break;
+    }
+
+    IOObjectRelease(iter);
+    return servicePort;
+}
+
 namespace stormkit::wsi::macos {
     namespace {
         static auto is_process_set_as_application = false;
@@ -76,11 +132,13 @@ namespace stormkit::wsi::macos {
     /////////////////////////////////////
     /////////////////////////////////////
     auto macOSWindow::setExtent(std::uint32_t width, std::uint32_t height) noexcept -> void {
+        m_width  = width;
+        m_height = height;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto macOSWindow::setFullscreenEnabled(bool fullscreen) noexcept -> void {
+    auto macOSWindow::setFullscreenEnabled(bool) noexcept -> void {
     }
 
     /////////////////////////////////////
@@ -154,7 +212,7 @@ namespace stormkit::wsi::macos {
         auto display_id  = CGMainDisplayID();
         auto modes       = (__bridge NSArray *)CGDisplayCopyAllDisplayModes(display_id, nullptr);
         auto device_info = (__bridge NSDictionary *)
-            IODisplayCreateInfoDictionary(CGDisplayIOServicePort(display_id),
+            IODisplayCreateInfoDictionary(IOServicePortFromCGDisplayID(display_id),
                                           kIODisplayOnlyPreferredName);
 
         const auto mode_count = [modes count];
@@ -163,10 +221,10 @@ namespace stormkit::wsi::macos {
         auto &monitor = monitors.emplace_back();
         monitor.extents.reserve(mode_count);
         monitor.flags  = Monitor::Flags::Primary;
-        monitor.handle = (void *)display_id;
+        monitor.handle = std::bit_cast<void *>(static_cast<std::intptr_t>(display_id));
 
         auto screen_name = @"";
-        auto localized_names =
+        id localized_names =
             [device_info objectForKey:[NSString stringWithUTF8String:kDisplayProductName]];
         if ([localized_names count] > 0) [[likely]]
             screen_name =
@@ -174,12 +232,14 @@ namespace stormkit::wsi::macos {
 
         monitor.name = [screen_name UTF8String];
 
-        for (auto i = CFIndex { 0 }; i < mode_count; ++i) {
+        for (auto i = CFIndex { 0 }; i < static_cast<CFIndex>(mode_count); ++i) {
             auto mode = (__bridge CGDisplayModeRef)([modes objectAtIndex:i]);
 
             monitor.extents.emplace_back(CGDisplayModeGetWidth(mode), CGDisplayModeGetHeight(mode));
         }
 
+        CFRelease(reinterpret_cast<CFTypeRef>(device_info));
+        CFRelease(reinterpret_cast<CFTypeRef>(modes));
         return monitors;
     }
 

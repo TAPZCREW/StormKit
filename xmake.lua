@@ -86,7 +86,8 @@ modules = {
         frameworks = is_plat("macosx") and { "CoreFoundation", "Foundation", "AppKit", "Metal", "IOKit", "QuartzCore" }
             or nil,
         custom = function()
-            if is_plat("linux") then
+            if is_plat("macosx") then
+            elseif is_plat("linux") then
                 add_rules("wayland.protocols")
 
                 on_load(function(target)
@@ -105,8 +106,7 @@ modules = {
                         target:add("files", path.join(wayland_protocols_dir, protocol))
                     end
                 end)
-            end
-            if is_plat("mingw") then
+            elseif is_plat("mingw") then
                 add_syslinks("user32", "shell32")
                 add_ldflags("-Wl,-mwindows", { public = true })
             elseif is_plat("windows") then
@@ -428,7 +428,7 @@ for name, module in pairs(modules) do
                 add_files(file)
             end
             for _, file in ipairs(os.files(path.join(src_path, "**.mm"))) do
-                add_files(file)
+                add_files(file, { mxxflags = "-std=c++23" })
             end
             for _, file in ipairs(os.files(path.join(src_path, "**.m"))) do
                 add_files(file)
