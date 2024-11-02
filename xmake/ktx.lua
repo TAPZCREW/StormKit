@@ -23,6 +23,7 @@ package("libktx", function()
         table.insert(configs, "-DKTX_FEATURE_GL_UPLOAD=" .. (package:config("opengl") and "ON" or "OFF"))
         table.insert(configs, "-DKTX_FEATURE_TESTS=OFF")
         table.insert(configs, "-DKTX_FEATURE_TOOLS=OFF")
+        io.replace(" $<${is_gnu_fe}:-ffp-contract=off>", "", "CMakeLists.txt")
         import("package.tools.cmake").install(package, configs)
     end)
 
