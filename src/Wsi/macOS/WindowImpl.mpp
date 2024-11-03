@@ -117,7 +117,7 @@ namespace stormkit::wsi::macos {
                                            size.width,
                                            size.height,
                                            as<int>(as<Underlying>(style)))
-                       .or_else(monadic::assert())
+                       .transform_error(monadic::assert())
                        .value();
 
         m_window->mouseDownEvent = [this](int button, Int32 x, Int32 y) noexcept {
