@@ -43,7 +43,8 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     concurrency:
-      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.kind }}-${{ matrix.mode }}
+      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.kind
+        }}-${{ matrix.mode }}
 
     steps:
       - name: Get current date as package key
@@ -55,26 +56,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install XMake
-        uses: xmake-io/github-action-setup-xmake@v1
-        with:
-          xmake-version: Arthapz/xmake#branch@fix-xlinker-rpath-deduplication
-          actions-cache-folder: .xmake-cache
-          actions-cache-key: linux-${{ matrix.arch }}-ci
-
-      - name: Update xmake repository
-        run: xmake repo --update -v
-
-      - name: Retrieve dependencies hash
-        id: dep_hash
-        run: echo "hash=$(xmake l utils.ci.packageskey)" >> $GITHUB_OUTPUT
-
-      # - name: Retrieve cached xmake dependencies
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
-      #     key: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ steps.dep_hash.outputs.hash }}-${{ steps.cache_key.outputs.key }}
-      
       - name: Add LLVM apt repository
         uses: myci-actions/add-deb-repo@11
         with:
@@ -82,14 +63,62 @@ jobs:
           repo-name: llvm
           keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
 
-      - name: Configure & Build
+      - name: Update apt repositories
+        run: sudo apt update
+
+      - name: Install system dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: build-essential cmake meson pkg-config clang libc++-dev libc++1 libc++abi-dev libc++abi1 mold llvm-runtime
+            llvm libxkbcommon-x11-dev xutils-dev x11proto-dev libxcb1-dev libxcb-randr0-dev libxcb-xinput-dev libxcb-xf86dri0-dev
+            libxcb-dri3-dev libxcb-xkb-dev libxcb-xfixes0-dev libxau-dev libzstd-dev ninja-build libjpeg-turbo8-dev libpng-dev
+            zlib1g-dev
+          version: 1.0
+
+      - name: Set xmake env
+        run: echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Setup XMake
+        uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: latest
+          actions-cache-folder: .xmake-cache${{ steps.cache_key.outputs.key }}
+
+      - name: Update xmake repository
+        run: xmake repo --update -v
+
+      - name: Retrieve dependencies hash
+        id: dep_hash
+        run: echo "hash=$(xmake l utils.ci.packageskey)" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Retrieve cached xmake dependencies
+        id: restore-depcache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
+          key: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ steps.dep_hash.outputs.hash }}-${{ steps.cache_key.outputs.key
+            }}
+
+      - name: Configure & Install dependencies
+        id: configure
+        run: |
+          xmake f -vD -a ${{ (matrix.arch  == 'x64') && 'x86_64' || (matrix.arch == 'arm64') && 'aarch64' || matrix.arch }} --yes -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --sanitizers=${{ matrix.mode == 'debug' && 'y' || 'n' }} --examples=y --tests=y --toolchain=llvm --mold=y --runtimes="c++_shared"
+
+      - name: Save cached xmake dependencies
+        if: ${{ !steps.restore-depcache.outputs.cache-hit }}
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
+          key: ${{ steps.restore-depcache.outputs.cache-primary-key }}
+
+      - name: Build
         id: build
         run: |
-          sudo apt install pkg-config clang libc++-dev libc++1 libc++abi-dev libc++abi1 mold llvm-runtime llvm libxkbcommon-x11-dev xutils-dev x11proto-dev libxcb1-dev libxcb-randr0-dev libxcb-xinput-dev libxcb-xf86dri0-dev libxcb-dri3-dev libxcb-xkb-dev libxcb-xfixes0-dev libxau-dev build-essential cmake libzstd-dev ninja-build doxygen graphviz opencl-c-headers mesa-opencl-icd libjpeg-turbo8-dev libpng-dev zlib1g-dev
-          xmake f -vD -a ${{ (matrix.arch  == 'x64') && 'x86_64' || (matrix.arch == 'arm64') && 'aarch64' || matrix.arch }} --yes -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --sanitizers=${{ matrix.mode == 'debug' && 'y' || 'n' }} --examples=y --tests=y --toolchain=llvm --mold=y --runtimes="c++_shared"
           xmake b -v
 
-      - name: Tests
+      - name: Run unit tests
         run: xmake test -v
 
       - name: Installation
