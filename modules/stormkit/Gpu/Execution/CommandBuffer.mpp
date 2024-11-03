@@ -385,8 +385,8 @@ namespace stormkit::gpu {
         toRaiiVkHandle(device)
             .getQueue(entry.id, 0)
             .transform(core::monadic::set(m_vk_queue))
-            .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
+            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
+                                                core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////
@@ -1344,8 +1344,8 @@ namespace stormkit::gpu {
                 .flags = vk::CommandPoolCreateFlagBits::eTransient
                          | vk::CommandPoolCreateFlagBits::eResetCommandBuffer })
             .transform(core::monadic::set(m_vk_command_pool))
-            .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
+            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
+                                                core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////
@@ -1372,7 +1372,9 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto CommandPool::allocate(const Device& device) noexcept
         -> Expected<std::unique_ptr<CommandPool>> try {
-        return std::make_unique<CommandPool>(device, Tag {});
+        return makeUnique<CommandPool>(device, Tag {})
+            .transform_error(core::monadic::assert())
+            .value();
     } catch (const Result& result) { return std::unexpected(result); }
 
     /////////////////////////////////////
@@ -1396,7 +1398,7 @@ namespace stormkit::gpu {
                        return CommandBuffer::create(level,
                                                     std::move(cmb),
                                                     bindFront(&CommandPool::deleteVkCommandBuffer,
-                                                          const_cast<CommandPool*>(this)));
+                                                              const_cast<CommandPool*>(this)));
                    })
                | std::ranges::to<std::vector>();
     }
@@ -1423,7 +1425,7 @@ namespace stormkit::gpu {
                        return CommandBuffer::allocate(level,
                                                       std::move(cmb),
                                                       bindFront(&CommandPool::deleteVkCommandBuffer,
-                                                            const_cast<CommandPool*>(this)));
+                                                                const_cast<CommandPool*>(this)));
                    })
                | std::ranges::to<std::vector>();
     }
