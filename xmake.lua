@@ -381,6 +381,7 @@ if not is_plat("wasm") then
     add_requireconfs("vulkan-memory-allocator-hpp", { system = false, configs = { use_vulkanheaders = true } })
 end
 
+add_requireconfs("libktx", { configs = { cxflags = "-Wno-overriding-option" } })
 add_requireconfs("*", { configs = { modules = true, std_import = true } })
 
 if get_config("lto") then

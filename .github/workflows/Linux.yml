@@ -5,8 +5,7 @@ on:
   pull_request:
     branches: [main, develop]
     paths-ignore:
-      - .github/workflows/Windows-LLVM.yml
-      - .github/workflows/Windows-MSVC.yml
+      - .github/workflows/Windows.yml
       - .github/workflows/macOS.yml
       - .github/workflows/iOS.yml
       - .github/workflows/Android.yml
@@ -18,8 +17,7 @@ on:
   push:
     branches: [develop]
     paths-ignore:
-      - .github/workflows/Windows-LLVM.yml
-      - .github/workflows/Windows-MSVC.yml
+      - .github/workflows/Windows.yml
       - .github/workflows/macOS.yml
       - .github/workflows/iOS.yml
       - .github/workflows/Android.yml
@@ -30,20 +28,21 @@ on:
 
 jobs:
   build:
-    name: Linux-${{ matrix.arch }} (${{ matrix.kind }}-${{ matrix.mode }})
+    name: ${{ matrix.compiler }} ${{ matrix.arch }}  (${{ matrix.kind }}/${{ matrix.mode }})
 
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-24.04]
-        arch: [x64, arm64]
+        compiler: [LLVM-libc++]
+        arch: [x64]
         kind: [static, shared]
         mode: [release, debug]
 
     runs-on: ${{ matrix.os }}
 
     concurrency:
-      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.kind
+      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.kind
         }}-${{ matrix.mode }}
 
     steps:
@@ -69,14 +68,11 @@ jobs:
       - name: Install system dependencies
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: build-essential cmake meson pkg-config clang libc++-dev libc++1 libc++abi-dev libc++abi1 mold llvm-runtime
-            llvm libxkbcommon-x11-dev xutils-dev x11proto-dev libxcb1-dev libxcb-randr0-dev libxcb-xinput-dev libxcb-xf86dri0-dev
-            libxcb-dri3-dev libxcb-xkb-dev libxcb-xfixes0-dev libxau-dev libzstd-dev ninja-build libjpeg-turbo8-dev libpng-dev
-            zlib1g-dev
+          packages: build-essential cmake meson pkg-config libllvm20 llvm-20 llvm-20-dev llvm-20-runtime clang-20 clang-tools-20 libclang-common-20-dev libclang-20-dev libclang1-20 python3-clang-20 libclang-rt-20-dev libpolly-20-dev lld-20 libc++-20-dev libc++abi-20-dev libomp-20-dev libclc-20-dev libunwind-20-dev libxkbcommon-x11-dev xutils-dev x11proto-dev libxcb1-dev libxcb-randr0-dev libxcb-xinput-dev libxcb-xf86dri0-dev libxcb-dri3-dev libxcb-xkb-dev libxcb-xfixes0-dev libxau-dev libzstd-dev ninja-build libjpeg-turbo8-dev libpng-dev zlib1g-dev
           version: 1.0
 
       - name: Set xmake env
-        run: echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" >> $GITHUB_ENV
+        run: echo "XMAKE_GLOBALDIR=${{ github.workspace }}/xmake-global" >> $GITHUB_ENV
         shell: bash
 
       - name: Setup XMake
@@ -86,7 +82,7 @@ jobs:
           actions-cache-folder: .xmake-cache${{ steps.cache_key.outputs.key }}
 
       - name: Update xmake repository
-        run: xmake repo --update -v
+        run: xmake repo --update
 
       - name: Retrieve dependencies hash
         id: dep_hash
@@ -98,13 +94,13 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
-          key: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ steps.dep_hash.outputs.hash }}-${{ steps.cache_key.outputs.key
+          key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ steps.dep_hash.outputs.hash }}-${{ steps.cache_key.outputs.key
             }}
 
       - name: Configure & Install dependencies
         id: configure
         run: |
-          xmake f -vD -a ${{ (matrix.arch  == 'x64') && 'x86_64' || (matrix.arch == 'arm64') && 'aarch64' || matrix.arch }} --yes -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --sanitizers=${{ matrix.mode == 'debug' && 'y' || 'n' }} --examples=y --tests=y --engine=n --toolchain=llvm --mold=y --runtimes="c++_shared"
+          xmake f -vD -a ${{ (matrix.arch  == 'x64') && 'x86_64' || (matrix.arch == 'arm64') && 'aarch64' || matrix.arch }} --yes -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --examples=y --tests=y --engine=n --mold=y ${{ (matrix.compiler == 'LLVM-libc++') && '--toolchain=llvm --sdk="/usr/lib/llvm-20/" --runtimes="c++_shared"' || '' }}
 
       - name: Save cached xmake dependencies
         if: ${{ !steps.restore-depcache.outputs.cache-hit }}
@@ -122,11 +118,11 @@ jobs:
         run: xmake test -v
 
       - name: Installation
-        run: xmake install -v --installdir="${{ runner.workspace }}/output"
+        run: xmake install -v --installdir="${{ github.workspace }}/output"
 
       - name: Upload artifacts
         id: upload
         uses: actions/upload-artifact@v4
         with:
-          name: Linux-x64-${{ matrix.kind }}-${{ matrix.mode }}
-          path: ${{ runner.workspace }}/output
+          name: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.kind }}-${{ matrix.mode }}
+          path: ${{ github.workspace }}/output
