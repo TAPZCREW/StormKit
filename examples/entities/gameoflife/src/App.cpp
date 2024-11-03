@@ -82,9 +82,9 @@ auto App::doInitWindow() -> void {
     const auto window_style = wsi::WindowStyle::All;
 
     m_window =
-        std::make_unique<wsi::Window>(WINDOW_TITLE, math::ExtentU { 800u, 600u }, window_style);
+        makeUnique<wsi::Window>(WINDOW_TITLE, math::ExtentU { 800u, 600u }, window_style);
 
-    m_renderer = std::make_unique<Renderer>(*m_window);
+    m_renderer = makeUnique<Renderer>(*m_window);
 }
 
 auto App::handleKeyboard(const stormkit::wsi::KeyReleasedEventData& event) -> void {

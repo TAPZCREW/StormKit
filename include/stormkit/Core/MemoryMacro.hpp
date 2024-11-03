@@ -13,10 +13,12 @@
 
 #define SINGLE_ARG(...) __VA_ARGS__
 
-#define ALLOCATE_HELPERS(T)                                      \
-    template<class... Args>                                      \
-    [[nodiscard]] static inline auto allocate(Args&&... args) {  \
-        return std::make_unique<T>(std::forward<Args>(args)...); \
+#define ALLOCATE_HELPERS(T)                                     \
+    template<class... Args>                                     \
+    [[nodiscard]] static inline auto allocate(Args&&... args) { \
+        return makeUnique<T>(std::forward<Args>(args)...)       \
+            .transform_error(stormkit::core::monadic::assert()) \
+            .value();                                           \
     }
 
 /// \exclude

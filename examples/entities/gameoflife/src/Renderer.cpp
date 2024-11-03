@@ -96,7 +96,7 @@ auto Renderer::updateBoard(const stormkit::image::Image& board) -> void {
 
 auto Renderer::doInitBaseRenderObjects() -> void {
     // We create an instance and initialize device on best available GPU
-    m_instance = std::make_unique<gpu::Instance>();
+    m_instance = makeUnique<gpu::Instance>();
     ilog("Render backend successfully initialized");
     ilog("Using StormKit {}.{}.{} {} {}, built with {}",
          STORMKIT_MAJOR_VERSION,

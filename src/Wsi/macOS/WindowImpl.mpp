@@ -113,10 +113,11 @@ namespace stormkit::wsi::macos {
     STORMKIT_FORCE_INLINE auto WindowImpl::create(std::string          title,
                                                   const math::ExtentU& size,
                                                   WindowStyle          style) -> void {
-        m_window = std::make_unique<macOSWindow>(std::move(title),
-                                                 size.width,
-                                                 size.height,
-                                                 as<int>(as<Underlying>(style)));
+        m_window = makeUnique<macOSWindow>(std::move(title),
+                                           size.width,
+                                           size.height,
+                                           as<int>(as<Underlying>(style)))
+                       .or_else(monadic::ensures()).value();
 
         m_window->mouseDownEvent = [this](int button, Int32 x, Int32 y) noexcept {
             WindowImplBase::mouseDownEvent(as<MouseButton>(as<UInt8>(button)), x, y);
