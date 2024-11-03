@@ -59,6 +59,11 @@ jobs:
         with:
           tools: llvm
 
+      - name: AAAAAAAAAAAAAAAAAAAAA
+        run: |
+          ls /opt/homebrew/opt/llvm/lib
+          /opt/homebrew/opt/llvm/bin/clang --version
+
       - name: Set xmake env
         run: echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" >> $GITHUB_ENV
         shell: bash
