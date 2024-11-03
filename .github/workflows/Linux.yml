@@ -104,7 +104,7 @@ jobs:
       - name: Configure & Install dependencies
         id: configure
         run: |
-          xmake f -vD -a ${{ (matrix.arch  == 'x64') && 'x86_64' || (matrix.arch == 'arm64') && 'aarch64' || matrix.arch }} --yes -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --sanitizers=${{ matrix.mode == 'debug' && 'y' || 'n' }} --examples=y --tests=y --toolchain=llvm --mold=y --runtimes="c++_shared"
+          xmake f -vD -a ${{ (matrix.arch  == 'x64') && 'x86_64' || (matrix.arch == 'arm64') && 'aarch64' || matrix.arch }} --yes -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --sanitizers=${{ matrix.mode == 'debug' && 'y' || 'n' }} --examples=y --tests=y --engine=n --toolchain=llvm --mold=y --runtimes="c++_shared"
 
       - name: Save cached xmake dependencies
         if: ${{ !steps.restore-depcache.outputs.cache-hit }}
