@@ -244,8 +244,8 @@ using namespace stormkit::wsi::macos;
 /////////////////////////////////////
 /////////////////////////////////////
 - (CGDirectDisplayID)displayId {
-    auto screen     = [[self window] screen];
-    auto display_id = [[screen deviceDescription] objectForKey:@"NSScreenNumber"];
+    auto screen   = [[self window] screen];
+    id display_id = [[screen deviceDescription] objectForKey:@"NSScreenNumber"];
 
     return [display_id intValue];
 }
@@ -253,7 +253,7 @@ using namespace stormkit::wsi::macos;
 /////////////////////////////////////
 /////////////////////////////////////
 - (void)setNativeEventRetriever:(void *)native_event {
-    native_event = native_event;
+    //native_event = native_event;
 }
 
 @end
