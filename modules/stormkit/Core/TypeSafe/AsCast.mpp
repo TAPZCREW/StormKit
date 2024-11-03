@@ -124,7 +124,9 @@ export namespace stormkit { inline namespace core {
 
             // cast to boolean
             template<meta::IsStrictOneOf<bool, Boolean> To, typename From>
-                requires std::convertible_to<To, meta::CanonicalType<From>>
+                requires(std::convertible_to<To, meta::CanonicalType<From>>
+                         and not meta::IsVariantType<meta::CanonicalType<From>>
+                         and not meta::IsOptionalType<meta::CanonicalType<From>>)
             constexpr auto as(From&&                      value,
                               const std::source_location& location
                               = std::source_location::current()) noexcept -> To;
@@ -458,7 +460,9 @@ namespace stormkit { inline namespace core {
         /////////////////////////////////////
         /////////////////////////////////////
         template<meta::IsStrictOneOf<bool, Boolean> To, typename From>
-            requires std::convertible_to<To, meta::CanonicalType<From>>
+            requires(std::convertible_to<To, meta::CanonicalType<From>>
+                     and not meta::IsVariantType<meta::CanonicalType<From>>
+                     and not meta::IsOptionalType<meta::CanonicalType<From>>)
         STORMKIT_FORCE_INLINE constexpr auto as(From&& value, const std::source_location&) noexcept
             -> To {
             return static_cast<bool>(std::forward<From>(value));
@@ -594,7 +598,13 @@ namespace stormkit { inline namespace core {
             using Pointer = Type*;
             using To_ = std::conditional_t<meta::IsRawPointer<To>, Ref<meta::ElementType<To>>, To>;
 
-            return To_ { std::bit_cast<Pointer>(std::data(std::forward<From>(value))) };
+            if constexpr (meta::IsSpecializationOf<To_, Ref>) {
+                if constexpr (meta::IsConst<Type>)
+                    return borrow(std::bit_cast<Pointer>(std::data(std::forward<From>(value))));
+                else
+                    return borrowMut(std::bit_cast<Pointer>(std::data(std::forward<From>(value))));
+            } else
+                return To_ { std::bit_cast<Pointer>(std::data(std::forward<From>(value))) };
         }
 
         /////////////////////////////////////
@@ -628,7 +638,13 @@ namespace stormkit { inline namespace core {
                 static_assert(meta::Is<PointerElement, ToElementType>,
                               "Invalid Polymorphic cast !");
 
-                return To_ { static_cast<ToPointerType>(ptr) };
+                if constexpr (meta::IsSpecializationOf<To_, Ref>) {
+                    if constexpr (meta::IsConst<ToElementType>)
+                        return borrow(static_cast<ToPointerType>(ptr));
+                    else
+                        return borrowMut(static_cast<ToPointerType>(ptr));
+                } else
+                    return To_ { static_cast<ToPointerType>(ptr) };
             } else {
                 static_assert(meta::Is<CanonicalFrom, meta::CanonicalType<To>>,
                               "Invalid Polymorphic cast !");
@@ -651,7 +667,13 @@ namespace stormkit { inline namespace core {
                 using To_ = std::conditional_t<meta::IsRawPointer<To>, Ref<ToElementType>, To>;
                 static_assert(meta::Is<CanonicalFrom, ToElementType>, "Invalid Polymorphic cast !");
 
-                return To_ { static_cast<ToPointerType>(&value) };
+                if constexpr (meta::IsSpecializationOf<To_, Ref>) {
+                    if constexpr (meta::IsConst<ToElementType>)
+                        return borrow(static_cast<ToPointerType>(&value));
+                    else
+                        return borrowMut(static_cast<ToPointerType>(&value));
+                } else
+                    return To_ { static_cast<ToPointerType>(&value) };
             } else {
                 static_assert(meta::Is<CanonicalFrom, meta::CanonicalType<To>>,
                               "Invalid Polymorphic cast !");

@@ -26,7 +26,7 @@ namespace {
                 auto bool_1 = Boolean { true };
                 expects(static_cast<bool>(bool_1));
 
-                bindBack([](auto foo) {}, 1)();
+                bindBack([](auto) {}, 1)();
 
                 auto bool_2 = Boolean { false };
                 expects(!static_cast<bool>(bool_2));
