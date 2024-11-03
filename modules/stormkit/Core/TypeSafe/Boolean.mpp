@@ -4,6 +4,7 @@
 
 module;
 
+#include <stormkit/Core/FormatMacro.hpp>
 #include <stormkit/Core/PlatformMacro.hpp>
 
 export module stormkit.Core:TypeSafe.Boolean;
@@ -11,6 +12,7 @@ export module stormkit.Core:TypeSafe.Boolean;
 import std;
 
 import :Meta.Concepts;
+import :Meta.Traits;
 
 export {
     namespace stormkit { inline namespace core {
@@ -40,12 +42,7 @@ export {
 
     }} // namespace stormkit::core
 
-    template<class CharT>
-    struct std::formatter<stormkit::core::Boolean, CharT>: std::formatter<bool, CharT> {
-        template<class FormatContext>
-        auto format(stormkit::core::Boolean data, FormatContext& ctx) const noexcept
-            -> decltype(ctx.out());
-    };
+    FORMATTER_INHERIT_DECLARE(bool, stormkit::meta::IsStrict<stormkit::core::Boolean>)
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -103,11 +100,6 @@ namespace stormkit { inline namespace core {
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<class CharT>
-template<class FormatContext>
-STORMKIT_FORCE_INLINE auto
-    std::formatter<stormkit::core::Boolean, CharT>::format(stormkit::core::Boolean data,
-                                                           FormatContext& ctx) const noexcept
-    -> decltype(ctx.out()) {
-    return std::formatter<bool, CharT>::format(static_cast<bool>(data), ctx);
+FORMATTER_INHERIT_DEFINE_FORMAT(stormkit::meta::IsStrict<stormkit::core::Boolean>) {
+    return formatter<bool, CharT>::format(static_cast<bool>(data), ctx);
 }
