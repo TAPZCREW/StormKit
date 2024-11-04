@@ -131,16 +131,16 @@ namespace stormkit { inline namespace core {
                 auto lock = std::unique_lock { mutex };
                 std::println(getSTDErr(),
                              "{} failed in \n"
-                             "    > file:     {}\n"
-                             "      line:     {}\n"
+                             "    > file:     {}:{}:{}\n"
                              "      function: {}\n"
-                             "      reason:  {}",
+                             "      reason:   {}",
                              ConsoleStyle { .fg = ConsoleColor::Bright_Red,
                                             .modifiers
                                             = StyleModifier::Bold | StyleModifier::Inverse }
                                  | "["s + casts::core::as<std::string>(type) + "]",
                              ConsoleStyle { .fg = ConsoleColor::Yellow } | location.file_name(),
                              ConsoleStyle { .fg = ConsoleColor::Blue } | location.line(),
+                             ConsoleStyle { .fg = ConsoleColor::Blue } | location.column(),
                              ConsoleStyle { .fg = ConsoleColor::Green } | location.function_name(),
                              ConsoleStyle { .fg        = ConsoleColor::Red,
                                             .modifiers = StyleModifier::Bold }
