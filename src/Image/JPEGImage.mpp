@@ -99,8 +99,8 @@ namespace stormkit::image::details {
         if (info.output_components == 2) format = Format::RG8_UNorm;
         if (info.output_components == 3) format = Format::RGB8_UNorm;
 
-        image_memory.resize(extent.width * extent.height * extent.depth
-                            * info.out_color_components);
+        image_memory.resize(
+            extent.width * extent.height * extent.depth * info.out_color_components);
 
         auto row_ptr = std::array<Byte*, 1> { nullptr };
         while (info.output_scanline < info.output_height) {

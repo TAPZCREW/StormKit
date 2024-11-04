@@ -20,8 +20,8 @@ namespace stormkit::engine {
         m_window = wsi::Window { std::move(window_title), window_extent, wsi::WindowStyle::Close };
         m_event_handler = wsi::EventHandler {};
 
-        m_renderer = Renderer::create(application_name, m_window.get())
-                         .transform_error(expectsWithMessage("Failed to initialize renderer"))
+        m_renderer = Renderer::create(application_name, borrow(m_window))
+                         .transform_error(monadic::assert("Failed to initialize renderer"))
                          .value();
 
         m_world = entities::EntityManager {};

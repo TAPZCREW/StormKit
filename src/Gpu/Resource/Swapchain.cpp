@@ -16,8 +16,8 @@ namespace stormkit::gpu {
         auto chooseSwapSurfaceFormat(std::span<const vk::SurfaceFormatKHR> formats) noexcept
             -> vk::SurfaceFormatKHR {
             for (const auto& format : formats) {
-                if (format.format == vk::Format::eB8G8R8A8Unorm &&
-                    format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
+                if (format.format == vk::Format::eB8G8R8A8Unorm
+                    && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
                     return format;
             }
 
@@ -45,17 +45,17 @@ namespace stormkit::gpu {
                               const math::ExtentU&              extent) noexcept -> vk::Extent2D {
             constexpr static auto int_max = std::numeric_limits<UInt32>::max();
 
-            if (capabilities.currentExtent.width != int_max &&
-                capabilities.currentExtent.height != int_max)
+            if (capabilities.currentExtent.width != int_max
+                && capabilities.currentExtent.height != int_max)
                 return capabilities.currentExtent;
 
             auto actual_extent = as<vk::Extent2D>(extent);
-            actual_extent.width =
-                std::max(capabilities.minImageExtent.width,
-                         std::min(capabilities.maxImageExtent.width, actual_extent.width));
-            actual_extent.height =
-                std::max(capabilities.minImageExtent.height,
-                         std::min(capabilities.maxImageExtent.height, actual_extent.height));
+            actual_extent.width
+                = std::max(capabilities.minImageExtent.width,
+                           std::min(capabilities.maxImageExtent.width, actual_extent.width));
+            actual_extent.height
+                = std::max(capabilities.minImageExtent.height,
+                           std::min(capabilities.maxImageExtent.height, actual_extent.height));
 
             return actual_extent;
         }
@@ -80,11 +80,11 @@ namespace stormkit::gpu {
                          const math::ExtentU&                  extent,
                          std::optional<vk::raii::SwapchainKHR> old_swapchain) {
         const auto& physical_device = device.physicalDevice();
-        const auto  capabilities =
-            physical_device.vkHandle().getSurfaceCapabilitiesKHR(*surface.vkHandle());
+        const auto  capabilities
+            = physical_device.vkHandle().getSurfaceCapabilitiesKHR(*surface.vkHandle());
         const auto formats = physical_device.vkHandle().getSurfaceFormatsKHR(*(surface.vkHandle()));
-        const auto present_modes =
-            physical_device.vkHandle().getSurfacePresentModesKHR(*(surface.vkHandle()));
+        const auto present_modes
+            = physical_device.vkHandle().getSurfacePresentModesKHR(*(surface.vkHandle()));
 
         const auto format             = chooseSwapSurfaceFormat(formats);
         const auto present_mode       = chooseSwapPresentMode(present_modes);
@@ -93,20 +93,20 @@ namespace stormkit::gpu {
         const auto image_sharing_mode = vk::SharingMode::eExclusive;
 
         const auto create_info = [&] noexcept -> decltype(auto) {
-            auto info =
-                vk::SwapchainCreateInfoKHR { .surface          = *surface.vkHandle(),
-                                             .minImageCount    = image_count,
-                                             .imageFormat      = format.format,
-                                             .imageColorSpace  = format.colorSpace,
-                                             .imageExtent      = swapchain_extent,
-                                             .imageArrayLayers = 1,
-                                             .imageUsage = vk::ImageUsageFlagBits::eTransferDst,
-                                             .imageSharingMode = image_sharing_mode,
-                                             .preTransform     = capabilities.currentTransform,
-                                             .compositeAlpha =
-                                                 vk::CompositeAlphaFlagBitsKHR::eOpaque,
-                                             .presentMode = present_mode,
-                                             .clipped     = true };
+            auto info
+                = vk::SwapchainCreateInfoKHR { .surface          = *surface.vkHandle(),
+                                               .minImageCount    = image_count,
+                                               .imageFormat      = format.format,
+                                               .imageColorSpace  = format.colorSpace,
+                                               .imageExtent      = swapchain_extent,
+                                               .imageArrayLayers = 1,
+                                               .imageUsage = vk::ImageUsageFlagBits::eTransferDst,
+                                               .imageSharingMode = image_sharing_mode,
+                                               .preTransform     = capabilities.currentTransform,
+                                               .compositeAlpha
+                                               = vk::CompositeAlphaFlagBitsKHR::eOpaque,
+                                               .presentMode = present_mode,
+                                               .clipped     = true };
             if (old_swapchain) info.oldSwapchain = **old_swapchain;
             return info;
         }();
@@ -114,7 +114,8 @@ namespace stormkit::gpu {
         device.vkHandle()
             .createSwapchainKHR(create_info)
             .transform(core::monadic::set(m_vk_swapchain))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
+            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
+                                                core::monadic::throwAsException()));
 
         m_extent       = as<math::ExtentU>(swapchain_extent);
         m_image_count  = as<UInt32>(std::size(m_images));
@@ -133,8 +134,8 @@ namespace stormkit::gpu {
     auto Swapchain::acquireNextImage(std::chrono::nanoseconds wait,
                                      const Semaphore&         image_available) const noexcept
         -> Expected<std::pair<gpu::Result, UInt32>> {
-        auto&& [result, index] =
-            m_vk_swapchain->acquireNextImage(wait.count(), toVkHandle(image_available));
+        auto&& [result, index]
+            = m_vk_swapchain->acquireNextImage(wait.count(), toVkHandle(image_available));
         const auto possible_results = std::array { vk::Result::eSuccess,
                                                    vk::Result::eErrorOutOfDateKHR,
                                                    vk::Result::eSuboptimalKHR };

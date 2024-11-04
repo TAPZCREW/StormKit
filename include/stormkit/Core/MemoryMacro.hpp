@@ -126,7 +126,7 @@
     };                                                   \
     using name##Scoped = std::unique_ptr<x, name##Deleter>;
 
-#define STORMKIT_FORWARD(x) static_cast<decltype(x)&&>(x);
+#define STORMKIT_FORWARD(x) static_cast<decltype(x) &&>(x);
 #define STORMKIT_RETURNS(expr)                 \
     noexcept(noexcept(expr))->decltype(expr) { \
         return expr;                           \

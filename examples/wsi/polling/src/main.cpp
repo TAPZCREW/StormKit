@@ -27,7 +27,11 @@ auto main(std::span<const std::string_view> args) -> int {
     polling_logger.ilog("--- Monitors ---");
     polling_logger.ilog("{}", monitors);
 
-    auto window = wsi::Window { "Hello world", { 800u, 600u }, wsi::WindowStyle::All };
+    auto window = wsi::Window {
+        "Hello world",
+        { 800u, 600u },
+        wsi::WindowStyle::All
+    };
 
     auto fullscreen        = false;
     auto toggle_fullscreen = false;

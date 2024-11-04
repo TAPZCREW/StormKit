@@ -25,12 +25,14 @@ export namespace stormkit { inline namespace core {
         -> std::vector<meta::RangeType<T>>;
 
     template<class T, typename... Args>
-        requires((meta::Is<T, Args> and ...) or (std::convertible_to<T, Args> and ...)
+        requires((meta::Is<T, Args> and ...)
+                 or (std::convertible_to<T, Args> and ...)
                  or (std::constructible_from<T, Args> and ...))
     constexpr auto makeStaticArray(T&& first, Args&&... args) noexcept -> decltype(auto);
 
     template<class T, typename... Args>
-        requires((meta::Is<T, Args> and ...) or (std::convertible_to<T, Args> and ...)
+        requires((meta::Is<T, Args> and ...)
+                 or (std::convertible_to<T, Args> and ...)
                  or (std::constructible_from<T, Args> and ...))
     constexpr auto makeArray(T&& first, Args&&... args) noexcept -> decltype(auto);
 
@@ -123,7 +125,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T, typename... Args>
-        requires((meta::Is<T, Args> and ...) or (std::convertible_to<T, Args> and ...)
+        requires((meta::Is<T, Args> and ...)
+                 or (std::convertible_to<T, Args> and ...)
                  or (std::constructible_from<T, Args> and ...))
     constexpr auto makeStaticArray(T&& first, Args&&... args) noexcept -> decltype(auto) {
         return std::array { std::forward<T>(first), static_cast<T>(std::forward<Args>(args))... };
@@ -132,7 +135,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T, typename... Args>
-        requires((meta::Is<T, Args> and ...) or (std::convertible_to<T, Args> and ...)
+        requires((meta::Is<T, Args> and ...)
+                 or (std::convertible_to<T, Args> and ...)
                  or (std::constructible_from<T, Args> and ...))
     constexpr auto makeArray(T&& first, Args&&... args) noexcept -> decltype(auto) {
         return std::vector { std::forward<T>(first), static_cast<T>(std::forward<Args>(args))... };

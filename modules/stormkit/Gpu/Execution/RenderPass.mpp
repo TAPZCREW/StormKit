@@ -188,7 +188,8 @@ namespace stormkit::gpu {
                              std::vector<Ref<const ImageView>> attachments,
                              Tag)
         : m_extent { std::move(extent) }, m_attachments { std::move(attachments) } {
-        const auto vk_attachments = m_attachments | std::views::transform(monadic::toVkHandle())
+        const auto vk_attachments = m_attachments
+                                    | std::views::transform(monadic::toVkHandle())
                                     | std::ranges::to<std::vector>();
 
         const auto create_info = vk::FramebufferCreateInfo {}
@@ -201,8 +202,8 @@ namespace stormkit::gpu {
         device.vkHandle()
             .createFramebuffer(create_info)
             .transform(core::monadic::set(m_vk_framebuffer))
-            .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
+            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
+                                                core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////

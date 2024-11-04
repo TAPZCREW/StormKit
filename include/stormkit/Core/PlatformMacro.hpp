@@ -93,9 +93,14 @@
         #define STORMKIT_COMPILER_CLANG std::string { "MinGW Clang " } + __clang_version__
         #define STORMKIT_COMPILER       STORMKIT_COMPILER_CLANG
     #elif defined(__GNUC__) or defined(__GNUG__)
-        #define STORMKIT_COMPILER_GCC                                                            \
-            "MinGW GCC " + std::to_string(__GNUC__) + "." + std::to_string(__GNUC_MINOR__) + "." \
-                + "." + std::to_string(__GNUC_PATCHLEVEL__)
+        #define STORMKIT_COMPILER_GCC            \
+            "MinGW GCC "                         \
+                + std::to_string(__GNUC__)       \
+                + "."                            \
+                + std::to_string(__GNUC_MINOR__) \
+                + "."                            \
+                + "."                            \
+                + std::to_string(__GNUC_PATCHLEVEL__)
         #define STORMKIT_COMPILER_MINGW STORMKIT_COMPILER_GCC
     #endif
     #define STORMKIT_COMPILER_MINGW STORMKIT_COMPILER
@@ -103,8 +108,13 @@
     #define STORMKIT_COMPILER_CLANG std::string { "Clang " } + __clang_version__
     #define STORMKIT_COMPILER       STORMKIT_COMPILER_CLANG
 #elif defined(__GNUC__) or defined(__GNUG__)
-    #define STORMKIT_COMPILER_GCC                                                            \
-        "GCC " + std::to_string(__GNUC__) + "." + std::to_string(__GNUC_MINOR__) + "." + "." \
+    #define STORMKIT_COMPILER_GCC            \
+        "GCC "                               \
+            + std::to_string(__GNUC__)       \
+            + "."                            \
+            + std::to_string(__GNUC_MINOR__) \
+            + "."                            \
+            + "."                            \
             + std::to_string(__GNUC_PATCHLEVEL__)
     #define STORMKIT_COMPILER STORMKIT_COMPILER_GCC
 #endif

@@ -245,7 +245,7 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    WindowImpl::WindowImpl() : m_connection{getXCBConnection()} {
+    WindowImpl::WindowImpl() : m_connection { getXCBConnection() } {
         m_xkb_context = common::getXKBContext();
     }
 
@@ -279,14 +279,19 @@ namespace stormkit::wsi::linux::x11 {
             return;
         }
 
-        static constexpr const auto EVENTS
-            = XCB_EVENT_MASK_FOCUS_CHANGE | XCB_EVENT_MASK_BUTTON_PRESS
-              | XCB_EVENT_MASK_BUTTON_RELEASE | XCB_EVENT_MASK_BUTTON_MOTION
-              | XCB_EVENT_MASK_POINTER_MOTION | XCB_EVENT_MASK_KEY_PRESS
-              | XCB_EVENT_MASK_KEY_RELEASE | XCB_EVENT_MASK_STRUCTURE_NOTIFY
-              | XCB_EVENT_MASK_ENTER_WINDOW | XCB_EVENT_MASK_LEAVE_WINDOW
-              | XCB_EVENT_MASK_VISIBILITY_CHANGE | XCB_EVENT_MASK_PROPERTY_CHANGE
-              | XCB_EVENT_MASK_EXPOSURE;
+        static constexpr const auto EVENTS = XCB_EVENT_MASK_FOCUS_CHANGE
+                                             | XCB_EVENT_MASK_BUTTON_PRESS
+                                             | XCB_EVENT_MASK_BUTTON_RELEASE
+                                             | XCB_EVENT_MASK_BUTTON_MOTION
+                                             | XCB_EVENT_MASK_POINTER_MOTION
+                                             | XCB_EVENT_MASK_KEY_PRESS
+                                             | XCB_EVENT_MASK_KEY_RELEASE
+                                             | XCB_EVENT_MASK_STRUCTURE_NOTIFY
+                                             | XCB_EVENT_MASK_ENTER_WINDOW
+                                             | XCB_EVENT_MASK_LEAVE_WINDOW
+                                             | XCB_EVENT_MASK_VISIBILITY_CHANGE
+                                             | XCB_EVENT_MASK_PROPERTY_CHANGE
+                                             | XCB_EVENT_MASK_EXPOSURE;
 
         auto screen = xcb_setup_roots_iterator(xcb_get_setup(m_connection)).data;
         m_window.reset(xcb_generate_id(m_connection));
@@ -370,15 +375,18 @@ namespace stormkit::wsi::linux::x11 {
 
         updateKeymap();
 
-        constexpr auto required_map_parts
-            = UInt16 { XCB_XKB_MAP_PART_KEY_TYPES | XCB_XKB_MAP_PART_KEY_SYMS
-                       | XCB_XKB_MAP_PART_MODIFIER_MAP | XCB_XKB_MAP_PART_EXPLICIT_COMPONENTS
-                       | XCB_XKB_MAP_PART_KEY_ACTIONS | XCB_XKB_MAP_PART_KEY_BEHAVIORS
-                       | XCB_XKB_MAP_PART_VIRTUAL_MODS | XCB_XKB_MAP_PART_VIRTUAL_MOD_MAP };
+        constexpr auto required_map_parts = UInt16 { XCB_XKB_MAP_PART_KEY_TYPES
+                                                     | XCB_XKB_MAP_PART_KEY_SYMS
+                                                     | XCB_XKB_MAP_PART_MODIFIER_MAP
+                                                     | XCB_XKB_MAP_PART_EXPLICIT_COMPONENTS
+                                                     | XCB_XKB_MAP_PART_KEY_ACTIONS
+                                                     | XCB_XKB_MAP_PART_KEY_BEHAVIORS
+                                                     | XCB_XKB_MAP_PART_VIRTUAL_MODS
+                                                     | XCB_XKB_MAP_PART_VIRTUAL_MOD_MAP };
 
-        constexpr auto required_events
-            = UInt16 { XCB_XKB_EVENT_TYPE_NEW_KEYBOARD_NOTIFY | XCB_XKB_EVENT_TYPE_MAP_NOTIFY
-                       | XCB_XKB_EVENT_TYPE_STATE_NOTIFY };
+        constexpr auto required_events = UInt16 { XCB_XKB_EVENT_TYPE_NEW_KEYBOARD_NOTIFY
+                                                  | XCB_XKB_EVENT_TYPE_MAP_NOTIFY
+                                                  | XCB_XKB_EVENT_TYPE_STATE_NOTIFY };
 
         // XKB events are reported to all interested clients without regard
         // to the current keyboard input focus or grab state
@@ -615,17 +623,18 @@ namespace stormkit::wsi::linux::x11 {
 
         xcb_flush(m_connection);
 
-        auto cookie
-            = xcb_grab_pointer(m_connection,
-                               1,
-                               m_window,
-                               XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE
-                                   | XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_POINTER_MOTION,
-                               XCB_GRAB_MODE_ASYNC,
-                               XCB_GRAB_MODE_ASYNC,
-                               m_window,
-                               XCB_NONE,
-                               XCB_CURRENT_TIME);
+        auto cookie = xcb_grab_pointer(m_connection,
+                                       1,
+                                       m_window,
+                                       XCB_EVENT_MASK_BUTTON_PRESS
+                                           | XCB_EVENT_MASK_BUTTON_RELEASE
+                                           | XCB_EVENT_MASK_BUTTON_MOTION
+                                           | XCB_EVENT_MASK_POINTER_MOTION,
+                                       XCB_GRAB_MODE_ASYNC,
+                                       XCB_GRAB_MODE_ASYNC,
+                                       m_window,
+                                       XCB_NONE,
+                                       XCB_CURRENT_TIME);
         xcb_grab_pointer_reply(m_connection, cookie, nullptr);
         xcb_flush(m_connection);
 

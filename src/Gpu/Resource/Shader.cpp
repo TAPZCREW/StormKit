@@ -34,9 +34,9 @@ namespace stormkit::gpu {
 
                 m_descriptor_set_layout.addBinding({ binding,
                                                      type,
-                                                     gpu::ShaderStageFlag::Vertex |
-                                                         gpu::ShaderStageFlag::Fragment |
-                                                         gpu::ShaderStageFlag::Compute,
+                                                     gpu::ShaderStageFlag::Vertex
+                                                         | gpu::ShaderStageFlag::Fragment
+                                                         | gpu::ShaderStageFlag::Compute,
                                                      1 });
             }
         };

@@ -32,7 +32,10 @@ auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char** arg
 
     doInitWindow();
 
-    m_board = image::Image { { BOARD_SIZE, BOARD_SIZE }, image::Image::Format::RGBA8_UNorm };
+    m_board = image::Image {
+        { BOARD_SIZE, BOARD_SIZE },
+        image::Image::Format::RGBA8_UNorm
+    };
 
     auto event_handler = wsi::EventHandler { *m_window };
     event_handler.addCallback(wsi::EventType::Closed,
@@ -81,8 +84,7 @@ auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char** arg
 auto App::doInitWindow() -> void {
     const auto window_style = wsi::WindowStyle::All;
 
-    m_window =
-        makeUnique<wsi::Window>(WINDOW_TITLE, math::ExtentU { 800u, 600u }, window_style);
+    m_window = makeUnique<wsi::Window>(WINDOW_TITLE, math::ExtentU { 800u, 600u }, window_style);
 
     m_renderer = makeUnique<Renderer>(*m_window);
 }

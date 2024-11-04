@@ -12,8 +12,8 @@ import stormkit.Gpu;
 import :Renderer.FrameGraph;
 
 namespace stormkit::engine {
-    /////////////////////////////////////
-    /////////////////////////////////////
+    //////////////////////////////////////
+    //////////////////////////////////////
     auto FrameGraphBuilder::bake() -> void {
         expects(not m_baked);
 
@@ -30,8 +30,8 @@ namespace stormkit::engine {
         m_baked = true;
     }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
+    //////////////////////////////////////
+    //////////////////////////////////////
     auto FrameGraphBuilder::createFrameGraph(const gpu::Device&      device,
                                              const gpu::CommandPool& command_pool,
                                              BakedFrameGraph*        old) -> BakedFrameGraph {
@@ -40,8 +40,8 @@ namespace stormkit::engine {
         return BakedFrameGraph { backbuffer, std::move(data), old };
     }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
+    //////////////////////////////////////
+    //////////////////////////////////////
     auto FrameGraphBuilder::allocateFrameGraph(const gpu::Device&      device,
                                                const gpu::CommandPool& command_pool,
                                                BakedFrameGraph*        old)
@@ -51,16 +51,16 @@ namespace stormkit::engine {
         return makeUnique<BakedFrameGraph>(backbuffer, std::move(data), old);
     }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
+    //////////////////////////////////////
+    //////////////////////////////////////
     auto FrameGraphBuilder::prepareTask(GraphTask& task) noexcept -> void {
         auto task_builder = GraphTaskBuilder { task, *this };
         auto data         = m_datas[task.dataID()];
         task.onSetup(*std::bit_cast<Byte*>(&data), task_builder);
     }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
+    //////////////////////////////////////
+    //////////////////////////////////////
     auto FrameGraphBuilder::cullUnreferencedResources() noexcept -> void {
         auto unreferenced_resources = std::stack<Ref<GraphResourceVariant>> {};
 
@@ -114,8 +114,8 @@ namespace stormkit::engine {
         }
     }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
+    //////////////////////////////////////
+    //////////////////////////////////////
     auto FrameGraphBuilder::buildPhysicalDescriptions() noexcept -> void {
         auto layouts = HashMap<GraphID, gpu::ImageLayout> {};
         m_preprocessed_framegraph
@@ -135,8 +135,8 @@ namespace stormkit::engine {
               | std::ranges::to<std::vector>();
     }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
+    //////////////////////////////////////
+    //////////////////////////////////////
     auto FrameGraphBuilder::buildImagePhysicalDescriptions(const GraphTask& task) noexcept
         -> std::vector<ImageInfo> {
         return task.creates()
@@ -168,23 +168,25 @@ namespace stormkit::engine {
 
                      const auto& name = resource.name();
 
-                     return ImageInfo { .id = id,
-                                      .create_info =
-                                          gpu::Image::CreateInfo {
-                                              .extent = description.extent,
-                                              .format = description.format,
-                                              .layers = description.layers,
-                                              .type   = description.type,
-                                              .usages = usages,
-                                          },
-                                      .clear_value = clear_value,
-                                      .name        = name };
+                     return ImageInfo {
+                         .id = id,
+                         .create_info =
+                             gpu::Image::CreateInfo {
+                                                     .extent = description.extent,
+                                                     .format = description.format,
+                                                     .layers = description.layers,
+                                                     .type   = description.type,
+                                                     .usages = usages,
+                                                     },
+                         .clear_value = clear_value,
+                         .name        = name
+                     };
                  })
                | std::ranges::to<std::vector>();
     }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
+    //////////////////////////////////////
+    //////////////////////////////////////
     auto FrameGraphBuilder::buildBufferPhysicalDescriptions(const GraphTask& task) noexcept
         -> std::vector<BufferInfo> {
         return task.creates()
@@ -214,8 +216,8 @@ namespace stormkit::engine {
                | std::ranges::to<std::vector>();
     }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
+    //////////////////////////////////////
+    //////////////////////////////////////
     auto FrameGraphBuilder::buildRenderPassPhysicalDescription(
         const GraphTask&                    task,
         HashMap<GraphID, gpu::ImageLayout>& layouts) noexcept -> RenderPassData {
@@ -359,12 +361,9 @@ namespace stormkit::engine {
         return output;
     }
 
-    auto FrameGraphBuilder::allocatePhysicalResources(const gpu::CommandPool& command_pool,
-                                                      const gpu::Device&      device)
-        -> std::pair<Ref<const gpu::Image>, BakedFrameGraph::Data> {
-        using Data = BakedFrameGraph::Data;
-
-        auto output = Data {};
+    auto FmameGraph::allocatePhysicalResources(const gpu::CommandPool& command_pool,
+                                               const gpu::Device&      device) -> void {
+        auto output = BakedFrameGraph {};
         output.cmb  = command_pool.createCommandBuffer(device);
         device.setObjectName(*output.cmb, "FrameGraph:CommandBuffer:Main");
 
@@ -375,9 +374,6 @@ namespace stormkit::engine {
         device.setObjectName(*output.fence, "FrameGraph:Fence:Main");
 
         output.tasks.reserve(std::size(m_preprocessed_framegraph));
-
-        using ImagePtr  = const gpu::Image*;
-        auto backbuffer = ImagePtr { nullptr };
 
         // TODO support of async Compute and Transfert queue
         for (auto&& pass : m_preprocessed_framegraph) {
@@ -407,7 +403,7 @@ namespace stormkit::engine {
                                                      .value());
                 device.setObjectName(gpu_image, std::format("FrameGraph:Image:{}", image.name));
 
-                if (image.id == m_final_resource) backbuffer = &gpu_image;
+                if (image.id == m_final_resource) output.backbuffer = borrow(gpu_image);
 
                 auto& gpu_image_view = output.image_views.emplace_back(
                     gpu::ImageView::create(device, gpu_image).transform_error(expects()).value());
@@ -417,7 +413,7 @@ namespace stormkit::engine {
                 attachments.emplace_back(gpu_image_view);
             }
 
-            expects(backbuffer != nullptr, "No final resource set !");
+            expects(backbuffer != std::nullopt, "No final resource set !");
 
             auto renderpass = *gpu::RenderPass::create(device, pass.renderpass.description);
             device.setObjectName(renderpass, std::format("FrameGraph:RenderPass:{}", pass.name));
@@ -434,16 +430,16 @@ namespace stormkit::engine {
             cmb.end();
 
             output.tasks.emplace_back(
-                BakedFrameGraph::Data::RasterTask { .id           = pass.id,
-                                                    .cmb          = std::move(cmb),
-                                                    .clear_values = std::move(clear_values),
-                                                    .renderpass   = std::move(renderpass),
-                                                    .framebuffer  = std::move(framebuffer) });
+                BakedFrameGraphBuilder::RasterTask { .id           = pass.id,
+                                                     .cmb          = std::move(cmb),
+                                                     .clear_values = std::move(clear_values),
+                                                     .renderpass   = std::move(renderpass),
+                                                     .framebuffer  = std::move(framebuffer) });
         }
 
         output.cmb->begin();
         const auto visitors
-            = Overloaded { [&output](const BakedFrameGraph::Data::RasterTask& task) {
+            = Overloaded { [&output](const BakedFrameGraphBuilder::Data::RasterTask& task) {
                               output.cmb->beginRenderPass(task.renderpass,
                                                           task.framebuffer,
                                                           task.clear_values,
@@ -453,13 +449,13 @@ namespace stormkit::engine {
                               output.cmb->executeSubCommandBuffers(command_buffers);
                               output.cmb->endRenderPass();
                           },
-                           [&output](const BakedFrameGraph::Data::ComputeTask& task) {
+                           [&output](const BakedFrameGraphBuilder::Data::ComputeTask& task) {
                                const auto command_buffers = borrows<std::array>(task.cmb);
                                output.cmb->executeSubCommandBuffers(command_buffers);
                            } };
         for (auto&& task : output.tasks) std::visit(visitors, task);
         output.cmb->end();
 
-        return std::make_pair(Ref { backbuffer }, std::move(output));
+        return { std::in_place_t, std::move(output) };
     } // namespace stormkit::engine
 } // namespace stormkit::engine

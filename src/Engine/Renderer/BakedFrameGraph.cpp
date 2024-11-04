@@ -18,18 +18,18 @@ namespace stormkit::engine {
     BakedFrameGraph::BakedFrameGraph(const gpu::Image&                 backbuffer,
                                      Data&&                            data,
                                      [[maybe_unused]] BakedFrameGraph* old)
-        : m_backbuffer { backbuffer }, m_data { std::move(data) } {
+        : m_backbuffer { borrow(backbuffer) }, m_data { std::move(data) } {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto BakedFrameGraph::execute(const gpu::Queue& queue) noexcept
         -> gpu::Expected<Ref<const gpu::Semaphore>> {
-        return m_data.fence->wait().transform([&](auto&& _) noexcept {
+        return m_data.fence->wait().transform([&](auto&&) noexcept {
             m_data.fence->reset();
 
             auto signal = borrows<std::array>(std::as_const(m_data.semaphore));
-            m_data.cmb->submit(queue, {}, {}, signal, *m_data.fence);
+            m_data.cmb->submit(queue, {}, {}, signal, borrow(m_data.fence));
 
             return borrow(std::as_const(*m_data.semaphore));
         });

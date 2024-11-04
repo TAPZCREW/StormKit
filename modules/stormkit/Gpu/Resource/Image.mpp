@@ -128,7 +128,8 @@ export namespace stormkit::gpu {
             ImageType       type       = ImageType::T2D;
             ImageCreateFlag flags      = ImageCreateFlag::None;
             SampleCountFlag samples    = SampleCountFlag::C1;
-            ImageUsageFlag  usages     = ImageUsageFlag::Sampled | ImageUsageFlag::Transfer_Dst
+            ImageUsageFlag  usages     = ImageUsageFlag::Sampled
+                                    | ImageUsageFlag::Transfer_Dst
                                     | ImageUsageFlag::Transfer_Src;
             ImageTiling        tiling   = ImageTiling::Optimal;
             MemoryPropertyFlag property = MemoryPropertyFlag::Device_Local;
@@ -218,8 +219,8 @@ namespace stormkit::gpu {
                   .maxLod           = m_settings.max_lod,
                   .borderColor      = narrow<vk::BorderColor>(m_settings.border_color),
                   .unnormalizedCoordinates = m_settings.unnormalized_coordinates })
-            .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
+            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
+                                                core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////
@@ -290,8 +291,8 @@ namespace stormkit::gpu {
                 .subresourceRange = vk_subresource_range,
         })
             .transform(core::monadic::set(m_vk_image_view))
-            .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
+            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
+                                                core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////
@@ -394,8 +395,8 @@ namespace stormkit::gpu {
 
                 return {};
             })
-            .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
+            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
+                                                core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////

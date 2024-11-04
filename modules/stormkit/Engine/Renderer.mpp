@@ -22,10 +22,10 @@ export namespace stormkit::engine {
         struct Tag {};
 
       public:
-        using UpdateFrameGraphCallbackRef =
-            FunctionRef<void(FrameGraphBuilder&, std::atomic_bool&)>;
+        using UpdateFrameGraphCallbackRef
+            = FunctionRef<void(FrameGraphBuilder&, std::atomic_bool&)>;
 
-        Renderer(std::string_view                           application_name,
+        Renderer(std::string_view                      application_name,
                  std::optional<Ref<const wsi::Window>> window,
                  Tag);
         ~Renderer();
@@ -36,12 +36,11 @@ export namespace stormkit::engine {
         Renderer(Renderer&&) noexcept;
         auto operator=(Renderer&&) noexcept -> Renderer&;
 
-        [[nodiscard]] static auto create(std::string_view application_name,
+        [[nodiscard]] static auto create(std::string_view                      application_name,
                                          std::optional<Ref<const wsi::Window>> window) noexcept
             -> gpu::Expected<Renderer>;
-        [[nodiscard]] static auto
-            allocate(std::string_view                           application_name,
-                     std::optional<Ref<const wsi::Window>> window) noexcept
+        [[nodiscard]] static auto allocate(std::string_view                      application_name,
+                                           std::optional<Ref<const wsi::Window>> window) noexcept
             -> gpu::Expected<std::unique_ptr<Renderer>>;
 
         auto updateFrameGraph(std::mutex&                 mutex,
@@ -93,10 +92,10 @@ namespace stormkit::engine {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    Renderer::Renderer(std::string_view                           application_name,
+    Renderer::Renderer(std::string_view                      application_name,
                        std::optional<Ref<const wsi::Window>> window,
                        Tag) {
-        doInit(application_name, std::move(window)).transform_error(throwError());
+        doInit(application_name, std::move(window)).transform_error(monadic::throwAsException());
     }
 
     /////////////////////////////////////
@@ -114,7 +113,7 @@ namespace stormkit::engine {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto
-        Renderer::create(std::string_view                           application_name,
+        Renderer::create(std::string_view                      application_name,
                          std::optional<Ref<const wsi::Window>> window) noexcept
         -> gpu::Expected<Renderer> try {
         return Renderer { application_name, std::move(window), Tag {} };
@@ -123,7 +122,7 @@ namespace stormkit::engine {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto
-        Renderer::allocate(std::string_view                           application_name,
+        Renderer::allocate(std::string_view                      application_name,
                            std::optional<Ref<const wsi::Window>> window) noexcept
         -> gpu::Expected<std::unique_ptr<Renderer>> try {
         return std::make_unique<Renderer>(application_name, std::move(window), Tag {});
@@ -144,9 +143,10 @@ namespace stormkit::engine {
     STORMKIT_FORCE_INLINE auto Renderer::startRendering(std::mutex&       framegraph_mutex,
                                                         std::atomic_bool& rebuild_graph) noexcept
         -> void {
-        m_render_thread = std::jthread {
-            curry(&Renderer::threadLoop, this, std::ref(framegraph_mutex), std::ref(rebuild_graph))
-        };
+        m_render_thread = std::jthread { bindFront(&Renderer::threadLoop,
+                                                   this,
+                                                   std::ref(framegraph_mutex),
+                                                   std::ref(rebuild_graph)) };
         setThreadName(m_render_thread, "StormKit:RenderThread");
     }
 

@@ -59,10 +59,10 @@ auto UpdateBoardSystem::update(stormkit::Secondf delta) -> void {
     for (const auto e : m_entities) {
         const auto& position = m_manager->getComponent<PositionComponent>(e);
 
-        auto it =
-            std::ranges::find_if(cell_status, [x = position.x, y = position.y](const auto& cell) {
-                return cell.x == x && cell.y == y;
-            });
+        auto it
+            = std::ranges::find_if(cell_status, [x = position.x, y = position.y](const auto& cell) {
+                  return cell.x == x && cell.y == y;
+              });
 
         if (it != std::ranges::cend(cell_status)) {
             it->alive = true;
@@ -95,8 +95,8 @@ auto UpdateBoardSystem::update(stormkit::Secondf delta) -> void {
     }
 
     for (const auto& cell : cell_status) {
-        const auto alive =
-            cell.adjacent_alive_cells == 3 || (cell.alive && cell.adjacent_alive_cells == 2);
+        const auto alive
+            = cell.adjacent_alive_cells == 3 || (cell.alive && cell.adjacent_alive_cells == 2);
 
         if (alive && !m_manager->hasEntity(cell.e)) {
             auto  e        = m_manager->makeEntity();

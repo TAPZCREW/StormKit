@@ -272,7 +272,8 @@ namespace stormkit::image {
         -> std::span<Byte> {
         const auto mip_extent = extent(level);
 
-        const auto id = position.x + (position.y * mip_extent.width)
+        const auto id = position.x
+                        + (position.y * mip_extent.width)
                         + (mip_extent.width * mip_extent.height * position.z);
 
         return pixel(id, layer, face, level);
@@ -286,7 +287,8 @@ namespace stormkit::image {
                                       UInt32 level) const noexcept -> std::span<const Byte> {
         const auto mip_extent = extent(level);
 
-        const auto id = position.x + (position.y * mip_extent.width)
+        const auto id = position.x
+                        + (position.y * mip_extent.width)
                         + (mip_extent.width * mip_extent.height * position.z);
 
         return pixel(id, layer, face, level);
@@ -356,7 +358,10 @@ namespace stormkit::image {
 
         const auto mip_extent = extent(level);
 
-        return mip_extent.width * mip_extent.height * mip_extent.depth * m_data.channel_count
+        return mip_extent.width
+               * mip_extent.height
+               * mip_extent.depth
+               * m_data.channel_count
                * m_data.bytes_per_channel;
     }
 

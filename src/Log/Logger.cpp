@@ -11,8 +11,11 @@ import stormkit.Core;
 namespace stormkit::log {
     namespace {
 #ifdef STORMKIT_BUILD_DEBUG
-        constexpr auto DEFAULT_SEVERITY = Severity::Info | Severity::Debug | Severity::Error
-                                          | Severity::Fatal | Severity::Warning;
+        constexpr auto DEFAULT_SEVERITY = Severity::Info
+                                          | Severity::Debug
+                                          | Severity::Error
+                                          | Severity::Fatal
+                                          | Severity::Warning;
 #else
         constexpr auto DEFAULT_SEVERITY = Severity::Info | Severity::Error | Severity::Fatal;
 #endif

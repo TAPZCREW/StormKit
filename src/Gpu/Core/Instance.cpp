@@ -29,9 +29,9 @@ namespace stormkit::gpu {
 #endif
         };
 
-        [[maybe_unused]] constexpr auto VALIDATION_FEATURES =
-            std::array { vk::ValidationFeatureEnableEXT::eBestPractices,
-                         vk::ValidationFeatureEnableEXT::eGpuAssisted };
+        [[maybe_unused]] constexpr auto VALIDATION_FEATURES
+            = std::array { vk::ValidationFeatureEnableEXT::eBestPractices,
+                           vk::ValidationFeatureEnableEXT::eGpuAssisted };
 
         constexpr auto STORMKIT_VK_VERSION = vkMakeVersion<Int32>(STORMKIT_MAJOR_VERSION,
                                                                   STORMKIT_MINOR_VERSION,
@@ -139,17 +139,18 @@ namespace stormkit::gpu {
         m_vk_context = vk::raii::Context();
 
         const auto exts = m_vk_context->enumerateInstanceExtensionProperties();
-        m_extensions    = exts | std::views::transform([](auto&& extension) noexcept {
-                           return std::string { extension.extensionName };
-                       }) |
-                       std::ranges::to<std::vector>();
+        m_extensions    = exts
+                       | std::views::transform([](auto&& extension) noexcept {
+                             return std::string { extension.extensionName };
+                         })
+                       | std::ranges::to<std::vector>();
 
         dlog("Instance extensions: {}", m_extensions);
 
         const auto validation_layers = [this]() noexcept {
             auto output = std::vector<CZString> {};
-            m_validation_layers_enabled =
-                checkValidationLayerSupport(m_vk_context, m_validation_layers_enabled);
+            m_validation_layers_enabled
+                = checkValidationLayerSupport(m_vk_context, m_validation_layers_enabled);
             if (m_validation_layers_enabled) {
                 ilog("Enabling layers: {}", VALIDATION_LAYERS);
 
@@ -194,20 +195,20 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     auto Instance::doInitDebugReportCallback() noexcept -> VulkanExpected<void> {
         if (!m_validation_layers_enabled) return {};
-        constexpr auto severity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
-                                  vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-                                  vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
+        constexpr auto severity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose
+                                  | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
+                                  | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
 
-        constexpr auto type = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
-                              vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
-                              vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
+        constexpr auto type = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
+                              | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
+                              | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
 
         const auto create_info = vk::DebugUtilsMessengerCreateInfoEXT {
             .messageSeverity = severity,
             .messageType     = type,
-            .pfnUserCallback =
-                std::bit_cast<decltype(vk::DebugUtilsMessengerCreateInfoEXT::pfnUserCallback)>(
-                    &debugCallback)
+            .pfnUserCallback
+            = std::bit_cast<decltype(vk::DebugUtilsMessengerCreateInfoEXT::pfnUserCallback)>(
+                &debugCallback)
         };
 
         return m_vk_instance->createDebugUtilsMessengerEXT(create_info)

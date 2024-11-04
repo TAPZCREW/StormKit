@@ -15,7 +15,8 @@ using namespace std::literals;
 
 namespace {
     auto _ = test::TestSuite { "Core.Containers", { { "Tree.Node.name", [] {
-                                                         static constexpr auto name = "TestNodeName"s;
+                                                         static constexpr auto name
+                                                             = "TestNodeName"s;
 
                                                          auto node = TreeNode {};
                                                          expects(node.name() == ""s);

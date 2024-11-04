@@ -1018,14 +1018,16 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE constexpr auto isDepthOnlyFormat(PixelFormat format) noexcept -> bool {
-        return format == PixelFormat::Depth16 or format == PixelFormat::Depth24
+        return format == PixelFormat::Depth16
+               or format == PixelFormat::Depth24
                or format == PixelFormat::Depth32F;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE constexpr auto isDepthStencilFormat(PixelFormat format) noexcept -> bool {
-        return format == PixelFormat::Depth16_Stencil8 or format == PixelFormat::Depth24_Stencil8
+        return format == PixelFormat::Depth16_Stencil8
+               or format == PixelFormat::Depth24_Stencil8
                or format == PixelFormat::Depth32F_Stencil8;
     }
 

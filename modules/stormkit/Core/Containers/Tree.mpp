@@ -435,18 +435,29 @@ namespace stormkit { inline namespace core {
         std::function<std::string_view(std::string_view)> colorize_node) const -> void {
         auto stream = std::fstream(filepath, std::ios::out);
 
-        stream << "digraph G { \n"
-               << "    rankdir = LR\n"
-               << "    bgcolor = black\n\n"
-               << "    node [shape=box, fontname=\"helvetica\", fontsize=12];\n\n";
+        stream
+            << "digraph G { \n"
+            << "    rankdir = LR\n"
+            << "    bgcolor = black\n\n"
+            << "    node [shape=box, fontname=\"helvetica\", fontsize=12];\n\n";
 
         for (auto i : range(m_first_free_index)) {
             const auto name  = operator[](i).name();
             const auto dirty = bool(operator[](i).dirtyBits());
 
-            stream << "    \"node" << i << "\" [label=\"id: " << i << " type: " << name
-                   << " dirty: " << std::boolalpha << dirty << "\", style=filled,color=\""
-                   << colorize_node(name) << "\"];\n";
+            stream
+                << "    \"node"
+                << i
+                << "\" [label=\"id: "
+                << i
+                << " type: "
+                << name
+                << " dirty: "
+                << std::boolalpha
+                << dirty
+                << "\", style=filled,color=\""
+                << colorize_node(name)
+                << "\"];\n";
         }
 
         for (auto i : range(m_first_free_index)) {
@@ -454,8 +465,12 @@ namespace stormkit { inline namespace core {
 
             for (auto current = operator[](i).firstChild(); current != TreeNodeClass::INVALID_INDEX;
                  current      = operator[](current).nextSibling()) {
-                stream << "    \"node" << i << "\" -> \"node" << current
-                       << "\" [color=seagreen] ;\n";
+                stream
+                    << "    \"node"
+                    << i
+                    << "\" -> \"node"
+                    << current
+                    << "\" [color=seagreen] ;\n";
             }
         }
 
@@ -473,23 +488,43 @@ namespace stormkit { inline namespace core {
         std::function<std::string_view(std::string_view)> colorize_node) const -> void {
         std::fstream stream(filepath.string(), std::ios::out);
 
-        stream << "digraph G { \n"
-               << "    rankdir = LR\n"
-               << "    bgcolor = black\n\n"
-               << "    node [shape=box, fontname=\"helvetica\", fontsize=12];\n\n";
+        stream
+            << "digraph G { \n"
+            << "    rankdir = LR\n"
+            << "    bgcolor = black\n\n"
+            << "    node [shape=box, fontname=\"helvetica\", fontsize=12];\n\n";
 
         for (auto i : range(m_first_free_index)) {
             const auto name  = operator[](i).name();
             const auto dirty = bool(operator[](i).dirtyBits());
             if (i != highlight)
-                stream << "    \"node" << i << "\" [label=\"id: " << i << " type: " << name
-                       << " dirty: " << std::boolalpha << dirty << "\", style=filled,color=\""
-                       << colorize_node(name) << "\"];\n";
+                stream
+                    << "    \"node"
+                    << i
+                    << "\" [label=\"id: "
+                    << i
+                    << " type: "
+                    << name
+                    << " dirty: "
+                    << std::boolalpha
+                    << dirty
+                    << "\", style=filled,color=\""
+                    << colorize_node(name)
+                    << "\"];\n";
             else
-                stream << "    \"node" << i
-                       << "\" [shape=polygon,sides=5,peripheries=3, label=\"id: " << i
-                       << " type: " << name << " dirty: " << std::boolalpha << dirty
-                       << "\", style=filled,color=\"" << colorize_node(name) << "\"];\n";
+                stream
+                    << "    \"node"
+                    << i
+                    << "\" [shape=polygon,sides=5,peripheries=3, label=\"id: "
+                    << i
+                    << " type: "
+                    << name
+                    << " dirty: "
+                    << std::boolalpha
+                    << dirty
+                    << "\", style=filled,color=\""
+                    << colorize_node(name)
+                    << "\"];\n";
         }
 
         for (auto i : range(m_first_free_index)) {
@@ -497,8 +532,12 @@ namespace stormkit { inline namespace core {
 
             for (auto current = operator[](i).firstChild(); current != TreeNodeClass::INVALID_INDEX;
                  current      = operator[](current).nextSibling()) {
-                stream << "    \"node" << i << "\" -> \"nodeNode" << current
-                       << "\" [color=seagreen] ;\n";
+                stream
+                    << "    \"node"
+                    << i
+                    << "\" -> \"nodeNode"
+                    << current
+                    << "\" [color=seagreen] ;\n";
             }
         }
 

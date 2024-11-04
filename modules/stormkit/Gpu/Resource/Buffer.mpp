@@ -23,8 +23,8 @@ export namespace stormkit::gpu {
         struct CreateInfo {
             BufferUsageFlag    usages;
             RangeExtent        size;
-            MemoryPropertyFlag property =
-                MemoryPropertyFlag::Host_Visible | MemoryPropertyFlag::Host_Coherent;
+            MemoryPropertyFlag property
+                = MemoryPropertyFlag::Host_Visible | MemoryPropertyFlag::Host_Coherent;
         };
 
         static constexpr auto DEBUG_TYPE = DebugObjectType::Buffer;

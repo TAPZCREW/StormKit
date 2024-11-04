@@ -85,7 +85,9 @@ namespace stormkit::image {
         auto map(std::span<const Byte> bytes,
                  UInt32                source_count,
                  UInt32                destination_count) noexcept -> std::vector<Byte> {
-            expects(source_count <= 4u and source_count > 0u and destination_count <= 4u
+            expects(source_count <= 4u
+                    and source_count > 0u
+                    and destination_count <= 4u
                     and destination_count > 0u);
 
             static constexpr auto BYTE_1_MIN = std::numeric_limits<UInt8>::min();
@@ -425,7 +427,9 @@ namespace stormkit::image {
     /////////////////////////////////////
     /////////////////////////////////////
     auto Image::create(math::ExtentU extent, Format format) noexcept -> void {
-        expects(extent.width > 0u and extent.height > 0u and extent.depth > 0u
+        expects(extent.width > 0u
+                and extent.height > 0u
+                and extent.depth > 0u
                 and format != Format::Undefined);
         m_data.data.clear();
 
@@ -437,8 +441,13 @@ namespace stormkit::image {
         m_data.mip_levels        = 1u;
         m_data.format            = format;
 
-        m_data.data.resize(m_data.extent.width * m_data.extent.height * m_data.extent.depth
-                           * m_data.layers * m_data.faces * m_data.mip_levels * m_data.channel_count
+        m_data.data.resize(m_data.extent.width
+                           * m_data.extent.height
+                           * m_data.extent.depth
+                           * m_data.layers
+                           * m_data.faces
+                           * m_data.mip_levels
+                           * m_data.channel_count
                            * m_data.bytes_per_channel);
     }
 
@@ -464,7 +473,8 @@ namespace stormkit::image {
                                                   static_cast<Int8>(m_data.channel_count)));*/
         const auto pixel_count = m_data.extent.width * m_data.extent.height * m_data.extent.depth;
 
-        image_data.data.resize(pixel_count * image_data.channel_count
+        image_data.data.resize(pixel_count
+                                   * image_data.channel_count
                                    * image_data.bytes_per_channel,
                                Byte { 255u });
 
