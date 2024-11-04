@@ -1,3 +1,5 @@
+set_policy("compatibility.version", "3.0")
+
 modules = {
     core = {
         public_packages = { "glm", "frozen", "unordered_dense", "magic_enum", "tl_function_ref" },

@@ -65,7 +65,7 @@ jobs:
       - name: Setup XMake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: Arthapz/xmake#branch@fix-xlinker-rpath-deduplication
+          xmake-version: branch@dev
           actions-cache-folder: .xmake-cache${{ steps.cache_key.outputs.key }}
 
       - name: Update xmake repository

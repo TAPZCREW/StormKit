@@ -78,7 +78,7 @@ jobs:
       - name: Setup XMake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: latest
+          xmake-version: branch@dev
           actions-cache-folder: .xmake-cache${{ steps.cache_key.outputs.key }}
 
       - name: Update xmake repository
@@ -109,11 +109,18 @@ jobs:
           path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
           key: ${{ steps.restore-depcache.outputs.cache-primary-key }}
 
+      # clang will ICE the first time :D
       - name: Build
         id: build
+        continue-on-error: true
+        run: |
+          xmake b -v
+
+      - name: Build after ICE
+        id: build_after_ice
+        if: steps.build.outcome == 'failure'
         run: |
           # clang will ICE the first time :D
-          xmake b -v
           xmake b -v
 
       - name: Run unit tests
