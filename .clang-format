@@ -21,6 +21,7 @@ AllowShortEnumsOnASingleLine: 'false'
 AlignConsecutiveMacros: Consecutive
 BitFieldColonSpacing: After
 BreakBeforeConceptDeclarations: 'true'
+BreakBinaryOperations: OnePerLine
 EmptyLineBeforeAccessModifier: LogicalBlock
 IndentExternBlock: Indent
 IndentGotoLabels: 'false'
