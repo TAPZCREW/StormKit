@@ -52,9 +52,6 @@ jobs:
           maximum-size: 32GB
           disk-root: "D:"
 
-      - name: Setup longpaths
-        run: New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -PropertyType DWORD -Force
-
       - name: Get current date as package key
         id: cache_key
         run: echo "key=$(date +'%W')" >> $env:GITHUB_OUTPUT
@@ -71,7 +68,7 @@ jobs:
       - name: Setup XMake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: branch@dev
+          xmake-version: latest
           actions-cache-folder: .xmake-cache${{ steps.cache_key.outputs.key }}
 
       - name: Update xmake repository

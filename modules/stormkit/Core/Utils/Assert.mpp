@@ -138,10 +138,10 @@ namespace stormkit { inline namespace core {
                                             .modifiers
                                             = StyleModifier::Bold | StyleModifier::Inverse }
                                  | "["s + casts::core::as<std::string>(type) + "]",
-                             ConsoleStyle { .fg = ConsoleColor::Yellow } | location.file_name(),
+                             ConsoleStyle { .fg = ConsoleColor::Green } | location.file_name(),
                              ConsoleStyle { .fg = ConsoleColor::Blue } | location.line(),
                              ConsoleStyle { .fg = ConsoleColor::Blue } | location.column(),
-                             ConsoleStyle { .fg = ConsoleColor::Green } | location.function_name(),
+                             ConsoleStyle { .fg = ConsoleColor::Yellow } | location.function_name(),
                              ConsoleStyle { .fg        = ConsoleColor::Red,
                                             .modifiers = StyleModifier::Bold }
                                  | message);
