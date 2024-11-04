@@ -117,7 +117,7 @@ jobs:
         id: configure_llvm_libcpp
         if: ${{ matrix.compiler == 'LLVM-libc++' }}
         run: |
-              xmake f -v --yes -a ${{ matrix.arch }} -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --examples=y --tests=y --toolchain=llvm --sdk="${{ github.workspace }}/llvm/" --runtimes="c++_shared" --policies="platform.longpaths"
+              xmake f -vD --yes -a ${{ matrix.arch }} -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --examples=y --tests=y --toolchain=llvm --sdk="${{ github.workspace }}/llvm/" --runtimes="c++_shared" --policies="platform.longpaths"
 
       - name: Configure & Install dependencies
         id: configure_llvm_msstl
