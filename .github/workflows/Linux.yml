@@ -112,6 +112,8 @@ jobs:
       - name: Build
         id: build
         run: |
+          # clang will ICE the first time :D
+          xmake b -v
           xmake b -v
 
       - name: Run unit tests
