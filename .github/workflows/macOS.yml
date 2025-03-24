@@ -56,7 +56,7 @@ jobs:
 
       - uses: tecolicom/actions-use-homebrew-tools@v1
         with:
-          tools: llvm ninja cmake meson libpng libjpeg-turbo
+          tools: llvm@21 ninja cmake meson libpng libjpeg-turbo
 
       - name: Set xmake env
         run: echo "XMAKE_GLOBALDIR=${{ github.workspace }}/xmake-global" >> $GITHUB_ENV
