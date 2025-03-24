@@ -24,7 +24,7 @@ export namespace stormkit { inline namespace core {
         template<class T>
         using Callback = std::function<T()>;
 
-        ThreadPool(Int worker_count = std::thread::hardware_concurrency() / 2);
+        explicit ThreadPool(Int worker_count = std::thread::hardware_concurrency() / 2);
         ~ThreadPool();
 
         ThreadPool(const ThreadPool&)                    = delete;
