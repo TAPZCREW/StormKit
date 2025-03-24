@@ -399,7 +399,6 @@ end
 add_requireconfs("libxkbcommon", { configs = { ["x11"] = true, wayland = true } })
 add_requireconfs("frozen", { system = false })
 
-
 add_requires("cpptrace")
 
 ---------------------------- targets ----------------------------
@@ -508,6 +507,15 @@ for name, module in pairs(modules) do
 
             if module.public_deps then add_deps(module.public_deps, { public = true }) end
 
+            if module.packages then
+                local packages = {}
+                for _, package in ipairs(module.packages) do
+                    table.insert(packages, package:split(" ")[1])
+                end
+
+                add_packages(packages)
+            end
+
             if module.public_packages then
                 local packages = {}
                 for _, package in ipairs(module.public_packages) do
@@ -515,15 +523,6 @@ for name, module in pairs(modules) do
                 end
 
                 add_packages(packages, { public = true })
-            end
-
-            if module.packages then
-                local packages = {}
-                for _, package in ipairs(module.packages) do
-                    table.insert(packages, package:split(" ")[1])
-                end
-
-                add_packages(packages, { public = false })
             end
 
             if module.frameworks then add_frameworks(module.frameworks, { public = is_kind("static") }) end
