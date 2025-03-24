@@ -20,9 +20,15 @@ export namespace stormkit { inline namespace core {
         Pimpl() noexcept(not Defer);
         ~Pimpl();
 
-        template<meta::IsNot<T> First, class... Args>
-        explicit(sizeof...(Args) == 0) Pimpl(First&& first, Args&&... args);
+        template<class... Args>
+            requires (meta::EnableCtor<Pimpl<T, Defer>, Args...>)
+        Pimpl(Args&&... args);
 
+        // waiting for https://github.com/llvm/llvm-project/issues/132794 to be solved
+        // template<class... Args>
+        //     requires (meta::EnableCtor<Pimpl<T, Defer>, Args...>)
+        // explicit(sizeof...(Args) == 1) Pimpl(Args&&... args);
+        
         Pimpl(Pimpl&&) noexcept;
         auto operator=(Pimpl&&) noexcept -> Pimpl&;
 
@@ -65,9 +71,10 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T, bool Defer>
-    template<meta::IsNot<T> First, class... Args>
-    STORMKIT_FORCE_INLINE Pimpl<T, Defer>::Pimpl(First&& first, Args&&... args) {
-        init(std::forward<First>(first), std::forward<Args>(args)...);
+    template<class... Args>
+        requires (meta::EnableCtor<Pimpl<T, Defer>, Args...>)
+    STORMKIT_FORCE_INLINE Pimpl<T, Defer>::Pimpl(Args&&... args) {
+        init(std::forward<Args>(args)...);
     }
 
     /////////////////////////////////////

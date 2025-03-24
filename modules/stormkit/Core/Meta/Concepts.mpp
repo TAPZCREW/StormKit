@@ -235,4 +235,7 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept HasEqualityOperator = requires(const T1& first, const T2& second) {
         { first == second } -> IsBooleanTestable;
     };
+
+    template<typename T, typename ... Args>
+    concept EnableCtor = sizeof...(Args) != 1 || (sizeof...(Args) == 1 && !Is<T, typename std::remove_cvref<Args...>::type>);
 }}} // namespace stormkit::core::meta
