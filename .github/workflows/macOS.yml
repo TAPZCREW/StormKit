@@ -87,7 +87,7 @@ jobs:
       - name: Configure & Install dependencies
         id: configure
         run: |
-          xmake f -v --yes -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --examples=y --tests=y  --engine=n --toolchain=llvm --sdk="$(brew --prefix)/opt/llvm/" --runtimes="c++_shared"
+          xmake f -v --yes -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --examples=y --tests=y  --gpu=n --engine=n --toolchain=llvm --sdk="$(brew --prefix)/opt/llvm/" --runtimes="c++_shared"
 
       - name: Save cached xmake dependencies
         if: ${{ !steps.restore-depcache.outputs.cache-hit }}
