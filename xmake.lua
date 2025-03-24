@@ -398,6 +398,8 @@ end
 
 add_requireconfs("libxkbcommon", { configs = { ["x11"] = true, wayland = true } })
 add_requireconfs("frozen", { system = false })
+
+
 add_requires("cpptrace")
 
 ---------------------------- targets ----------------------------
@@ -502,9 +504,9 @@ for name, module in pairs(modules) do
                 add_mxxflags(module.cxxflags)
             end
 
-            if module.public_deps then add_deps(module.public_deps, { public = true }) end
+            if module.deps then add_deps(module.deps) end
 
-            if module.deps then add_deps(module.deps, { public = is_kind("static") }) end
+            if module.public_deps then add_deps(module.public_deps, { public = true }) end
 
             if module.public_packages then
                 local packages = {}
