@@ -136,9 +136,9 @@ modules = {
         modulename = "Gpu",
         has_headers = true,
         public_packages = {
-            "vulkan-headers v1.3.297",
-            "vulkan-memory-allocator >=3.1.0",
-            "vulkan-memory-allocator-hpp_ support_vkhpp_module",
+            "vulkan-headers v1.3.290",
+            "vulkan-memory-allocator 3.2.0",
+            "vulkan-memory-allocator-hpp_ 3.2.0",
         },
         public_deps = { "stormkit-core", "stormkit-log", "stormkit-wsi", "stormkit-image" },
         packages = is_plat("linux") and {
