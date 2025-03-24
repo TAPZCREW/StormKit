@@ -1,4 +1,4 @@
-set_policy("compatibility.version", "3.0")
+-- set_policy("compatibility.version", "3.0")
 
 modules = {
     core = {
@@ -206,7 +206,7 @@ includes("xmake/*.lua")
 if get_config("vsxmake") then add_rules("plugin.vsxmake.autoupdate") end
 
 if get_config("compile_commands") then
-    -- add_rules("plugin.compile_commands.autoupdate", { outputdir = ".vscode", lsp = "clangd" })
+    add_rules("plugin.compile_commands.autoupdate", { outputdir = ".vscode", lsp = "clangd" })
 end
 
 add_rules(
