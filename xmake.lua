@@ -1,4 +1,4 @@
-set_policy("compatibility.version", "3.0")
+-- set_policy("compatibility.version", "3.0")
 
 modules = {
     core = {
