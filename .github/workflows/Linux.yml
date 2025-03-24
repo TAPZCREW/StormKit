@@ -27,7 +27,7 @@ on:
       - README.md
 
 env:
-  LLVM_VERSION: 20
+  LLVM_VERSION: "-21"
 
 jobs:
   build:
@@ -62,7 +62,7 @@ jobs:
       - name: Add LLVM apt repository
         uses: myci-actions/add-deb-repo@11
         with:
-          repo: deb http://apt.llvm.org/noble/ llvm-toolchain-noble-${{ env.LLVM_VERSION }} main
+          repo: deb http://apt.llvm.org/noble/ llvm-toolchain-noble main
           repo-name: llvm
           keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
 
@@ -72,7 +72,7 @@ jobs:
       - name: Install system dependencies
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: build-essential cmake ninja meson pkg-config libllvm${{ env.LLVM_VERSION }} llvm-${{ env.LLVM_VERSION }} llvm-${{ env.LLVM_VERSION }}-dev llvm-${{ env.LLVM_VERSION }}-runtime clang-${{ env.LLVM_VERSION }} clang-tools-${{ env.LLVM_VERSION }} libclang-common-${{ env.LLVM_VERSION }}-dev libclang-${{ env.LLVM_VERSION }}-dev libclang1-${{ env.LLVM_VERSION }} python3-clang-${{ env.LLVM_VERSION }} libclang-rt-${{ env.LLVM_VERSION }}-dev libpolly-${{ env.LLVM_VERSION }}-dev lld-${{ env.LLVM_VERSION }} libc++-${{ env.LLVM_VERSION }}-dev libc++abi-${{ env.LLVM_VERSION }}-dev libomp-${{ env.LLVM_VERSION }}-dev libclc-${{ env.LLVM_VERSION }}-dev libunwind-${{ env.LLVM_VERSION }}-dev libxkbcommon-x11-dev xutils-dev x11proto-dev libxcb1-dev libxcb-randr0-dev libxcb-xinput-dev libxcb-xf86dri0-dev libxcb-dri3-dev libxcb-xkb-dev libxcb-xfixes0-dev libxau-dev libzstd-dev ninja-build libjpeg-turbo8-dev libpng-dev zlib1g-dev
+          packages: build-essential cmake ninja meson pkg-config libelf-dev libdwarf-dev llvm${{ env.LLVM_VERSION }} llvm${{ env.LLVM_VERSION }}-dev llvm${{ env.LLVM_VERSION }}-runtime clang${{ env.LLVM_VERSION }} clang-tools${{ env.LLVM_VERSION }} libclang-common${{ env.LLVM_VERSION }}-dev libclang${{ env.LLVM_VERSION }}-dev libclang1${{ env.LLVM_VERSION }} python3-clang${{ env.LLVM_VERSION }} libclang-rt${{ env.LLVM_VERSION }}-dev libpolly${{ env.LLVM_VERSION }}-dev lld${{ env.LLVM_VERSION }} libc++${{ env.LLVM_VERSION }}-dev libc++abi${{ env.LLVM_VERSION }}-dev libomp${{ env.LLVM_VERSION }}-dev libclc${{ env.LLVM_VERSION }}-dev libunwind${{ env.LLVM_VERSION }}-dev libxkbcommon-x11-dev xutils-dev x11proto-dev libxcb1-dev libxcb-randr0-dev libxcb-xinput-dev libxcb-xf86dri0-dev libxcb-dri3-dev libxcb-xkb-dev libxcb-xfixes0-dev libxau-dev libzstd-dev ninja-build libjpeg-turbo8-dev libpng-dev zlib1g-dev
           version: 1.0
 
       - name: Set xmake env
@@ -104,7 +104,7 @@ jobs:
       - name: Configure & Install dependencies
         id: configure
         run: |
-          xmake f -vD -a ${{ (matrix.arch  == 'x64') && 'x86_64' || (matrix.arch == 'arm64') && 'aarch64' || matrix.arch }} --yes -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --examples=y --tests=y --gpu=n --engine=n --mold=y ${{ (matrix.compiler == 'LLVM-libc++') && '--toolchain=llvm --sdk="/usr/lib/llvm-$LLVM_VERSION/" --runtimes="c++_shared"' || '' }}
+          xmake f -vD -a ${{ (matrix.arch  == 'x64') && 'x86_64' || (matrix.arch == 'arm64') && 'aarch64' || matrix.arch }} --yes -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --examples=y --tests=y --gpu=n --engine=n --mold=y ${{ (matrix.compiler == 'LLVM-libc++') && '--toolchain=llvm --sdk="/usr/lib/llvm$LLVM_VERSION/" --runtimes="c++_shared"' || '' }}
 
       - name: Save cached xmake dependencies
         if: ${{ !steps.restore-depcache.outputs.cache-hit }}
