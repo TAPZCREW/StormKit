@@ -68,34 +68,33 @@ export namespace stormkit::wsi::linux::common {
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-#define STORMKIT_XKB_SCOPED(name, type, var, global, deleter)                                 \
-    STORMKIT_INLINE name##Scoped::name##Scoped(type* handle) noexcept : m_handle { handle } { \
-        if (m_handle != nullptr) var++;                                                       \
-    }                                                                                         \
-                                                                                              \
-    STORMKIT_INLINE name##Scoped::~name##Scoped() noexcept {                                  \
-        if (m_handle != nullptr) {                                                            \
-            var--;                                                                            \
-                                                                                              \
-            if (var == 0) {                                                                   \
-                deleter(m_handle);                                                            \
-                m_handle = nullptr;                                                           \
-                global   = nullptr;                                                           \
-            }                                                                                 \
-        }                                                                                     \
-    }                                                                                         \
-                                                                                              \
-    STORMKIT_INLINE name##Scoped::name##Scoped(name##Scoped&& other) noexcept                 \
-        : m_handle { std::exchange(other.m_handle, nullptr) } {                               \
-    }                                                                                         \
-                                                                                              \
-    STORMKIT_INLINE auto name##Scoped::operator=(name##Scoped && other) noexcept              \
-        -> name##Scoped& {                                                                    \
-        if (this == &other) return *this;                                                     \
-                                                                                              \
-        m_handle = std::exchange(other.m_handle, nullptr);                                    \
-                                                                                              \
-        return *this;                                                                         \
+#define STORMKIT_XKB_SCOPED(name, type, var, global, deleter)                                      \
+    STORMKIT_INLINE name##Scoped::name##Scoped(type* handle) noexcept : m_handle { handle } {      \
+        if (m_handle != nullptr) var++;                                                            \
+    }                                                                                              \
+                                                                                                   \
+    STORMKIT_INLINE name##Scoped::~name##Scoped() noexcept {                                       \
+        if (m_handle != nullptr) {                                                                 \
+            var--;                                                                                 \
+                                                                                                   \
+            if (var == 0) {                                                                        \
+                deleter(m_handle);                                                                 \
+                m_handle = nullptr;                                                                \
+                global   = nullptr;                                                                \
+            }                                                                                      \
+        }                                                                                          \
+    }                                                                                              \
+                                                                                                   \
+    STORMKIT_INLINE name##Scoped::name##Scoped(name##Scoped&& other) noexcept                      \
+        : m_handle { std::exchange(other.m_handle, nullptr) } {                                    \
+    }                                                                                              \
+                                                                                                   \
+    STORMKIT_INLINE auto name##Scoped::operator=(name##Scoped&& other) noexcept -> name##Scoped& { \
+        if (this == &other) return *this;                                                          \
+                                                                                                   \
+        m_handle = std::exchange(other.m_handle, nullptr);                                         \
+                                                                                                   \
+        return *this;                                                                              \
     }
 
 namespace stormkit::wsi::linux::common {

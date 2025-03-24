@@ -1,0 +1,172 @@
+name: Windows
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths-ignore:
+      - .github/workflows/Linux.yml
+      - .github/workflows/macOS.yml
+      - .github/workflows/iOS.yml
+      - .github/workflows/Android.yml
+      - .github/workflows/AutoMerger.yml
+      - .gitignore
+      - LICENSE
+      - README.md
+
+  push:
+    branches: [develop]
+    paths-ignore:
+      - .github/workflows/Linux.yml
+      - .github/workflows/macOS.yml
+      - .github/workflows/iOS.yml
+      - .github/workflows/Android.yml
+      - .github/workflows/AutoMerger.yml
+      - .gitignore
+      - LICENSE
+      - README.md
+
+
+jobs:
+  build:
+    name: ${{ matrix.compiler }} ${{ matrix.arch }}  (${{ matrix.kind }}/${{ matrix.mode }})
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022]
+        compiler: [LLVM-libc++]
+        arch: [x64]
+        kind: [static, shared]
+        mode: [release, debug]
+
+    runs-on: ${{ matrix.os }}
+
+    concurrency:
+      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.kind }}-${{ matrix.mode }}
+
+    steps:
+      - name: Configure Pagefile
+        uses: al-cheb/configure-pagefile-action@v1.3
+        with:
+          minimum-size: 8GB
+          maximum-size: 32GB
+          disk-root: "D:"
+
+      - name: Get current date as package key
+        id: cache_key
+        run: echo "key=$(date +'%W')" >> $env:GITHUB_OUTPUT
+
+      - name: Enable git long paths
+        run: git config --system core.longpaths true
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set xmake env
+        run: echo "XMAKE_GLOBALDIR=${{ github.workspace }}/xmake-global" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Setup XMake
+        uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: latest
+          actions-cache-folder: .xmake-cache${{ steps.cache_key.outputs.key }}
+
+      - name: Update xmake repository
+        run: xmake repo --update
+
+      - name: Retrieve cached LLVM
+        id: restore-llvmcache
+        if: ${{ startsWith(matrix.compiler, 'LLVM') }}
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/llvm
+          key: ${{ matrix.os }}-LLVM-19-${{ matrix.arch }}
+
+      - name: Download uncompress and patch LLVM
+        if: ${{ startsWith(matrix.compiler, 'LLVM') && !steps.restore-llvmcache.outputs.cache-hit }}
+        run: |
+          if (-Not (Test-Path -path "${{ github.workspace }}/llvm")) {
+              curl.exe -o "${{ github.workspace }}/llvm.tar.xz" -LO https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.3/LLVM-19.1.3-Windows-X64.tar.xz
+              7z e "${{ github.workspace }}/llvm.tar.xz"
+              7z x "${{ github.workspace }}/llvm.tar"
+              mv "${{ github.workspace }}/LLVM-19.1.3-Windows-X64" "${{ github.workspace }}/llvm"
+              Remove-Item -LiteralPath "${{ github.workspace }}/llvm/share/libc++/v1" -Force -Recurse 
+              cp -r "${{ github.workspace }}/.github/workflows/win32/v1" "${{ github.workspace }}/llvm/share/libc++"
+          }
+
+      - name: Save cached LLVM
+        if: ${{ startsWith(matrix.compiler, 'LLVM') && !steps.restore-llvmcache.outputs.cache-hit }}
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}/llvm
+          key: ${{ steps.restore-llvmcache.outputs.cache-primary-key }}
+
+      - name: Retrieve dependencies hash
+        id: dep_hash
+        run: echo "hash=$(xmake l utils.ci.packageskey)" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Retrieve cached xmake dependencies
+        id: restore-depcache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
+          key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ steps.dep_hash.outputs.hash }}-${{ steps.cache_key.outputs.key }}
+
+      - name: Configure & Install dependencies
+        id: configure_llvm_libcpp
+        if: ${{ matrix.compiler == 'LLVM-libc++' }}
+        run: |
+              xmake f -vD --yes -a ${{ matrix.arch }} -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --examples=y --tests=y --toolchain=llvm --sdk="${{ github.workspace }}/llvm/" --runtimes="c++_shared" --policies="platform.longpaths"
+
+      - name: Configure & Install dependencies
+        id: configure_llvm_msstl
+        if: ${{ matrix.compiler == 'LLVM-msstl' }}
+        run: |
+              xmake f -v --yes -a ${{ matrix.arch }} -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --examples=y --tests=y --toolchain=llvm --sdk="${{ github.workspace }}/llvm/" --policies="platform.longpaths"
+
+      - name: Configure & Install dependencies
+        id: configure_msvc
+        if: ${{ matrix.compiler == 'MSVC' }}
+        run: |
+              xmake f -v --yes -a ${{ matrix.arch }} -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --examples=y --tests=y --policies="platform.longpaths"
+
+      - name: Save cached xmake dependencies
+        if: ${{ !steps.restore-depcache.outputs.cache-hit }}
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
+          key: ${{ steps.restore-depcache.outputs.cache-primary-key }}
+
+      - name: Build
+        id: build
+        run: |
+          xmake b -v
+
+      - name: Run unit tests
+        if: ${{ matrix.compiler == 'LLVM-libc++' }}
+        run: |
+          cp "${{ runner.workspace }}/StormKit/llvm/lib/c++.dll" "${{ runner.workspace }}/StormKit/build/windows/${{ matrix.arch }}/${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }}/"
+          xmake test -v
+
+      - name: Run unit tests
+        if: ${{ matrix.compiler != 'LLVM-libc++' }}
+        run: |
+          xmake test -v
+
+      - name: Installation
+        run: xmake install -v --installdir="${{ github.workspace }}/output"
+
+      - name: Add libc++ dll
+        if: ${{ matrix.compiler == 'LLVM-libc++' }}
+        run: cp "${{ github.workspace }}/StormKit/llvm/lib/c++.dll" "${{ github.workspace }}/output/bin/"
+
+      - name: Upload artifacts
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-LLVM-${{ matrix.kind }}-${{ matrix.mode }}
+          path: ${{ runner.workspace }}/output

@@ -88,7 +88,8 @@ namespace stormkit::wsi::linux::x11 {
             = XCBInternAtomReplyScoped { xcb_intern_atom_reply(connection.get(), cookie, &error) };
 
         if (error || !reply)
-            return std::unexpected { Error { (error) ? getXCBError(borrowMut(error)) : std::string { " " } } };
+            return std::unexpected { Error { (error) ? getXCBError(borrowMut(error))
+                                                     : std::string { " " } } };
 
         auto atom = reply->atom;
         xcb_atoms.emplace(name, atom);

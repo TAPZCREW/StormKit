@@ -85,7 +85,9 @@ namespace stormkit::image {
         auto map(std::span<const Byte> bytes,
                  UInt32                source_count,
                  UInt32                destination_count) noexcept -> std::vector<Byte> {
-            expects(source_count <= 4u and source_count > 0u and destination_count <= 4u
+            expects(source_count <= 4u
+                    and source_count > 0u
+                    and destination_count <= 4u
                     and destination_count > 0u);
 
             static constexpr auto BYTE_1_MIN = std::numeric_limits<UInt8>::min();
@@ -213,6 +215,20 @@ namespace stormkit::image {
     ////////////////////////////////////////
     Image::~Image() noexcept = default;
 
+#define CASE_DO(_E, _Func)                                                                  \
+    case Image::Codec::_E: {                                                                \
+        auto result = details::_Func(data);                                                 \
+        if (!result) {                                                                      \
+            return std::unexpected<Error> { std::in_place,                                  \
+                                            result.error().reason,                          \
+                                            std::format("Failed to load file {}\n    > {}", \
+                                                        filepath.string(),                  \
+                                                        result.error().str_error) };        \
+        }                                                                                   \
+        *this = std::move(*result);                                                         \
+        return {};                                                                          \
+    }
+
     /////////////////////////////////////
     /////////////////////////////////////
     auto Image::loadFromFile(std::filesystem::path filepath, Image::Codec codec) noexcept
@@ -223,10 +239,11 @@ namespace stormkit::image {
         expects(!std::empty(filepath));
 
         if (!std::filesystem::exists(filepath)) {
-            return std::unexpected(Error {
-                .reason = Error::Reason::File_Not_Found,
-                .str_error
-                = std::format("Failed to open file {}\n    > Incorrect path", filepath.string()) });
+            return std::unexpected<Error> {
+                std::in_place,
+                Error::Reason::File_Not_Found,
+                std::format("Failed to open file {}\n    > Incorrect path", filepath.string())
+            };
         }
 
         const auto data = [&filepath]() {
@@ -238,111 +255,36 @@ namespace stormkit::image {
 
         if (codec == Image::Codec::Autodetect) codec = details::filenameToCodec(filepath);
         switch (codec) {
-            case Image::Codec::JPEG: {
-                auto result = details::loadJPG(data);
-                if (!result) {
-                    return std::unexpected(
-                        Error { .reason    = result.error().reason,
-                                .str_error = std::format("Failed to load file {}\n    > {}",
-                                                         filepath.string(),
-                                                         result.error().str_error) });
-                }
-
-                *this = std::move(*result);
-
-                return {};
-            }
-            case Image::Codec::PNG: {
-                auto result = details::loadPNG(data);
-                if (!result) {
-                    return std::unexpected(
-                        Error { .reason    = result.error().reason,
-                                .str_error = std::format("Failed to load file {}\n    > {}",
-                                                         filepath.string(),
-                                                         result.error().str_error) });
-                } // namespace stormkit::image
-
-                *this = std::move(*result);
-
-                return {};
-            }
-            case Image::Codec::TARGA: {
-                auto result = details::loadTGA(data);
-                if (!result) {
-                    return std::unexpected(
-                        Error { .reason    = result.error().reason,
-                                .str_error = std::format("Failed to load file {}\n    > {}",
-                                                         filepath.string(),
-                                                         result.error().str_error) });
-                }
-
-                *this = std::move(*result);
-
-                return {};
-            }
-            case Image::Codec::PPM: {
-                auto result = details::loadPPM(data);
-                if (!result) {
-                    return std::unexpected(
-                        Error { .reason    = result.error().reason,
-                                .str_error = std::format("Failed to load file {}\n    > {}",
-                                                         filepath.string(),
-                                                         result.error().str_error) });
-                }
-
-                *this = std::move(*result);
-
-                return {};
-            }
-            case Image::Codec::HDR: {
-                auto result = details::loadHDR(data);
-                if (!result) {
-                    return std::unexpected(
-                        Error { .reason    = result.error().reason,
-                                .str_error = std::format("Failed to load file {}\n    > {}",
-                                                         filepath.string(),
-                                                         result.error().str_error) });
-                }
-
-                *this = std::move(*result);
-
-                return {};
-            }
-            case Image::Codec::KTX: {
-                auto result = details::loadKTX(data);
-                if (!result) {
-                    return std::unexpected(
-                        Error { .reason    = result.error().reason,
-                                .str_error = std::format("Failed to load file {}\n    > {}",
-                                                         filepath.string(),
-                                                         result.error().str_error) });
-                }
-
-                *this = std::move(*result);
-
-                return {};
-            }
-            case Image::Codec::QOI: {
-                auto result = details::loadQOI(data);
-                if (!result) {
-                    return std::unexpected(
-                        Error { .reason    = result.error().reason,
-                                .str_error = std::format("Failed to load file {}\n    > {}",
-                                                         filepath.string(),
-                                                         result.error().str_error) });
-                }
-
-                *this = std::move(*result);
-
-                return {};
-            }
+            CASE_DO(JPEG, loadJPG)
+            CASE_DO(PNG, loadPNG)
+            CASE_DO(TARGA, loadTGA)
+            CASE_DO(PPM, loadPPM)
+            CASE_DO(HDR, loadHDR)
+            CASE_DO(KTX, loadKTX)
+            CASE_DO(QOI, loadQOI)
             default: break;
         }
 
-        return std::unexpected(
-            Error { .reason    = Error::Reason::Invalid_Format,
-                    .str_error = std::format("Failed to save image from {}\n    > Invalid format",
-                                             filepath.string()) });
+        return std::unexpected<Error> {
+            std::in_place,
+            Error::Reason::Invalid_Format,
+            std::format("Failed to save image from {}\n    > Invalid format", filepath.string())
+        };
+    }
+
+#undef CASE_DO
+#define CASE_DO(_E, _Func, _Name)                                                     \
+    case Image::Codec::_E: {                                                          \
+        auto result = details::_Func(data);                                           \
+        if (!result) {                                                                \
+            return std::unexpected<Error> { std::in_place,                            \
+                                            result.error().reason,                    \
+                                            std::format("Failed to load " _Name       \
+                                                        " image from data\n    > {}", \
+                                                        result.error().str_error) };  \
+        }                                                                             \
+        *this = std::move(*result);                                                   \
+        return {};                                                                    \
     }
 
     /////////////////////////////////////
@@ -354,102 +296,45 @@ namespace stormkit::image {
 
         if (codec == Image::Codec::Autodetect) codec = details::headerToCodec(data);
         switch (codec) {
-            case Image::Codec::JPEG: {
-                auto result = details::loadJPG(data);
-                if (!result) {
-                    return std::unexpected(Error {
-                        .reason    = result.error().reason,
-                        .str_error = std::format("Failed to load JPEG image from data\n    > {}",
-                                                 result.error().str_error) });
-                }
-
-                *this = std::move(*result);
-
-                return {};
-            }
-            case Image::Codec::PNG: {
-                auto result = details::loadPNG(data);
-                if (!result) {
-                    return std::unexpected(Error {
-                        .reason    = result.error().reason,
-                        .str_error = std::format("Failed to load PNG image from data\n    > {}",
-                                                 result.error().str_error) });
-                }
-
-                *this = std::move(*result);
-
-                return {};
-            }
-            case Image::Codec::TARGA: {
-                auto result = details::loadTGA(data);
-                if (!result) {
-                    return std::unexpected(Error {
-                        .reason    = result.error().reason,
-                        .str_error = std::format("Failed to load TARGA image from data\n    > {}",
-                                                 result.error().str_error) });
-                }
-
-                *this = std::move(*result);
-
-                return {};
-            }
-            case Image::Codec::PPM: {
-                auto result = details::loadPPM(data);
-                if (!result) {
-                    return std::unexpected(Error {
-                        .reason    = result.error().reason,
-                        .str_error = std::format("Failed to load PPM image from data\n    > {}",
-                                                 result.error().str_error) });
-                }
-
-                *this = std::move(*result);
-
-                return {};
-            }
-            case Image::Codec::HDR: {
-                auto result = details::loadHDR(data);
-                if (!result) {
-                    return std::unexpected(Error {
-                        .reason    = result.error().reason,
-                        .str_error = std::format("Failed to load HDR image from data\n    > {}",
-                                                 result.error().str_error) });
-                }
-
-                *this = std::move(*result);
-
-                return {};
-            }
-            case Image::Codec::KTX: {
-                auto result = details::loadKTX(data);
-                if (!result) {
-                    return std::unexpected(Error {
-                        .reason    = result.error().reason,
-                        .str_error = std::format("Failed to load KTX image from data\n    > {}",
-                                                 result.error().str_error) });
-                }
-
-                *this = std::move(*result);
-
-                return {};
-            }
-            case Image::Codec::QOI: {
-                auto result = details::loadQOI(data);
-                if (!result) {
-                    return std::unexpected(Error {
-                        .reason    = result.error().reason,
-                        .str_error = std::format("Failed to load QOI image from data\n    > {}",
-                                                 result.error().str_error) });
-                }
-
-                *this = std::move(*result);
-
-                return {};
-            }
+            CASE_DO(JPEG, loadJPG, "JPEG")
+            CASE_DO(PNG, loadPNG, "PNG")
+            CASE_DO(TARGA, loadTGA, "TARGA")
+            CASE_DO(PPM, loadPPM, "PPM")
+            CASE_DO(HDR, loadHDR, "HDR")
+            CASE_DO(KTX, loadKTX, "KTX")
+            CASE_DO(QOI, loadQOI, "QOI")
             default: break;
         }
 
-        return std::unexpected(Error { .reason    = Error::Reason::Invalid_Format,
-                                       .str_error = "Failed to load image\n    > Invalid format" });
+        return std::unexpected<Error> { std::in_place,
+                                        Error::Reason::Invalid_Format,
+                                        "Failed to load image\n    > Invalid format" };
+    }
+
+#undef CASE_DO
+#define CASE_DO(_E, _Func)                                                                     \
+    case Image::Codec::_E: {                                                                   \
+        auto result = details::_Func(*this, filepath);                                         \
+        if (!result) {                                                                         \
+            return std::unexpected<Error> { std::in_place,                                     \
+                                            result.error().reason,                             \
+                                            std::format("Failed to save to file {}\n    > {}", \
+                                                        filepath.string(),                     \
+                                                        result.error().str_error) };           \
+        }                                                                                      \
+        return {};                                                                             \
+    }
+#define CASE_ARGS_DO(_E, _Func)                                                                \
+    case Image::Codec::_E: {                                                                   \
+        auto result = details::_Func(*this, std::move(args), filepath);                        \
+        if (!result) {                                                                         \
+            return std::unexpected<Error> { std::in_place,                                     \
+                                            result.error().reason,                             \
+                                            std::format("Failed to save to file {}\n    > {}", \
+                                                        filepath.string(),                     \
+                                                        result.error().str_error) };           \
+        }                                                                                      \
+        return {};                                                                             \
     }
 
     /////////////////////////////////////
@@ -466,91 +351,48 @@ namespace stormkit::image {
         expects(std::filesystem::exists(filepath.root_directory()));
 
         switch (codec) {
-            case Image::Codec::JPEG: {
-                auto result = details::saveJPG(*this, filepath);
-                if (!result) {
-                    return std::unexpected(
-                        Error { .reason    = result.error().reason,
-                                .str_error = std::format("Failed to save to file {}\n    > {}",
-                                                         filepath.string(),
-                                                         result.error().str_error) });
-                }
-                return {};
-            }
-            case Image::Codec::PNG: {
-                auto result = details::savePNG(*this, filepath);
-                if (!result) {
-                    return std::unexpected(
-                        Error { .reason    = result.error().reason,
-                                .str_error = std::format("Failed to load to file {}\n    > {}",
-                                                         filepath.string(),
-                                                         result.error().str_error) });
-                }
-                return {};
-            }
-            case Image::Codec::TARGA: {
-                auto result = details::saveTGA(*this, filepath);
-                if (!result) {
-                    return std::unexpected(
-                        Error { .reason    = result.error().reason,
-                                .str_error = std::format("Failed to load to file {}\n    > {}",
-                                                         filepath.string(),
-                                                         result.error().str_error) });
-                }
-                return {};
-            }
-            case Image::Codec::PPM: {
-                auto result = details::savePPM(*this, args, filepath);
-                if (!result) {
-                    return std::unexpected(
-                        Error { .reason    = result.error().reason,
-                                .str_error = std::format("Failed to load to file {}\n    > {}",
-                                                         filepath.string(),
-                                                         result.error().str_error) });
-                }
-                return {};
-            }
-            case Image::Codec::HDR: {
-                auto result = details::saveHDR(*this, filepath);
-                if (!result) {
-                    return std::unexpected(
-                        Error { .reason    = result.error().reason,
-                                .str_error = std::format("Failed to load to file {}\n    > {}",
-                                                         filepath.string(),
-                                                         result.error().str_error) });
-                }
-                return {};
-            }
-            case Image::Codec::KTX: {
-                auto result = details::saveKTX(*this, filepath);
-                if (!result) {
-                    return std::unexpected(
-                        Error { .reason    = result.error().reason,
-                                .str_error = std::format("Failed to load to file {}\n    > {}",
-                                                         filepath.string(),
-                                                         result.error().str_error) });
-                }
-                return {};
-            }
-            case Image::Codec::QOI: {
-                auto result = details::saveQOI(*this, filepath);
-                if (!result) {
-                    return std::unexpected(
-                        Error { .reason    = result.error().reason,
-                                .str_error = std::format("Failed to load to file {}\n    > {}",
-                                                         filepath.string(),
-                                                         result.error().str_error) });
-                }
-                return {};
-            }
-
+            CASE_DO(JPEG, saveJPG)
+            CASE_DO(PNG, savePNG)
+            CASE_DO(TARGA, saveTGA)
+            CASE_ARGS_DO(PPM, savePPM)
+            CASE_DO(HDR, saveHDR)
+            CASE_DO(KTX, saveKTX)
+            CASE_DO(QOI, saveQOI)
             default: break;
         }
 
-        return std::unexpected(Error {
-            .reason = Error::Reason::Invalid_Format,
-            .str_error
-            = std::format("Failed to save image to {}\n    > Invalid format", filepath.string()) });
+        return std::unexpected<Error> {
+            std::in_place,
+            Error::Reason::Invalid_Format,
+            std::format("Failed to save image to {}\n    > Invalid format", filepath.string())
+        };
+    }
+
+#undef CASE_DO
+#undef CASE_ARGS_DO
+#define CASE_DO(_E, _Func, _Name)                                                             \
+    case Image::Codec::_E: {                                                                  \
+        auto result = details::_Func(*this);                                                  \
+        if (!result) {                                                                        \
+            return std::unexpected<Error> { std::in_place,                                    \
+                                            result.error().reason,                            \
+                                            std::format("Failed to load " _Name               \
+                                                        " image from data\n    > {}",         \
+                                                        result.error().str_error) };          \
+        }                                                                                     \
+        return std::expected<std::vector<Byte>, Error> { std::in_place, std::move(*result) }; \
+    }
+#define CASE_ARGS_DO(_E, _Func, _Name)                                                        \
+    case Image::Codec::_E: {                                                                  \
+        auto result = details::_Func(*this, std::move(args));                                 \
+        if (!result) {                                                                        \
+            return std::unexpected<Error> { std::in_place,                                    \
+                                            result.error().reason,                            \
+                                            std::format("Failed to load " _Name               \
+                                                        " image from data\n    > {}",         \
+                                                        result.error().str_error) };          \
+        }                                                                                     \
+        return std::expected<std::vector<Byte>, Error> { std::in_place, std::move(*result) }; \
     }
 
     /////////////////////////////////////
@@ -564,95 +406,30 @@ namespace stormkit::image {
         auto output = std::vector<Byte> {};
 
         switch (codec) {
-            case Image::Codec::JPEG: {
-                auto result = details::saveJPG(*this);
-                if (!result) {
-                    return std::unexpected(Error {
-                        .reason    = result.error().reason,
-                        .str_error = std::format("Failed to load KTX image from data\n    > {}",
-                                                 result.error().str_error) });
-                }
-
-                return *result;
-            }
-            case Image::Codec::PNG: {
-                auto result = details::savePNG(*this);
-                if (!result) {
-                    return std::unexpected(Error {
-                        .reason    = result.error().reason,
-                        .str_error = std::format("Failed to load KTX image from data\n    > {}",
-                                                 result.error().str_error) });
-                }
-
-                return *result;
-            }
-            case Image::Codec::TARGA: {
-                auto result = details::saveTGA(*this);
-                if (!result) {
-                    return std::unexpected(Error {
-                        .reason    = result.error().reason,
-                        .str_error = std::format("Failed to load KTX image from data\n    > {}",
-                                                 result.error().str_error) });
-                }
-
-                return *result;
-            }
-            case Image::Codec::PPM: {
-                auto result = details::savePPM(*this, args);
-                if (!result) {
-                    return std::unexpected(Error {
-                        .reason    = result.error().reason,
-                        .str_error = std::format("Failed to load KTX image from data\n    > {}",
-                                                 result.error().str_error) });
-                }
-
-                return *result;
-            }
-            case Image::Codec::HDR: {
-                auto result = details::saveHDR(*this);
-                if (!result) {
-                    return std::unexpected(Error {
-                        .reason    = result.error().reason,
-                        .str_error = std::format("Failed to load KTX image from data\n    > {}",
-                                                 result.error().str_error) });
-                }
-
-                return *result;
-            }
-            case Image::Codec::KTX: {
-                auto result = details::saveKTX(*this);
-                if (!result) {
-                    return std::unexpected(Error {
-                        .reason    = result.error().reason,
-                        .str_error = std::format("Failed to load KTX image from data\n    > {}",
-                                                 result.error().str_error) });
-                }
-
-                return *result;
-            }
-            case Image::Codec::QOI: {
-                auto result = details::saveQOI(*this);
-                if (!result) {
-                    return std::unexpected(Error {
-                        .reason    = result.error().reason,
-                        .str_error = std::format("Failed to load QOI image from data\n    > {}",
-                                                 result.error().str_error) });
-                }
-
-                return *result;
-            }
-
+            CASE_DO(JPEG, saveJPG, "JPEG")
+            CASE_DO(PNG, savePNG, "PNG")
+            CASE_DO(TARGA, saveTGA, "TARGA")
+            CASE_ARGS_DO(PPM, savePPM, "PPM")
+            CASE_DO(HDR, saveHDR, "HDR")
+            CASE_DO(KTX, saveKTX, "KTX")
+            CASE_DO(QOI, saveQOI, "QOI")
             default: break;
         }
 
-        return std::unexpected(Error { .reason    = Error::Reason::Invalid_Format,
-                                       .str_error = "Failed to save image\n    > Invalid format" });
+        return std::unexpected<Error> { std::in_place,
+                                        Error::Reason::Invalid_Format,
+                                        "Failed to save image\n    > Invalid format" };
     }
+
+#undef CASE_ARGS_DO
+#undef CASE_DO
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto Image::create(math::ExtentU extent, Format format) noexcept -> void {
-        expects(extent.width > 0u and extent.height > 0u and extent.depth > 0u
+        expects(extent.width > 0u
+                and extent.height > 0u
+                and extent.depth > 0u
                 and format != Format::Undefined);
         m_data.data.clear();
 
@@ -664,8 +441,13 @@ namespace stormkit::image {
         m_data.mip_levels        = 1u;
         m_data.format            = format;
 
-        m_data.data.resize(m_data.extent.width * m_data.extent.height * m_data.extent.depth
-                           * m_data.layers * m_data.faces * m_data.mip_levels * m_data.channel_count
+        m_data.data.resize(m_data.extent.width
+                           * m_data.extent.height
+                           * m_data.extent.depth
+                           * m_data.layers
+                           * m_data.faces
+                           * m_data.mip_levels
+                           * m_data.channel_count
                            * m_data.bytes_per_channel);
     }
 
@@ -691,7 +473,8 @@ namespace stormkit::image {
                                                   static_cast<Int8>(m_data.channel_count)));*/
         const auto pixel_count = m_data.extent.width * m_data.extent.height * m_data.extent.depth;
 
-        image_data.data.resize(pixel_count * image_data.channel_count
+        image_data.data.resize(pixel_count
+                                   * image_data.channel_count
                                    * image_data.bytes_per_channel,
                                Byte { 255u });
 

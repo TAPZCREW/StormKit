@@ -155,7 +155,7 @@ namespace {
                   auto bar4           = borrow(bar);
                   auto bar_byte_view4 = as<ByteView>(bar4);
 
-                  auto bar_ptr4       = as<Ref<Foo>>(bar_byte_view4);
+                  auto bar_ptr4 = as<Ref<Foo>>(bar_byte_view4);
 
                   auto bar5           = &bar;
                   auto bar_byte_view5 = as<ByteView>(bar5);

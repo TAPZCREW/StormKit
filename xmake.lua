@@ -1,3 +1,5 @@
+set_policy("compatibility.version", "3.0")
+
 modules = {
     core = {
         public_packages = { "glm", "frozen", "unordered_dense", "magic_enum", "tl_function_ref" },
@@ -323,8 +325,8 @@ add_cxflags(
     "clang::-Wno-missing-field-initializers",
     "clang::-Wno-include-angled-in-module-purview",
     "clang::-Wno-unknown-attributes",
-    "-Wno-deprecated-declarations",
-    "clang::-Wno-overriding-option" -- for libktx
+    "clang::-Wno-deprecated-declarations",
+    "gcc::-fopenmp"
 )
 add_mxflags("clang::-Wno-missing-field-initializers")
 
@@ -333,7 +335,7 @@ set_optimize("fastest")
 if is_mode("debug") then
     set_symbols("debug", "hidden")
     add_cxflags("-ggdb3", { tools = { "clang", "gcc" } })
-    add_cxflags("-D_GLIBCXX_DEBUG", { tools = { "gcc" } })
+    -- add_cxflags("-D_GLIBCXX_DEBUG", { tools = { "gcc" } })
     add_mxflags("-ggdb3", { tools = { "clang", "gcc" } })
 elseif is_mode("releasedbg") then
     set_optimize("fast")
@@ -341,6 +343,8 @@ elseif is_mode("releasedbg") then
     add_cxflags("-fno-omit-frame-pointer", { tools = { "clang", "gcc" } })
     add_mxflags("-ggdb3", { tools = { "clang", "gcc" } })
 end
+
+  set_policy("build.c++.gcc.modules.cxx11abi", true)
 
 set_fpmodels("fast")
 add_vectorexts("fma")
@@ -379,6 +383,10 @@ if not is_plat("wasm") then
     add_requireconfs("vulkan-headers", { system = false })
     add_requireconfs("vulkan-memory-allocator")
     add_requireconfs("vulkan-memory-allocator-hpp", { system = false, configs = { use_vulkanheaders = true } })
+end
+
+if not is_plat("windows") then
+  add_requireconfs("libktx", { configs = { cxflags = "-Wno-overriding-option" } }) 
 end
 
 add_requireconfs("*", { configs = { modules = true, std_import = true } })
@@ -513,7 +521,7 @@ for name, module in pairs(modules) do
                     table.insert(packages, package:split(" ")[1])
                 end
 
-                add_packages(packages, { public = is_kind("static") })
+                add_packages(packages, { public = false })
             end
 
             if module.frameworks then add_frameworks(module.frameworks, { public = is_kind("static") }) end

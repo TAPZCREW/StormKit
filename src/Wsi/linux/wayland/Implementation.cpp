@@ -112,16 +112,13 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto pointerAxisSourceHandler(void*       data,
-                                  wl_pointer* pointer,
-                                  UInt32      axis_source) noexcept -> void;
+    auto pointerAxisSourceHandler(void* data, wl_pointer* pointer, UInt32 axis_source) noexcept
+        -> void;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto pointerAxisStopHandler(void*       data,
-                                wl_pointer* pointer,
-                                UInt32      time,
-                                UInt32      axis) noexcept -> void;
+    auto pointerAxisStopHandler(void* data, wl_pointer* pointer, UInt32 time, UInt32 axis) noexcept
+        -> void;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -387,9 +384,8 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::create(std::string          title,
-                            const math::ExtentU& extent,
-                            WindowStyle          style) -> void {
+    auto WindowImpl::create(std::string title, const math::ExtentU& extent, WindowStyle style)
+        -> void {
         m_title  = title;
         m_extent = extent;
         m_style  = style;
@@ -739,9 +735,9 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto
-        WindowImpl::seatCapabilities([[maybe_unused]] wl_seat*      seat,
-                                     [[maybe_unused]] std::uint32_t capabilities) noexcept -> void {
+    auto WindowImpl::seatCapabilities([[maybe_unused]] wl_seat*      seat,
+                                      [[maybe_unused]] std::uint32_t capabilities) noexcept
+        -> void {
     }
 
     /////////////////////////////////////

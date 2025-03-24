@@ -1,0 +1,154 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/Core/PlatformMacro.hpp>
+
+export module stormkit.Engine:SpriteRenderer;
+
+import std;
+
+import stormkit.Core;
+import stormkit.Gpu;
+
+import :Core;
+import :Renderer;
+
+export namespace stormkit::engine {
+    struct SpriteVertex {
+        math::Vector2F position;
+        math::Vector2F uv;
+    };
+
+    struct Sprite {
+        std::array<SpriteVertex, 4> vertices = {
+            SpriteVertex { { 0.f, 0.f }, { 0.f, 0.f } },
+            SpriteVertex { { 0.f, 1.f }, { 0.f, 1.f } },
+            SpriteVertex { { 1.f, 0.f }, { 1.f, 0.f } },
+            SpriteVertex { { 1.f, 1.f }, { 1.f, 1.f } },
+        };
+        OptionalRef<const gpu::ImageView> texture;
+    };
+
+    class SpriteRenderer {
+        struct Tag {};
+
+      public:
+        SpriteRenderer(const Renderer& renderer, const math::ExtentF& viewport, Tag);
+        ~SpriteRenderer();
+
+        SpriteRenderer(const SpriteRenderer&)                    = delete;
+        auto operator=(const SpriteRenderer&) -> SpriteRenderer& = delete;
+
+        SpriteRenderer(SpriteRenderer&&) noexcept;
+        auto operator=(SpriteRenderer&&) noexcept -> SpriteRenderer&;
+
+        [[nodiscard]] static auto create(const Renderer&      renderer,
+                                         const math::ExtentF& viewport) noexcept
+            -> gpu::Expected<SpriteRenderer>;
+        [[nodiscard]] static auto allocate(const Renderer&      renderer,
+                                           const math::ExtentF& viewport) noexcept
+            -> gpu::Expected<std::unique_ptr<SpriteRenderer>>;
+
+        auto addSprite(Sprite sprite) noexcept -> UInt32;
+        auto removeSprite(UInt32 id) noexcept -> void;
+
+        auto updateFrameGraph(FrameGraphBuilder& graph) noexcept -> void;
+
+      private:
+        struct SpriteData {
+            Sprite sprite;
+        };
+
+        Ref<const Renderer> m_renderer;
+
+        struct RenderData {
+            DeferInit<gpu::Shader>         vertex_shader;
+            DeferInit<gpu::Shader>         fragment_shader;
+            DeferInit<gpu::PipelineLayout> pipeline_layout;
+            gpu::RasterPipelineState       pipeline_state;
+            DeferInit<gpu::Pipeline>       pipeline;
+        };
+
+        std::unique_ptr<RenderData> m_render_data;
+
+        math::ExtentF m_viewport;
+        math::MatrixF m_projection_matrix;
+
+        UInt32                      m_next_sprite_id = 0;
+        DeferInit<gpu::Buffer>      m_vertex_buffer;
+        HashMap<UInt32, SpriteData> m_sprites;
+
+        bool m_dirty = true;
+    };
+} // namespace stormkit::engine
+
+/////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+/////////////////////////////////////////////////////////////////////
+
+namespace stormkit::engine {
+    namespace {
+        using namespace stormkit::gpu;
+
+        constexpr auto SPRITE_VERTEX_SIZE        = sizeof(SpriteVertex);
+        constexpr auto SPRITE_VERTEX_BUFFER_SIZE = SPRITE_VERTEX_SIZE * 4;
+    } // namespace
+
+    //////////////////////////////////////
+    //////////////////////////////////////
+    STORMKIT_FORCE_INLINE SpriteRenderer::~SpriteRenderer() = default;
+
+    //////////////////////////////////////
+    //////////////////////////////////////
+    STORMKIT_FORCE_INLINE SpriteRenderer::SpriteRenderer(SpriteRenderer&&) noexcept = default;
+
+    //////////////////////////////////////
+    //////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto SpriteRenderer::operator=(SpriteRenderer&&) noexcept
+        -> SpriteRenderer& = default;
+
+    //////////////////////////////////////
+    //////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto SpriteRenderer::create(const Renderer&      renderer,
+                                                      const math::ExtentF& viewport) noexcept
+        -> gpu::Expected<SpriteRenderer> {
+        return SpriteRenderer { renderer, viewport, Tag {} };
+    }
+
+    //////////////////////////////////////
+    //////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto SpriteRenderer::allocate(const Renderer&      renderer,
+                                                        const math::ExtentF& viewport) noexcept
+        -> gpu::Expected<std::unique_ptr<SpriteRenderer>> {
+        return std::make_unique<SpriteRenderer>(renderer, viewport, Tag {});
+    }
+
+    //////////////////////////////////////
+    //////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto SpriteRenderer::addSprite(Sprite sprite) noexcept -> UInt32 {
+        const auto id = m_next_sprite_id++;
+
+        auto sprite_data = SpriteData {
+            .sprite = std::move(sprite),
+        };
+
+        m_sprites.emplace(id, std::move(sprite_data));
+
+        // m_dirty = true;
+
+        return id;
+    }
+
+    //////////////////////////////////////
+    //////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto SpriteRenderer::removeSprite(UInt32 id) noexcept -> void {
+        auto it = m_sprites.find(id);
+        if (it == std::ranges::cend(m_sprites)) return;
+        m_sprites.erase(it);
+
+        m_dirty = true;
+    }
+} // namespace stormkit::engine

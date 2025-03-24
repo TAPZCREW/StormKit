@@ -102,7 +102,7 @@ export namespace stormkit::gpu {
 
     struct RasterPipelineLayout {
         std::vector<Ref<const DescriptorSetLayout>> descriptor_set_layouts;
-        std::vector<PushConstantRange>                   push_constant_ranges;
+        std::vector<PushConstantRange>              push_constant_ranges;
     };
 
     struct RasterPipelineState {

@@ -418,17 +418,13 @@ namespace stormkit::entities {
     template<class Self>
     auto EntityManager::systems(this Self& self) noexcept
         -> std::vector<Ref<core::meta::ConstnessLike<Self, System>>> {
-        const auto borrower = [] {
+        constexpr auto borrower = [] {
             if constexpr (core::meta::IsConst<Self>) return monadic::borrow();
             else
                 return monadic::borrowMut();
         }();
 
-        // clang-format off
-        return self.m_systems 
-               | std::views::transform(borrower)
-               | std::ranges::to<std::vector>();
-        // clang-format on
+        return self.m_systems | std::views::transform(borrower) | std::ranges::to<std::vector>();
     }
 
     /////////////////////////////////////

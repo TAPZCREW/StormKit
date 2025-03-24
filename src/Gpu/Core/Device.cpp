@@ -210,8 +210,8 @@ namespace stormkit::gpu {
 
                 return {};
             })
-            .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
+            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
+                                                core::monadic::throwAsException()));
 
         if (raster_queue.id)
             m_raster_queue = QueueEntry { .id    = *raster_queue.id,
@@ -228,7 +228,8 @@ namespace stormkit::gpu {
                                bool                              wait_all,
                                const std::chrono::milliseconds&  timeout) const noexcept
         -> Expected<Result> {
-        const auto vk_fences = fences | std::views::transform(monadic::toVkHandle())
+        const auto vk_fences = fences
+                               | std::views::transform(monadic::toVkHandle())
                                | std::ranges::to<std::vector>();
 
         return vkCall(*m_vk_device,
@@ -246,7 +247,8 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     auto Device::resetFences(std::span<const Ref<const Fence>> fences) const noexcept -> void {
-        const auto vk_fences = fences | std::views::transform(monadic::toVkHandle())
+        const auto vk_fences = fences
+                               | std::views::transform(monadic::toVkHandle())
                                | std::ranges::to<std::vector>();
 
         m_vk_device->resetFences(vk_fences);

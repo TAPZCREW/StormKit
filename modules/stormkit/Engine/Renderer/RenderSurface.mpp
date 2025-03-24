@@ -41,11 +41,11 @@ export namespace stormkit::engine {
         RenderSurface(RenderSurface&&) noexcept;
         auto operator=(RenderSurface&&) noexcept -> RenderSurface&;
 
-        static auto
-                    createFromWindow(const gpu::Instance& instance,
+        static auto createFromWindow(const gpu::Instance& instance,
                                      const gpu::Device&   device,
                                      const gpu::Queue&    raster_queue,
-                                     const wsi::Window&   window) noexcept -> gpu::Expected<RenderSurface>;
+                                     const wsi::Window&   window) noexcept
+            -> gpu::Expected<RenderSurface>;
         static auto allocateFromWindow(const gpu::Instance& instance,
                                        const gpu::Device&   device,
                                        const gpu::Queue&    raster_queue,
@@ -53,8 +53,8 @@ export namespace stormkit::engine {
             -> gpu::Expected<std::unique_ptr<RenderSurface>>;
 
         [[nodiscard]] auto beginFrame(const gpu::Device& device) -> gpu::Expected<Frame>;
-        [[nodiscard]] auto presentFrame(const gpu::Queue& queue,
-                                        const Frame&      frame) -> gpu::Expected<void>;
+        [[nodiscard]] auto presentFrame(const gpu::Queue& queue, const Frame& frame)
+            -> gpu::Expected<void>;
 
         [[nodiscard]] auto bufferingCount() const noexcept -> UInt32;
 
@@ -91,8 +91,8 @@ namespace stormkit::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto
-        RenderSurface::operator=(RenderSurface&&) noexcept -> RenderSurface& = default;
+    STORMKIT_FORCE_INLINE auto RenderSurface::operator=(RenderSurface&&) noexcept
+        -> RenderSurface& = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -123,8 +123,8 @@ namespace stormkit::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto
-        RenderSurface::images() const noexcept -> const std::vector<gpu::SwapchainImage>& {
+    STORMKIT_FORCE_INLINE auto RenderSurface::images() const noexcept
+        -> const std::vector<gpu::SwapchainImage>& {
         return m_swapchain->images();
     }
 } // namespace stormkit::engine

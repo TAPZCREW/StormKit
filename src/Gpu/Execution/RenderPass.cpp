@@ -28,19 +28,21 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     auto RenderPass::doInitRenderPass(const Device& device) noexcept -> VulkanExpected<void> {
-        const auto attachments =
-            m_description.attachments | std::views::transform([](auto&& attachment) {
-                return vk::AttachmentDescription {}
-                    .setFormat(narrow<vk::Format>(attachment.format))
-                    .setSamples(narrow<vk::SampleCountFlagBits>(attachment.samples))
-                    .setLoadOp(narrow<vk::AttachmentLoadOp>(attachment.load_op))
-                    .setStoreOp(narrow<vk::AttachmentStoreOp>(attachment.store_op))
-                    .setStencilLoadOp(narrow<vk::AttachmentLoadOp>(attachment.stencil_load_op))
-                    .setStencilStoreOp(narrow<vk::AttachmentStoreOp>(attachment.stencil_store_op))
-                    .setInitialLayout(narrow<vk::ImageLayout>(attachment.source_layout))
-                    .setFinalLayout(narrow<vk::ImageLayout>(attachment.destination_layout));
-            }) |
-            std::ranges::to<std::vector>();
+        const auto attachments
+            = m_description.attachments
+              | std::views::transform([](auto&& attachment) {
+                    return vk::AttachmentDescription {}
+                        .setFormat(narrow<vk::Format>(attachment.format))
+                        .setSamples(narrow<vk::SampleCountFlagBits>(attachment.samples))
+                        .setLoadOp(narrow<vk::AttachmentLoadOp>(attachment.load_op))
+                        .setStoreOp(narrow<vk::AttachmentStoreOp>(attachment.store_op))
+                        .setStencilLoadOp(narrow<vk::AttachmentLoadOp>(attachment.stencil_load_op))
+                        .setStencilStoreOp(
+                            narrow<vk::AttachmentStoreOp>(attachment.stencil_store_op))
+                        .setInitialLayout(narrow<vk::ImageLayout>(attachment.source_layout))
+                        .setFinalLayout(narrow<vk::ImageLayout>(attachment.destination_layout));
+                })
+              | std::ranges::to<std::vector>();
 
         auto color_attachment_refs   = std::vector<std::vector<vk::AttachmentReference>> {};
         auto depth_attachment_ref    = std::optional<vk::AttachmentReference> {};
@@ -54,12 +56,14 @@ namespace stormkit::gpu {
         subpasses_deps.reserve(std::size(m_description.subpasses));
 
         for (const auto& subpass : m_description.subpasses) {
-            auto& color_attachment_ref = color_attachment_refs.emplace_back(
-                subpass.color_attachment_refs | std::views::transform(monadic::vkRef()) |
-                std::ranges::to<std::vector>());
-            auto& resolve_attachment_ref = resolve_attachment_refs.emplace_back(
-                subpass.resolve_attachment_refs | std::views::transform(monadic::vkRef()) |
-                std::ranges::to<std::vector>());
+            auto& color_attachment_ref
+                = color_attachment_refs.emplace_back(subpass.color_attachment_refs
+                                                     | std::views::transform(monadic::vkRef())
+                                                     | std::ranges::to<std::vector>());
+            auto& resolve_attachment_ref
+                = resolve_attachment_refs.emplace_back(subpass.resolve_attachment_refs
+                                                       | std::views::transform(monadic::vkRef())
+                                                       | std::ranges::to<std::vector>());
             if (subpass.depth_attachment_ref)
                 depth_attachment_ref = monadic::vkRef()(*subpass.depth_attachment_ref);
 
@@ -80,8 +84,8 @@ namespace stormkit::gpu {
                     .setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
                     .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput)
                     .setSrcAccessMask(vk::AccessFlagBits {})
-                    .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead |
-                                      vk::AccessFlagBits::eColorAttachmentWrite));
+                    .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentRead
+                                      | vk::AccessFlagBits::eColorAttachmentWrite));
         }
 
         const auto create_info = vk::RenderPassCreateInfo {}
@@ -108,9 +112,9 @@ namespace stormkit::gpu {
 
             if (subpass_1.bind_point != subpass_2.bind_point) return false;
 
-            const auto color_attachment_refs_count =
-                std::min(std::size(subpass_1.color_attachment_refs),
-                         std::size(subpass_2.color_attachment_refs));
+            const auto color_attachment_refs_count
+                = std::min(std::size(subpass_1.color_attachment_refs),
+                           std::size(subpass_2.color_attachment_refs));
 
             for (auto j = 0u; j < color_attachment_refs_count; ++j) {
                 const auto& attachment_ref_1 = subpass_1.color_attachment_refs[j];

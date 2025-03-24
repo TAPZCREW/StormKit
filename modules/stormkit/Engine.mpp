@@ -6,5 +6,5 @@ export module stormkit.Engine;
 
 export import :Core;
 export import :Renderer;
-export import :Systems;
-export import :ShapeRenderer;
+export import :ECS;
+export import :SpriteRenderer;

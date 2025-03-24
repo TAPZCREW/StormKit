@@ -88,17 +88,16 @@ export namespace stormkit::gpu {
         Swapchain(Swapchain&&) noexcept;
         auto operator=(Swapchain&&) noexcept -> Swapchain&;
 
-        [[nodiscard]] static auto
-            create(const Device&                         device,
-                   const Surface&                        surface,
-                   const math::ExtentU&                  extent,
-                   std::optional<vk::raii::SwapchainKHR> old_swapchain = std::nullopt) noexcept
-            -> Expected<Swapchain>;
-        [[nodiscard]] static auto
-            allocate(const Device&                         device,
-                     const Surface&                        surface,
-                     const math::ExtentU&                  extent,
-                     std::optional<vk::raii::SwapchainKHR> old_swapchain = std::nullopt) noexcept
+        [[nodiscard]] static auto create(const Device&                         device,
+                                         const Surface&                        surface,
+                                         const math::ExtentU&                  extent,
+                                         std::optional<vk::raii::SwapchainKHR> old_swapchain
+                                         = std::nullopt) noexcept -> Expected<Swapchain>;
+        [[nodiscard]] static auto allocate(const Device&                         device,
+                                           const Surface&                        surface,
+                                           const math::ExtentU&                  extent,
+                                           std::optional<vk::raii::SwapchainKHR> old_swapchain
+                                           = std::nullopt) noexcept
             -> Expected<std::unique_ptr<Swapchain>>;
 
         [[nodiscard]] auto images() const noexcept -> const std::vector<SwapchainImage>&;

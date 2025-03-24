@@ -20,11 +20,11 @@ namespace stormkit::engine {
     LOGGER("stormkit.Renderer")
 
     namespace {
-        constexpr auto RAYTRACING_EXTENSIONS =
-            std::array { "VK_KHR_ray_tracing_pipeline"sv,  "VK_KHR_acceleration_structure"sv,
-                         "VK_KHR_buffer_device_address"sv, "VK_KHR_deferred_host_operations"sv,
-                         "VK_EXT_descriptor_indexing"sv,   "VK_KHR_spirv_1_4"sv,
-                         "VK_KHR_shader_float_controls"sv };
+        constexpr auto RAYTRACING_EXTENSIONS
+            = std::array { "VK_KHR_ray_tracing_pipeline"sv,  "VK_KHR_acceleration_structure"sv,
+                           "VK_KHR_buffer_device_address"sv, "VK_KHR_deferred_host_operations"sv,
+                           "VK_EXT_descriptor_indexing"sv,   "VK_KHR_spirv_1_4"sv,
+                           "VK_KHR_shader_float_controls"sv };
 
         constexpr auto BASE_EXTENSIONS = std::array { "VK_KHR_maintenance3"sv };
 
@@ -33,8 +33,8 @@ namespace stormkit::engine {
         /////////////////////////////////////
         /////////////////////////////////////
         auto scorePhysicalDevice(const gpu::PhysicalDevice& physical_device) -> UInt64 {
-            const auto support_raytracing =
-                physical_device.checkExtensionSupport(RAYTRACING_EXTENSIONS);
+            const auto support_raytracing
+                = physical_device.checkExtensionSupport(RAYTRACING_EXTENSIONS);
 
             auto score = UInt64 { 0u };
 
@@ -146,18 +146,20 @@ namespace stormkit::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Renderer::doInit(std::string_view                           application_name,
+    auto Renderer::doInit(std::string_view                      application_name,
                           std::optional<Ref<const wsi::Window>> window) noexcept
         -> gpu::Expected<void> {
         ilog("Initializing Renderer");
         return doInitInstance(application_name)
-            .and_then(curry(&Renderer::doInitDevice, this))
-            .and_then(curry(gpu::Queue::create, std::cref(*m_device), m_device->rasterQueueEntry()))
-            .transform(monadic::set(m_raster_queue))
+            .and_then(bindFront(&Renderer::doInitDevice, this))
             .and_then(
-                curry(gpu::CommandPool::create, std::cref(*m_device), std::cref(*m_raster_queue)))
+                bindFront(gpu::Queue::create, std::cref(*m_device), m_device->rasterQueueEntry()))
+            .transform(monadic::set(m_raster_queue))
+            .and_then(bindFront(gpu::CommandPool::create,
+                                std::cref(*m_device),
+                                std::cref(*m_raster_queue)))
             .transform(monadic::set(m_main_command_pool))
-            .and_then(curry(&Renderer::doInitRenderSurface, this, std::move(window)));
+            .and_then(bindFront(&Renderer::doInitRenderSurface, this, std::move(window)));
     }
 
     /////////////////////////////////////
@@ -205,8 +207,8 @@ namespace stormkit::engine {
                               std::stop_token   token) noexcept -> void {
         setCurrentThreadName("StormKit:RenderThread");
 
-        m_command_buffers =
-            m_main_command_pool->createCommandBuffers(m_device, m_surface->bufferingCount());
+        m_command_buffers
+            = m_main_command_pool->createCommandBuffers(m_device, m_surface->bufferingCount());
 
         m_framegraphs.resize(m_surface->bufferingCount());
 
@@ -214,14 +216,14 @@ namespace stormkit::engine {
             if (token.stop_requested()) return;
 
             m_surface->beginFrame(m_device)
-                .and_then(curry(&Renderer::doRender,
-                                this,
-                                std::ref(framegraph_mutex),
-                                std::ref(rebuild_graph)))
-                .and_then(curry(&RenderSurface::presentFrame,
-                                &m_surface.get(),
-                                std::cref(*m_raster_queue)))
-                .transform_error(expectsWithMessage("Failed to render frame"));
+                .and_then(bindFront(&Renderer::doRender,
+                                    this,
+                                    std::ref(framegraph_mutex),
+                                    std::ref(rebuild_graph)))
+                .and_then(bindFront(&RenderSurface::presentFrame,
+                                    &m_surface.get(),
+                                    std::cref(*m_raster_queue)))
+                .transform_error(assert("Failed to render frame"));
         }
 
         m_device->waitIdle();
@@ -250,10 +252,10 @@ namespace stormkit::engine {
 
         blit_cmb.reset();
         blit_cmb.begin(true);
-        auto&& result  = framegraph->execute(m_raster_queue);
-        if(not result) return std::unexpected{ result.error() };
-        
-        auto &&semaphore = *result;
+        auto&& result = framegraph->execute(m_raster_queue);
+        if (not result) return std::unexpected { result.error() };
+
+        auto&& semaphore  = *result;
         auto&& backbuffer = framegraph->backbuffer();
         blit_cmb.transitionImageLayout(backbuffer,
                                        gpu::ImageLayout::Color_Attachment_Optimal,
@@ -265,13 +267,15 @@ namespace stormkit::engine {
                            present_image,
                            gpu::ImageLayout::Transfer_Src_Optimal,
                            gpu::ImageLayout::Transfer_Dst_Optimal,
-                           std::array { gpu::BlitRegion {
-                               .src        = {},
-                               .dst        = {},
-                               .src_offset = { math::Vector3F { 0.f, 0.f, 0.f },
-                                               as<math::Vector3F>(backbuffer.extent()) },
-                               .dst_offset = { math::Vector3F { 0.f, 0.f, 0.f },
-                                               as<math::Vector3F>(present_image.extent()) } } },
+                           std::array {
+                               gpu::BlitRegion {
+                                                .src        = {},
+                                                .dst        = {},
+                                                .src_offset = { math::Vector3F { 0.f, 0.f, 0.f },
+                                                   as<math::Vector3F>(backbuffer.extent()) },
+                                                .dst_offset = { math::Vector3F { 0.f, 0.f, 0.f },
+                                                   as<math::Vector3F>(present_image.extent()) } }
+        },
                            gpu::Filter::Linear);
         blit_cmb.transitionImageLayout(backbuffer,
                                        gpu::ImageLayout::Transfer_Src_Optimal,

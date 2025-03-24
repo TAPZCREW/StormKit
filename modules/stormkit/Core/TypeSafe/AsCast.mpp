@@ -69,9 +69,11 @@ export namespace stormkit { inline namespace core {
             = (IsFloatingPoint<From> and IsIntegral<To>)
               or (IsFloatingPoint<From> and IsFloatingPoint<To> and sizeof(From) > sizeof(To))
               or (IsIntegralOrEnumeration<From> and IsFloatingPoint<To>)
-              or (IsIntegral<From> and IsIntegral<To>
+              or (IsIntegral<From>
+                  and IsIntegral<To>
                   and (sizeof(From) > sizeof(To) or IsSignNarrowing<To, From>))
-              or (IsEnumeration<From> and IsIntegral<To>
+              or (IsEnumeration<From>
+                  and IsIntegral<To>
                   and (sizeof(From) > sizeof(To) or IsSignNarrowing<UnderlyingType<From>, From>))
               or (IsPointer<From> and Is<To, bool>);
 
@@ -80,7 +82,8 @@ export namespace stormkit { inline namespace core {
             = IsPointer<To> and IsPointer<From> and not requires(To to, From from) { to = from; };
 
         template<typename To, auto from>
-        concept IsSafeNarrowing = IsArithmetic<To> and IsArithmetic<CanonicalTypeOf<from>>
+        concept IsSafeNarrowing = IsArithmetic<To>
+                                  and IsArithmetic<CanonicalTypeOf<from>>
                                   and not isSafeNarrowing<To>(from);
     } // namespace meta
 

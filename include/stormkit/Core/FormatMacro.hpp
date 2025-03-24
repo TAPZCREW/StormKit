@@ -52,7 +52,7 @@
                                                  ctx);                                             \
     }
 
-#define FORMATTER_DEFINE_FORMAT_AS_STRING(_From)                                                         \
+#define FORMATTER_DEFINE_FORMAT_AS_STRING(_From)                                                  \
     FORMATTER_DEFINE_PARSE(_From) {                                                               \
         return ctx.begin();                                                                       \
     }                                                                                             \

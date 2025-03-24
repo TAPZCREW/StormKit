@@ -42,7 +42,9 @@ namespace stormkit { inline namespace core {
 
     constexpr auto hashCombine(HashValue auto& hash, meta::IsHashable auto&& value) noexcept {
         const auto hasher = std::hash<std::remove_cvref_t<decltype(value)>> {};
-        hash ^= hasher(std::forward<decltype(value)>(value)) + 0x9e3779b9 + (hash << 6)
+        hash ^= hasher(std::forward<decltype(value)>(value))
+                + 0x9e3779b9
+                + (hash << 6)
                 + (hash >> 2);
     }
 

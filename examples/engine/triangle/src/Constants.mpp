@@ -14,8 +14,8 @@ import stormkit.Core;
 import stormkit.Log;
 
 export {
-    inline constexpr auto APPLICATION_NAME        = "Triangle";
-    inline constexpr auto WINDOW_TITLE            = "StormKit Triangle Example";
+    inline constexpr auto APPLICATION_NAME = "Triangle";
+    inline constexpr auto WINDOW_TITLE     = "StormKit Triangle Example";
 
     IN_MODULE_LOGGER("StormKit.Triangle");
 }

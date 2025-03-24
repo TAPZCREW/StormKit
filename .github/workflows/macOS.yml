@@ -6,8 +6,7 @@ on:
     branches: [main, develop]
     paths-ignore:
       - .github/workflows/Linux.yml
-      - .github/workflows/Windows-LLVM.yml
-      - .github/workflows/Windows-MSVC.yml
+      - .github/workflows/Windows.yml
       - .github/workflows/iOS.yml
       - .github/workflows/Android.yml
       - .github/workflows/AutoMerger.yml
@@ -17,8 +16,7 @@ on:
   push:
     branches: [develop]
     paths-ignore:
-      - .github/workflows/Windows-LLVM.yml
-      - .github/workflows/Windows-MSVC.yml
+      - .github/workflows/Windows.yml
       - .github/workflows/Linux.yml
       - .github/workflows/iOS.yml
       - .github/workflows/Android.yml
@@ -29,19 +27,20 @@ on:
 
 jobs:
   build:
-    name: ${{ matrix.os }}-${{ matrix.arch }} (${{ matrix.kind }}-${{ matrix.mode }})
+    name: ${{ matrix.compiler }} ${{ matrix.arch }}  (${{ matrix.kind }}/${{ matrix.mode }})
     strategy:
       fail-fast: false
       matrix:
         os: [macOS-15]
-        arch: [x64, arm64]
+        compiler: [LLVM-libc++]
+        arch: [arm64]
         kind: [static, shared]
         mode: [release, debug]
 
     runs-on: ${{ matrix.os }}${{ (matrix.arch == 'x64') && '-large' || '' }}
 
     concurrency:
-      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.kind
+      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.kind
         }}-${{ matrix.mode }}
 
     steps:
@@ -57,21 +56,16 @@ jobs:
 
       - uses: tecolicom/actions-use-homebrew-tools@v1
         with:
-          tools: llvm
-
-      - name: AAAAAAAAAAAAAAAAAAAAA
-        run: |
-          ls /opt/homebrew/opt/llvm/lib
-          /opt/homebrew/opt/llvm/bin/clang --version
+          tools: llvm ninja cmake meson libpng libjpeg-turbo
 
       - name: Set xmake env
-        run: echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" >> $GITHUB_ENV
+        run: echo "XMAKE_GLOBALDIR=${{ github.workspace }}/xmake-global" >> $GITHUB_ENV
         shell: bash
 
       - name: Setup XMake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: Arthapz/xmake#branch@fix-xlinker-rpath-deduplication
+          xmake-version: branch@dev
           actions-cache-folder: .xmake-cache${{ steps.cache_key.outputs.key }}
 
       - name: Update xmake repository
@@ -87,13 +81,13 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
-          key: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ steps.dep_hash.outputs.hash }}-${{ steps.cache_key.outputs.key
+          key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ steps.dep_hash.outputs.hash }}-${{ steps.cache_key.outputs.key
             }}
 
       - name: Configure & Install dependencies
         id: configure
         run: |
-          xmake f -v --yes -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --sanitizers=${{ matrix.mode == 'debug' && 'y' || 'n' }} --examples=y --tests=y  --engine=n --toolchain=llvm --sdk="$(brew --prefix)/opt/llvm/" --runtimes="c++_shared"
+          xmake f -v --yes -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --examples=y --tests=y  --engine=n --toolchain=llvm --sdk="$(brew --prefix)/opt/llvm/" --runtimes="c++_shared"
 
       - name: Save cached xmake dependencies
         if: ${{ !steps.restore-depcache.outputs.cache-hit }}
@@ -108,14 +102,16 @@ jobs:
           xmake b -v
 
       - name: Run unit tests
+        id: tests
         run: xmake test -v
 
       - name: Installation
-        run: xmake install -v --installdir="${{ runner.workspace }}/output"
+        id: install
+        run: xmake install -v --installdir="${{ github.workspace }}/output"
 
       - name: Upload artifacts
         id: upload
         uses: actions/upload-artifact@v4
         with:
-          name: macOS-x64-${{ matrix.kind }}-${{ matrix.mode }}
-          path: ${{ runner.workspace }}/output
+          name: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.kind }}-${{ matrix.mode }}
+          path: ${{ github.workspace }}/output

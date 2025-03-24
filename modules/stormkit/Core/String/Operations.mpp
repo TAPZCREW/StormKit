@@ -136,12 +136,14 @@ namespace stormkit { inline namespace core {
     STORMKIT_INLINE constexpr auto replace(std::string_view in,
                                            std::string_view pattern,
                                            std::string_view replacement) noexcept -> std::string {
-        return in | std::views::split(pattern)
+        return in
+               | std::views::split(pattern)
                | std::views::transform([replacement](auto&& substr) noexcept {
                      return std::string { replacement }
                             + std::string { std::ranges::begin(substr), std::ranges::end(substr) };
                  })
-               | std::views::join | std::views::drop(std::ranges::size(replacement))
+               | std::views::join
+               | std::views::drop(std::ranges::size(replacement))
                | std::ranges::to<std::string>();
     }
 }} // namespace stormkit::core

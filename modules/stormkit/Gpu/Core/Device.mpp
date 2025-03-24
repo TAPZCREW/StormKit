@@ -64,13 +64,13 @@ export namespace stormkit::gpu {
         auto waitIdle() const noexcept -> void;
 
         [[nodiscard]] auto waitForFences(std::span<const Ref<const Fence>> fences,
-                                         bool                                   wait_all = true,
-                                         const std::chrono::milliseconds&       timeout =
-                                             std::chrono::milliseconds::max()) const noexcept
+                                         bool                              wait_all = true,
+                                         const std::chrono::milliseconds&  timeout
+                                         = std::chrono::milliseconds::max()) const noexcept
             -> Expected<Result>;
         [[nodiscard]] auto waitForFence(const Fence&                     fence,
-                                        const std::chrono::milliseconds& timeout =
-                                            std::chrono::milliseconds::max()) const noexcept
+                                        const std::chrono::milliseconds& timeout
+                                        = std::chrono::milliseconds::max()) const noexcept
             -> Expected<Result>;
 
         auto resetFences(std::span<const Ref<const Fence>> fences) const noexcept -> void;

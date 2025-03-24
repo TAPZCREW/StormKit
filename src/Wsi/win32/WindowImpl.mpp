@@ -116,8 +116,8 @@ namespace stormkit::wsi::win32 {
         /////////////////////////////////////
         /////////////////////////////////////
         auto fromStdString(std::string_view str) -> std::wstring {
-            const auto size =
-                as<std::size_t>(MultiByteToWideChar(CP_UTF8, 0, std::data(str), -1, nullptr, 0));
+            const auto size
+                = as<std::size_t>(MultiByteToWideChar(CP_UTF8, 0, std::data(str), -1, nullptr, 0));
             auto wstr = std::wstring {};
             wstr.resize(size);
 
@@ -333,8 +333,11 @@ namespace stormkit::wsi::win32 {
                            m_last_style & ~(WS_CAPTION | WS_THICKFRAME));
             SetWindowLongW(m_window_handle,
                            GWL_EXSTYLE,
-                           m_last_style_ex & ~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE |
-                                               WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
+                           m_last_style_ex
+                               & ~(WS_EX_DLGMODALFRAME
+                                   | WS_EX_WINDOWEDGE
+                                   | WS_EX_CLIENTEDGE
+                                   | WS_EX_STATICEDGE));
 
             SetWindowPos(m_window_handle,
                          nullptr,
@@ -598,8 +601,8 @@ namespace stormkit::wsi::win32 {
                 auto area = RECT {};
                 GetClientRect(m_window_handle, &area);
 
-                if ((w_param &
-                     (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON | MK_XBUTTON1 | MK_XBUTTON2)) == 0) {
+                if ((w_param & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON | MK_XBUTTON1 | MK_XBUTTON2))
+                    == 0) {
                     if (GetCapture() == m_window_handle) ReleaseCapture();
                 } else if (GetCapture() != m_window_handle)
                     SetCapture(m_window_handle);
