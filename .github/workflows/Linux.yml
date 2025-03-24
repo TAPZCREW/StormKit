@@ -104,7 +104,7 @@ jobs:
       - name: Configure & Install dependencies
         id: configure
         run: |
-          xmake f -vD -a ${{ (matrix.arch  == 'x64') && 'x86_64' || (matrix.arch == 'arm64') && 'aarch64' || matrix.arch }} --yes -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --examples=y --tests=y --gpu=n --engine=n --mold=y ${{ (matrix.compiler == 'LLVM-libc++') && '--toolchain=llvm --sdk="/usr/lib/llvm-${{ env.LLVM_VERSION }}/" --runtimes="c++_shared"' || '' }}
+          xmake f -vD -a ${{ (matrix.arch  == 'x64') && 'x86_64' || (matrix.arch == 'arm64') && 'aarch64' || matrix.arch }} --yes -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --examples=y --tests=y --gpu=n --engine=n --mold=y ${{ (matrix.compiler == 'LLVM-libc++') && '--toolchain=llvm --sdk="/usr/lib/llvm-$LLVM_VERSION/" --runtimes="c++_shared"' || '' }}
 
       - name: Save cached xmake dependencies
         if: ${{ !steps.restore-depcache.outputs.cache-hit }}
