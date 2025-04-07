@@ -2,12 +2,6 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-#include <version>
-
-#if defined(__cpp_lib_stacktrace) and __cpp_lib_stacktrace >= 202011L
-    #define STD_STACKTRACE_SUPPORTED
-#endif
-
 export module stormkit.Core:Utils.Stacktrace;
 
 import std;
