@@ -1,11 +1,13 @@
 module;
 
 #include <cassert>
+#include <version>
 
 export module stormkit.Core:Coroutines;
 
 import std;
 
+#if defined(__cpp_lib_generator) and (__cpp_lib_generator < 202207L)
 export namespace std {
     struct use_allocator_arg {};
 
@@ -629,3 +631,4 @@ namespace std {
     };
 
 } // namespace std
+#endif
