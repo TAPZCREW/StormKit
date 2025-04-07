@@ -23,7 +23,7 @@ import :Meta.Concepts;
 export namespace stormkit { inline namespace core {
 #ifdef __STDCPP_FLOAT16_T__
     using Float16 = std::float16_t;
-#else
+#elseif not defined(STORMKIT_OS_WINDOWS)
     using Float16 = _Float16;
 #endif
 
