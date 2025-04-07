@@ -4,6 +4,12 @@
 
 module;
 
+#include <version>
+
+#if defined(__cpp_lib_stacktrace) and __cpp_lib_stacktrace >= 202011L
+    #define STD_STACKTRACE_SUPPORTED
+#endif
+
 #if not defined(STD_STACKTRACE_SUPPORTED)
     #include <cpptrace/cpptrace.hpp>
 #endif
@@ -20,7 +26,7 @@ import :String.Operations;
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    auto printStacktrace(int ignore_count) noexcept -> void {
+    auto printStacktrace([[maybe_unused]] int ignore_count) noexcept -> void {
         const auto thread_name = getCurrentThreadName();
         if (not std::empty(thread_name))
             std::println(std::cerr,
@@ -33,9 +39,49 @@ namespace stormkit { inline namespace core {
                          std::this_thread::get_id());
 #if defined(STD_STACKTRACE_SUPPORTED)
         const auto st = std::stacktrace::current();
+        auto i = 0;
+        for (auto&& frame : st) {
+            if (i < ignore_count) {
+                i += 1;
+                continue;
+            }
+#if defined(STORMKIT_COMPILER_MSSTL)
+            auto splitted = split(frame.description(), '+');
+            const auto address = *fromString<UInt>(splitted[1].substr(2), 16);
+            splitted = split(splitted[0], '!');
+            const auto module = (std::size(splitted) >= 1) ? splitted[0] : "";
+            auto symbol = (std::size(splitted) >= 2) ? splitted[1] : "";
+#else
+            
+#endif
+#ifdef STORMKIT_COMPILER_LIBCPP
+            symbol = replace(symbol, "::__1::", "::");
+#endif
+            const auto object_address
+                = (address == 0 ? "inlined"
+                                : std::format("{:#010x}", address));
+            
+            const auto formatted_symbol = (symbol == "") ? std::format(" on {}", module)
+                                                         : std::format(" in {} on {}", YellowTextStyle | symbol, module);
+
+            if (frame.source_file() != "" and frame.source_line() != 0) {
+                std::println(std::cerr,
+                             "{}# {}{} at {}:{}",
+                             (i++ - ignore_count),
+                             BlueTextStyle | object_address,
+                             formatted_symbol,
+                             BlueTextStyle | frame.source_file(),
+                             BlueTextStyle | frame.source_line());
+            } else {
+                std::println(std::cerr,
+                             "{}# {}{}",
+                             (i++ - ignore_count),
+                             BlueTextStyle | object_address,
+                             formatted_symbol);
+            }
+        }
 #else
         const auto st = cpptrace::stacktrace::current();
-#endif
         auto i = 0;
         for (auto&& frame : st) {
             if (i < ignore_count) {
@@ -76,5 +122,6 @@ namespace stormkit { inline namespace core {
                              formatted_symbol,
                              GreenTextStyle | frame.filename);
         }
+#endif
     }
 }} // namespace stormkit::core

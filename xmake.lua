@@ -25,7 +25,7 @@ modules = {
          ]],
                 }, { configs = { languages = "c++23" }, includes = { "stacktrace" } })
 
-                if not has_stacktrace then
+                if not has_stacktrace and not target:is_plat("windows") then
                     print("No std C++23 stacktrace, falling back to cpptrace")
                     target:add("packages", "cpptrace", "libdwarf")
                 end
@@ -399,7 +399,9 @@ end
 add_requireconfs("libxkbcommon_", { configs = { ["x11"] = true, wayland = true } })
 add_requireconfs("frozen", { system = false })
 
-add_requires("cpptrace")
+if not is_plat("windows") then
+    add_requires("cpptrace")
+end
 
 ---------------------------- targets ----------------------------
 for name, module in pairs(modules) do
