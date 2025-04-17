@@ -20,14 +20,15 @@ export namespace stormkit { inline namespace core {
         Pimpl() noexcept(not Defer);
         ~Pimpl();
 
+#if defined(STORMKIT_COMPILER_CLANG) and __clang_major__ < 21 
         template<class... Args>
             requires (meta::EnableCtor<Pimpl<T, Defer>, Args...>)
         Pimpl(Args&&... args);
-
-        // waiting for https://github.com/llvm/llvm-project/issues/132794 to be solved
-        // template<class... Args>
-        //     requires (meta::EnableCtor<Pimpl<T, Defer>, Args...>)
-        // explicit(sizeof...(Args) == 1) Pimpl(Args&&... args);
+#else
+        template<class... Args>
+            requires (meta::EnableCtor<Pimpl<T, Defer>, Args...>)
+        explicit(sizeof...(Args) == 1) Pimpl(Args&&... args);
+#endif
         
         Pimpl(Pimpl&&) noexcept;
         auto operator=(Pimpl&&) noexcept -> Pimpl&;
