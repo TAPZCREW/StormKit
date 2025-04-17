@@ -1,9 +1,9 @@
 {
-  "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
-  "workspace.library": ["xmake"],
-  "hint.enable": true,
-  "diagnostics.enable": false,
-  "runtime.special": {
-    "import": "require"
+  "workspace.userThirdParty": ["luals"],
+  "workspace.library": [
+      "luals/xmake-luals-addon/library"
+  ],
+  "runtime.builtin":{
+      "os": "disable"
   }
 }
