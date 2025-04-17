@@ -432,7 +432,7 @@ if not is_plat("windows") then
   add_requireconfs("libktx", { configs = { cxflags = "-Wno-overriding-option" } }) 
 end
 
-add_requireconfs("*", { configs = { modules = true, std_import = true } })
+add_requireconfs("*", { configs = { modules = true, std_import = true, cpp = "latest" } })
 
 if get_config("lto") then
     set_policy("build.optimization.lto", true)
