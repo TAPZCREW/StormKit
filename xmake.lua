@@ -313,6 +313,7 @@ option("tests_core", {
 option("sanitizers", { default = false, category = "root menu/build" })
 option("mold", { default = false, category = "root menu/build" })
 option("lto", { default = false, category = "root menu/build" })
+option("ci", { default = false, category = "root menu/build" })
 
 ---------------------------- module options ----------------------------
 option("log", { default = true, category = "root menu/modules" })
@@ -443,6 +444,10 @@ add_requireconfs("frozen", { system = false })
 
 if not is_plat("windows") then
     add_requires("cpptrace")
+end
+
+if get_config("ci") then
+    add_requireconfs("*", { system = false })
 end
 
 ---------------------------- targets ----------------------------
