@@ -13,16 +13,23 @@ import std;
 import :Meta;
 import :Utils.Assert;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     template<class T, bool Defer = false>
     class Pimpl {
       public:
         Pimpl() noexcept(not Defer);
         ~Pimpl();
 
-        template<IsNot<T> First, class... Args>
-        explicit(sizeof...(Args) == 0) Pimpl(First&& first, Args&&... args);
-
+#if defined(STORMKIT_COMPILER_CLANG) and __clang_major__ < 21 
+        template<class... Args>
+            requires (meta::EnableCtor<Pimpl<T, Defer>, Args...>)
+        Pimpl(Args&&... args);
+#else
+        template<class... Args>
+            requires (meta::EnableCtor<Pimpl<T, Defer>, Args...>)
+        explicit(sizeof...(Args) == 1) Pimpl(Args&&... args);
+#endif
+        
         Pimpl(Pimpl&&) noexcept;
         auto operator=(Pimpl&&) noexcept -> Pimpl&;
 
@@ -38,18 +45,18 @@ export namespace stormkit::core {
         auto get() noexcept -> T&;
         auto get() const noexcept -> const T&;
 
-        operator bool() const noexcept;
+        explicit operator bool() const noexcept;
 
       private:
         std::unique_ptr<T> m_data;
     };
-} // namespace stormkit::core
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T, bool Defer>
@@ -65,9 +72,10 @@ namespace stormkit::core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T, bool Defer>
-    template<IsNot<T> First, class... Args>
-    STORMKIT_FORCE_INLINE Pimpl<T, Defer>::Pimpl(First&& first, Args&&... args) {
-        init(std::forward<First>(first), std::forward<Args>(args)...);
+    template<class... Args>
+        requires (meta::EnableCtor<Pimpl<T, Defer>, Args...>)
+    STORMKIT_FORCE_INLINE Pimpl<T, Defer>::Pimpl(Args&&... args) {
+        init(std::forward<Args>(args)...);
     }
 
     /////////////////////////////////////
@@ -138,4 +146,4 @@ namespace stormkit::core {
     STORMKIT_FORCE_INLINE Pimpl<T, Defer>::operator bool() const noexcept {
         return m_data != nullptr;
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core

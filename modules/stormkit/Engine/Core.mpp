@@ -41,9 +41,11 @@ export namespace stormkit::engine {
         template<typename T>
         using Expected = std::expected<T, ApplicationError>;
 
-        Application(std::string_view           application_name,
-                    const core::math::ExtentU& window_extent,
-                    std::string                window_title,
+        using UpdateFrameGraphCallback = std::function<void(FrameGraphBuilder&, std::atomic_bool&)>;
+
+        Application(std::string_view     application_name,
+                    const math::ExtentU& window_extent,
+                    std::string          window_title,
                     PrivateTag);
         ~Application();
 
@@ -53,27 +55,31 @@ export namespace stormkit::engine {
         Application(Application&&) noexcept;
         auto operator=(Application&&) noexcept -> Application&;
 
-        static auto create(std::string_view           application_name,
-                           const core::math::ExtentU& window_extent,
-                           std::string                window_title = DEFAULT_WINDOW_TITLE) noexcept
+        static auto create(std::string_view     application_name,
+                           const math::ExtentU& window_extent,
+                           std::string          window_title = DEFAULT_WINDOW_TITLE) noexcept
             -> Expected<Application>;
-        static auto allocate(std::string_view           application_name,
-                             const core::math::ExtentU& window_extent,
-                             std::string window_title = DEFAULT_WINDOW_TITLE) noexcept
+        static auto allocate(std::string_view     application_name,
+                             const math::ExtentU& window_extent,
+                             std::string          window_title = DEFAULT_WINDOW_TITLE) noexcept
             -> Expected<std::unique_ptr<Application>>;
 
+        auto renderer(this auto& self) noexcept -> decltype(auto);
         auto world(this auto& self) noexcept -> decltype(auto);
         auto window(this auto& self) noexcept -> decltype(auto);
         auto eventHandler(this auto& self) noexcept -> decltype(auto);
 
-        auto update() -> void;
+        auto run() -> void;
+        auto setUpdateFrameGraphCallback(UpdateFrameGraphCallback callback);
 
       private:
-        core::DeferInit<wsi::Window>       m_window;
-        core::DeferInit<Renderer>          m_renderer;
-        core::DeferInit<wsi::EventHandler> m_event_handler;
+        DeferInit<wsi::Window>       m_window;
+        DeferInit<Renderer>          m_renderer;
+        DeferInit<wsi::EventHandler> m_event_handler;
 
-        core::DeferInit<entities::EntityManager> m_world;
+        DeferInit<entities::EntityManager> m_world;
+
+        UpdateFrameGraphCallback m_update_framegraph;
     };
 } // namespace stormkit::engine
 
@@ -92,15 +98,15 @@ namespace stormkit::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto
-        Application::operator=(Application&&) noexcept -> Application& = default;
+    STORMKIT_FORCE_INLINE auto Application::operator=(Application&&) noexcept
+        -> Application& = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto
-        Application::create(std::string_view           application_name,
-                            const core::math::ExtentU& window_extent,
-                            std::string window_title) noexcept -> Expected<Application> try {
+    STORMKIT_FORCE_INLINE auto Application::create(std::string_view     application_name,
+                                                   const math::ExtentU& window_extent,
+                                                   std::string          window_title) noexcept
+        -> Expected<Application> try {
         return Application { application_name,
                              window_extent,
                              std::move(window_title),
@@ -109,9 +115,9 @@ namespace stormkit::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto Application::allocate(std::string_view           application_name,
-                                                     const core::math::ExtentU& window_extent,
-                                                     std::string window_title) noexcept
+    STORMKIT_FORCE_INLINE auto Application::allocate(std::string_view     application_name,
+                                                     const math::ExtentU& window_extent,
+                                                     std::string          window_title) noexcept
         -> Expected<std::unique_ptr<Application>> try {
         return std::make_unique<Application>(application_name,
                                              window_extent,
@@ -121,21 +127,33 @@ namespace stormkit::engine {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto Application::renderer(this auto& self) noexcept -> decltype(auto) {
+        return std::forward_like<decltype(self)>(self.m_renderer.get());
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     STORMKIT_FORCE_INLINE auto Application::world(this auto& self) noexcept -> decltype(auto) {
-        return self.m_world.get();
+        return std::forward_like<decltype(self)>(self.m_world.get());
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE auto Application::window(this auto& self) noexcept -> decltype(auto) {
-        return self.m_window.get();
+        return std::forward_like<decltype(self)>(self.m_window.get());
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto Application::eventHandler(this auto& self) noexcept
+        -> decltype(auto) {
+        return std::forward_like<decltype(self)>(self.m_event_handler.get());
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE auto
-        Application::eventHandler(this auto& self) noexcept -> decltype(auto) {
-        return self.m_event_handler.get();
+        Application::setUpdateFrameGraphCallback(UpdateFrameGraphCallback callback) {
+        m_update_framegraph = std::move(callback);
     }
-
 } // namespace stormkit::engine

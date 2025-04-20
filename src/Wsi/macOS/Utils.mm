@@ -7,12 +7,17 @@
 #include <cstdint>
 #include <utility>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-enum-enum-conversion"
+#pragma clang diagnostic ignored "-Wdeprecated-anon-enum-enum-conversion"
+extern "C" {
 #import <AppKit/NSEvent.h>
 
 #import <Carbon/Carbon.h>
 
 #import <IOKit/hid/IOHIDDevice.h>
 #import <IOKit/hid/IOHIDManager.h>
+}
 
 namespace stormkit::wsi::macos {
     enum class Key {

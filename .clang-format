@@ -1,12 +1,13 @@
-﻿---
+---
 BasedOnStyle: LLVM
 ---
 Language: Cpp
 AlignAfterOpenBracket: Align
+AlignArrayOfStructures: Left
 AlignConsecutiveAssignments: 'true'
 AlignConsecutiveDeclarations: 'true'
 AlignEscapedNewlines: Left
-AlignOperands: 'true'
+AlignOperands: Align
 AlignTrailingComments: 'true'
 AllowAllParametersOfDeclarationOnNextLine: 'false'
 AllowAllArgumentsOnNextLine: 'false'
@@ -20,6 +21,7 @@ AllowShortEnumsOnASingleLine: 'false'
 AlignConsecutiveMacros: Consecutive
 BitFieldColonSpacing: After
 BreakBeforeConceptDeclarations: 'true'
+BreakBinaryOperations: RespectPrecedence
 EmptyLineBeforeAccessModifier: LogicalBlock
 IndentExternBlock: Indent
 IndentGotoLabels: 'false'
@@ -29,9 +31,9 @@ InsertTrailingCommas: Wrapped
 LambdaBodyIndentation: Signature
 PPIndentWidth: 4
 QualifierAlignment: Left
-#QualifierOrder: [ 'static', 'volatile', 'restrict', 'constexpr', 'inline', 'const', 'type' ]
+# QualifierOrder: [static, volatile, restrict, inline, consteval, constexpr, const, type]
 ReferenceAlignment: Left
-#RemoveBracesLLVM: 'true'
+# RemoveBracesLLVM: 'true'
 RequiresClausePosition: OwnLine
 SeparateDefinitionBlocks: Always
 SpaceAfterLogicalNot: 'false'
@@ -40,15 +42,17 @@ SpaceBeforeCaseColon: 'false'
 AlwaysBreakAfterDefinitionReturnType: None
 SpaceBeforeSquareBrackets: 'false'
 SpaceInEmptyBlock: 'false'
+
 SpacesInLineCommentPrefix:
-    Minimum: '1'
-    Maximum: '4'
+  Minimum: '1'
+  Maximum: '4'
+
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: 'false'
 AlwaysBreakTemplateDeclarations: 'Yes'
 BinPackArguments: 'false'
 BinPackParameters: 'false'
-BreakBeforeBinaryOperators: None
+BreakBeforeBinaryOperators: All
 BreakBeforeBraces: Attach
 BreakConstructorInitializers: BeforeColon
 BreakInheritanceList: BeforeColon
@@ -88,10 +92,11 @@ PenaltyBreakBeforeFirstCallParameter: '120'
 ---
 Language: ObjC
 AlignAfterOpenBracket: Align
+AlignArrayOfStructures: Left
 AlignConsecutiveAssignments: 'true'
 AlignConsecutiveDeclarations: 'false'
 AlignEscapedNewlines: Left
-AlignOperands: 'true'
+AlignOperands: Align
 AlignTrailingComments: 'true'
 AllowAllParametersOfDeclarationOnNextLine: 'false'
 AllowAllArgumentsOnNextLine: 'false'
@@ -107,8 +112,9 @@ AlwaysBreakBeforeMultilineStrings: 'false'
 AlwaysBreakTemplateDeclarations: 'Yes'
 BinPackArguments: 'false'
 BinPackParameters: 'false'
-BreakBeforeBinaryOperators: None
+BreakBeforeBinaryOperators: All
 BreakBeforeBraces: Attach
+BreakBinaryOperations: OnePerLine
 BreakConstructorInitializers: BeforeColon
 BreakInheritanceList: BeforeColon
 BreakStringLiterals: 'true'
@@ -145,4 +151,3 @@ TabWidth: '4'
 UseTab: Never
 PenaltyBreakBeforeFirstCallParameter: '120'
 PenaltyIndentedWhitespace: '1'
-...

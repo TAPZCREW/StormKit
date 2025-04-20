@@ -7,7 +7,7 @@
 typedef void NSThread;
 #endif
 
-void setThreadName(NSThread* id, const char* name);
-void setCurrentThreadName(const char* name);
+void setNSThreadName(NSThread* id, const char* name);
+void setCurrentNSThreadName(const char* name);
 
 #endif

@@ -19,74 +19,73 @@ auto main(std::span<const std::string_view> args) -> int {
 
     wsi::parseArgs(args);
 
-    // core::setupSignalHandler();
-
     auto logger_singleton = log::Logger::createLoggerInstance<log::ConsoleLogger>();
 
     const auto monitors = wsi::Window::getMonitorSettings();
     logger.ilog("--- Monitors ---");
-    logger.ilog("{}",
-                monitors | std::views::transform([](auto&& v) { return toString(v); }) |
-                    std::views::join | std::ranges::to<std::string>());
+    logger.ilog("{}", monitors);
 
-    auto window = wsi::Window { "Hello world", { 800u, 600u }, wsi::WindowStyle::All };
+    auto window = wsi::Window {
+        "Hello world",
+        { 800u, 600u },
+        wsi::WindowStyle::All
+    };
 
     auto fullscreen        = false;
     auto toggle_fullscreen = false;
 
     auto event_handler = wsi::EventHandler {};
-    event_handler.setCallbacks(
-        { { wsi::EventType::Closed,
-            [&]([[maybe_unused]] const wsi::Event& event) { window.close(); } },
-          { wsi::EventType::Resized,
-            [](const wsi::Event& event) {
-                const auto& event_data = core::as<wsi::ResizedEventData>(event.data);
-                logger.ilog("Resize event: {}", event_data.extent);
-            } },
-          { wsi::EventType::MouseMoved,
-            [](const wsi::Event& event) {
-                const auto& event_data = core::as<wsi::MouseMovedEventData>(event.data);
-                logger.ilog("Mouse move event: {}", event_data.position);
-            } },
-          { wsi::EventType::MouseButtonPushed,
-            [](const wsi::Event& event) {
-                const auto& event_data = core::as<wsi::MouseButtonPushedEventData>(event.data);
-                logger.ilog("Mouse button push event: {} {}",
-                            event_data.button,
-                            event_data.position);
-            } },
-          { wsi::EventType::MouseButtonReleased,
-            [](const wsi::Event& event) {
-                const auto& event_data = core::as<wsi::MouseButtonReleasedEventData>(event.data);
-                logger.ilog("Mouse button release event: {} {}",
-                            event_data.button,
-                            event_data.position);
-            } },
-          { wsi::EventType::MouseEntered,
-            []([[maybe_unused]] const wsi::Event& event) { logger.ilog("Mouse Entered event"); } },
-          { wsi::EventType::MouseExited,
-            []([[maybe_unused]] const wsi::Event& event) { logger.ilog("Mouse Exited event"); } },
-          { wsi::EventType::LostFocus,
-            []([[maybe_unused]] const wsi::Event& event) { logger.ilog("Lost focus event"); } },
-          { wsi::EventType::GainedFocus,
-            []([[maybe_unused]] const wsi::Event& event) { logger.ilog("Gained focus event"); } },
-          { wsi::EventType::KeyPressed,
-            [&](const wsi::Event& event) {
-                const auto& event_data = core::as<wsi::KeyPressedEventData>(event.data);
+    event_handler.setCallbacks({
+        { wsi::EventType::Closed,
+         [&]([[maybe_unused]] const wsi::Event& event) { window.close(); }                    },
+        { wsi::EventType::Resized,
+         [](const wsi::Event& event) {
+              const auto& event_data = as<wsi::ResizedEventData>(event.data);
+              logger.ilog("Resize event: {}", event_data.extent);
+          }                                                                                   },
+        { wsi::EventType::MouseMoved,
+         [](const wsi::Event& event) {
+              const auto& event_data = as<wsi::MouseMovedEventData>(event.data);
+              logger.ilog("Mouse move event: {}", event_data.position);
+          }                                                                                   },
+        { wsi::EventType::MouseButtonPushed,
+         [](const wsi::Event& event) {
+              const auto& event_data = as<wsi::MouseButtonPushedEventData>(event.data);
+              logger.ilog("Mouse button push event: {} {}", event_data.button, event_data.position);
+          }                                                                                   },
+        { wsi::EventType::MouseButtonReleased,
+         [](const wsi::Event& event) {
+              const auto& event_data = as<wsi::MouseButtonReleasedEventData>(event.data);
+              logger.ilog("Mouse button release event: {} {}",
+                          event_data.button,
+                          event_data.position);
+          }                                                                                   },
+        { wsi::EventType::MouseEntered,
+         []([[maybe_unused]] const wsi::Event& event) { logger.ilog("Mouse Entered event"); } },
+        { wsi::EventType::MouseExited,
+         []([[maybe_unused]] const wsi::Event& event) { logger.ilog("Mouse Exited event"); }  },
+        { wsi::EventType::LostFocus,
+         []([[maybe_unused]] const wsi::Event& event) { logger.ilog("Lost focus event"); }    },
+        { wsi::EventType::GainedFocus,
+         []([[maybe_unused]] const wsi::Event& event) { logger.ilog("Gained focus event"); }  },
+        { wsi::EventType::KeyPressed,
+         [&](const wsi::Event& event) {
+              const auto& event_data = as<wsi::KeyPressedEventData>(event.data);
 
-                if (event_data.key == wsi::Key::Escape) {
-                    window.close();
-                    logger.ilog("Closing window");
-                } else if (event_data.key == wsi::Key::F11)
-                    toggle_fullscreen = true;
+              if (event_data.key == wsi::Key::Escape) {
+                  window.close();
+                  logger.ilog("Closing window");
+              } else if (event_data.key == wsi::Key::F11)
+                  toggle_fullscreen = true;
 
-                logger.ilog("Key pressed: {}", event_data.key);
-            } },
-          { wsi::EventType::KeyReleased, [](const wsi::Event& event) {
-               const auto& event_data = core::as<wsi::KeyReleasedEventData>(event.data);
+              logger.ilog("Key pressed: {}", event_data.key);
+          }                                                                                   },
+        { wsi::EventType::KeyReleased,         [](const wsi::Event& event) {
+             const auto& event_data = as<wsi::KeyReleasedEventData>(event.data);
 
-               logger.ilog("Key release: {}", event_data.key);
-           } } });
+             logger.ilog("Key release: {}", event_data.key);
+         }                                              }
+    });
 
     while (window.isOpen()) {
         event_handler.update(window);

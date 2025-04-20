@@ -6,15 +6,15 @@ module;
 
 #include <vulkan/vulkan_hpp_macros.hpp>
 
+#include <stormkit/Core/PlatformMacro.hpp>
+#include <stormkit/Log/LogMacro.hpp>
+
 module stormkit.Gpu;
 
 import std;
 
 import stormkit.Core;
 import stormkit.Log;
-
-#include <stormkit/Core/PlatformMacro.hpp>
-#include <stormkit/Log/LogMacro.hpp>
 
 import stormkit.Gpu.Vulkan;
 
@@ -29,14 +29,13 @@ namespace stormkit::gpu {
 #endif
         };
 
-        [[maybe_unused]] constexpr auto VALIDATION_FEATURES =
-            std::array { vk::ValidationFeatureEnableEXT::eBestPractices,
-                         vk::ValidationFeatureEnableEXT::eGpuAssisted };
+        [[maybe_unused]] constexpr auto VALIDATION_FEATURES
+            = std::array { vk::ValidationFeatureEnableEXT::eBestPractices,
+                           vk::ValidationFeatureEnableEXT::eGpuAssisted };
 
-        constexpr auto STORMKIT_VK_VERSION =
-            vkMakeVersion<core::Int32>(core::STORMKIT_MAJOR_VERSION,
-                                       core::STORMKIT_MINOR_VERSION,
-                                       core::STORMKIT_PATCH_VERSION);
+        constexpr auto STORMKIT_VK_VERSION = vkMakeVersion<Int32>(STORMKIT_MAJOR_VERSION,
+                                                                  STORMKIT_MINOR_VERSION,
+                                                                  STORMKIT_PATCH_VERSION);
 
         constexpr auto BASE_EXTENSIONS = std::array { "VK_KHR_get_physical_device_properties2" };
 
@@ -60,10 +59,10 @@ namespace stormkit::gpu {
         /////////////////////////////////////
         /////////////////////////////////////
         auto debugCallback(vk::DebugUtilsMessageSeverityFlagsEXT         severity,
-                           vk::DebugUtilsMessageTypeFlagsEXT             type,
+                           vk::DebugUtilsMessageTypeFlagsEXT             _,
                            const vk::DebugUtilsMessengerCallbackDataEXT& callback_data,
                            [[maybe_unused]] void*                        user_data) -> bool {
-            auto message = std::format("[{}] {}", vk::to_string(severity), callback_data.pMessage);
+            auto message = std::format("{}", callback_data.pMessage);
 
             if (checkFlag(severity, vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo))
                 ilog("{}", message);
@@ -84,6 +83,10 @@ namespace stormkit::gpu {
             if (!validation_layers_enabled) return validation_layers_enabled;
 
             const auto layers = context.enumerateInstanceLayerProperties();
+            dlog("Layers found: {}",
+                 layers | std::views::transform([](auto&& layer) static noexcept {
+                     return std::string_view { layer.layerName };
+                 }));
             for (const auto& layer_name : std::as_const(VALIDATION_LAYERS)) {
                 auto layer_found = false;
 
@@ -107,9 +110,8 @@ namespace stormkit::gpu {
         /////////////////////////////////////
         auto checkExtensionSupport(std::span<const std::string>      supported_extensions,
                                    std::span<const std::string_view> extensions) noexcept -> bool {
-            auto required_extensions =
-                core::HashSet<std::string_view> { std::ranges::begin(extensions),
-                                                  std::ranges::end(extensions) };
+            auto required_extensions = HashSet<std::string_view> { std::ranges::begin(extensions),
+                                                                   std::ranges::end(extensions) };
 
             for (const auto& extension : supported_extensions) required_extensions.erase(extension);
 
@@ -118,12 +120,13 @@ namespace stormkit::gpu {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        auto checkExtensionSupport(std::span<const std::string>    supported_extensions,
-                                   std::span<const core::CZString> extensions) noexcept -> bool {
-            const auto ext = extensions | std::views::transform([](const auto& extension) noexcept {
-                                 return std::string_view { extension };
-                             }) |
-                             std::ranges::to<std::vector>();
+        auto checkExtensionSupport(std::span<const std::string> supported_extensions,
+                                   std::span<const CZString>    extensions) noexcept -> bool {
+            // clang-format off
+            const auto ext = extensions 
+                             | std::views::transform(core::monadic::init<std::string_view>())
+                             | std::ranges::to<std::vector>();
+            // clang-format on
             return checkExtensionSupport(supported_extensions, ext);
         }
     } // namespace
@@ -136,19 +139,20 @@ namespace stormkit::gpu {
         m_vk_context = vk::raii::Context();
 
         const auto exts = m_vk_context->enumerateInstanceExtensionProperties();
-        m_extensions    = exts | std::views::transform([](auto&& extension) noexcept {
-                           return std::string { extension.extensionName };
-                       }) |
-                       std::ranges::to<std::vector>();
+        m_extensions    = exts
+                       | std::views::transform([](auto&& extension) noexcept {
+                             return std::string { extension.extensionName };
+                         })
+                       | std::ranges::to<std::vector>();
 
         dlog("Instance extensions: {}", m_extensions);
 
         const auto validation_layers = [this]() noexcept {
-            auto output = std::vector<core::CZString> {};
-            m_validation_layers_enabled =
-                checkValidationLayerSupport(m_vk_context, m_validation_layers_enabled);
+            auto output = std::vector<CZString> {};
+            m_validation_layers_enabled
+                = checkValidationLayerSupport(m_vk_context, m_validation_layers_enabled);
             if (m_validation_layers_enabled) {
-                dlog("Enabling layers: {}", VALIDATION_LAYERS);
+                ilog("Enabling layers: {}", VALIDATION_LAYERS);
 
                 output = VALIDATION_LAYERS | std::ranges::to<std::vector>();
             }
@@ -157,32 +161,32 @@ namespace stormkit::gpu {
         }();
 
         const auto instance_extensions = [this]() noexcept {
-            auto e = core::concat(BASE_EXTENSIONS, SURFACE_EXTENSIONS);
+            auto e = concat(BASE_EXTENSIONS, SURFACE_EXTENSIONS);
 
-            if (m_validation_layers_enabled) core::merge(e, std::array { "VK_EXT_debug_utils" });
+            for (auto&& ext_ : WSI_SURFACE_EXTENSIONS) {
+                const auto ext = std::array { ext_ };
+                if (checkExtensionSupport(m_extensions, ext)) merge(e, ext);
+            }
+
+            if (m_validation_layers_enabled) merge(e, std::array { "VK_EXT_debug_utils" });
 
             return e;
         }();
 
-        core::ensures(checkExtensionSupport(m_extensions, instance_extensions));
-        core::ensures(checkExtensionSupport(m_extensions, WSI_SURFACE_EXTENSIONS));
-
         constexpr auto ENGINE_NAME = "StormKit";
 
-        const auto app_info = vk::ApplicationInfo {}
-                                  .setPApplicationName(std::data(m_app_name))
-                                  .setPEngineName(ENGINE_NAME)
-                                  .setEngineVersion(STORMKIT_VK_VERSION)
-                                  .setApiVersion(vkMakeVersion<core::Int32>(1, 0, 0));
+        const auto app_info = vk::ApplicationInfo { .pApplicationName = std::data(m_app_name),
+                                                    .pEngineName      = ENGINE_NAME,
+                                                    .engineVersion    = STORMKIT_VK_VERSION,
+                                                    .apiVersion = vkMakeVersion<Int32>(1, 0, 0) };
 
-        const auto create_info = vk::InstanceCreateInfo {}
-                                     .setPApplicationInfo(&app_info)
+        const auto create_info = vk::InstanceCreateInfo { .pApplicationInfo = &app_info }
                                      .setPEnabledExtensionNames(instance_extensions)
                                      .setPEnabledLayerNames(validation_layers);
 
         return m_vk_context->createInstance(create_info)
             .transform(core::monadic::set(m_vk_instance))
-            .and_then(core::curry(&Instance::doInitDebugReportCallback, this))
+            .and_then(bindFront(&Instance::doInitDebugReportCallback, this))
             .transform(
                 [this]() noexcept { VULKAN_HPP_DEFAULT_DISPATCHER.init(*m_vk_instance.get()); });
     }
@@ -191,36 +195,38 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     auto Instance::doInitDebugReportCallback() noexcept -> VulkanExpected<void> {
         if (!m_validation_layers_enabled) return {};
-        constexpr auto severity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
-                                  vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-                                  vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
+        constexpr auto severity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose
+                                  | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning
+                                  | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError;
 
-        constexpr auto type = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
-                              vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
-                              vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
+        constexpr auto type = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
+                              | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
+                              | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
 
-        const auto create_info =
-            vk::DebugUtilsMessengerCreateInfoEXT {}
-                .setMessageSeverity(severity)
-                .setMessageType(type)
-                .setPfnUserCallback(
-                    std::bit_cast<decltype(vk::DebugUtilsMessengerCreateInfoEXT::pfnUserCallback)>(
-                        &debugCallback));
+        const auto create_info = vk::DebugUtilsMessengerCreateInfoEXT {
+            .messageSeverity = severity,
+            .messageType     = type,
+            .pfnUserCallback
+            = std::bit_cast<decltype(vk::DebugUtilsMessengerCreateInfoEXT::pfnUserCallback)>(
+                &debugCallback)
+        };
 
         return m_vk_instance->createDebugUtilsMessengerEXT(create_info)
             .transform(core::monadic::set(m_vk_messenger))
-            .transform([] noexcept { ilog("Validation layers enabled !"); });
+            .transform([] noexcept { ilog("Validation layers successfully enabled !"); });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto Instance::doRetrievePhysicalDevices() noexcept -> VulkanExpected<void> {
         return m_vk_instance->enumeratePhysicalDevices().transform([this](auto&& physical_devices) {
-            m_physical_devices = std::forward<decltype(physical_devices)>(physical_devices) |
-                                 std::views::transform([this](auto&& physical_device) {
-                                     return PhysicalDevice { std::move(physical_device), *this };
-                                 }) |
-                                 std::ranges::to<std::vector>();
+            // clang-format off
+            m_physical_devices = std::forward<decltype(physical_devices)>(physical_devices) 
+              | std::views::transform([](auto&& physical_device) static noexcept {
+                       return PhysicalDevice { std::move(physical_device) };
+              })
+              | std::ranges::to<std::vector>();
+            // clang-format on
         });
     }
 } // namespace stormkit::gpu

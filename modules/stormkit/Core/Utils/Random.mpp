@@ -10,10 +10,10 @@ export module stormkit.Core:Utils.Random;
 
 import std;
 
-import :Utils.Numerics;
+import :TypeSafe;
 import :Meta.Concepts;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     auto seed(Int seed) noexcept -> void;
 
     template<std::floating_point T>
@@ -21,13 +21,13 @@ export namespace stormkit::core {
 
     template<std::integral T>
     [[nodiscard]] auto rand(T min, T max) noexcept -> T;
-} // namespace stormkit::core
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     namespace {
         std::default_random_engine generator {};
     }
@@ -59,4 +59,4 @@ namespace stormkit::core {
         std::uniform_int_distribution<T> dis(min, max);
         return dis(randomGenerator());
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core

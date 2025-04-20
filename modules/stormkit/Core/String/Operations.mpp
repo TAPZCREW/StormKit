@@ -10,20 +10,35 @@ export module stormkit.Core:String.Operations;
 
 import std;
 
-import :Utils.Numerics;
+import :Utils.Assert;
+import :Meta.Traits;
+import :Meta.Concepts;
+import :TypeSafe.Integer;
 
-export namespace stormkit::core {
-    [[nodiscard]] auto split(std::string_view string, char delim) noexcept
+export namespace stormkit { inline namespace core {
+    [[nodiscard]] constexpr auto split(std::string_view string, char delim) noexcept
         -> std::vector<std::string>;
-    [[nodiscard]] auto toLower(std::string_view string,
-                               std::locale locale = std::locale { "" }) noexcept -> std::string;
-    [[nodiscard]] auto toUpper(std::string_view string,
-                               std::locale locale = std::locale { "" }) noexcept -> std::string;
+    [[nodiscard]] constexpr auto toLower(std::string_view string) noexcept -> std::string;
+    [[nodiscard]] constexpr auto toUpper(std::string_view string) noexcept -> std::string;
+    [[nodiscard]] auto toLower(std::string_view string, const std::locale& locale) noexcept
+        -> std::string;
+    [[nodiscard]] auto toUpper(std::string_view string, const std::locale& locale) noexcept
+        -> std::string;
 
-    [[nodiscard]] auto toString(auto&& value) noexcept -> std::string;
+    [[nodiscard]] constexpr auto toCZString(std::string_view value) noexcept -> const char*;
 
-    [[nodiscard]] auto toCZString(std::string_view value) noexcept -> const char*;
+    [[nodiscard]] constexpr auto replace(std::string_view in,
+                                         std::string_view pattern,
+                                         std::string_view replacement) noexcept -> std::string;
 
+    template <meta::IsIntegral T>
+    [[nodiscard]]
+    constexpr auto fromString(std::string_view data, int base = 10) noexcept -> std::expected<T, std::errc>;
+    
+    template <meta::IsFloatingPoint T>
+    [[nodiscard]]
+    auto fromString(std::string_view data, std::chars_format fmt = std::chars_format::general) noexcept -> std::expected<T, std::errc>;
+    
     template<std::size_t N>
     struct ConstexprString {
         std::array<char, N> str {};
@@ -44,14 +59,25 @@ export namespace stormkit::core {
             std::copy_n(new_str, size, std::data(str));
         }
     };
-} // namespace stormkit::core
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
-    STORMKIT_INLINE auto split(std::string_view string, char delim) noexcept -> std::vector<std::string> {
+namespace stormkit { inline namespace core {
+    STORMKIT_FORCE_INLINE constexpr auto toUpper(char c) -> char {
+        if (c >= 'a' && c <= 'z') return c - 32;
+        return c;
+    }
+
+    STORMKIT_FORCE_INLINE constexpr auto toLower(char c) -> char {
+        if (c >= 'A' && c <= 'Z') return c + 32;
+        return c;
+    }
+
+    STORMKIT_INLINE constexpr auto split(std::string_view string, char delim) noexcept
+        -> std::vector<std::string> {
         auto output = std::vector<std::string> {};
         auto first  = RangeExtent { 0u };
 
@@ -68,35 +94,88 @@ namespace stormkit::core {
         return output;
     }
 
-    STORMKIT_INLINE auto toLower(std::string_view string, std::locale locale) noexcept -> std::string {
-        auto& facet = std::use_facet<std::ctype<typename std::string_view::value_type>>(locale);
-
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto toLower(std::string_view string) noexcept -> std::string {
         auto result = std::string { string };
-        facet.tolower(&result[0], &result[0] + result.size());
+        for (auto& c : result) c = toLower(c);
+        return result;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_INLINE auto toLower(std::string_view string, const std::locale& locale) noexcept
+        -> std::string {
+        auto  result = std::string { string };
+        auto& facet  = std::use_facet<std::ctype<typename std::string_view::value_type>>(locale);
+        facet.tolower(&result[0], &result[0] + std::ranges::size(result));
 
         return result;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto toUpper(std::string_view string, std::locale locale) noexcept -> std::string {
-        auto& facet = std::use_facet<std::ctype<typename std::string_view::value_type>>(locale);
-
+    STORMKIT_FORCE_INLINE auto constexpr toUpper(std::string_view string) noexcept -> std::string {
         auto result = std::string { string };
-        facet.toupper(&result[0], &result[0] + result.size());
+        for (auto& c : result) c = toUpper(c);
+        return result;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_INLINE auto toUpper(std::string_view string, const std::locale& locale) noexcept
+        -> std::string {
+        auto  result = std::string { string };
+        auto& facet  = std::use_facet<std::ctype<typename std::string_view::value_type>>(locale);
+        facet.toupper(&result[0], &result[0] + std::ranges::size(result));
 
         return result;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto toString(auto&& value) noexcept -> std::string {
-        return std::to_string(std::forward<decltype(value)>(value));
+    STORMKIT_FORCE_INLINE auto constexpr toCZString(std::string_view value) noexcept -> const char* {
+        return std::ranges::data(value);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto toCZString(std::string_view value) noexcept -> const char* {
-        return std::data(value);
+    STORMKIT_INLINE constexpr auto replace(std::string_view in,
+                                           std::string_view pattern,
+                                           std::string_view replacement) noexcept -> std::string {
+        return in
+               | std::views::split(pattern)
+               | std::views::transform([replacement](auto&& substr) noexcept {
+                     auto out = std::string{};
+                     out.reserve(std::ranges::size(replacement) + std::ranges::size(substr));
+                     out += replacement;
+                     out += std::string_view{std::ranges::cbegin(substr), std::ranges::cend(substr)};
+                     return out;
+                 })
+               | std::views::join
+               | std::views::drop(std::ranges::size(replacement))
+               | std::ranges::to<std::string>();
     }
-} // namespace stormkit::core
+    
+    template <meta::IsIntegral T>
+    [[nodiscard]]
+    STORMKIT_INLINE
+    constexpr auto fromString(std::string_view data, int base) noexcept -> std::expected<T, std::errc> {
+        auto value = T{};
+        auto &&[_, errc] = std::from_chars(std::ranges::data(data), std::ranges::data(data) + std::size(data), value, base);
+        if(errc != std::errc{}) [[unlikely]] return std::unexpected<std::errc>{std::in_place, std::move(errc)};
+
+        return std::expected<T, std::errc>{std::in_place, value};
+    }
+
+    template <meta::IsFloatingPoint T>
+    [[nodiscard]]
+    STORMKIT_INLINE
+    auto fromString(std::string_view data, std::chars_format fmt) noexcept -> std::expected<T, std::errc> {
+        auto value = T{};
+        auto &&[_, errc] = std::from_chars(std::ranges::data(data), std::ranges::data(data) + std::ranges::size(data), value, fmt);
+        if(errc != std::errc{}) [[unlikely]] return std::unexpected<std::errc>{std::in_place, std::move(errc)};
+
+        return std::expected<T, std::errc>{std::in_place, value};
+    }
+}} // namespace stormkit::core

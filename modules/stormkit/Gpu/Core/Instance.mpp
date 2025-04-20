@@ -38,17 +38,17 @@ export {
             Instance(Instance&&) noexcept;
             auto operator=(Instance&&) noexcept -> Instance&;
 
-            [[nodiscard]] static auto
-                create(std::string app_name = "",
-                       bool        verbose  = (core::STORMKIT_BUILD_TYPE ==
-                                       "DEBUG")) noexcept -> Expected<Instance>;
-            [[nodiscard]] static auto
-                allocate(std::string app_name = "",
-                         bool        verbose  = (core::STORMKIT_BUILD_TYPE ==
-                                         "DEBUG")) noexcept -> Expected<std::unique_ptr<Instance>>;
+            [[nodiscard]] static auto create(std::string app_name = "",
+                                             bool        verbose
+                                             = (STORMKIT_BUILD_TYPE == "DEBUG")) noexcept
+                -> Expected<Instance>;
+            [[nodiscard]] static auto allocate(std::string app_name = "",
+                                               bool        verbose
+                                               = (STORMKIT_BUILD_TYPE == "DEBUG")) noexcept
+                -> Expected<std::unique_ptr<Instance>>;
 
-            [[nodiscard]] auto
-                physicalDevices() const noexcept -> const std::vector<PhysicalDevice>&;
+            [[nodiscard]] auto physicalDevices() const noexcept
+                -> const std::vector<PhysicalDevice>&;
 
             [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::Instance&;
 
@@ -68,15 +68,15 @@ export {
             // #endif
 
             //[[nodiscard]] auto createOffscreenSurface(
-            // const core::math::ExtentU& extent,
+            // const math::ExtentU& extent,
             // Surface::Buffering buffering = Surface::Buffering::Triple) const
             //-> OffscreenSurface;
             //[[nodiscard]] auto allocateOffscreenSurface(
-            // const core::math::ExtentU& extent,
+            // const math::ExtentU& extent,
             // Surface::Buffering buffering = Surface::Buffering::Triple) const
             //-> std::unique_ptr<OffscreenSurface>;
             //[[nodiscard]] auto allocateRefCountedOffscreenSurface(
-            // const core::math::ExtentU& extent,
+            // const math::ExtentU& extent,
             // Surface::Buffering buffering = Surface::Buffering::Triple) const
             //-> std::shared_ptr<OffscreenSurface>;
 
@@ -88,15 +88,15 @@ export {
             std::string m_app_name;
             bool        m_validation_layers_enabled;
 
-            core::DeferInit<vk::raii::Context>                m_vk_context;
-            core::DeferInit<vk::raii::Instance>               m_vk_instance;
-            core::DeferInit<vk::raii::DebugUtilsMessengerEXT> m_vk_messenger;
+            DeferInit<vk::raii::Context>                m_vk_context;
+            DeferInit<vk::raii::Instance>               m_vk_instance;
+            DeferInit<vk::raii::DebugUtilsMessengerEXT> m_vk_messenger;
 
             std::vector<std::string>    m_extensions;
             std::vector<PhysicalDevice> m_physical_devices;
         };
 
-        class STORMKIT_API PhysicalDevice: public InstanceObject {
+        class STORMKIT_API PhysicalDevice {
           public:
             static constexpr auto DEBUG_TYPE = DebugObjectType::Physical_Device;
 
@@ -108,24 +108,25 @@ export {
             PhysicalDevice(PhysicalDevice&&) noexcept;
             auto operator=(PhysicalDevice&&) noexcept -> PhysicalDevice&;
 
+            [[nodiscard]] auto checkExtensionSupport(std::string_view extension) const noexcept
+                -> bool;
             [[nodiscard]] auto
-                checkExtensionSupport(std::string_view extension) const noexcept -> bool;
-            [[nodiscard]] auto checkExtensionSupport(
-                std::span<const std::string_view> extensions) const noexcept -> bool;
-            [[nodiscard]] auto checkExtensionSupport(
-                std::span<const core::CZString> extensions) const noexcept -> bool;
+                checkExtensionSupport(std::span<const std::string_view> extensions) const noexcept
+                -> bool;
+            [[nodiscard]] auto
+                checkExtensionSupport(std::span<const CZString> extensions) const noexcept -> bool;
 
             [[nodiscard]] auto info() const noexcept -> const PhysicalDeviceInfo&;
             [[nodiscard]] auto capabilities() const noexcept -> const RenderCapabilities&;
-            [[nodiscard]] auto
-                memoryProperties() const noexcept -> const std::vector<MemoryPropertyFlag>&;
+            [[nodiscard]] auto memoryProperties() const noexcept
+                -> const std::vector<MemoryPropertyFlag>&;
 
             [[nodiscard]] auto queueFamilies() const noexcept -> const std::vector<QueueFamily>&;
 
             [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::PhysicalDevice&;
 
           private:
-            PhysicalDevice(vk::raii::PhysicalDevice physical_device, const Instance& instance);
+            explicit PhysicalDevice(vk::raii::PhysicalDevice physical_device);
 
             vk::raii::PhysicalDevice m_vk_physical_device;
 
@@ -141,7 +142,7 @@ export {
             friend class Instance;
         };
 
-        class STORMKIT_API Surface: public InstanceObject {
+        class STORMKIT_API Surface {
             struct Tag {};
 
           public:
@@ -163,17 +164,17 @@ export {
             //     allocateOffscreen(const Instance& instance) noexcept ->
             //     Expected<std::unique_ptr<Surface>>;
 
-            [[nodiscard]] static auto
-                                      createFromWindow(const Instance& instance,
-                                                       const wsi::Window&    window) noexcept -> Expected<Surface>;
-            [[nodiscard]] static auto allocateFromWindow(const Instance& instance,
-                                                         const wsi::Window&    window) noexcept
+            [[nodiscard]] static auto createFromWindow(const Instance&    instance,
+                                                       const wsi::Window& window) noexcept
+                -> Expected<Surface>;
+            [[nodiscard]] static auto allocateFromWindow(const Instance&    instance,
+                                                         const wsi::Window& window) noexcept
                 -> Expected<std::unique_ptr<Surface>>;
 
             [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::SurfaceKHR&;
 
           private:
-            core::DeferInit<vk::raii::SurfaceKHR> m_vk_surface;
+            DeferInit<vk::raii::SurfaceKHR> m_vk_surface;
         };
     } // namespace stormkit::gpu
 
@@ -217,10 +218,10 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE Instance::Instance(std::string app_name, bool enable_validation, Tag)
         : m_app_name { std::move(app_name) }, m_validation_layers_enabled { enable_validation } {
         doInitInstance()
-            .and_then(std::bind_front(&Instance::doInitDebugReportCallback, this))
-            .and_then(std::bind_front(&Instance::doRetrievePhysicalDevices, this))
-            .transform_error(
-                core::monadic::map(core::monadic::narrow<Result>(), core::throwError()));
+            .and_then(bindFront(&Instance::doInitDebugReportCallback, this))
+            .and_then(bindFront(&Instance::doRetrievePhysicalDevices, this))
+            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
+                                                core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////
@@ -233,14 +234,14 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto
-        Instance::operator=(Instance&& other) noexcept -> Instance& = default;
+    STORMKIT_FORCE_INLINE auto Instance::operator=(Instance&& other) noexcept
+        -> Instance& = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto
-        Instance::create(std::string app_name,
-                         bool        enable_validation) noexcept -> Expected<Instance> try {
+    STORMKIT_FORCE_INLINE auto Instance::create(std::string app_name,
+                                                bool        enable_validation) noexcept
+        -> Expected<Instance> try {
         return Instance { std::move(app_name), enable_validation, Tag {} };
     } catch (Result result) { return std::unexpected(result); }
 
@@ -254,8 +255,8 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto
-        Instance::physicalDevices() const noexcept -> const std::vector<PhysicalDevice>& {
+    STORMKIT_FORCE_INLINE auto Instance::physicalDevices() const noexcept
+        -> const std::vector<PhysicalDevice>& {
         return m_physical_devices;
     }
 
@@ -294,7 +295,7 @@ namespace stormkit::gpu {
 
     // /////////////////////////////////////
     // /////////////////////////////////////
-    // STORMKIT_FORCE_INLINE auto Instance::createOffscreenSurface(const core::math::ExtentU&
+    // STORMKIT_FORCE_INLINE auto Instance::createOffscreenSurface(const math::ExtentU&
     // extent, Surface::Buffering buffering) const
     // -> OffscreenSurface {
     // return OffscreenSurface { extent, instance(), buffering };
@@ -302,7 +303,7 @@ namespace stormkit::gpu {
 
     // /////////////////////////////////////
     // /////////////////////////////////////
-    // STORMKIT_FORCE_INLINE auto Instance::allocateOffscreenSurface(const core::math::ExtentU&
+    // STORMKIT_FORCE_INLINE auto Instance::allocateOffscreenSurface(const math::ExtentU&
     // extent, Surface::Buffering buffering) const
     // -> std::unique_ptr<OffscreenSurface> {
     // return std::make_unique<OffscreenSurface>(extent, instance(), buffering);
@@ -311,7 +312,7 @@ namespace stormkit::gpu {
     // /////////////////////////////////////
     // /////////////////////////////////////
     // STORMKIT_FORCE_INLINE auto Instance::allocateRefCountedOffscreenSurface(
-    // const core::math::ExtentU& extent,
+    // const math::ExtentU& extent,
     // Surface::Buffering buffering) const -> std::shared_ptr<OffscreenSurface> {
     // return std::make_shared<OffscreenSurface>(extent, instance(), buffering);
     // }
@@ -324,8 +325,8 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto
-        PhysicalDevice::capabilities() const noexcept -> const RenderCapabilities& {
+    STORMKIT_FORCE_INLINE auto PhysicalDevice::capabilities() const noexcept
+        -> const RenderCapabilities& {
         return m_capabilities;
     }
 
@@ -338,15 +339,15 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto
-        PhysicalDevice::queueFamilies() const noexcept -> const std::vector<QueueFamily>& {
+    STORMKIT_FORCE_INLINE auto PhysicalDevice::queueFamilies() const noexcept
+        -> const std::vector<QueueFamily>& {
         return m_queue_families;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto
-        PhysicalDevice::vkHandle() const noexcept -> const vk::raii::PhysicalDevice& {
+    STORMKIT_FORCE_INLINE auto PhysicalDevice::vkHandle() const noexcept
+        -> const vk::raii::PhysicalDevice& {
         return m_vk_physical_device;
     }
 
@@ -379,9 +380,9 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto
-        Surface::createFromWindow(const Instance&    instance,
-                                  const wsi::Window& window) noexcept -> Expected<Surface> try {
+    STORMKIT_FORCE_INLINE auto Surface::createFromWindow(const Instance&    instance,
+                                                         const wsi::Window& window) noexcept
+        -> Expected<Surface> try {
         return Surface { instance, window, Tag {} };
     } catch (const Result& result) { return std::unexpected(result); }
 

@@ -1,0 +1,73 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/Core/AsCastsMacro.hpp>
+#include <stormkit/Core/FormatMacro.hpp>
+#include <stormkit/Core/PlatformMacro.hpp>
+
+export module stormkit.Core:Utils.Allocation;
+
+import std;
+
+import :Meta;
+import :TypeSafe.AsCast;
+
+struct MemoryAllocationError {
+    std::string_view type;
+    RangeExtent      size;
+};
+
+export {
+    namespace stormkit { inline namespace core {
+        template<class T, class... Args>
+        auto makeUnique(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
+            -> std::expected<std::unique_ptr<T>, MemoryAllocationError>;
+
+        template<class T, class... Args>
+        auto makeUniqueUnsafe(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
+            -> std::unique_ptr<T>;
+
+    }} // namespace stormkit::core
+
+    ASCASTER_DECLARE(stormkit::meta::IsStringLike, stormkit::meta::IsStrict<MemoryAllocationError>);
+
+    FORMATTER_DECLARE(stormkit::meta::IsStrict<MemoryAllocationError>)
+} // namespace stormkit::core
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+ASCASTER_DEFINE(stormkit::meta::IsStringLike, stormkit::meta::IsStrict<MemoryAllocationError>) {
+    return std::format("Failed to allocate type {} of {} byte(s)", from.type, from.size);
+}
+
+FORMATTER_DEFINE_FORMAT_AS_STRING(stormkit::meta::IsStrict<MemoryAllocationError>)
+
+namespace stormkit { inline namespace core {
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class T, class... Args>
+    STORMKIT_FORCE_INLINE auto
+        makeUnique(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
+            -> std::expected<std::unique_ptr<T>, MemoryAllocationError> {
+        auto value = std::unique_ptr<T> { new (std::nothrow) T(std::forward<Args>(args)...) };
+        if (not value) [[unexpected]]
+            return std::unexpected(
+                MemoryAllocationError { .type = typeid(T).name(), .size = sizeof(T) });
+        return std::expected<std::unique_ptr<T>, MemoryAllocationError> { std::in_place,
+                                                                          std::move(value) };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class T, class... Args>
+    STORMKIT_FORCE_INLINE auto
+        makeUniqueUnsafe(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
+            -> std::unique_ptr<T> {
+        return std::unique_ptr<T> { new (std::nothrow) T(std::forward<Args>(args)...) };
+    }
+}} // namespace stormkit::core

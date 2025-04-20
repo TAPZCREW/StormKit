@@ -24,7 +24,7 @@ UpdateBoardSystem::~UpdateBoardSystem()                                         
 UpdateBoardSystem::UpdateBoardSystem(UpdateBoardSystem&&) noexcept                    = default;
 auto UpdateBoardSystem::operator=(UpdateBoardSystem&&) noexcept -> UpdateBoardSystem& = default;
 
-auto UpdateBoardSystem::update(stormkit::core::Secondf delta) -> void {
+auto UpdateBoardSystem::update(stormkit::Secondf delta) -> void {
     const auto now = Clock::now();
 
     if (m_is_on_edit_mode) [[unlikely]] {
@@ -40,29 +40,29 @@ auto UpdateBoardSystem::update(stormkit::core::Secondf delta) -> void {
     m_updated = true;
 
     struct Cell {
-        core::UInt32 x;
-        core::UInt32 y;
+        UInt32 x;
+        UInt32 y;
 
         bool alive = false;
 
         entities::Entity e = entities::INVALID_ENTITY;
 
-        core::UInt32 adjacent_alive_cells = 0;
+        UInt32 adjacent_alive_cells = 0;
     };
 
     constexpr auto CELL_COUNT = BOARD_SIZE * BOARD_SIZE;
 
-    auto cell_status = core::transform(core::range(CELL_COUNT), [](const auto i) {
+    auto cell_status = transform(range(CELL_COUNT), [](const auto i) {
         return Cell { i % BOARD_SIZE, i / BOARD_SIZE };
     });
 
     for (const auto e : m_entities) {
         const auto& position = m_manager->getComponent<PositionComponent>(e);
 
-        auto it =
-            std::ranges::find_if(cell_status, [x = position.x, y = position.y](const auto& cell) {
-                return cell.x == x && cell.y == y;
-            });
+        auto it
+            = std::ranges::find_if(cell_status, [x = position.x, y = position.y](const auto& cell) {
+                  return cell.x == x && cell.y == y;
+              });
 
         if (it != std::ranges::cend(cell_status)) {
             it->alive = true;
@@ -95,8 +95,8 @@ auto UpdateBoardSystem::update(stormkit::core::Secondf delta) -> void {
     }
 
     for (const auto& cell : cell_status) {
-        const auto alive =
-            cell.adjacent_alive_cells == 3 || (cell.alive && cell.adjacent_alive_cells == 2);
+        const auto alive
+            = cell.adjacent_alive_cells == 3 || (cell.alive && cell.adjacent_alive_cells == 2);
 
         if (alive && !m_manager->hasEntity(cell.e)) {
             auto  e        = m_manager->makeEntity();
@@ -144,13 +144,13 @@ auto UpdateBoardSystem::update(stormkit::core::Secondf delta) -> void {
 }
 
 auto UpdateBoardSystem::postUpdate() -> void {
-    using namespace stormkit::core::literals;
+    using namespace stormkit::literals;
     if (m_updated) {
         m_updated          = false;
         auto&       board  = *m_board;
         const auto& extent = board.extent();
 
-        for (auto i : core::range(extent.width * extent.height)) {
+        for (auto i : range(extent.width * extent.height)) {
             auto pixel = board.pixel(i);
             pixel[0]   = 0_b;
             pixel[1]   = 0_b;

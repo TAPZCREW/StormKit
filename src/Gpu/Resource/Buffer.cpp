@@ -17,49 +17,51 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     Buffer::Buffer(const Device& device, const CreateInfo& info, bool persistently_mapped, Tag)
-        : DeviceObject { device }, m_usages { info.usages }, m_size { info.size },
+        : m_usages { info.usages }, m_size { info.size },
           m_is_persistently_mapped { persistently_mapped } {
-        this->device()
-            .vkHandle()
+        device.vkHandle()
             .createBuffer({ .size        = m_size,
-                            .usage       = core::narrow<vk::BufferUsageFlagBits>(m_usages),
+                            .usage       = narrow<vk::BufferUsageFlagBits>(m_usages),
                             .sharingMode = vk::SharingMode::eExclusive })
             .transform(core::monadic::set(m_vk_buffer))
-            .transform([this, &info]() noexcept -> VulkanExpected<void> {
+            .transform([this, &info, &device]() noexcept -> VulkanExpected<void> {
                 const auto requirements = m_vk_buffer->getMemoryRequirements();
 
                 auto allocate_info = vma::AllocationCreateInfo {}.setRequiredFlags(
-                    core::narrow<vk::MemoryPropertyFlagBits>(info.property));
+                    narrow<vk::MemoryPropertyFlagBits>(info.property));
 
-                auto&& allocator = this->device().vmaAllocator();
+                auto&& allocator = device.vmaAllocator();
 
-                auto&& [error, m_vma_allocation] =
-                    allocator.allocateMemoryUnique(requirements, allocate_info);
+                auto&& [error, vma_allocation]
+                    = allocator.allocateMemoryUnique(requirements, allocate_info);
                 if (error != vk::Result::eSuccess)
-                    return std::unexpected { core::narrow<vk::Result>(error) };
+                    return std::unexpected { narrow<vk::Result>(error) };
+
+                m_vma_allocation = std::move(vma_allocation);
 
                 error = allocator.bindBufferMemory(*m_vma_allocation, *m_vk_buffer.get());
                 if (error != vk::Result::eSuccess)
-                    return std::unexpected { core::narrow<vk::Result>(error) };
+                    return std::unexpected { narrow<vk::Result>(error) };
 
                 if (m_is_persistently_mapped) [[maybe_unused]]
-                    auto _ = map(0u);
+                    auto _ = map(device, 0u);
 
                 return {};
             })
-            .transform_error(core::monadic::map(core::monadic::as<Result>(), core::throwError()));
+            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
+                                                core::monadic::throwAsException()));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Buffer::findMemoryType(core::UInt                                     type_filter,
+    auto Buffer::findMemoryType(UInt                                           type_filter,
                                 vk::MemoryPropertyFlags                        properties,
                                 const vk::PhysicalDeviceMemoryProperties&      mem_properties,
                                 [[maybe_unused]] const vk::MemoryRequirements& mem_requirements)
-        -> core::UInt {
-        for (auto i : core::range(mem_properties.memoryTypeCount)) {
-            if ((type_filter & (1 << i)) and
-                (checkFlag(mem_properties.memoryTypes[i].propertyFlags, properties)))
+        -> UInt {
+        for (auto i : range(mem_properties.memoryTypeCount)) {
+            if ((type_filter & (1 << i))
+                and (checkFlag(mem_properties.memoryTypes[i].propertyFlags, properties)))
                 return i;
         }
 

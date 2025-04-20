@@ -6,6 +6,8 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
+#include <vulkan/vulkan_core.h>
+
 export module stormkit.Gpu:Core.Device;
 
 import std;
@@ -21,16 +23,16 @@ export namespace stormkit::gpu {
     class Fence;
     class Semaphore;
 
-    class STORMKIT_API Device: public InstanceObject {
+    class STORMKIT_API Device {
         struct Tag {};
 
       public:
         static constexpr auto DEBUG_TYPE = DebugObjectType::Device;
 
         struct QueueEntry {
-            core::UInt32 id;
-            core::UInt32 count;
-            QueueFlag    flags = QueueFlag {};
+            UInt32    id;
+            UInt32    count;
+            QueueFlag flags = QueueFlag {};
         };
 
         struct Info {
@@ -52,8 +54,8 @@ export namespace stormkit::gpu {
 
         [[nodiscard]] static auto create(const PhysicalDevice& physical_device,
                                          const Instance&       instance,
-                                         const Info&           info = { true,
-                                                                        false }) noexcept -> Expected<Device>;
+                                         const Info&           info = { true, false }) noexcept
+            -> Expected<Device>;
         [[nodiscard]] static auto allocate(const PhysicalDevice& physical_device,
                                            const Instance&       instance,
                                            const Info&           info = { true, false }) noexcept
@@ -61,25 +63,24 @@ export namespace stormkit::gpu {
 
         auto waitIdle() const noexcept -> void;
 
-        [[nodiscard]] auto
-            waitForFences(std::span<const core::NakedRef<const Fence>> fences,
-                          bool                                         wait_all = true,
-                          const std::chrono::milliseconds&             timeout =
-                              std::chrono::milliseconds::max()) const noexcept -> Expected<Result>;
-        [[nodiscard]] auto
-            waitForFence(const Fence&                     fence,
-                         const std::chrono::milliseconds& timeout =
-                             std::chrono::milliseconds::max()) const noexcept -> Expected<Result>;
+        [[nodiscard]] auto waitForFences(std::span<const Ref<const Fence>> fences,
+                                         bool                              wait_all = true,
+                                         const std::chrono::milliseconds&  timeout
+                                         = std::chrono::milliseconds::max()) const noexcept
+            -> Expected<Result>;
+        [[nodiscard]] auto waitForFence(const Fence&                     fence,
+                                        const std::chrono::milliseconds& timeout
+                                        = std::chrono::milliseconds::max()) const noexcept
+            -> Expected<Result>;
 
-        auto
-            resetFences(std::span<const core::NakedRef<const Fence>> fences) const noexcept -> void;
+        auto resetFences(std::span<const Ref<const Fence>> fences) const noexcept -> void;
         auto resetFence(const Fence& fence) const noexcept -> void;
 
         [[nodiscard]] auto rasterQueueEntry() const noexcept -> const QueueEntry&;
-        [[nodiscard]] auto asyncTransfertQueueEntry() const noexcept -> const QueueEntry&;
+        [[nodiscard]] auto asyncTransferQueueEntry() const noexcept -> const QueueEntry&;
         [[nodiscard]] auto asyncComputeQueueEntry() const noexcept -> const QueueEntry&;
 
-        [[nodiscard]] auto hasAsyncTransfertQueue() const noexcept -> bool;
+        [[nodiscard]] auto hasAsyncTransferQueue() const noexcept -> bool;
         [[nodiscard]] auto hasAsyncComputeQueue() const noexcept -> bool;
 
         [[nodiscard]] auto physicalDevice() const noexcept -> const PhysicalDevice&;
@@ -92,20 +93,19 @@ export namespace stormkit::gpu {
         template<class T>
         auto setObjectName(const T& object, std::string_view name) const -> void;
 
-        auto setObjectName(core::UInt64     object,
-                           DebugObjectType  type,
-                           std::string_view name) const -> void;
+        auto setObjectName(UInt64 object, DebugObjectType type, std::string_view name) const
+            -> void;
 
       private:
-        core::NakedRef<const PhysicalDevice> m_physical_device;
+        Ref<const PhysicalDevice> m_physical_device;
 
-        core::DeferInit<vk::raii::Device> m_vk_device;
+        DeferInit<vk::raii::Device> m_vk_device;
 
         QueueEntry                m_raster_queue;
         std::optional<QueueEntry> m_async_transfert_queue;
         std::optional<QueueEntry> m_async_compute_queue;
 
-        vma::raii::Allocator m_vma_allocator;
+        vma::UniqueAllocator m_vma_allocator;
         vma::VulkanFunctions m_vma_function_table;
     };
 } // namespace stormkit::gpu
@@ -118,7 +118,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE Device::~Device() {
-        if(m_vk_device.initialized()) [[likely]]
+        if (m_vk_device.initialized()) [[likely]]
             waitIdle();
     }
 
@@ -140,10 +140,10 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto
-        Device::allocate(const PhysicalDevice& physical_device,
-                         const Instance&       instance,
-                         const Info& info) noexcept -> Expected<std::unique_ptr<Device>> try {
+    STORMKIT_FORCE_INLINE auto Device::allocate(const PhysicalDevice& physical_device,
+                                                const Instance&       instance,
+                                                const Info&           info) noexcept
+        -> Expected<std::unique_ptr<Device>> try {
         return std::make_unique<Device>(physical_device, instance, info, Tag {});
     } catch (Result result) { return std::unexpected(result); }
 
@@ -155,16 +155,17 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto Device::waitForFence(
-        const Fence&                     fence,
-        const std::chrono::milliseconds& timeout) const noexcept -> Expected<Result> {
-        return waitForFences(core::makeNakedRefArray(fence), true, timeout);
+    STORMKIT_FORCE_INLINE auto
+        Device::waitForFence(const Fence&                     fence,
+                             const std::chrono::milliseconds& timeout) const noexcept
+        -> Expected<Result> {
+        return waitForFences(borrows<std::array>(fence), true, timeout);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto Device::resetFence(const Fence& fence) const noexcept -> void {
-        resetFences(core::makeNakedRefArray(fence));
+        resetFences(borrows<std::array>(fence));
     }
 
     /////////////////////////////////////
@@ -175,25 +176,25 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto
-        Device::asyncTransfertQueueEntry() const noexcept -> const QueueEntry& {
-        core::expects(m_async_transfert_queue != std::nullopt);
+    STORMKIT_FORCE_INLINE auto Device::asyncTransferQueueEntry() const noexcept
+        -> const QueueEntry& {
+        expects(m_async_transfert_queue != std::nullopt);
 
         return *m_async_transfert_queue;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto
-        Device::asyncComputeQueueEntry() const noexcept -> const QueueEntry& {
-        core::expects(m_async_compute_queue != std::nullopt);
+    STORMKIT_FORCE_INLINE auto Device::asyncComputeQueueEntry() const noexcept
+        -> const QueueEntry& {
+        expects(m_async_compute_queue != std::nullopt);
 
         return *m_async_compute_queue;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto Device::hasAsyncTransfertQueue() const noexcept -> bool {
+    STORMKIT_FORCE_INLINE auto Device::hasAsyncTransferQueue() const noexcept -> bool {
         return m_async_transfert_queue != std::nullopt;
     }
 
@@ -218,35 +219,38 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto Device::vmaAllocator() const noexcept -> const vma::Allocator& {
-        core::expects(m_vma_allocator.operator bool());
+        expects(m_vma_allocator.operator bool());
 
         return *m_vma_allocator;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto
-        Device::vmaFunctionTable() const noexcept -> const vma::VulkanFunctions& {
+    STORMKIT_FORCE_INLINE auto Device::vmaFunctionTable() const noexcept
+        -> const vma::VulkanFunctions& {
         return m_vma_function_table;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T>
-    STORMKIT_FORCE_INLINE auto Device::setObjectName(const T&         object,
-                                                     std::string_view name) const -> void {
-        setObjectName(std::bit_cast<core::UInt64>(*(object.vkHandle())), T::DEBUG_TYPE, name);
+    STORMKIT_FORCE_INLINE auto Device::setObjectName(const T& object, std::string_view name) const
+        -> void {
+        auto&& vk_object = toVkHandle(object);
+        setObjectName(std::bit_cast<UInt64>(static_cast<const void*>(vk_object)),
+                      T::DEBUG_TYPE,
+                      name);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto Device::setObjectName(core::UInt64     object,
+    STORMKIT_FORCE_INLINE auto Device::setObjectName(UInt64           object,
                                                      DebugObjectType  type,
                                                      std::string_view name) const -> void {
         if (!vkHandle().getDispatcher()->vkSetDebugUtilsObjectNameEXT) return;
 
         const auto info = vk::DebugUtilsObjectNameInfoEXT {}
-                              .setObjectType(core::narrow<vk::ObjectType>(type))
+                              .setObjectType(narrow<vk::ObjectType>(type))
                               .setObjectHandle(object)
                               .setPObjectName(std::data(name));
 

@@ -12,44 +12,34 @@ import stormkit.Core;
 import stormkit.Wsi;
 import stormkit.Entities;
 
-import :Systems.RenderSystem;
-
 namespace stormkit::engine {
-    Application::Application(std::string_view           application_name,
-                             const core::math::ExtentU& window_extent,
-                             std::string                window_title,
+    Application::Application(std::string_view     application_name,
+                             const math::ExtentU& window_extent,
+                             std::string          window_title,
                              PrivateTag) {
         m_window = wsi::Window { std::move(window_title), window_extent, wsi::WindowStyle::Close };
         m_event_handler = wsi::EventHandler {};
 
-        m_renderer = Renderer::create(application_name, m_window.get())
-                         .transform_error(core::expectsWithMessage("Failed to initialize renderer"))
+        m_renderer = Renderer::create(application_name, borrow(m_window))
+                         .transform_error(monadic::assert("Failed to initialize renderer"))
                          .value();
 
         m_world = entities::EntityManager {};
     }
 
-    auto Application::update() -> void {
-        m_world->addSystem<RenderSystem>();
+    auto Application::run() -> void {
+        auto framegraph_mutex = std::mutex {};
+        auto rebuild_graph    = std::atomic_bool { true };
 
-        m_renderer->startRendering();
+        m_renderer->startRendering(framegraph_mutex, rebuild_graph);
         while (m_window->isOpen()) {
+            m_renderer->updateFrameGraph(framegraph_mutex, rebuild_graph, m_update_framegraph);
             m_event_handler->update(m_window);
-            m_world->step(core::Secondf { 0 });
+            m_world->step(Secondf { 0 });
             // if (m_surf0ace->needRecreate()) {
             // m_surface->recreate();
             // doInitPerFrameObjects();
             //}
-
-            // auto frame       = std::move(m_surface->acquireNextFrame().value());
-            // auto& frame_data = m_frame_datas[frame.image_index];
-
-            // auto wait   = core::makeConstObserverStaticArray(frame.image_available);
-            // auto signal = core::makeConstObserverStaticArray(frame.render_finished);
-
-            // frame_data.commandbuffer.submit(wait, signal, frame.in_flight);
-
-            // m_surface->present(frame);
         }
     }
 } // namespace stormkit::engine

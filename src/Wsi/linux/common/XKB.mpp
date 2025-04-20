@@ -121,7 +121,7 @@ namespace stormkit::wsi::linux::common {
             dlog("New xkb context {}", std::bit_cast<void*>(xkb_context_instance));
         }
 
-        core::ensures(xkb_context_instance);
+        ensures(xkb_context_instance);
         return xkb_context_instance;
     }
 

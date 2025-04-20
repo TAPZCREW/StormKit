@@ -8,122 +8,113 @@ import std;
 
 import :Meta.Concepts;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core { namespace meta {
     template<class T>
-    struct PureTypeTrait {
-        using Type = std::remove_cvref_t<T>;
-    };
+    using CanonicalType = std::remove_cvref_t<T>;
 
-    template<class T>
-    using PureType = typename PureTypeTrait<T>::Type;
+    template<auto value>
+    using CanonicalTypeOf = CanonicalType<decltype(value)>;
 
     template<class T>
-    struct RawTypeTrait {
-        using Type = std::remove_pointer_t<PureType<T>>;
-    };
+    using DecayType = std::decay_t<T>;
 
     template<class T>
-    using RawType = typename RawTypeTrait<T>::Type;
+    using RemoveIndirectionsType = std::remove_pointer_t<std::remove_reference_t<T>>;
+
+    template<class T>
+    using ElementType = typename std::pointer_traits<T>::element_type;
+
+    template<class T>
+    using PointerType = typename std::pointer_traits<T>::pointer;
 
     template<std::ranges::range Range>
-    struct IteratorTypeTrait {
-        using Type = decltype(std::cbegin(std::declval<Range>()));
-    };
+    using IteratorType = decltype(std::cbegin(std::declval<Range>()));
 
     template<std::ranges::range Range>
-    using IteratorType = typename IteratorTypeTrait<Range>::Type;
+    using SentinelType = decltype(std::cend(std::declval<Range>()));
 
     template<std::ranges::range Range>
-    struct SentinelTypeTrait {
-        using Type = decltype(std::cend(std::declval<Range>()));
-    };
-
-    template<std::ranges::range Range>
-    using SentinelType = typename SentinelTypeTrait<Range>::Type;
-
-    template<std::ranges::range Range>
-    struct RangeTypeTrait {
-        using Type = std::remove_cvref_t<decltype(*std::begin(std::declval<Range>()))>;
-    };
-
-    template<std::ranges::range Range>
-    using RangeType = typename RangeTypeTrait<Range>::Type;
+    using RangeType = CanonicalType<decltype(*std::begin(std::declval<Range>()))>;
 
     template<IsArithmetic T, IsArithmetic V>
     constexpr auto isGreater() noexcept;
 
-    template<IsArithmeticPure T, IsArithmeticPure V>
-    using SafeNarrowHelperType =
-        std::conditional_t<isGreater<PureType<T>, PureType<V>>(), PureType<T>, PureType<V>>;
+    template<IsArithmetic T, IsArithmetic V>
+    using SafeNarrowHelperType = std::conditional_t<isGreater<T, V>(), T, V>;
 
-    template<IsArithmeticPure T, IsArithmeticPure V>
-    using SafeNarrowHelperOtherType =
-        std::conditional_t<isGreater<PureType<T>, PureType<V>>(), PureType<V>, PureType<T>>;
+    template<IsArithmetic T, IsArithmetic V>
+    using SafeNarrowHelperOtherType = std::conditional_t<isGreater<T, V>(), V, T>;
 
     template<class T, typename U>
-    struct LikeCV {
+    struct ConstnessLikeTrait {
       private:
-        using R  = std::remove_reference_t<T>;
-        using U1 = std::conditional_t<std::is_const_v<R>, std::add_const_t<U>, U>;
-        using U2 = std::conditional_t<std::is_volatile_v<R>, std::add_volatile_t<U1>, U1>;
+        using T1 = RemoveIndirectionsType<T>;
+        using U1 = std::conditional_t<std::is_const_v<T1>, std::add_const_t<U>, U>;
+        using U2 = std::conditional_t<std::is_volatile_v<T1>, std::add_volatile_t<U1>, U1>;
 
       public:
-        using type = U2;
+        using Type = U2;
     };
 
     template<class T, typename U>
-    using LikeCVType = LikeCV<T, U>::type;
+    using ConstnessLike = ConstnessLikeTrait<T, U>::Type;
 
     template<class T, typename U>
-    struct LikeRef {
+    struct ForwardLikeTrait {
       private:
-        using U1 =
-            std::conditional_t<std::is_lvalue_reference_v<T>, std::add_lvalue_reference_t<U>, U>;
-        using U2 =
-            std::conditional_t<std::is_rvalue_reference_v<T>, std::add_rvalue_reference_t<U1>, U1>;
+        using U1 = ConstnessLike<T, U>;
+        using U2 = std::
+            conditional_t<std::is_lvalue_reference_v<T>, std::add_lvalue_reference_t<U1>, U1>;
+        using U3 = std::
+            conditional_t<std::is_rvalue_reference_v<T>, std::add_rvalue_reference_t<U2>, U2>;
 
       public:
-        using type = U2;
+        using Type = U3;
     };
 
     template<class T, typename U>
-    using LikeRefType = LikeRef<T, U>::type;
+    using ForwardLike = ForwardLikeTrait<T, U>::Type;
 
-    template<class T, typename U>
-    struct Like {
-      private:
-        using U1 = LikeCVType<T, U>;
-        using U2 = LikeRefType<T, U1>;
+    template<typename... Ts>
+    struct AlwaysTrue: std::false_type {};
 
-      public:
-        using type = U2;
-    };
-
-    template<class T, typename U>
-    using LikeType = Like<T, U>::type;
-
-    template<typename T>
+    template<typename... Ts>
     struct AlwaysFalse: std::false_type {};
 
     template<typename T>
     using AddConst = const T;
 
-    template<IsEnumeration T>
-    using UnderlyingType = std::underlying_type_t<T>;
-} // namespace stormkit::core
+    template <typename T>
+    struct UnderlyingTypeTrait {
+        using Type = T;
+    };
+
+    template <IsContainedSemantics T>
+    struct UnderlyingTypeTrait<T> {
+        using Type = typename T::value_type;
+    };
+
+    template <IsEnumeration T>
+    struct UnderlyingTypeTrait<T> {
+        using Type = std::underlying_type_t<T>;
+    };
+
+    template <typename T>
+    using UnderlyingType = UnderlyingTypeTrait<T>::Type;
+}}} // namespace stormkit::core::meta
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core { namespace meta {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<IsArithmetic T, IsArithmetic V>
     constexpr auto isGreater() noexcept {
         using Type = decltype(T {} + V {});
 
-        return static_cast<Type>(std::numeric_limits<T>::max()) >
-               static_cast<Type>(std::numeric_limits<V>::max());
+        return static_cast<Type>(std::numeric_limits<T>::max())
+               > static_cast<Type>(std::numeric_limits<V>::max());
     }
-} // namespace stormkit::core
+}}} // namespace stormkit::core::meta

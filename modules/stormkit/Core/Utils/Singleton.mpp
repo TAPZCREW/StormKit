@@ -6,7 +6,7 @@ export module stormkit.Core:Utils.Singleton;
 
 import std;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     template<class T>
     class Singleton {
       public:
@@ -28,13 +28,13 @@ export namespace stormkit::core {
 
         static inline std::unique_ptr<T> m_instance = nullptr;
     };
-} // namespace stormkit::core
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T>
@@ -56,4 +56,4 @@ namespace stormkit::core {
         static auto once_flag = std::once_flag {};
         return once_flag;
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core

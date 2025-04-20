@@ -1,0 +1,96 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/Core/PlatformMacro.hpp>
+
+export module stormkit.Core:TypeSafe.Integer;
+
+import std;
+
+import :Meta.Concepts;
+
+export {
+    namespace stormkit { inline namespace core {
+        namespace cpp {
+            using UChar     = unsigned short;
+            using UShort    = unsigned short;
+            using UInt      = unsigned int;
+            using ULong     = unsigned long;
+            using ULongLong = unsigned long long;
+
+            using SChar    = signed char;
+            using Short    = signed short;
+            using Int      = signed int;
+            using Long     = signed long;
+            using LongLong = signed long long;
+
+            using LongDouble = long double;
+        } // namespace cpp
+
+        using UInt8  = std::uint8_t;
+        using UInt16 = std::uint16_t;
+        using UInt32 = std::uint32_t;
+        using UInt64 = std::uint64_t;
+#ifdef __SIZEOF_INT128__
+        using UInt128 = __uint128_t;
+#else
+        using UInt128 = unsigned _m128;
+#endif
+        using UInt   = std::uint_fast32_t;
+
+        using Int8  = std::int8_t;
+        using Int16 = std::int16_t;
+        using Int32 = std::int32_t;
+        using Int64 = std::int64_t;
+#ifdef __SIZEOF_INT128__
+        using Int128 = __int128_t;
+#else
+        using Int128 = _m128;
+#endif
+        using Int   = std::int_fast32_t;
+
+        using RangeExtent = std::size_t;
+        using RangeOffset = std::ptrdiff_t;
+
+        template<meta::IsIntegral T>
+        class Integer {
+          public:
+            using Type = T;
+
+            Integer() = delete;
+
+            constexpr Integer(T value);
+
+          private:
+            T m_value;
+        };
+
+        template<meta::IsIntegral T>
+        Integer(T) -> Integer<T>;
+    }} // namespace stormkit::core
+
+    template<class T, class CharT>
+    struct std::formatter<stormkit::core::Integer<T>, CharT>: std::formatter<T, CharT> {
+        template<class FormatContext>
+        auto format(stormkit::core::Integer<T> data, FormatContext& ctx) const noexcept
+            -> decltype(ctx.out());
+    };
+}
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////
+/////////////////////////////////////
+template<class T, class CharT>
+template<class FormatContext>
+STORMKIT_FORCE_INLINE auto
+    std::formatter<stormkit::core::Integer<T>, CharT>::format(stormkit::core::Integer<T> data,
+                                                              FormatContext& ctx) const noexcept
+    -> decltype(ctx.out()) {
+    return std::formatter<T, CharT>::format(static_cast<T>(data), ctx);
+}

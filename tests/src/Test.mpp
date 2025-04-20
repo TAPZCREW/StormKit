@@ -12,7 +12,9 @@ module;
 
 export module Test;
 
+import stormkit.Core;
 import std;
+import frozen;
 
 export namespace test {
     struct TestFunc {
@@ -45,13 +47,14 @@ export namespace test {
 
 module :private;
 
+using namespace std::literals;
+
 namespace test {
     enum class Status {
-        PASSED,
-        NOTPASSED,
-        CHECKMARK,
-        CROSSMARK,
-        FAIL
+        Passed,
+        NotPassed,
+        CheckMark,
+        CrossMark,
     };
 
     struct TestState {
@@ -62,10 +65,31 @@ namespace test {
         std::optional<std::string>                    requested_test = std::nullopt;
     };
 
-    auto state = TestState {};
+    namespace {
+        constexpr auto StyleMap = frozen::make_unordered_map<Status, stormkit::ConsoleStyle>({
+            { Status::Passed,
+             stormkit::ConsoleStyle { .fg = stormkit::ConsoleColor::Black,
+                                       .bg = stormkit::ConsoleColor::Green } },
+            { Status::NotPassed,
+             stormkit::ConsoleStyle { .fg = stormkit::ConsoleColor::Black,
+                                       .bg = stormkit::ConsoleColor::Red }   },
+            { Status::CheckMark,
+             stormkit::ConsoleStyle {
+                  .fg = stormkit::ConsoleColor::Green,
+              }                                                              },
+            { Status::CrossMark,
+             stormkit::ConsoleStyle {
+                  .fg = stormkit::ConsoleColor::Red,
+              }                                                              },
+        });
 
-    auto colorifyBegin(Status) noexcept -> void;
-    auto colorifyEnd() noexcept -> void;
+        constexpr auto passed     = StyleMap.at(Status::Passed) | "Passed"sv;
+        constexpr auto not_passed = StyleMap.at(Status::NotPassed) | "Not Passed"sv;
+        constexpr auto check_mark = StyleMap.at(Status::CheckMark) | "✔ "sv;
+        constexpr auto cross_mark = StyleMap.at(Status::CrossMark) | "❌"sv;
+    } // namespace
+
+    auto state = TestState {};
 
     auto TestSuiteHolder::hasTest(std::string_view name) noexcept {
         for (auto&& test : tests) {
@@ -80,26 +104,11 @@ namespace test {
             if (test.name == name) {
                 if (state.verbose) std::println("     running test {}", test.name);
                 test.func();
-                if (not state.failed) {
-                    if (state.verbose) {
-                        std::print("     ");
-                        colorifyBegin(Status::PASSED);
-                        std::print("PASSED");
-                        colorifyEnd();
-                        std::println("");
-                    }
-                } else {
-                    if (state.verbose) {
-                        std::print("     ");
-                        colorifyBegin(Status::NOTPASSED);
-                        std::print("NOT PASSED");
-                        colorifyEnd();
-                        std::println("");
-                    }
-                }
+                std::println("     {}", (state.failed) ? not_passed : passed);
                 return not state.failed;
             }
         }
+        return true;
     }
 
     auto TestSuiteHolder::runTests() noexcept {
@@ -107,41 +116,23 @@ namespace test {
 
         auto passed_tests = 0;
         auto failed_tests = 0;
+
         for (auto&& test : tests) {
             state.failed = false;
             if (state.verbose) std::println("     running test {}", test.name);
             test.func();
 
-            if (not state.failed) {
-                ++passed_tests;
-                if (state.verbose) {
-                    std::print("     ");
-                    colorifyBegin(Status::PASSED);
-                    std::print("PASSED");
-                    colorifyEnd();
-                    std::println("");
-                }
-            } else {
+            if (state.verbose) std::println("     {}", (state.failed) ? not_passed : passed);
+            if (not state.failed) ++passed_tests;
+            else
                 ++failed_tests;
-                if (state.verbose) {
-                    std::print("     ");
-                    colorifyBegin(Status::NOTPASSED);
-                    std::print("NOT PASSED");
-                    colorifyEnd();
-                    std::println("");
-                }
-            }
         }
 
-        colorifyBegin(Status::CHECKMARK);
-        if (not state.plain) std::print("✔ ");
-        colorifyEnd();
+        if (not state.plain) std::print("{}", check_mark);
         std::print("{} test passed", passed_tests);
         if (failed_tests > 0) {
             std::print(", ");
-            colorifyBegin(Status::CROSSMARK);
-            if (not state.plain) std::print("❌");
-            colorifyEnd();
+            if (not state.plain) std::print("{}", cross_mark);
             std::print("{} test state.failed", failed_tests);
         }
         std::println("");
@@ -162,13 +153,9 @@ namespace test {
         if (not cond) [[unlikely]] {
             state.failed = true;
             if (state.verbose) {
-                std::print("       ");
-                colorifyBegin(Status::FAIL);
-                std::print("FAILURE");
-                colorifyEnd();
-
-                std::println(" on expression \"{}\" \n"
+                std::println("{} on expression \"{}\" \n"
                              "          > line: {}",
+                             StyleMap.at(Status::NotPassed) | "FAILURE",
                              message,
                              location.line());
             }
@@ -221,63 +208,4 @@ namespace test {
 
         return return_code;
     }
-
-#ifdef STORMKIT_OS_WINDOWS
-    namespace {
-        constexpr auto KBLA = 0;
-        constexpr auto KRED = 12;
-        constexpr auto KGRN = 2;
-        constexpr auto KWHT = 15;
-        constexpr auto KYEL = 14;
-    } // namespace
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto colorifyBegin(Status status) noexcept -> void {
-        if (state.plain) return;
-        auto output = GetStdHandle(STD_OUTPUT_HANDLE);
-
-        auto background = KBLA;
-        auto text       = KBLA;
-        switch (status) {
-            case Status::PASSED: background = KGRN; break;
-            case Status::FAIL: background = KRED; break;
-            case Status::CHECKMARK: text = KGRN; break;
-            case Status::CROSSMARK: text = KRED; break;
-            case Status::NOTPASSED: background = KYEL; break;
-            default: std::unreachable();
-        }
-
-        SetConsoleTextAttribute(output, (background << 4) + text);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto colorifyEnd() noexcept -> void {
-        if (state.plain) return;
-        auto output = GetStdHandle(STD_OUTPUT_HANDLE);
-        SetConsoleTextAttribute(output, (KBLA << 4) + KWHT);
-    }
-#else
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto colorifyBegin(Status status) noexcept -> void {
-        if (state.plain) return;
-        switch (status) {
-            case Status::PASSED: std::print("\033[30;42m"); break;
-            case Status::FAIL: std::print("\033[30;43m"); break;
-            case Status::CHECKMARK: std::print("\033[32m"); break;
-            case Status::CROSSMARK: std::print("\033[33m"); break;
-            case Status::NOTPASSED: std::print("\033[30;41m"); break;
-            default: std::unreachable();
-        }
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto colorifyEnd() noexcept -> void {
-        if (state.plain) return;
-        std::print("\033[0m");
-    }
-#endif
 } // namespace test

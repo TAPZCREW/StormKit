@@ -19,16 +19,16 @@ import :Execution.Descriptors;
 
 export namespace stormkit::gpu {
     struct VertexBindingDescription {
-        core::UInt32    binding;
-        core::UInt32    stride;
+        UInt32          binding;
+        UInt32          stride;
         VertexInputRate input_rate = VertexInputRate::Vertex;
     };
 
     struct VertexInputAttributeDescription {
-        core::UInt32 location;
-        core::UInt32 binding;
-        Format       format;
-        core::UInt32 offset;
+        UInt32 location;
+        UInt32 binding;
+        Format format;
+        UInt32 offset;
     };
 
     struct RasterPipelineVertexInputState {
@@ -85,7 +85,7 @@ export namespace stormkit::gpu {
     };
 
     struct RasterPipelineShaderState {
-        std::vector<core::NakedRef<const Shader>> shaders;
+        std::vector<Ref<const Shader>> shaders;
     };
 
     struct RasterPipelineDepthStencilState {
@@ -101,8 +101,8 @@ export namespace stormkit::gpu {
     };
 
     struct RasterPipelineLayout {
-        std::vector<core::NakedRef<const DescriptorSetLayout>> descriptor_set_layouts;
-        std::vector<PushConstantRange>                         push_constant_ranges;
+        std::vector<Ref<const DescriptorSetLayout>> descriptor_set_layouts;
+        std::vector<PushConstantRange>              push_constant_ranges;
     };
 
     struct RasterPipelineState {

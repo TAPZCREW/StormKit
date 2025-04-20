@@ -1,0 +1,21 @@
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+#ifndef STORMKIT_CONFIG_HPP
+#define STORMKIT_CONFIG_HPP
+
+export namespace stormkit { inline namespace core {
+    // clang-format off
+    inline constexpr auto STORMKIT_MAJOR_VERSION   = ${VERSION_MAJOR};
+    inline constexpr auto STORMKIT_MINOR_VERSION   = ${VERSION_MINOR};
+    inline constexpr auto STORMKIT_PATCH_VERSION   = ${VERSION_ALTER};
+    inline constexpr auto STORMKIT_BUILD_VERSION   = std::string_view { "${VERSION_BUILD}" };
+    inline constexpr auto STORMKIT_VERSION         = std::string_view { "${VERSION}-${VERSION_BUILD}" };
+    inline constexpr auto STORMKIT_BUILD_TYPE      = std::string_view { "${MODE}" };
+    inline constexpr auto STORMKIT_GIT_COMMIT_HASH = std::string_view { "${STORMKIT_GIT_COMMIT_HASH}" };
+    inline constexpr auto STORMKIT_GIT_BRANCH      = std::string_view { "${STORMKIT_GIT_BRANCH}" };
+    // clang-format on
+}} // namespace stormkit::core
+
+#endif

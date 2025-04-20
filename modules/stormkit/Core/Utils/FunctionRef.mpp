@@ -4,9 +4,9 @@ module;
 
 export module stormkit.Core:Utils.FunctionRef;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     using tl::swap;
 
-    template<typename R, typename... Args>
-    using FunctionRef = tl::function_ref<R(Args...)>;
-} // namespace stormkit::core
+    template<typename F>
+    using FunctionRef = tl::function_ref<F>;
+}} // namespace stormkit::core

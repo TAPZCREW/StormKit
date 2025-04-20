@@ -13,10 +13,12 @@
 
 #define SINGLE_ARG(...) __VA_ARGS__
 
-#define ALLOCATE_HELPERS(T)                                      \
-    template<class... Args>                                      \
-    [[nodiscard]] static inline auto allocate(Args&&... args) {  \
-        return std::make_unique<T>(std::forward<Args>(args)...); \
+#define ALLOCATE_HELPERS(T)                                     \
+    template<class... Args>                                     \
+    [[nodiscard]] static inline auto allocate(Args&&... args) { \
+        return makeUnique<T>(std::forward<Args>(args)...)       \
+            .transform_error(stormkit::core::monadic::assert()) \
+            .value();                                           \
     }
 
 /// \exclude
@@ -32,19 +34,19 @@
     template<class y>                                              \
     using x##ConstWeakPtr = std::weak_ptr<const x<y>>;             \
     template<class y>                                              \
-    using x##Ref = stormkit::core::NakedRef<x<y>>;                 \
+    using x##Ref = stormkit::NakedRef<x<y>>;                       \
     template<class y>                                              \
-    using x##ConstRef = stormkit::core::NakedRef<const x<y>>;
+    using x##ConstRef = stormkit::NakedRef<const x<y>>;
 
 /// \exclude
-#define DECLARE_PTR_AND_REF_(x)                                    \
-    using x##OwnedPtr               = std::unique_ptr<x>;          \
-    using x##SharedPtr              = std::shared_ptr<x>;          \
-    using x##std::shared_ptr<Const> = std::shared_ptr<const x>;    \
-    using x##WeakPtr                = std::weak_ptr<x>;            \
-    using x##ConstWeakPtr           = std::weak_ptr<const x>;      \
-    using x##Ref                    = stormkit::core::NakedRef<x>; \
-    using x##ConstRef               = stormkit::core::NakedRef<const x>;
+#define DECLARE_PTR_AND_REF_(x)                                 \
+    using x##OwnedPtr               = std::unique_ptr<x>;       \
+    using x##SharedPtr              = std::shared_ptr<x>;       \
+    using x##std::shared_ptr<Const> = std::shared_ptr<const x>; \
+    using x##WeakPtr                = std::weak_ptr<x>;         \
+    using x##ConstWeakPtr           = std::weak_ptr<const x>;   \
+    using x##Ref                    = stormkit::NakedRef<x>;    \
+    using x##ConstRef               = stormkit::NakedRef<const x>;
 
 /// \brief Declare pointer and reference_wrapper aliases to a type
 /// \param type The type to declare aliases
@@ -56,7 +58,7 @@
 
 /// \brief Add padding to a struct or a class
 /// \param size The size of the padding
-#define PADDING(size) stormkit::core::Byte private____padding[size];
+#define PADDING(size) stormkit::Byte private____padding[size];
 
 /// \exclude
 #define STORMKIT_UNUSED(x) (void)(x);
@@ -124,7 +126,7 @@
     };                                                   \
     using name##Scoped = std::unique_ptr<x, name##Deleter>;
 
-#define STORMKIT_FORWARD(x) static_cast<decltype(x)&&>(x);
+#define STORMKIT_FORWARD(x) static_cast<decltype(x) &&>(x);
 #define STORMKIT_RETURNS(expr)                 \
     noexcept(noexcept(expr))->decltype(expr) { \
         return expr;                           \

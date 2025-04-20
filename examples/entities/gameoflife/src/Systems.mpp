@@ -34,12 +34,12 @@ export {
         UpdateBoardSystem(UpdateBoardSystem&&) noexcept;
         auto operator=(UpdateBoardSystem&&) noexcept -> UpdateBoardSystem&;
 
-        auto update(stormkit::core::Secondf delta) -> void override;
+        auto update(stormkit::Secondf delta) -> void override;
         auto postUpdate() -> void override;
 
         auto setEditModeEnabled(bool enabled) noexcept { m_is_on_edit_mode = enabled; }
 
-        auto incrementDelta(stormkit::core::Secondf delta) { m_refresh_board_delta += delta; }
+        auto incrementDelta(stormkit::Secondf delta) { m_refresh_board_delta += delta; }
 
       private:
         using Clock = std::chrono::high_resolution_clock;
@@ -54,7 +54,7 @@ export {
 
         bool m_updated = true;
 
-        stormkit::core::Secondf m_refresh_board_delta = REFRESH_BOARD_DELTA;
+        stormkit::Secondf m_refresh_board_delta = REFRESH_BOARD_DELTA;
     };
 
 #ifdef STORMKIT_BUILD_MODULES

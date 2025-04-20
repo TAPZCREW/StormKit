@@ -27,9 +27,9 @@ struct std::formatter<Bar, CharT>: std::formatter<std::basic_string<CharT>, Char
 };
 
 struct Foo {
-    stormkit::core::UInt32 a = 0u;
-    float                  b = 2.3f;
-    Bar                    c = Bar {};
+    stormkit::UInt32 a = 0u;
+    float            b = 2.3f;
+    Bar              c = Bar {};
 };
 
 template<class CharT>
@@ -52,8 +52,6 @@ static const auto LOG_DIR = std::filesystem::path { "log/" };
 auto main([[maybe_unused]] std::span<const std::string_view> args) -> int {
     using namespace stormkit;
     using log::operator""_module;
-
-    // core::setupSignalHandler();
 
     auto logger = log::Logger::createLoggerInstance<log::FileLogger>(LOG_DIR);
 

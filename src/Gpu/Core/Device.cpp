@@ -6,15 +6,15 @@ module;
 
 #include <vulkan/vulkan_hpp_macros.hpp>
 
+#include <stormkit/Gpu/Core/VulkanMacro.hpp>
+#include <stormkit/Log/LogMacro.hpp>
+
 module stormkit.Gpu;
 
 import std;
 
 import stormkit.Core;
 import stormkit.Log;
-
-#include <stormkit/Gpu/Core/VulkanMacro.hpp>
-#include <stormkit/Log/LogMacro.hpp>
 
 import :Core.Device;
 import :Core.Sync;
@@ -23,11 +23,11 @@ import stormkit.Gpu.Vulkan;
 using namespace std::literals;
 
 namespace {
-    constexpr auto RAYTRACING_EXTENSIONS =
-        std::array { "VK_KHR_ray_tracing_pipeline"sv,  "VK_KHR_acceleration_structure"sv,
-                     "VK_KHR_buffer_device_address"sv, "VK_KHR_deferred_host_operations"sv,
-                     "VK_EXT_descriptor_indexing"sv,   "VK_KHR_spirv_1_4"sv,
-                     "VK_KHR_shader_float_controls"sv };
+    constexpr auto RAYTRACING_EXTENSIONS
+        = std::array { "VK_KHR_ray_tracing_pipeline"sv,  "VK_KHR_acceleration_structure"sv,
+                       "VK_KHR_buffer_device_address"sv, "VK_KHR_deferred_host_operations"sv,
+                       "VK_EXT_descriptor_indexing"sv,   "VK_KHR_spirv_1_4"sv,
+                       "VK_KHR_shader_float_controls"sv };
 
     constexpr auto BASE_EXTENSIONS = std::array { "VK_KHR_maintenance3"sv };
 
@@ -41,8 +41,8 @@ namespace stormkit::gpu {
     template<QueueFlag flag, QueueFlag... no_flag>
     constexpr auto findQueue() {
         return [](const auto& family) {
-            return core::checkFlag(family.flags, flag) and
-                   (not core::checkFlag(family.flags, no_flag) and ...);
+            return core::checkFlag(family.flags, flag)
+                   and (not core::checkFlag(family.flags, no_flag) and ...);
         };
     }
 
@@ -52,34 +52,32 @@ namespace stormkit::gpu {
                    const Instance&       instance,
                    const Info&           info,
                    Tag)
-        : InstanceObject { instance }, m_physical_device { &physical_device } {
+        : m_physical_device { borrow(physical_device) } {
         const auto& queue_families = m_physical_device->queueFamilies();
 
         struct Queue_ {
-            std::optional<core::UInt32> id    = std::nullopt;
-            core::UInt32                count = 0u;
-            core::Byte                  _[3];
-            QueueFlag                   flags = QueueFlag {};
+            std::optional<UInt32> id    = std::nullopt;
+            UInt32                count = 0u;
+            Byte                  _[3];
+            QueueFlag             flags = QueueFlag {};
         };
 
         const auto raster_queue = [&queue_families]() -> Queue_ {
             const auto it = std::ranges::find_if(queue_families, findQueue<QueueFlag::Graphics>());
             if (it == std::ranges::cend(queue_families)) return {};
 
-            return { .id = core::as<core::UInt32>(
-                         std::distance(std::ranges::cbegin(queue_families), it)),
+            return { .id    = as<UInt32>(std::distance(std::ranges::cbegin(queue_families), it)),
                      .count = it->count,
                      .flags = it->flags };
         }();
 
         const auto compute_queue = [&queue_families]() -> Queue_ {
-            const auto it =
-                std::ranges::find_if(queue_families,
-                                     findQueue<QueueFlag::Transfert, QueueFlag::Graphics>());
+            const auto it
+                = std::ranges::find_if(queue_families,
+                                       findQueue<QueueFlag::Transfer, QueueFlag::Graphics>());
             if (it == std::ranges::cend(queue_families)) return {};
 
-            return { .id = core::as<core::UInt32>(
-                         std::distance(std::ranges::cbegin(queue_families), it)),
+            return { .id    = as<UInt32>(std::distance(std::ranges::cbegin(queue_families), it)),
                      .count = it->count,
                      .flags = it->flags };
         }();
@@ -87,11 +85,10 @@ namespace stormkit::gpu {
         const auto transfert_queue = [&queue_families]() -> Queue_ {
             const auto it = std::ranges::find_if(
                 queue_families,
-                findQueue<QueueFlag::Compute, QueueFlag::Graphics, QueueFlag::Transfert>());
+                findQueue<QueueFlag::Compute, QueueFlag::Graphics, QueueFlag::Transfer>());
             if (it == std::ranges::cend(queue_families)) return {};
 
-            return { .id = core::as<core::UInt32>(
-                         std::distance(std::ranges::cbegin(queue_families), it)),
+            return { .id    = as<UInt32>(std::distance(std::ranges::cbegin(queue_families), it)),
                      .count = it->count,
                      .flags = it->flags };
         }();
@@ -110,7 +107,7 @@ namespace stormkit::gpu {
         auto priorities = std::vector<std::vector<float>> {};
         priorities.reserve(std::size(queues));
 
-        const auto queue_create_infos = core::transform(queues, [&priorities](auto queue) {
+        const auto queue_create_infos = transform(queues, [&priorities](auto queue) {
             auto& priority = priorities.emplace_back();
 
             priority.resize(queue->count, 1.f);
@@ -121,15 +118,15 @@ namespace stormkit::gpu {
         });
 
         const auto& capabilities = m_physical_device->capabilities();
-        const auto  enabled_features =
-            vk::PhysicalDeviceFeatures {}
-                .setSampleRateShading(capabilities.features.sampler_rate_shading)
-                .setMultiDrawIndirect(capabilities.features.multi_draw_indirect)
-                .setFillModeNonSolid(capabilities.features.fill_Mode_non_solid)
-                .setSamplerAnisotropy(capabilities.features.sampler_anisotropy);
+        const auto  enabled_features
+            = vk::PhysicalDeviceFeatures {}
+                  .setSampleRateShading(capabilities.features.sampler_rate_shading)
+                  .setMultiDrawIndirect(capabilities.features.multi_draw_indirect)
+                  .setFillModeNonSolid(capabilities.features.fill_Mode_non_solid)
+                  .setSamplerAnisotropy(capabilities.features.sampler_anisotropy);
 
-        const auto device_extensions =
-            m_physical_device->vkHandle().enumerateDeviceExtensionProperties();
+        const auto device_extensions
+            = m_physical_device->vkHandle().enumerateDeviceExtensionProperties();
 
         device_logger.dlog("Device extensions: {}",
                            device_extensions | std::views::transform([](auto&& ext) {
@@ -138,9 +135,9 @@ namespace stormkit::gpu {
 
         const auto swapchain_available = [&] {
             for (const auto& ext : SWAPCHAIN_EXTENSIONS) {
-                if (std::ranges::find_if(device_extensions, [&](const auto& e) {
-                        return ext == e.extensionName;
-                    }) == std::ranges::cend(device_extensions)) {
+                if (std::ranges::find_if(device_extensions,
+                                         [&](const auto& e) { return ext == e.extensionName; })
+                    == std::ranges::cend(device_extensions)) {
                     return false;
                 }
             }
@@ -150,9 +147,9 @@ namespace stormkit::gpu {
 
         const auto raytracing_available = [&] {
             for (const auto& ext : RAYTRACING_EXTENSIONS) {
-                if (std::ranges::find_if(device_extensions, [&](const auto& e) {
-                        return ext == e.extensionName;
-                    }) == std::ranges::cend(device_extensions)) {
+                if (std::ranges::find_if(device_extensions,
+                                         [&](const auto& e) { return ext == e.extensionName; })
+                    == std::ranges::cend(device_extensions)) {
                     return false;
                 }
             }
@@ -163,18 +160,18 @@ namespace stormkit::gpu {
         const auto extensions = [&] {
             constexpr auto toCZString = [](const auto& v) { return std::data(v); };
 
-            auto e = core::transform(BASE_EXTENSIONS, toCZString);
+            auto e = transform(BASE_EXTENSIONS, toCZString);
             if (swapchain_available and info.enable_swapchain)
-                core::merge(e, core::transform(SWAPCHAIN_EXTENSIONS, toCZString));
+                merge(e, transform(SWAPCHAIN_EXTENSIONS, toCZString));
             if (raytracing_available and info.enable_raytracing)
-                core::merge(e, core::transform(RAYTRACING_EXTENSIONS, toCZString));
+                merge(e, transform(RAYTRACING_EXTENSIONS, toCZString));
 
             return e;
         }();
 
         const auto acceleration_feature = vk::PhysicalDeviceAccelerationStructureFeaturesKHR {};
-        const auto rt_pipeline_feature =
-            vk::PhysicalDeviceRayTracingPipelineFeaturesKHR {}.setPNext(
+        const auto rt_pipeline_feature
+            = vk::PhysicalDeviceRayTracingPipelineFeaturesKHR {}.setPNext(
                 std::bit_cast<void*>(&acceleration_feature));
 
         const auto next = [&]() -> void* {
@@ -192,26 +189,29 @@ namespace stormkit::gpu {
         m_physical_device->vkHandle()
             .createDevice(create_info)
             .transform(core::monadic::set(m_vk_device))
-            .transform([this]() noexcept -> VulkanExpected<void> {
+            .transform([this, &instance] noexcept -> VulkanExpected<void> {
                 VULKAN_HPP_DEFAULT_DISPATCHER.init(*vkHandle());
 
-                m_vma_function_table =
-                    vma::functionsFromDispatcher(this->instance().vkHandle().getDispatcher(),
-                                                 vkHandle().getDispatcher());
+                m_vma_function_table
+                    = vma::functionsFromDispatcher(instance.vkHandle().getDispatcher(),
+                                                   vkHandle().getDispatcher());
 
-                const auto alloc_create_info =
-                    vma::AllocatorCreateInfo {}
-                        .setInstance(*(this->instance().vkHandle()))
-                        .setPhysicalDevice(*m_physical_device->vkHandle())
-                        .setDevice(*vkHandle())
-                        .setPVulkanFunctions(&vmaFunctionTable());
+                const auto alloc_create_info
+                    = vma::AllocatorCreateInfo {}
+                          .setInstance(*(instance.vkHandle()))
+                          .setPhysicalDevice(*m_physical_device->vkHandle())
+                          .setDevice(*vkHandle())
+                          .setPVulkanFunctions(&vmaFunctionTable());
 
-                auto&& [result, m_vma_allocator] = vma::createAllocatorUnique(alloc_create_info);
+                auto&& [result, allocator] = vma::createAllocatorUnique(alloc_create_info);
                 if (result != vk::Result::eSuccess) return std::unexpected { result };
+
+                m_vma_allocator = std::move(allocator);
 
                 return {};
             })
-            .transform_error(core::monadic::map(core::monadic::as<Result>(), core::throwError()));
+            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
+                                                core::monadic::throwAsException()));
 
         if (raster_queue.id)
             m_raster_queue = QueueEntry { .id    = *raster_queue.id,
@@ -224,29 +224,32 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Device::waitForFences(std::span<const core::NakedRef<const Fence>> fences,
-                               bool                                         wait_all,
-                               const std::chrono::milliseconds&             timeout) const noexcept
+    auto Device::waitForFences(std::span<const Ref<const Fence>> fences,
+                               bool                              wait_all,
+                               const std::chrono::milliseconds&  timeout) const noexcept
         -> Expected<Result> {
-        const auto vk_fences =
-            fences | std::views::transform(toVkHandle()) | std::ranges::to<std::vector>();
+        const auto vk_fences = fences
+                               | std::views::transform(monadic::toVkHandle())
+                               | std::ranges::to<std::vector>();
 
         return vkCall(*m_vk_device,
                       &vk::raii::Device::waitForFences,
-                      { { vk::Result::eSuccess, vk::Result::eNotReady } },
+                      {
+                          { vk::Result::eSuccess, vk::Result::eNotReady }
+        },
                       vk_fences,
                       wait_all,
                       std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count())
-            .transform(core::monadic::as<Result>())
-            .transform_error(core::monadic::as<Result>());
+            .transform(core::monadic::narrow<Result>())
+            .transform_error(core::monadic::narrow<Result>());
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Device::resetFences(std::span<const core::NakedRef<const Fence>> fences) const noexcept
-        -> void {
-        const auto vk_fences =
-            fences | std::views::transform(toVkHandle()) | std::ranges::to<std::vector>();
+    auto Device::resetFences(std::span<const Ref<const Fence>> fences) const noexcept -> void {
+        const auto vk_fences = fences
+                               | std::views::transform(monadic::toVkHandle())
+                               | std::ranges::to<std::vector>();
 
         m_vk_device->resetFences(vk_fences);
     }

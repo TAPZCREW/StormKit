@@ -17,7 +17,7 @@ import App;
 auto main([[maybe_unused]] std::span<const std::string_view> args) -> int {
     using namespace stormkit;
 
-    core::setupSignalHandler();
+    setupSignalHandler();
 
     log::LogHandler::setupDefaultLogger();
 

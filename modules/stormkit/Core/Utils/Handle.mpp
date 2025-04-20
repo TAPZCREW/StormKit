@@ -13,12 +13,12 @@ export module stormkit.Core:Utils.Handle;
 import std;
 
 import :Hash;
-import :Utils.AsCast;
-import :Utils.Numerics;
+import :TypeSafe.AsCast;
+import :TypeSafe.Integer;
 import :Meta;
 
 export {
-    namespace stormkit::core {
+    namespace stormkit { inline namespace core {
         template<class T, std::integral _ID>
         struct Handle {
             using ID = _ID;
@@ -26,7 +26,8 @@ export {
             static constexpr auto INVALID_HANDLE_VALUE = std::numeric_limits<ID>::max();
 
             [[nodiscard]] constexpr auto operator<=>(const Handle<T, ID>&) const noexcept
-                -> std::strong_ordering = default;
+                -> std::strong_ordering
+                = default;
 
             template<std::derived_from<T> U>
             constexpr operator Handle<U, ID>() const noexcept;
@@ -51,7 +52,7 @@ export {
 
         template<class T>
         using Handle64 = Handle<T, UInt64>;
-    } // namespace stormkit::core
+    }} // namespace stormkit::core
 
     template<class T, std::integral _ID>
     struct std::hash<stormkit::core::Handle<T, _ID>> {
@@ -65,7 +66,7 @@ export {
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T, std::integral _ID>
@@ -121,7 +122,7 @@ namespace stormkit::core {
     constexpr auto Handle<T, _ID>::invalidHandle() noexcept -> Handle {
         return Handle {};
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core
 
 /////////////////////////////////////
 /////////////////////////////////////

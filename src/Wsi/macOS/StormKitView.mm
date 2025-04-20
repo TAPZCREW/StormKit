@@ -7,9 +7,11 @@
 
 #include "Utils.hpp"
 
+extern "C" {
 #import <AppKit/NSScreen.h>
 #import <AppKit/NSTrackingArea.h>
 #import <AppKit/NSWindow.h>
+}
 
 using namespace stormkit::wsi::macos;
 
@@ -207,8 +209,8 @@ using namespace stormkit::wsi::macos;
         tracking_area = nil;
     }
 
-    NSUInteger opts = (NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways |
-                       NSTrackingMouseMoved | NSTrackingEnabledDuringMouseDrag);
+    NSUInteger opts = (NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways
+                       | NSTrackingMouseMoved | NSTrackingEnabledDuringMouseDrag);
     tracking_area =
         [[NSTrackingArea alloc] initWithRect:[self bounds] options:opts owner:self userInfo:nil];
     [self addTrackingArea:tracking_area];
@@ -242,8 +244,8 @@ using namespace stormkit::wsi::macos;
 /////////////////////////////////////
 /////////////////////////////////////
 - (CGDirectDisplayID)displayId {
-    auto screen     = [[self window] screen];
-    auto display_id = [[screen deviceDescription] objectForKey:@"NSScreenNumber"];
+    auto screen   = [[self window] screen];
+    id display_id = [[screen deviceDescription] objectForKey:@"NSScreenNumber"];
 
     return [display_id intValue];
 }
@@ -251,7 +253,7 @@ using namespace stormkit::wsi::macos;
 /////////////////////////////////////
 /////////////////////////////////////
 - (void)setNativeEventRetriever:(void *)native_event {
-    native_event = native_event;
+    //native_event = native_event;
 }
 
 @end

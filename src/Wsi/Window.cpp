@@ -60,13 +60,13 @@ namespace stormkit::wsi {
     }
 
     auto parseArgs(std::span<const std::string_view> args) noexcept -> void {
-        auto hint =
-            std::ranges::find_if(args, [](auto&& v) { return v == "--x11" or v == "--wayland"; });
+        auto hint
+            = std::ranges::find_if(args, [](auto&& v) { return v == "--x11" or v == "--wayland"; });
 
         if (hint != std::ranges::cend(args)) {
             if (*hint == "--x11") wm_hint = WM::X11;
             else if (*hint == "--wayland")
-                wm_hint = WM::X11;
+                wm_hint = WM::Wayland;
         }
     }
 
@@ -77,7 +77,7 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Window::Window(std::string title, const core::math::ExtentU& size, WindowStyle style) noexcept
+    Window::Window(std::string title, const math::ExtentU& size, WindowStyle style) noexcept
         : m_impl { wm() } {
         create(std::move(title), size, style);
     }
@@ -96,9 +96,8 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::create(std::string                title,
-                        const core::math::ExtentU& size,
-                        WindowStyle                style) noexcept -> void {
+    auto Window::create(std::string title, const math::ExtentU& size, WindowStyle style) noexcept
+        -> void {
         m_impl->create(std::move(title), size, style);
     }
 
@@ -128,7 +127,7 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::setExtent(const core::math::ExtentU& extent) noexcept -> void {
+    auto Window::setExtent(const math::ExtentU& extent) noexcept -> void {
         m_impl->setExtent(extent);
     }
 
@@ -158,7 +157,11 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::extent() const noexcept -> const core::math::ExtentU& {
+#ifdef STORMKIT_OS_MACOS
+    auto Window::extent() const noexcept -> math::ExtentU {
+#else
+    auto Window::extent() const noexcept -> const math::ExtentU& {
+#endif
         return m_impl->extent();
     }
 
@@ -188,19 +191,19 @@ namespace stormkit::wsi {
 #elif defined(STORMKIT_OS_MACOS)
         return WM::macOS;
 #elif defined(STORMKIT_OS_IOS)
-        return WM::iOS;
+    return WM::iOS;
 #elif defined(STORMKIT_OS_ANDROID)
-        return WM::Android;
+    return WM::Android;
 #elif defined(STORMKIT_OS_SWITCH)
-        return WM::Switch;
+    return WM::Switch;
 #elif defined(STORMKIT_OS_LINUX)
-        auto is_wayland = std::getenv("WAYLAND_DISPLAY") != nullptr;
+    auto is_wayland = std::getenv("WAYLAND_DISPLAY") != nullptr;
 
-        if (wm_hint) return wm_hint.value();
-        else if (is_wayland)
-            return WM::Wayland;
-        else
-            return WM::X11;
+    if (wm_hint) return wm_hint.value();
+    else if (is_wayland)
+        return WM::Wayland;
+    else
+        return WM::X11;
 #endif
     }
 
@@ -242,13 +245,13 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::setMousePosition(const core::math::Vector2I& position) noexcept -> void {
+    auto Window::setMousePosition(const math::Vector2I& position) noexcept -> void {
         m_impl->setMousePosition(position);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::setMousePositionOnDesktop(const core::math::Vector2U& position) noexcept -> void {
+    auto Window::setMousePositionOnDesktop(const math::Vector2U& position) noexcept -> void {
         WindowImpl::setMousePositionOnDesktop(wm(), position);
     }
 
@@ -264,10 +267,10 @@ namespace stormkit::wsi {
         const auto settings = getMonitorSettings();
 
         const auto it = std::ranges::find_if(settings, [](const auto& monitor) {
-            return core::checkFlag(monitor.flags, Monitor::Flags::Primary);
+            return checkFlag(monitor.flags, Monitor::Flags::Primary);
         });
 
-        core::ensures(it != std::ranges::cend(settings));
+        ensures(it != std::ranges::cend(settings));
 
         return *it;
     }

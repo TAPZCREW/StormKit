@@ -13,10 +13,22 @@ import std;
 import :Meta.Traits;
 import :Utils.Assert;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     template<typename T>
-    class DeferInit {
+    using DeferInitDefaultStorage = std::array<std::byte, sizeof(T)>;
+
+    template<typename T, typename Storage = DeferInitDefaultStorage<T>>
+    class [[nodiscard]] DeferInit {
       public:
+        using ElementType   = T;
+        using PointerType   = ElementType*;
+        using ReferenceType = ElementType&;
+
+        // STL compatible
+        using element_type   = ElementType;
+        using pointer_type   = PointerType;
+        using reference_type = ReferenceType;
+
         constexpr DeferInit();
         constexpr ~DeferInit();
 
@@ -25,8 +37,9 @@ export namespace stormkit::core {
 
         constexpr DeferInit(DeferInit&& other) noexcept(
             noexcept(std::is_nothrow_move_constructible_v<T>));
-        constexpr auto operator=(DeferInit&& other) noexcept(
-            noexcept(std::is_nothrow_move_assignable_v<T>)) -> DeferInit&;
+        constexpr auto
+            operator=(DeferInit&& other) noexcept(noexcept(std::is_nothrow_move_assignable_v<T>))
+                -> DeferInit&;
 
         template<typename... Args>
         constexpr auto construct(Args&&... args) noexcept(
@@ -36,173 +49,174 @@ export namespace stormkit::core {
         constexpr auto constructWithNarrowing(Args&&... args) noexcept(
             noexcept(std::is_nothrow_constructible_v<T, Args...>)) -> void;
 
-        constexpr auto operator=(T&& value) noexcept(
-            noexcept(std::is_nothrow_move_constructible_v<T>)) -> void;
+        constexpr auto
+            operator=(T&& value) noexcept(noexcept(std::is_nothrow_move_constructible_v<T>))
+                -> void;
 
-        [[nodiscard]] constexpr auto get(this auto&& self) noexcept -> decltype(auto);
-        [[nodiscard]] constexpr auto operator->(this auto&& self) noexcept -> decltype(auto);
-        [[nodiscard]] constexpr auto operator*(this auto&& self) noexcept -> decltype(auto);
+        constexpr auto get(this auto&& self) noexcept -> decltype(auto);
+        constexpr auto operator->(this auto& self) noexcept -> decltype(auto);
+        constexpr auto operator*(this auto&& self) noexcept -> decltype(auto);
 
-        [[nodiscard]] constexpr operator T&() noexcept;
-        [[nodiscard]] constexpr operator const T &() const noexcept;
+        constexpr operator T&() noexcept;
+        constexpr operator const T &() const noexcept;
 
-        [[nodiscard]] constexpr auto initialized() const noexcept -> bool;
+        constexpr explicit operator bool() const noexcept;
+        constexpr auto     initialized() const noexcept -> bool;
 
       private:
         constexpr auto reset() noexcept -> void;
 
-        bool m_initialized = false;
-
-        alignas(T) std::array<std::byte, sizeof(T)> m_data;
+        alignas(T) Storage m_data;
+        PointerType m_pointer = nullptr;
     };
-} // namespace stormkit::core
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE constexpr DeferInit<T>::DeferInit() = default;
+    template<typename T, typename Storage>
+    STORMKIT_FORCE_INLINE constexpr DeferInit<T, Storage>::DeferInit() = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE constexpr DeferInit<T>::~DeferInit() {
+    template<typename T, typename Storage>
+    STORMKIT_FORCE_INLINE constexpr DeferInit<T, Storage>::~DeferInit() {
         reset();
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE constexpr DeferInit<T>::DeferInit(DeferInit&& other) noexcept(
+    template<typename T, typename Storage>
+    STORMKIT_FORCE_INLINE constexpr DeferInit<T, Storage>::DeferInit(DeferInit&& other) noexcept(
         noexcept(std::is_nothrow_move_constructible_v<T>)) {
         reset();
 
-        if (other.m_initialized) [[likely]]
-            new (std::data(m_data)) T { std::move(other.get()) };
+        if (other.initialized()) [[likely]] {
+            m_pointer = new (std::data(m_data)) T { std::move(other.get()) };
 
-        m_initialized = std::exchange(other.m_initialized, false);
+            other.reset();
+        }
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE constexpr auto DeferInit<T>::operator=(DeferInit&& other) noexcept(
-        noexcept(std::is_nothrow_move_assignable_v<T>)) -> DeferInit& {
+    template<typename T, typename Storage>
+    STORMKIT_FORCE_INLINE constexpr auto DeferInit<T, Storage>::operator=(
+        DeferInit&& other) noexcept(noexcept(std::is_nothrow_move_assignable_v<T>)) -> DeferInit& {
         if (&other == this) [[unlikely]]
             return *this;
 
         reset();
 
-        if (other.m_initialized) [[likely]]
-            new (std::data(m_data)) T { std::move(other.get()) };
+        if (other.initialized()) [[likely]] {
+            m_pointer = new (std::data(m_data)) T { std::move(other.get()) };
 
-        m_initialized = std::exchange(other.m_initialized, false);
+            other.reset();
+        }
 
         return *this;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<typename T>
+    template<typename T, typename Storage>
     template<typename... Args>
-    STORMKIT_FORCE_INLINE constexpr auto DeferInit<T>::construct(Args&&... args) noexcept(
+    STORMKIT_FORCE_INLINE constexpr auto DeferInit<T, Storage>::construct(Args&&... args) noexcept(
         noexcept(std::is_nothrow_constructible_v<T, Args...>)) -> void {
         reset();
 
-        new (std::data(m_data)) T { std::forward<Args>(args)... };
-
-        m_initialized = true;
+        m_pointer = new (std::data(m_data)) T { std::forward<Args>(args)... };
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<typename T>
+    template<typename T, typename Storage>
     template<typename... Args>
-    STORMKIT_FORCE_INLINE constexpr auto DeferInit<T>::constructWithNarrowing(
+    STORMKIT_FORCE_INLINE constexpr auto DeferInit<T, Storage>::constructWithNarrowing(
         Args&&... args) noexcept(noexcept(std::is_nothrow_constructible_v<T, Args...>)) -> void {
         reset();
 
-        new (std::data(m_data)) T(std::forward<Args>(args)...);
-
-        m_initialized = true;
+        m_pointer = new (std::data(m_data)) T(std::forward<Args>(args)...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE constexpr auto DeferInit<T>::operator=(T&& value) noexcept(
+    template<typename T, typename Storage>
+    STORMKIT_FORCE_INLINE constexpr auto DeferInit<T, Storage>::operator=(T&& value) noexcept(
         noexcept(std::is_nothrow_move_constructible_v<T>)) -> void {
         reset();
 
-        new (std::data(m_data)) T { std::move(value) };
-
-        m_initialized = true;
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE constexpr auto DeferInit<T>::initialized() const noexcept -> bool {
-        return m_initialized;
+        m_pointer = new (std::data(m_data)) T { std::move(value) };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE constexpr auto DeferInit<T>::reset() noexcept -> void {
-        if (m_initialized) [[likely]]
+    template<typename T, typename Storage>
+    STORMKIT_FORCE_INLINE constexpr DeferInit<T, Storage>::operator bool() const noexcept {
+        return initialized();
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T, typename Storage>
+    STORMKIT_FORCE_INLINE constexpr auto DeferInit<T, Storage>::initialized() const noexcept
+        -> bool {
+        return m_pointer != nullptr;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, typename Storage>
+    STORMKIT_FORCE_INLINE constexpr auto DeferInit<T, Storage>::reset() noexcept -> void {
+        if (m_pointer) [[likely]] {
             get().~T();
-
-        m_initialized = false;
+            m_pointer = nullptr;
+        }
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T>
-    [[nodiscard]] STORMKIT_FORCE_INLINE constexpr auto
-        DeferInit<T>::get(this auto&& self) noexcept -> decltype(auto) {
-        core::expects(self.m_initialized, "Underlying object is not initialized");
+    template<typename T, typename Storage>
+    STORMKIT_FORCE_INLINE constexpr auto DeferInit<T, Storage>::get(this auto&& self) noexcept
+        -> decltype(auto) {
+        core::expects(self.initialized(), "Underlying object is not initialized");
 
-        using U = LikeCVType<decltype(self), T>;
-
-        return *std::launder(std::bit_cast<U*>(std::data(self.m_data)));
+        return std::forward_like<decltype(self)>(*self.m_pointer);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE constexpr auto
-        DeferInit<T>::operator->(this auto&& self) noexcept -> decltype(auto) {
-        core::expects(self.m_initialized, "Underlying object is not initialized");
+    template<typename T, typename Storage>
+    STORMKIT_FORCE_INLINE constexpr auto DeferInit<T, Storage>::operator->(this auto& self) noexcept
+        -> decltype(auto) {
+        core::expects(self.initialized(), "Underlying object is not initialized");
 
-        using U = LikeCVType<decltype(self), T>;
-
-        return std::launder(std::bit_cast<U*>(std::data(self.m_data)));
+        return std::forward_like<decltype(self)>(self.m_pointer);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE constexpr auto
-        DeferInit<T>::operator*(this auto&& self) noexcept -> decltype(auto) {
-        return std::forward<decltype(self)>(self).get();
+    template<typename T, typename Storage>
+    STORMKIT_FORCE_INLINE constexpr auto DeferInit<T, Storage>::operator*(this auto&& self) noexcept
+        -> decltype(auto) {
+        return std::forward_like<decltype(self)>(self.get());
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE constexpr DeferInit<T>::operator T&() noexcept {
+    template<typename T, typename Storage>
+    STORMKIT_FORCE_INLINE constexpr DeferInit<T, Storage>::operator T&() noexcept {
         return get();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE constexpr DeferInit<T>::operator const T &() const noexcept {
+    template<typename T, typename Storage>
+    STORMKIT_FORCE_INLINE constexpr DeferInit<T, Storage>::operator const T &() const noexcept {
         return get();
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core

@@ -58,7 +58,7 @@ export {
             std::vector<stormkit::gpu::ImageView>   image_views;
             std::unique_ptr<stormkit::gpu::Sampler> sampler;
 
-            stormkit::core::UInt32 current_image = 0;
+            stormkit::UInt32 current_image = 0;
 
             std::unique_ptr<stormkit::gpu::Shader> vertex_shader;
             std::unique_ptr<stormkit::gpu::Shader> fragment_shader;

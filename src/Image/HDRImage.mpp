@@ -10,7 +10,7 @@ import stormkit.Core;
 import stormkit.Image;
 
 export namespace stormkit::image::details {
-    [[nodiscard]] auto loadHDR(std::span<const core::Byte> data) noexcept
+    [[nodiscard]] auto loadHDR(std::span<const Byte> data) noexcept
         -> std::expected<image::Image, image::Image::Error>;
 
     [[nodiscard]] auto saveHDR(const image::Image&          image,
@@ -18,7 +18,7 @@ export namespace stormkit::image::details {
         -> std::expected<void, image::Image::Error>;
 
     [[nodiscard]] auto saveHDR(const image::Image& image) noexcept
-        -> std::expected<std::vector<core::Byte>, image::Image::Error>;
+        -> std::expected<std::vector<Byte>, image::Image::Error>;
 } // namespace stormkit::image::details
 
 namespace stormkit::image::details {
@@ -29,7 +29,7 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto loadHDR([[maybe_unused]] std::span<const core::Byte> data) noexcept
+    auto loadHDR([[maybe_unused]] std::span<const Byte> data) noexcept
         -> std::expected<image::Image, image::Image::Error> {
         return std::unexpected(
             Error { .reason = Reason::Not_Implemented, .str_error = "loader from file" });
@@ -44,7 +44,7 @@ namespace stormkit::image::details {
         if (!result) return std::unexpected(result.error());
 
         auto stream = std::ofstream { filepath, std::ios::binary };
-        core::write(stream, *result);
+        write(stream, *result);
 
         return {};
     }
@@ -52,7 +52,7 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     /////////////////////////////////////
     auto saveHDR([[maybe_unused]] const image::Image& image) noexcept
-        -> std::expected<std::vector<core::Byte>, image::Image::Error> {
+        -> std::expected<std::vector<Byte>, image::Image::Error> {
         return std::unexpected(
             Error { .reason = Reason::Not_Implemented, .str_error = "save to file" });
     }

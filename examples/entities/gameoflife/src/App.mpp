@@ -26,19 +26,19 @@ export {
 
     class UpdateBoardSystem;
 
-    class App: public stormkit::core::App {
+    class App: public stormkit::App {
       public:
         App();
         ~App() override;
 
-        auto run(const int argc, const char** argv) -> stormkit::core::Int32 override;
+        auto run(const int argc, const char** argv) -> stormkit::Int32 override;
 
       private:
         auto doInitWindow() -> void;
 
         auto handleKeyboard(const stormkit::wsi::KeyReleasedEventData& event) -> void;
         auto handleMouse(const stormkit::wsi::MouseButtonPushedEventData& event) -> void;
-        auto createCell(stormkit::core::UInt32 x, stormkit::core::UInt32 y) -> void;
+        auto createCell(stormkit::UInt32 x, stormkit::UInt32 y) -> void;
 
         std::unique_ptr<stormkit::wsi::Window> m_window;
 

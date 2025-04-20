@@ -10,45 +10,28 @@ import stormkit.Core;
 import stormkit.Gpu;
 
 import :Renderer.FrameGraph;
+import :Renderer.RenderSurface;
 
 namespace stormkit::engine {
     /////////////////////////////////////
     /////////////////////////////////////
-    BakedFrameGraph::BakedFrameGraph(const FrameGraphBuilder&          builder,
+    BakedFrameGraph::BakedFrameGraph(const gpu::Image&                 backbuffer,
                                      Data&&                            data,
                                      [[maybe_unused]] BakedFrameGraph* old)
-        : m_builder { &builder }, m_data { std::move(data) } {
+        : m_backbuffer { borrow(backbuffer) }, m_data { std::move(data) } {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto BakedFrameGraph::execute(Frame& frame) -> void {
-        core::expects(m_backbuffer);
+    auto BakedFrameGraph::execute(const gpu::Queue& queue) noexcept
+        -> gpu::Expected<Ref<const gpu::Semaphore>> {
+        return m_data.fence->wait().transform([&](auto&&) noexcept {
+            m_data.fence->reset();
 
-        // {
-        //     auto signal = core::makeConstObserverStaticArray(m_semaphore);
-        //
-        //     m_main_cmb->submit({}, signal);
-        // }
-        //
-        // {
-        //     auto wait   = core::makeConstObserverStaticArray(m_semaphore, frame.image_available);
-        //     auto signal = core::makeConstObserverStaticArray(frame.render_finished);
-        //
-        //     m_blit_cmb->submit(wait, signal, frame.in_flight);
-        // }
-    }
+            auto signal = borrows<std::array>(std::as_const(m_data.semaphore));
+            m_data.cmb->submit(queue, {}, {}, signal, borrow(m_data.fence));
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto BakedFrameGraph::setBackbuffer(gpu::ImageView& backbuffer) -> void {
-        // if (&backbuffer != m_backbuffer) {
-        //     m_backbuffer = &backbuffer;
-        //
-        //     m_blit_cmb->reset();
-        //     m_blit_cmb->begin();
-        //     // m_blit_cmb->blitImage( , backbuffer);
-        //     m_blit_cmb->end();
-        // }
+            return borrow(std::as_const(*m_data.semaphore));
+        });
     }
 } // namespace stormkit::engine

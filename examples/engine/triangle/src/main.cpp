@@ -9,7 +9,7 @@ import stormkit.Main;
 import stormkit.Log;
 import stormkit.Wsi;
 
-import App;
+import TriangleApp;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 #include <stormkit/Main/MainMacro.hpp>
@@ -20,25 +20,23 @@ auto main(std::span<const std::string_view> args) -> int {
     using namespace stormkit;
 
     wsi::parseArgs(args);
-    // core::setupSignalHandler();
 
     auto logger = log::Logger::createLoggerInstance<log::ConsoleLogger>();
     logger.ilog("Using StormKit {}.{}.{}\n    branch: {}\n    commit_hash: {}\n    built with {}",
-                core::STORMKIT_MAJOR_VERSION,
-                core::STORMKIT_MINOR_VERSION,
-                core::STORMKIT_PATCH_VERSION,
-                core::STORMKIT_GIT_BRANCH,
-                core::STORMKIT_GIT_COMMIT_HASH,
+                STORMKIT_MAJOR_VERSION,
+                STORMKIT_MINOR_VERSION,
+                STORMKIT_PATCH_VERSION,
+                STORMKIT_GIT_BRANCH,
+                STORMKIT_GIT_COMMIT_HASH,
                 STORMKIT_COMPILER);
 
     try {
-        auto app = App {};
+        auto app = TriangleApp {};
         return app.run(args);
     } catch (const std::exception& e) {
         logger.flog("{}", e.what());
-        return -1;
     } catch (...) {
         logger.flog("Uncaught exception occured !");
-        return -1;
     }
+    return -1;
 }

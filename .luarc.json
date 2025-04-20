@@ -1,0 +1,9 @@
+{
+  "workspace.userThirdParty": ["luals"],
+  "workspace.library": [
+      "luals/xmake-luals-addon/library"
+  ],
+  "runtime.builtin":{
+      "os": "disable"
+  }
+}

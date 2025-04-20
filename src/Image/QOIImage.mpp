@@ -12,7 +12,7 @@ import stormkit.Core;
 import stormkit.Image;
 
 export namespace stormkit::image::details {
-    [[nodiscard]] auto loadQOI(std::span<const core::Byte> data) noexcept
+    [[nodiscard]] auto loadQOI(std::span<const Byte> data) noexcept
         -> std::expected<image::Image, image::Image::Error>;
 
     [[nodiscard]] auto saveQOI(const image::Image&          image,
@@ -20,7 +20,7 @@ export namespace stormkit::image::details {
         -> std::expected<void, image::Image::Error>;
 
     [[nodiscard]] auto saveQOI(const image::Image& image) noexcept
-        -> std::expected<std::vector<core::Byte>, image::Image::Error>;
+        -> std::expected<std::vector<Byte>, image::Image::Error>;
 } // namespace stormkit::image::details
 
 using namespace std::literals;
@@ -32,31 +32,31 @@ namespace stormkit::image::details {
     using Reason     = image::Image::Error::Reason;
 
     struct QOIHeader {
-        std::array<core::Byte, 4> magic;
-        core::UInt32              width;
-        core::UInt32              height;
-        core::UInt8               channels;
-        core::UInt8               colorspace;
+        std::array<Byte, 4> magic;
+        UInt32              width;
+        UInt32              height;
+        UInt8               channels;
+        UInt8               colorspace;
     };
 
     namespace {
         constexpr auto SIZE_OF_HEADER = 14;
 
-        constexpr auto CHANNELS_TO_FORMAT =
-            frozen::make_unordered_map<core::Int32, std::array<image::Image::Format, 2>>(
-                { { 3,
-                    std::array { image::Image::Format::sRGB8, image::Image::Format::RGB8_UNorm } },
-                  { 4,
-                    std::array { image::Image::Format::sRGBA8,
-                                 image::Image::Format::RGBA8_UNorm } } });
+        constexpr auto CHANNELS_TO_FORMAT
+            = frozen::make_unordered_map<Int32, std::array<image::Image::Format, 2>>({
+                { 3, std::array { image::Image::Format::sRGB8, image::Image::Format::RGB8_UNorm } },
+                { 4,
+                 std::array { image::Image::Format::sRGBA8,
+                               image::Image::Format::RGBA8_UNorm }                                }
+        });
 
-        constexpr auto END_OF_FILE =
-            core::makeStaticByteArray(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01);
+        constexpr auto END_OF_FILE
+            = makeStaticByteArray(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01);
 
         constexpr auto PIXEL_CACHE_SIZE = 64u;
     } // namespace
 
-    enum class QOI_OPERATION : core::UInt8 {
+    enum class QOI_OPERATION : UInt8 {
         RGB   = 0b11111110,
         RGBA  = 0b11111111,
         INDEX = 0b00000000,
@@ -67,43 +67,42 @@ namespace stormkit::image::details {
 
     union Pixel {
         struct {
-            core::UInt8 r = 0;
-            core::UInt8 g = 0;
-            core::UInt8 b = 0;
-            core::UInt8 a = 0;
+            UInt8 r = 0;
+            UInt8 g = 0;
+            UInt8 b = 0;
+            UInt8 a = 0;
         } rgba;
 
-        std::array<core::UInt8, 4> data;
+        std::array<UInt8, 4> data;
     };
 
     /////////////////////////////////////
     /////////////////////////////////////
     constexpr auto indexHash(const Pixel& pixel) noexcept {
-        return (pixel.rgba.r * 3u + pixel.rgba.g * 5u + pixel.rgba.b * 7u + pixel.rgba.a * 11u) %
-               PIXEL_CACHE_SIZE;
+        return (pixel.rgba.r * 3u + pixel.rgba.g * 5u + pixel.rgba.b * 7u + pixel.rgba.a * 11u)
+               % PIXEL_CACHE_SIZE;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto loadQOI([[maybe_unused]] std::span<const core::Byte> data) noexcept
+    auto loadQOI([[maybe_unused]] std::span<const Byte> data) noexcept
         -> std::expected<image::Image, image::Image::Error> {
-        const auto  raw_header = std::span<const core::Byte> { std::data(data), SIZE_OF_HEADER };
+        const auto  raw_header = std::span<const Byte> { std::data(data), SIZE_OF_HEADER };
         const auto* header     = std::bit_cast<const QOIHeader*>(std::data(raw_header));
 
-        const auto extent =
-            core::math::ExtentU { core::byteSwap(header->width), core::byteSwap(header->height) };
+        const auto extent   = math::ExtentU { byteSwap(header->width), byteSwap(header->height) };
         const auto channels = header->channels;
         const auto format   = CHANNELS_TO_FORMAT.at(header->channels)[header->colorspace];
 
         auto pixel_cache = std::array<Pixel, PIXEL_CACHE_SIZE> {};
 
-        const auto chunks =
-            std::span { std::bit_cast<const core::UInt8*>(std::data(data)) + SIZE_OF_HEADER,
-                        std::size(data) - SIZE_OF_HEADER };
+        const auto chunks
+            = std::span { std::bit_cast<const UInt8*>(std::data(data)) + SIZE_OF_HEADER,
+                          std::size(data) - SIZE_OF_HEADER };
 
         const auto output_size = extent.width * extent.height * channels;
 
-        auto output = std::vector<core::Byte> {};
+        auto output = std::vector<Byte> {};
         output.reserve(output_size);
 
         auto previous_pixel = Pixel { .rgba = { .a = 255 } };
@@ -114,11 +113,10 @@ namespace stormkit::image::details {
         auto       it   = std::ranges::begin(chunks);
 
         const auto chunks_size = output_size - std::size(END_OF_FILE);
-        for ([[maybe_unused]] auto _ : core::range(output_size, channels)) {
+        for ([[maybe_unused]] auto _ : range(output_size, channels)) {
             const auto tag = *it;
 
-            const auto position =
-                core::as<core::RangeExtent>(std::distance(std::ranges::begin(chunks), it));
+            const auto position = as<RangeExtent>(std::distance(std::ranges::begin(chunks), it));
 
             if (run > 0) --run;
             else if (std::memcmp(&*it, std::data(END_OF_FILE), std::size(END_OF_FILE)) == 0)
@@ -140,15 +138,15 @@ namespace stormkit::image::details {
 
                     it += 4;
                 } else {
-#define CHECK(op) (tag & 0b11000000) == static_cast<core::UInt8>(op)
+#define CHECK(op) (tag & 0b11000000) == static_cast<UInt8>(op)
                     if (CHECK(QOI_OPERATION::INDEX)) {
                         const auto index = tag;
 
                         previous_pixel = pixel_cache[index];
                     } else if (CHECK(QOI_OPERATION::DIFF)) {
-                        const auto r_diff = core::as<core::UInt8>(((tag >> 4) & 0x03) - 2);
-                        const auto g_diff = core::as<core::UInt8>(((tag >> 2) & 0x03) - 2);
-                        const auto b_diff = core::as<core::UInt8>((tag & 0x03) - 2);
+                        const auto r_diff = as<UInt8>(((tag >> 4) & 0x03) - 2);
+                        const auto g_diff = as<UInt8>(((tag >> 2) & 0x03) - 2);
+                        const auto b_diff = as<UInt8>((tag & 0x03) - 2);
 
                         previous_pixel.rgba.r += r_diff;
                         previous_pixel.rgba.g += g_diff;
@@ -160,9 +158,9 @@ namespace stormkit::image::details {
                         const auto current_r = ((*it) >> 4) & 0x0f;
                         const auto current_b = (*it) & 0x0f;
 
-                        previous_pixel.rgba.r += core::as<core::UInt8>(g_diff - 8 + current_r);
-                        previous_pixel.rgba.g += core::as<core::UInt8>(g_diff);
-                        previous_pixel.rgba.b += core::as<core::UInt8>(g_diff - 8 + current_b);
+                        previous_pixel.rgba.r += as<UInt8>(g_diff - 8 + current_r);
+                        previous_pixel.rgba.g += as<UInt8>(g_diff);
+                        previous_pixel.rgba.b += as<UInt8>(g_diff - 8 + current_b);
 
                         ++it;
                     } else if (CHECK(QOI_OPERATION::RUN)) {
@@ -178,8 +176,7 @@ namespace stormkit::image::details {
             std::ranges::transform(std::begin(previous_pixel.data),
                                    std::end(previous_pixel.data) - diff,
                                    std::back_inserter(output),
-                                   [](auto&& val) { return core::as<core::Byte>(val); });
-            // core::monadic::as<core::Byte>());
+                                   monadic::as<Byte>());
         }
 
         auto image_data = image::Image::ImageData { .extent            = extent,
@@ -205,7 +202,7 @@ namespace stormkit::image::details {
         if (!result) return std::unexpected(result.error());
 
         auto stream = std::ofstream { filepath, std::ios::binary };
-        core::write(stream, *result);
+        write(stream, *result);
 
         return {};
     }
@@ -213,7 +210,7 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     /////////////////////////////////////
     [[nodiscard]] auto saveQOI([[maybe_unused]] const image::Image& image) noexcept
-        -> std::expected<std::vector<core::Byte>, image::Image::Error> {
+        -> std::expected<std::vector<Byte>, image::Image::Error> {
         return std::unexpected(
             Error { .reason = Reason::Not_Implemented, .str_error = "save to file" });
     }

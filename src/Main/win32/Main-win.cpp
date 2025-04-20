@@ -31,12 +31,13 @@ auto __stdcall main(int argc, char** argv) -> int {
                        // byte at a time (screwing up utf-8 encoding)
     setvbuf(stdout, nullptr, _IOFBF, BUF_SIZE);
 
-    stormkit::core::backtraceInit(argv[0]);
+    stormkit::setupSignalHandler();
+    stormkit::setCurrentThreadName("MainThread");
 
     auto args = std::vector<std::string_view> {};
     args.reserve(argc);
 
-    for (auto&& i : stormkit::core::range(argc)) args.emplace_back(argv[i]);
+    for (auto&& i : stormkit::range(argc)) args.emplace_back(argv[i]);
 
     return userMain(args);
 }
@@ -55,12 +56,13 @@ auto __stdcall WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) -> int {
                        // byte at a time (screwing up utf-8 encoding)
     setvbuf(stdout, nullptr, _IOFBF, BUF_SIZE);
 
-    stormkit::core::backtraceInit(argv[0]);
+    stormkit::setupSignalHandler();
+    stormkit::setCurrentThreadName("MainThread");
 
     auto args = std::vector<std::string_view> {};
     args.reserve(argc);
 
-    for (auto&& i : stormkit::core::range(argc)) args.emplace_back(argv[i]);
+    for (auto&& i : stormkit::range(argc)) args.emplace_back(argv[i]);
 
     return userMain(args);
 }

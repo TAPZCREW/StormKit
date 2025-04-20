@@ -21,7 +21,7 @@ export namespace stormkit::wsi::linux {
     class WindowImpl: public ::stormkit::wsi::common::WindowImplBase {
       public:
         explicit WindowImpl(WM wm);
-        WindowImpl(WM wm, std::string title, const core::math::ExtentU& size, WindowStyle style);
+        WindowImpl(WM wm, std::string title, const math::ExtentU& size, WindowStyle style);
         ~WindowImpl();
 
         WindowImpl(const WindowImpl&) noexcept                    = delete;
@@ -30,14 +30,14 @@ export namespace stormkit::wsi::linux {
         WindowImpl(WindowImpl&&) noexcept;
         auto operator=(WindowImpl&&) noexcept -> WindowImpl&;
 
-        auto create(std::string title, const core::math::ExtentU& size, WindowStyle style) -> void;
+        auto create(std::string title, const math::ExtentU& size, WindowStyle style) -> void;
         auto close() noexcept -> void;
 
         [[nodiscard]] auto pollEvent(Event& event) noexcept -> bool;
         [[nodiscard]] auto waitEvent(Event& event) noexcept -> bool;
 
         auto setTitle(std::string title) noexcept -> void;
-        auto setExtent(const core::math::ExtentU& size) noexcept -> void;
+        auto setExtent(const math::ExtentU& size) noexcept -> void;
         auto setFullscreenEnabled(bool enabled) noexcept -> void;
 
         auto lockMouse() noexcept -> void;
@@ -46,7 +46,7 @@ export namespace stormkit::wsi::linux {
         auto hideMouse() noexcept -> void;
         auto unhideMouse() noexcept -> void;
 
-        [[nodiscard]] auto extent() const noexcept -> const core::math::ExtentU&;
+        [[nodiscard]] auto extent() const noexcept -> const math::ExtentU&;
         [[nodiscard]] auto title() const noexcept -> const std::string&;
 
         [[nodiscard]] auto isOpen() const noexcept -> bool;
@@ -63,8 +63,8 @@ export namespace stormkit::wsi::linux {
 
         auto setVirtualKeyboardVisible(bool visible) noexcept -> void;
 
-        auto        setMousePosition(const core::math::Vector2I& position) noexcept -> void;
-        static auto setMousePositionOnDesktop(WM wm, const core::math::Vector2U& position) noexcept
+        auto        setMousePosition(const math::Vector2I& position) noexcept -> void;
+        static auto setMousePositionOnDesktop(WM wm, const math::Vector2U& position) noexcept
             -> void;
 
         [[nodiscard]] static auto getMonitorSettings(WM wm) -> std::vector<Monitor>;
@@ -76,7 +76,7 @@ export namespace stormkit::wsi::linux {
 
         WM m_wm;
 
-        core::DeferInit<BackendWindowImpl> m_impl;
+        DeferInit<BackendWindowImpl> m_impl;
     };
 } // namespace stormkit::wsi::linux
 
@@ -85,9 +85,9 @@ export namespace stormkit::wsi::linux {
 ////////////////////////////////////////////////////////////////////
 
 #define CASE_DO(case_, namespace_, work) \
-    case case_: core::as<namespace_::WindowImpl>(m_impl.get()).work; break
+    case case_: as<namespace_::WindowImpl>(m_impl.get()).work; break
 #define CASE_DO_RETURN(case_, namespace_, work) \
-    case case_: return core::as<namespace_::WindowImpl>(m_impl.get()).work
+    case case_: return as<namespace_::WindowImpl>(m_impl.get()).work
 
 namespace stormkit::wsi::linux {
     /////////////////////////////////////
@@ -104,10 +104,10 @@ namespace stormkit::wsi::linux {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE WindowImpl::WindowImpl(WM                         wm,
-                                           std::string                title,
-                                           const core::math::ExtentU& extent,
-                                           WindowStyle                style)
+    STORMKIT_INLINE WindowImpl::WindowImpl(WM                   wm,
+                                           std::string          title,
+                                           const math::ExtentU& extent,
+                                           WindowStyle          style)
         : m_wm { wm } {
         if (m_wm == WM::X11) m_impl = x11::WindowImpl { std::move(title), extent, style };
         else if (m_wm == WM::Wayland)
@@ -124,9 +124,9 @@ namespace stormkit::wsi::linux {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto WindowImpl::create(std::string                title,
-                                            const core::math::ExtentU& extent,
-                                            WindowStyle                style) -> void {
+    STORMKIT_INLINE auto WindowImpl::create(std::string          title,
+                                            const math::ExtentU& extent,
+                                            WindowStyle          style) -> void {
         switch (m_wm) {
             CASE_DO(WM::X11, x11, create(std::move(title), extent, style));
             CASE_DO(WM::Wayland, wayland, create(std::move(title), extent, style));
@@ -185,7 +185,7 @@ namespace stormkit::wsi::linux {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto WindowImpl::setExtent(const core::math::ExtentU& extent) noexcept -> void {
+    STORMKIT_INLINE auto WindowImpl::setExtent(const math::ExtentU& extent) noexcept -> void {
         switch (m_wm) {
             CASE_DO(WM::X11, x11, setExtent(extent));
             CASE_DO(WM::Wayland, wayland, setExtent(extent));
@@ -251,8 +251,7 @@ namespace stormkit::wsi::linux {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto WindowImpl::extent() const noexcept
-        -> const stormkit::core::math::ExtentU& {
+    STORMKIT_INLINE auto WindowImpl::extent() const noexcept -> const stormkit::math::ExtentU& {
         switch (m_wm) {
             CASE_DO_RETURN(WM::X11, x11, extent());
             CASE_DO_RETURN(WM::Wayland, wayland, extent());
@@ -260,7 +259,7 @@ namespace stormkit::wsi::linux {
             default: break;
         }
 
-        constinit static const auto empty = core::math::ExtentU {};
+        constinit static const auto empty = math::ExtentU {};
         return empty;
     }
 
@@ -393,7 +392,7 @@ namespace stormkit::wsi::linux {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto WindowImpl::setMousePosition(const core::math::Vector2I& position) noexcept
+    STORMKIT_INLINE auto WindowImpl::setMousePosition(const math::Vector2I& position) noexcept
         -> void {
         switch (m_wm) {
             CASE_DO(WM::X11, x11, setMousePosition(position));
@@ -406,7 +405,7 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_INLINE auto
-        WindowImpl::setMousePositionOnDesktop(WM wm, const core::math::Vector2U& position) noexcept
+        WindowImpl::setMousePositionOnDesktop(WM wm, const math::Vector2U& position) noexcept
         -> void {
         switch (wm) {
             case WM::X11: x11::WindowImpl::setMousePositionOnDesktop(position); break;

@@ -6,182 +6,246 @@ export module stormkit.Core:Meta.Concepts;
 
 import std;
 
-namespace stormkit::core {
-    namespace details {
-        template<class T>
-        concept IsBooleanTestable = std::convertible_to<T, bool>;
-    } // namespace details
+namespace stormkit { inline namespace core { namespace meta::details {
+    template<class T>
+    concept IsBooleanTestable = std::convertible_to<T, bool>;
 
-    export {
-        template<class T>
-        concept IsHashable = requires(std::remove_cvref_t<T>& a) {
-            { std::hash<std::remove_cvref_t<T>> {}(a) } -> std::convertible_to<std::size_t>;
-        };
+    template<template<typename...> class T, typename... Args>
+    constexpr auto isSpecializationOfHelper(const T<Args...>&) noexcept -> std::true_type {
+        return {};
+    }
 
-        template<class T>
-        concept IsFancyPointer = requires(T&& a) {
-            a.operator->();
-            a.operator*();
-            a.get();
-        };
+    template<template<typename, auto...> class T, typename T2, auto... Args>
+    constexpr auto isSpecializationOfWithHelper(const T<T2, Args...>&) noexcept -> std::true_type {
+        return {};
+    }
+}}} // namespace stormkit::core::meta::details
 
-        template<class T, class U>
-        concept Is = std::same_as<T, U> or std::derived_from<T, U>;
+export namespace stormkit { inline namespace core { namespace meta {
+    template<class T>
+    concept IsHashable = requires(std::remove_cvref_t<T>& a) {
+        { std::hash<std::remove_cvref_t<T>> {}(a) } -> std::convertible_to<std::size_t>;
+    };
 
-        template<class T, class U>
-        concept IsPure = Is<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
+    template<class T, class U>
+    concept IsStrict = std::same_as<T, U>;
 
-        template<class T, class... U>
-        concept IsOneOf = (Is<T, U> or ...);
+    template<class T, class U>
+    concept Is = IsStrict<T, U> or std::derived_from<T, U> or std::derived_from<U, T>;
 
-        template<class T, class U>
-        concept IsNot = not Is<T, U>;
+    template<class T, class... U>
+    concept Are = (Is<T, U> and ...);
 
-        template<class T, class U>
-        concept IsNotPure = IsNot<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
+    template<class T, class... U>
+    concept IsOneOf = (Is<T, U> or ...);
 
-        template<class T>
-        concept IsByte = Is<T, std::byte>;
+    template<class T, class... U>
+    concept IsStrictOneOf = (IsStrict<T, U> or ...);
 
-        template<class T>
-        concept IsBytePure = IsPure<T, std::byte>;
+    template<class T, class U>
+    concept IsNot = not Is<T, U>;
 
-        template<class T>
-        concept IsNotByte = not IsByte<T>;
+    template<class T>
+    concept IsByte = IsStrict<T, std::byte>;
 
-        template<class T>
-        concept IsNotBytePure = not IsBytePure<T>;
+    template<class T>
+    concept IsNotByte = not IsByte<T>;
 
-        template<class T>
-        concept IsStringLike = std::convertible_to<T, std::string_view>;
+    template<class T>
+    concept IsStringLike = std::convertible_to<T, std::string_view>;
 
-        template<class T>
-        concept IsRawPointer = std::is_pointer_v<T>;
+    template<class T>
+    concept IsRawPointer = std::is_pointer_v<T>;
 
-        template<class T>
-        concept IsPointer = IsRawPointer<T> or IsFancyPointer<T>;
+    template<class T>
+        concept IsNonOwningPointer = IsRawPointer<T> or (requires {
+            typename T::element_type;
+        } and requires(T a) {
+            { a.operator->() } -> std::convertible_to<decltype(&*a)>;
+            { a.operator*() };
+            { static_cast<bool>(a) };
+        });
 
-        // clang-format off
+    template<class T>
+    concept IsOwningPointer = IsNonOwningPointer<T> and requires(T a) {
+        { a.reset() };
+    };
+
+    template<class T>
+    concept IsPointer = IsNonOwningPointer<T> or IsOwningPointer<T>;
+
+    // clang-format off
         template<class T>
         concept IsNotPointer = not IsPointer<T>;
-        // clang-format on
+    // clang-format on
 
-        template<class T>
-        concept IsLValueReference = std::is_lvalue_reference_v<T>;
+    template<class T>
+    concept IsLValueReference = std::is_lvalue_reference_v<T>;
 
-        template<class T>
-        concept IsRValueReference = std::is_rvalue_reference_v<T>;
+    template<class T>
+    concept IsRValueReference = std::is_rvalue_reference_v<T>;
 
-        template<class T>
-        concept IsReference = IsLValueReference<T> or IsRValueReference<T>;
+    template<class T>
+    concept IsReference = IsLValueReference<T> or IsRValueReference<T>;
 
-        // clang-format off
+    template<class T, class U>
+    concept IsReferenceTo = IsReference<T> and Is<std::remove_reference_t<T>, U>;
+
+    template<class T>
+    concept IsMovedOwningPointer = IsOwningPointer<T> and IsRValueReference<T>;
+
+    template<class T>
+    concept IsViewPointer
+        = (IsOwningPointer<std::remove_cvref_t<T>> and not IsMovedOwningPointer<T>)
+          or IsNonOwningPointer<std::remove_cvref_t<T>>;
+
+    // clang-format off
         template<class T>
         concept IsNotReference = not IsReference<T>;
-        // clang-format on
+    // clang-format on
 
-        template<class T>
-        concept IsIndirection = IsLValueReference<T> or IsPointer<T>;
+    template<class T>
+    concept IsIndirection = IsLValueReference<T> or IsPointer<T>;
 
-        template<class T>
-        concept IsRawIndirection = IsLValueReference<T> or IsRawPointer<T>;
+    template<class... T>
+    concept AreIndirections = ((IsLValueReference<T> or IsPointer<T>) && ...);
 
-        template<class T>
-        concept IsPolymorphic = std::is_polymorphic_v<T>;
+    template<class T>
+    concept IsPolymorphic = std::is_polymorphic_v<T>;
 
-        template<class T>
-        concept IsNotIndirection = not IsIndirection<T>;
+    template<class T>
+    concept IsPolymorphicPointer
+        = IsPointer<T> and IsPolymorphic<typename std::pointer_traits<T>::element_type>;
 
-        template<class T>
-        concept IsEnumeration = std::is_enum_v<T> and IsNotByte<T>;
+    template<class T>
+    concept IsPolymorphicReference = IsReference<T> and IsPolymorphic<std::remove_reference_t<T>>;
 
-        template<class T>
-        concept IsEnumerationPure = IsEnumeration<std::remove_cvref_t<T>>;
+    template<class T>
+    concept IsPolymorphicIndirection = IsPolymorphicReference<T> or IsPolymorphicPointer<T>;
 
-        template<typename T>
-        concept IsIntegral = std::integral<T>;
+    template<class T>
+    concept IsRawIndirection = IsLValueReference<T> or IsRawPointer<T>;
 
-        template<typename T>
-        concept IsIntegralPure = IsIntegral<std::remove_cvref_t<T>>;
+    template<class T>
+    concept IsNotRawIndirection = not IsRawIndirection<T>;
 
-        template<typename T>
-        concept IsFloatingPoint = std::floating_point<T>;
+    template<class T>
+    concept IsNotIndirection = not IsIndirection<T>;
 
-        template<typename T>
-        concept IsFloatingPointPure = IsFloatingPoint<std::remove_cvref_t<T>>;
+    template<class T>
+    concept IsEnumeration = std::is_enum_v<T> and IsNotByte<T>;
 
-        template<class T>
-        concept IsArithmetic =
-            (IsIntegral<T> or IsFloatingPoint<T>)and not IsPointer<T> and not IsEnumeration<T>;
+    template<typename T>
+    concept IsIntegral
+        = (std::integral<T> and not IsStrict<T, bool> and not IsByte<T>)
+          or Is<T, std::ranges::range_difference_t<std::ranges::iota_view<long long, long long>>>
+          or Is<T,
+                std::ranges::range_difference_t<
+                    std::ranges::iota_view<unsigned long long, unsigned long long>>>;
 
-        template<class T>
-        concept IsArithmeticPure = IsArithmetic<std::remove_cvref_t<T>>;
+    template<typename T>
+    concept IsIntegralOrEnumeration = IsIntegral<T> or IsEnumeration<T>;
 
-        template<class T>
-        concept IsPreIncrementable = requires(T& a) { a.operator--(); };
+    template<typename T>
+    concept IsFloatingPoint = std::floating_point<T>;
 
-        template<class T>
-        concept IsBooleanTestable = details::IsBooleanTestable<T> && requires(T&& t) {
-            { not std::forward<T>(t) } -> details::IsBooleanTestable;
-        };
+    template<class T>
+    concept IsArithmetic
+        = (IsIntegral<T> or IsFloatingPoint<T>) and not IsPointer<T> and not IsEnumeration<T>;
 
-        template<class T>
-        concept IsOptionalType = requires(T&& t) {
-            t.has_value();
-            { t == std::nullopt } -> details::IsBooleanTestable;
-            { t != std::nullopt } -> details::IsBooleanTestable;
-        };
+    template<class T>
+    concept IsScalar = IsArithmetic<T> or IsPointer<T> or IsEnumeration<T>;
 
-        template<class T>
-        concept IsVariantType = requires(T&& t) {
-            { std::holds_alternative<int>(t) } -> details::IsBooleanTestable;
-        };
+    template<class T>
+    concept IsPreIncrementable = requires(T& a) { a.operator--(); };
 
-        template<class T, class... Args>
-        concept IsPredicate = std::predicate<T, Args...>;
+    template<class T>
+    concept IsBooleanTestable = details::IsBooleanTestable<T> && requires(T&& t) {
+        { not std::forward<T>(t) } -> details::IsBooleanTestable;
+    };
 
-        template<class T, class U>
-        concept IsUnaryPredicate = IsPredicate<T, const U&>;
+    template<class T>
+    concept IsContainedSemantics = requires(T &val) {
+        typename T::value_type;
+        { val.operator*() } -> IsReferenceTo<typename T::value_type>;
+        val.operator bool();
+    };
+    
+    template<typename S, template<typename...> class T>
+    concept IsSpecializationOf = requires(S&& s) {
+        { details::isSpecializationOfHelper<T>(std::forward<S>(s)) } -> IsStrict<std::true_type>;
+    };
 
-        template<class T, class U>
-        concept IsBinaryPredicate = IsPredicate<T, const U&, const U&>;
+    template<typename S, template<typename, auto...> class T>
+    concept IsSpecializationWithNTTPOf = requires(S&& s) {
+        { details::isSpecializationOfHelper<T>(std::forward<S>(s)) } -> IsStrict<std::true_type>;
+    };
 
-        template<class T, class U>
-        concept IsHashFunc = std::regular_invocable<T, U> and
-                             std::convertible_to<std::invoke_result_t<T, U>, std::uint64_t>;
+    template<class T>
+    concept IsOptionalType = IsSpecializationOf<T, std::optional>;
 
-        // doesn't work atm
-        template<class T, class CharT>
-        concept IsFormattable =
-            true; // requires(std::formatter<T, CharT> f, T val) { f.format("{}", val); };
+    template<class T>
+    concept IsExpectedType = IsSpecializationOf<T, std::expected>;
 
-        template<class T>
-        concept IsCharacter =
-            IsOneOf<T, char, signed char, unsigned char, wchar_t, char8_t, char16_t, char32_t>;
+    template<class T>
+    concept IsVariantType = IsSpecializationOf<T, std::variant>;
 
-        template<class T>
-        concept IsCharacterPure = IsCharacter<std::remove_cvref_t<T>>;
+    template<class T>
+    concept IsArrayType = IsSpecializationWithNTTPOf<T, std::array>;
 
-        template<class T>
-        concept IsColorComponent = Is<T, float> or Is<T, std::uint8_t>;
+    template<class T, class... Args>
+    concept IsPredicate = std::predicate<T, Args...>;
 
-        template<class T>
-        concept IsConst = std::is_const_v<T>;
+    template<class T, class U>
+    concept IsUnaryPredicate = IsPredicate<T, const U&>;
 
-        template<class T>
-        concept IsNotConst = std::is_const_v<T>;
+    template<class T, class U>
+    concept IsBinaryPredicate = IsPredicate<T, const U&, const U&>;
 
-        template<class From, typename To>
-        concept IsBraceInitializableTo = requires(From&& from) { To { std::forward<From>(from) }; };
+    template<class T, class U>
+    concept IsHashFunc = std::regular_invocable<T, U>
+                         and std::convertible_to<std::invoke_result_t<T, U>, std::uint64_t>;
 
-        template<typename To, typename From>
-        concept IsNarrowing =
-            IsArithmetic<To> and IsArithmetic<From> and IsBraceInitializableTo<From, To>;
+    // doesn't work atm
+    template<class T, class CharT>
+    concept IsFormattable
+        = true; // requires(std::formatter<T, CharT> f, T val) { f.format("{}", val); };
 
-        template<typename To, typename From>
-        concept IsNarrowingPure = IsNarrowing<std::remove_cvref_t<To>, std::remove_cvref_t<From>>;
-    } // namespace stormkit::core
+    template<class T>
+    concept IsCharacter
+        = IsOneOf<T, char, signed char, unsigned char, wchar_t, char8_t, char16_t, char32_t>;
 
-#ifndef STORMKIT_NO_MODULES
-}
-#endif
+    template<class T>
+    concept IsColorComponent = Is<T, float> or Is<T, std::uint8_t>;
+
+    template<class T>
+    concept IsConst = std::is_const_v<T>;
+
+    template<class T>
+    concept IsNotConst = not IsConst<T>;
+
+    template<class From, typename To>
+    concept IsBraceInitializableTo = requires(From&& from) { To { std::forward<From>(from) }; };
+
+    template<class From, typename To>
+    concept IsConvertibleTo = std::convertible_to<From, To>;
+
+    template<class From, typename To>
+    concept IsExplicitConvertibleTo = IsConvertibleTo<From, To> or requires(From&& from) {
+        { static_cast<To>(std::forward<From>(from)) } -> Is<To>;
+    };
+
+    template<typename T>
+    concept IsUnsigned = std::is_unsigned_v<T>;
+
+    template<typename T>
+    concept IsSigned = std::is_signed_v<T>;
+
+    template<typename T1, typename T2>
+    concept HasEqualityOperator = requires(const T1& first, const T2& second) {
+        { first == second } -> IsBooleanTestable;
+    };
+
+    template<typename T, typename ... Args>
+    concept EnableCtor = sizeof...(Args) != 1 || (sizeof...(Args) == 1 && !Is<T, typename std::remove_cvref<Args...>::type>);
+}}} // namespace stormkit::core::meta

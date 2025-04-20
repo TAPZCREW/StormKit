@@ -20,18 +20,18 @@ auto main(std::span<const std::string_view> args) -> int {
     using namespace std::literals;
 
     wsi::parseArgs(args);
-    // core::setupSignalHandler();
 
     auto logger = log::Logger::createLoggerInstance<log::ConsoleLogger>();
 
     const auto monitors = wsi::Window::getMonitorSettings();
     polling_logger.ilog("--- Monitors ---");
-    polling_logger.ilog("{}",
-                        monitors |
-                            std::views::transform([](auto&& v) { return wsi::toString(v); }) |
-                            std::views::join | std::ranges::to<std::string>());
+    polling_logger.ilog("{}", monitors);
 
-    auto window = wsi::Window { "Hello world", { 800u, 600u }, wsi::WindowStyle::All };
+    auto window = wsi::Window {
+        "Hello world",
+        { 800u, 600u },
+        wsi::WindowStyle::All
+    };
 
     auto fullscreen        = false;
     auto toggle_fullscreen = false;
@@ -41,25 +41,24 @@ auto main(std::span<const std::string_view> args) -> int {
             switch (event.type) {
                 case wsi::EventType::Closed: window.close(); break;
                 case wsi::EventType::Resized: {
-                    const auto& event_data = core::as<wsi::ResizedEventData>(event.data);
+                    const auto& event_data = as<wsi::ResizedEventData>(event.data);
                     polling_logger.ilog("Resize event: {}", event_data.extent);
                     break;
                 }
                 case wsi::EventType::MouseMoved: {
-                    const auto& event_data = core::as<wsi::MouseMovedEventData>(event.data);
+                    const auto& event_data = as<wsi::MouseMovedEventData>(event.data);
                     polling_logger.ilog("Mouse move event: {}", event_data.position);
                     break;
                 }
                 case wsi::EventType::MouseButtonPushed: {
-                    const auto& event_data = core::as<wsi::MouseButtonPushedEventData>(event.data);
+                    const auto& event_data = as<wsi::MouseButtonPushedEventData>(event.data);
                     polling_logger.ilog("Mouse button push event: {} {}",
                                         event_data.button,
                                         event_data.position);
                     break;
                 }
                 case wsi::EventType::MouseButtonReleased: {
-                    const auto& event_data =
-                        core::as<wsi::MouseButtonReleasedEventData>(event.data);
+                    const auto& event_data = as<wsi::MouseButtonReleasedEventData>(event.data);
                     polling_logger.ilog("Mouse button release event: {} {}",
                                         event_data.button,
                                         event_data.position);
@@ -82,7 +81,7 @@ auto main(std::span<const std::string_view> args) -> int {
                     break;
                 }
                 case wsi::EventType::KeyPressed: {
-                    const auto& event_data = core::as<wsi::KeyPressedEventData>(event.data);
+                    const auto& event_data = as<wsi::KeyPressedEventData>(event.data);
 
                     if (event_data.key == wsi::Key::Escape) {
                         window.close();
@@ -94,7 +93,7 @@ auto main(std::span<const std::string_view> args) -> int {
                     break;
                 }
                 case wsi::EventType::KeyReleased: {
-                    const auto& event_data = core::as<wsi::KeyReleasedEventData>(event.data);
+                    const auto& event_data = as<wsi::KeyReleasedEventData>(event.data);
 
                     polling_logger.ilog("Key release: {}", event_data.key);
                     break;

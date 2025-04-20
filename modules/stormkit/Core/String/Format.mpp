@@ -4,97 +4,72 @@
 
 module;
 
-#include "magic_enum.hpp"
+#include <stormkit/Core/FormatMacro.hpp>
 
 export module stormkit.Core:String.Format;
 
 import std;
+import magic_enum;
 
 import :Meta;
-import :Utils.Numerics;
+import :TypeSafe.Integer;
+import :TypeSafe.AsCast;
+import :Utils.Time;
 import :Utils.Math;
 
-export namespace std {
-    template<class CharT>
-    struct formatter<std::byte, CharT>: formatter<int, CharT> {
-        template<class FormatContext>
-        auto format(std::byte data, FormatContext& ctx) const -> decltype(ctx.out());
-    };
+template<stormkit::math::meta::IsExtentLike T>
+using ExtentToArrayType
+    = std::array<typename T::value_type, sizeof(typename T::value_type) / sizeof(std::byte)>;
 
-    template<class CharT>
-    struct formatter<stormkit::core::Secondf, CharT>: formatter<float, CharT> {
-        template<class FormatContext>
-        auto format(const stormkit::core::Secondf& data, FormatContext& ctx) const
-            -> decltype(ctx.out());
-    };
+export {
+    namespace stormkit { inline namespace core { namespace meta {
+        template<meta::IsEnumeration T>
+        inline constexpr auto DisableDefaultFormaterForEnum = false;
+    }}} // namespace stormkit::core::meta
 
-    template<stormkit::core::math::IsVectorType T, typename CharT>
-    struct formatter<T, CharT>: public formatter<basic_string<CharT>, CharT> {
+    FORMATTER_INHERIT_DECLARE(int, stormkit::meta::IsStrict<std::byte>)
+    FORMATTER_INHERIT_DECLARE(float, stormkit::meta::IsStrict<stormkit::Secondf>)
+    FORMATTER_DECLARE(stormkit::math::meta::IsVectorLike)
+    FORMATTER_DECLARE(stormkit::math::meta::IsExtentLike)
+
+    template<stormkit::meta::IsEnumeration T, typename CharT>
+        requires(not stormkit::meta::DisableDefaultFormaterForEnum<T>)
+    struct std::formatter<T, CharT>: public std::formatter<basic_string_view<CharT>, CharT> {
         template<class FormatContext>
         auto format(const T& data, FormatContext& ctx) const -> decltype(ctx.out());
     };
-
-    template<stormkit::core::math::IsExtentType T, typename CharT>
-    struct formatter<T, CharT>: public formatter<basic_string<CharT>, CharT> {
-        template<class FormatContext>
-        auto format(const T& data, FormatContext& ctx) const -> decltype(ctx.out());
-    };
-
-    template<stormkit::core::IsEnumeration T, typename CharT>
-    struct formatter<T, CharT>: public formatter<basic_string_view<CharT>, CharT> {
-        template<class FormatContext>
-        auto format(const T& data, FormatContext& ctx) const -> decltype(ctx.out());
-    };
-} // namespace std
+} // namespace stormkit::core::meta
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace std {
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<class CharT>
-    template<class FormatContext>
-    auto formatter<std::byte, CharT>::format(std::byte data, FormatContext& ctx) const
-        -> decltype(ctx.out()) {
-        return formatter<int, CharT>::format(stormkit::core::as<int>(data), ctx);
-    }
+/////////////////////////////////////
+/////////////////////////////////////
+FORMATTER_INHERIT_DEFINE_FORMAT(stormkit::meta::IsStrict<std::byte>) {
+    return formatter<int, CharT>::format(static_cast<int>(data), ctx);
+}
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<class CharT>
-    template<class FormatContext>
-    auto formatter<stormkit::core::Secondf, CharT>::format(const stormkit::core::Secondf& data,
-                                                           FormatContext&                 ctx) const
-        -> decltype(ctx.out()) {
-        return formatter<float, CharT>::format(data.count(), ctx);
-    }
+/////////////////////////////////////
+/////////////////////////////////////
+FORMATTER_INHERIT_DEFINE_FORMAT(stormkit::meta::IsStrict<stormkit::Secondf>) {
+    return formatter<float, CharT>::format(data.count(), ctx);
+}
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<stormkit::core::math::IsVectorType T, typename CharT>
-    template<class FormatContext>
-    auto formatter<T, CharT>::format(const T& data, FormatContext& ctx) const
-        -> decltype(ctx.out()) {
-        return formatter<basic_string<CharT>, CharT>::format(stormkit::core::toString(data), ctx);
-    }
+/////////////////////////////////////
+/////////////////////////////////////
+FORMATTER_DEFINE_FORMAT_AS_STRING(stormkit::math::meta::IsVectorLike)
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<stormkit::core::math::IsExtentType T, typename CharT>
-    template<class FormatContext>
-    auto formatter<T, CharT>::format(const T& data, FormatContext& ctx) const
-        -> decltype(ctx.out()) {
-        return formatter<basic_string<CharT>, CharT>::format(stormkit::core::toString(data), ctx);
-    }
+/////////////////////////////////////
+/////////////////////////////////////
+FORMATTER_DEFINE_FORMAT_AS_STRING(stormkit::math::meta::IsExtentLike)
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<stormkit::core::IsEnumeration T, typename CharT>
-    template<class FormatContext>
-    auto formatter<T, CharT>::format(const T& data, FormatContext& ctx) const
-        -> decltype(ctx.out()) {
-        return formatter<basic_string_view<CharT>, CharT>::format(magic_enum::enum_name(data), ctx);
-    }
-} // namespace std
+/////////////////////////////////////
+/////////////////////////////////////
+template<stormkit::meta::IsEnumeration T, typename CharT>
+    requires(not stormkit::meta::DisableDefaultFormaterForEnum<T>)
+template<class FormatContext>
+auto std::formatter<T, CharT>::format(const T& data, FormatContext& ctx) const
+    -> decltype(ctx.out()) {
+    return formatter<basic_string_view<CharT>, CharT>::format(magic_enum::enum_name(data), ctx);
+}

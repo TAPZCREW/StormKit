@@ -20,30 +20,30 @@ export {
     #include <stormkit/Log.hpp>
 #endif
 
-    inline constexpr auto VERTEX_SIZE =
-        sizeof(stormkit::core::math::Vector2F) + sizeof(stormkit::core::Vector3f);
-    inline constexpr auto WINDOW_TITLE            = "StormKit GameOfLife Example";
-    inline constexpr auto MESH_VERTEX_BUFFER_SIZE = VERTEX_SIZE * 3;
-    inline constexpr auto MESH_VERTEX_BINDING_DESCRIPTIONS =
-        std::array { stormkit::gpu::VertexBindingDescription { .binding = 0,
-                                                               .stride  = VERTEX_SIZE } };
+    inline constexpr auto VERTEX_SIZE
+        = sizeof(stormkit::math::Vector2F) + sizeof(stormkit::Vector3f);
+    inline constexpr auto WINDOW_TITLE                     = "StormKit GameOfLife Example";
+    inline constexpr auto MESH_VERTEX_BUFFER_SIZE          = VERTEX_SIZE * 3;
+    inline constexpr auto MESH_VERTEX_BINDING_DESCRIPTIONS = std::array {
+        stormkit::gpu::VertexBindingDescription { .binding = 0, .stride = VERTEX_SIZE }
+    };
     inline constexpr auto MESH_VERTEX_ATTRIBUTE_DESCRIPTIONS = std::array {
         stormkit::gpu::VertexInputAttributeDescription { .location = 0,
-                                                         .binding  = 0,
-                                                         .format   = stormkit::gpu::Format::Float2,
-                                                         .offset   = 0 },
-        stormkit::gpu::VertexInputAttributeDescription {
-            .location = 1,
-            .binding  = 0,
-            .format   = stormkit::gpu::Format::Float2,
-            .offset   = sizeof(stormkit::core::math::Vector2F) }
+                                                        .binding  = 0,
+                                                        .format   = stormkit::gpu::Format::Float2,
+                                                        .offset   = 0                       },
+        stormkit::gpu::VertexInputAttributeDescription { .location = 1,
+                                                        .binding  = 0,
+                                                        .format   = stormkit::gpu::Format::Float2,
+                                                        .offset
+                                                         = sizeof(stormkit::math::Vector2F) }
     };
 
     inline constexpr auto BOARD_SIZE            = 100u;
     inline constexpr auto BOARD_BUFFERING_COUNT = 3u;
-    inline constexpr auto REFRESH_BOARD_DELTA   = stormkit::core::Secondf { 1 };
+    inline constexpr auto REFRESH_BOARD_DELTA   = stormkit::Secondf { 1 };
 
-    inline constexpr auto SHADER_DATA = stormkit::core::makeStaticByteArray(
+    inline constexpr auto SHADER_DATA = stormkit::makeStaticByteArray(
 #include <shader.spv.h>
     );
 

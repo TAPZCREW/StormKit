@@ -1,0 +1,22 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/Core/PlatformMacro.hpp>
+
+export module stormkit.Engine:ECS.CommonComponents;
+
+import std;
+
+import stormkit.Core;
+import stormkit.Entities;
+
+using namespace stormkit::entities::literals;
+
+export namespace stormkit::engine {
+    struct TransformComponent: entities::Component {
+        static constexpr Type TYPE = "TransformComponent"_component_type;
+    };
+} // namespace stormkit::engine

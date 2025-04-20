@@ -16,15 +16,15 @@ import stormkit.Gpu.Vulkan;
 import :Core;
 
 export namespace stormkit::gpu {
-    class STORMKIT_API Buffer: public DeviceObject {
+    class STORMKIT_API Buffer {
         struct Tag {};
 
       public:
         struct CreateInfo {
             BufferUsageFlag    usages;
-            core::RangeExtent  size;
-            MemoryPropertyFlag property =
-                MemoryPropertyFlag::Host_Visible | MemoryPropertyFlag::Host_Coherent;
+            RangeExtent        size;
+            MemoryPropertyFlag property
+                = MemoryPropertyFlag::Host_Visible | MemoryPropertyFlag::Host_Coherent;
         };
 
         static constexpr auto DEBUG_TYPE = DebugObjectType::Buffer;
@@ -48,60 +48,60 @@ export namespace stormkit::gpu {
             -> Expected<std::unique_ptr<Buffer>>;
 
         [[nodiscard]] auto usages() const noexcept -> BufferUsageFlag;
-        [[nodiscard]] auto size() const noexcept -> core::RangeExtent;
+        [[nodiscard]] auto size() const noexcept -> RangeExtent;
 
-        [[nodiscard]] auto map(core::RangeOffset offset) noexcept -> decltype(auto);
-        [[nodiscard]] auto map(core::RangeOffset offset, core::RangeExtent size) noexcept
+        [[nodiscard]] auto map(const Device& device, RangeOffset offset) noexcept -> decltype(auto);
+        [[nodiscard]] auto map(const Device& device, RangeOffset offset, RangeExtent size) noexcept
             -> decltype(auto);
 
         template<class T>
-        [[nodiscard]] auto mapAs(core::RangeOffset offset) noexcept -> decltype(auto);
+        [[nodiscard]] auto mapAs(const Device& device, RangeOffset offset) noexcept
+            -> decltype(auto);
 
         [[nodiscard]] auto data(this auto& self) noexcept -> decltype(auto);
-        [[nodiscard]] auto data(this auto& self, core::RangeExtent size) noexcept -> decltype(auto);
+        [[nodiscard]] auto data(this auto& self, RangeExtent size) noexcept -> decltype(auto);
 
         template<class T>
         [[nodiscard]] auto dataAs(this auto& self) noexcept -> decltype(auto);
 
-        auto flush(core::RangeOffset offset, core::RangeExtent size) -> void;
-        auto unmap() -> void;
+        auto flush(const Device& device, RangeOffset offset, RangeExtent size) -> void;
+        auto unmap(const Device& device) -> void;
 
         [[nodiscard]] auto isPersistentlyMapped() const noexcept -> bool;
 
-        auto upload(std::span<const core::Byte> data, core::RangeOffset offset = 0) -> void;
-        template<class T>
-        auto upload(const T& data, core::RangeOffset offset = 0) -> void;
-        template<class T>
-        auto upload(std::span<const T> data, core::RangeOffset offset = 0) -> void;
+        auto upload(const Device& device, std::span<const Byte> data, RangeOffset offset = 0)
+            -> void;
+        template<meta::IsNot<std::span<const Byte>> T>
+        auto upload(const Device& device, const T& data, RangeOffset offset = 0) -> void;
 
         [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::Buffer&;
 
       private:
-        static auto findMemoryType(core::UInt                                type_filter,
+        static auto findMemoryType(UInt                                      type_filter,
                                    vk::MemoryPropertyFlags                   properties,
                                    const vk::PhysicalDeviceMemoryProperties& mem_properties,
-                                   const vk::MemoryRequirements& mem_requirements) -> core::UInt;
+                                   const vk::MemoryRequirements& mem_requirements) -> UInt;
 
-        core::DeferInit<vk::raii::Buffer> m_vk_buffer;
-        vma::raii::Allocation             m_vma_allocation;
+        DeferInit<vk::raii::Buffer> m_vk_buffer;
+        vma::UniqueAllocation       m_vma_allocation;
 
-        BufferUsageFlag   m_usages = {};
-        core::RangeExtent m_size   = 0;
+        BufferUsageFlag m_usages = {};
+        RangeExtent     m_size   = 0;
 
-        bool        m_is_persistently_mapped = false;
-        core::Byte* m_mapped_pointer         = nullptr;
+        bool  m_is_persistently_mapped = false;
+        Byte* m_mapped_pointer         = nullptr;
     };
 
     struct BufferMemoryBarrier {
         AccessFlag src;
         AccessFlag dst;
 
-        core::UInt32 src_queue_family_index = QUEUE_FAMILY_IGNORED;
-        core::UInt32 dst_queue_family_index = QUEUE_FAMILY_IGNORED;
+        UInt32 src_queue_family_index = QUEUE_FAMILY_IGNORED;
+        UInt32 dst_queue_family_index = QUEUE_FAMILY_IGNORED;
 
-        const Buffer&     buffer;
-        core::RangeExtent size;
-        core::UInt64      offset = 0;
+        const Buffer& buffer;
+        RangeExtent   size;
+        UInt64        offset = 0;
     };
 } // namespace stormkit::gpu
 
@@ -143,28 +143,29 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto Buffer::usages() const noexcept -> BufferUsageFlag {
-        core::expects(m_vma_allocation.operator bool());
+        expects(m_vma_allocation.operator bool());
 
         return m_usages;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto Buffer::size() const noexcept -> core::RangeExtent {
-        core::expects(m_vma_allocation.operator bool());
+    STORMKIT_FORCE_INLINE auto Buffer::size() const noexcept -> RangeExtent {
+        expects(m_vma_allocation.operator bool());
 
         return m_size;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto Buffer::map(core::RangeOffset offset) noexcept -> decltype(auto) {
-        core::expects(m_vma_allocation.operator bool());
-        core::expects(offset < core::as<core::RangeOffset>(m_size));
+    STORMKIT_FORCE_INLINE auto Buffer::map(const Device& device, RangeOffset offset) noexcept
+        -> decltype(auto) {
+        expects(m_vma_allocation.operator bool());
+        expects(offset < as<RangeOffset>(m_size));
 
         if (!m_mapped_pointer) {
-            auto _ = device().vmaAllocator().mapMemory(*m_vma_allocation,
-                                                       std::bit_cast<void**>(&m_mapped_pointer));
+            auto _ = device.vmaAllocator().mapMemory(*m_vma_allocation,
+                                                     std::bit_cast<void**>(&m_mapped_pointer));
             m_mapped_pointer += offset;
         }
 
@@ -173,39 +174,41 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto Buffer::map(core::RangeOffset offset,
-                                           core::RangeExtent size) noexcept -> decltype(auto) {
-        return std::span<core::Byte> { map(offset), size };
+    STORMKIT_FORCE_INLINE auto Buffer::map(const Device& device,
+                                           RangeOffset   offset,
+                                           RangeExtent   size) noexcept -> decltype(auto) {
+        return std::span<Byte> { map(device, offset), size };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T>
-    STORMKIT_FORCE_INLINE auto Buffer::mapAs(core::RangeOffset offset) noexcept -> decltype(auto) {
-        core::expects(m_vma_allocation.operator bool());
+    STORMKIT_FORCE_INLINE auto Buffer::mapAs(const Device& device, RangeOffset offset) noexcept
+        -> decltype(auto) {
+        expects(m_vma_allocation.operator bool());
 
-        return std::bit_cast<T*>(map(offset));
+        return std::bit_cast<T*>(map(device, offset));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto Buffer::data(this auto& self) noexcept -> decltype(auto) {
-        core::expects(self.m_vma_allocation.operator bool());
-        core::expects(self.m_mapped_pointer);
+        expects(self.m_vma_allocation.operator bool());
+        expects(self.m_mapped_pointer);
 
-        using Byte = core::LikeCV<decltype(self), core::Byte>;
+        using Byte = meta::ConstnessLike<decltype(self), Byte>;
 
         return std::bit_cast<Byte*>(self.m_mapped_pointer);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto Buffer::data(this auto& self, core::RangeExtent size) noexcept
+    STORMKIT_FORCE_INLINE auto Buffer::data(this auto& self, RangeExtent size) noexcept
         -> decltype(auto) {
-        core::expects(self.m_vma_allocation.operator bool());
-        core::expects(self.m_mapped_pointer);
+        expects(self.m_vma_allocation.operator bool());
+        expects(self.m_mapped_pointer);
 
-        using Byte = core::LikeCV<decltype(self), core::Byte>;
+        using Byte = meta::ConstnessLike<decltype(self), Byte>;
 
         return std::span<Byte> { std::bit_cast<Byte*>(self.m_mapped_pointer), size };
     }
@@ -214,59 +217,59 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<class T>
     STORMKIT_FORCE_INLINE auto Buffer::dataAs(this auto& self) noexcept -> decltype(auto) {
-        core::expects(self.m_vma_allocation.operator bool());
+        expects(self.m_vma_allocation.operator bool());
 
-        using Type = core::LikeCV<decltype(self), T>;
+        using Type = meta::ConstnessLike<decltype(self), T>;
 
         return std::bit_cast<Type*>(self.data());
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto Buffer::flush(core::RangeOffset offset, core::RangeExtent size)
-        -> void {
-        core::expects(m_vma_allocation.operator bool());
-        core::expects(offset <= core::as<core::RangeOffset>(m_size));
-        core::expects(size <= m_size);
+    STORMKIT_FORCE_INLINE auto
+        Buffer::flush(const Device& device, RangeOffset offset, RangeExtent size) -> void {
+        expects(m_vma_allocation.operator bool());
+        expects(offset <= as<RangeOffset>(m_size));
+        expects(size <= m_size);
 
-        device().vmaAllocator().flushAllocation(*m_vma_allocation, offset, size);
+        device.vmaAllocator().flushAllocation(*m_vma_allocation, offset, size);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto Buffer::unmap() -> void {
-        core::expects(m_vma_allocation.operator bool());
-        core::expects(m_is_persistently_mapped, "Trying to unmap persistent buffer !");
+    STORMKIT_FORCE_INLINE auto Buffer::unmap(const Device& device) -> void {
+        expects(m_vma_allocation.operator bool());
+        expects(not m_is_persistently_mapped, "Trying to unmap persistent buffer !");
 
-        device().vmaAllocator().unmapMemory(*m_vma_allocation);
+        device.vmaAllocator().unmapMemory(*m_vma_allocation);
 
         m_mapped_pointer = nullptr;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto Buffer::upload(std::span<const core::Byte> data,
-                                              core::RangeOffset           offset) -> void {
-        auto ptr = map(offset, std::size(data));
+    STORMKIT_FORCE_INLINE auto Buffer::upload(const Device&         device,
+                                              std::span<const Byte> data,
+                                              RangeOffset           offset) -> void {
+        auto ptr = map(device, offset, std::size(data));
 
-        std::ranges::copy(data, std::begin(ptr));
+        std::ranges::copy(data, std::ranges::begin(ptr));
 
-        unmap();
+        unmap(device);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<class T>
-    STORMKIT_FORCE_INLINE auto Buffer::upload(const T& data, core::RangeOffset offset) -> void {
-        upload(core::asByteView(data), offset);
-    }
+    template<meta::IsNot<std::span<const Byte>> T>
+    STORMKIT_FORCE_INLINE auto
+        Buffer::upload(const Device& device, const T& data, RangeOffset offset) -> void {
+        const auto bytes = asByteView(data);
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<class T>
-    STORMKIT_FORCE_INLINE auto Buffer::upload(std::span<const T> data, core::RangeOffset offset)
-        -> void {
-        upload(core::asByteView(data), offset);
+        auto ptr = map(device, offset, std::size(bytes));
+
+        std::ranges::copy(bytes, std::ranges::begin(ptr));
+
+        unmap(device);
     }
 
     /////////////////////////////////////

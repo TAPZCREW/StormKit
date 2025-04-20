@@ -1,0 +1,151 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+export module TriangleApp;
+
+import std;
+
+import stormkit.Core;
+import stormkit.Gpu;
+import stormkit.Engine;
+import stormkit.Wsi;
+
+import Constants;
+import ShaderData;
+
+using namespace stormkit;
+
+export class TriangleApp: public App {
+  public:
+    ~TriangleApp() override;
+    auto run(std::span<const std::string_view> args) -> Int override;
+
+  private:
+    auto updateFrameGraph(engine::FrameGraphBuilder&, std::atomic_bool&) -> void;
+
+    bool          m_fullscreen_enabled = false;
+    math::ExtentU m_window_extent;
+
+    DeferInit<engine::Application> m_application;
+
+    DeferInit<gpu::Shader>         m_vertex_shader;
+    DeferInit<gpu::Shader>         m_fragment_shader;
+    DeferInit<gpu::PipelineLayout> m_pipeline_layout;
+    DeferInit<gpu::Pipeline>       m_pipeline;
+};
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+module :private;
+
+TriangleApp::~TriangleApp() = default;
+
+////////////////////////////////////////
+////////////////////////////////////////
+auto TriangleApp::run(std::span<const std::string_view> _) -> Int {
+    m_application = engine::Application::create(APPLICATION_NAME, { 800u, 600u }, WINDOW_TITLE)
+                        .transform_error(assert("Failed to initialize Render engine"))
+                        .value();
+    m_application->setUpdateFrameGraphCallback(bindFront(&TriangleApp::updateFrameGraph, this));
+
+    auto& window        = m_application->window();
+    auto& event_handler = m_application->eventHandler();
+    auto& renderer      = m_application->renderer();
+    auto& world         = m_application->world();
+
+    m_window_extent = window.extent();
+
+    m_vertex_shader
+        = gpu::Shader::fromBytes(renderer.device(), SHADER_DATA, gpu::ShaderStageFlag::Vertex)
+              .transform_error(assert("Failed to load vertex shader"))
+              .value();
+
+    m_fragment_shader
+        = gpu::Shader::fromBytes(renderer.device(), SHADER_DATA, gpu::ShaderStageFlag::Fragment)
+              .transform_error(assert("Failed to load fragment shader"))
+              .value();
+
+    m_pipeline_layout = gpu::PipelineLayout::create(renderer.device(), {})
+                            .transform_error(assert("Failed to create pipeline layout"))
+                            .value();
+
+    event_handler.setCallbacks({
+        { wsi::EventType::Closed, [&window](const wsi::Event& _) noexcept { window.close(); } },
+        { wsi::EventType::KeyReleased, [this, &window](const wsi::Event& event) noexcept {
+             const auto& event_data = as<wsi::KeyReleasedEventData>(event.data);
+
+             if (event_data.key == wsi::Key::Escape) [[unlikely]]
+                 window.close();
+
+             if (event_data.key == wsi::Key::F11) [[unlikely]] {
+                 m_fullscreen_enabled = not m_fullscreen_enabled;
+                 window.setFullscreenEnabled(m_fullscreen_enabled);
+             }
+         } }
+    });
+
+    m_application->run();
+
+    return 0;
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
+auto TriangleApp::updateFrameGraph(engine::FrameGraphBuilder& graph,
+                                   std::atomic_bool&          rebuild_graph) -> void {
+    static auto initialized = false;
+
+    if (not initialized) {
+        struct DrawTask {
+            engine::GraphID backbuffer;
+        };
+
+        auto&& render_task = graph.addRasterTask<DrawTask>(
+            "Render",
+            [&](DrawTask& task_data, engine::GraphTaskBuilder& builder) {
+                task_data.backbuffer = builder
+                                           .create("color",
+                                                   engine::ImageDescription {
+                                                       .extent = m_window_extent,
+                                                       .type   = gpu::ImageType::T2D,
+                                                       .format = gpu::PixelFormat::BGRA8_UNorm })
+                                           .id();
+
+                graph.setFinalResource(task_data.backbuffer);
+            },
+            [this](const DrawTask&              task_data,
+                   OptionalRef<gpu::RenderPass> render_pass,
+                   gpu::CommandBuffer&          cmb) {
+                if (not m_pipeline) {
+                    auto& renderer = m_application->renderer();
+                    m_pipeline
+                        = gpu::Pipeline::create(
+                              renderer.device(),
+                              gpu::RasterPipelineState {
+                                  .viewport_state
+                                  = { .viewports
+                                      = { { .extent = m_window_extent, .depth = { 0, 1 } } },
+                                     .scissors = { { .extent = m_window_extent } } },
+                                  .color_blend_state = { .attachments = { {} } },
+                                  .shader_state
+                                  = { .shaders = borrows(m_vertex_shader, m_fragment_shader) }
+                    },
+                              m_pipeline_layout,
+                              *render_pass)
+                              .transform_error(assert("Failed to create pipeline"))
+                              .value();
+                }
+
+                cmb.bindPipeline(m_pipeline);
+                cmb.draw(3);
+            });
+
+        render_task.setCullImune(true);
+
+        initialized   = true;
+        rebuild_graph = true;
+    }
+}

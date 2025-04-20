@@ -1,0 +1,140 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/Core/PlatformMacro.hpp>
+
+export module stormkit.Engine:ECS.SpriteRenderSystem;
+
+import std;
+
+import stormkit.Core;
+import stormkit.Entities;
+import stormkit.Gpu;
+
+import :Renderer;
+import :SpriteRenderer;
+
+using namespace stormkit::entities::literals;
+
+export namespace stormkit::engine {
+    struct PositionComponent: entities::Component {
+        static constexpr Type TYPE     = "PositionComponent"_component_type;
+        math::Vector2F        position = { 0.f, 0.f };
+    };
+
+    struct SpriteComponent: entities::Component {
+        static constexpr Type TYPE = "SpriteComponent"_component_type;
+        Sprite                sprite;
+    };
+
+    auto makeSprite(entities::EntityManager& world,
+                    const gpu::ImageView&    texture,
+                    const math::Vector2F&    size) noexcept -> entities::Entity;
+
+    class SpriteRenderSystem final: public entities::System {
+      public:
+        SpriteRenderSystem(const Renderer&          renderer,
+                           const math::ExtentF&     viewport,
+                           entities::EntityManager& manager);
+        ~SpriteRenderSystem() final;
+
+        SpriteRenderSystem(const SpriteRenderSystem&)                    = delete;
+        auto operator=(const SpriteRenderSystem&) -> SpriteRenderSystem& = delete;
+
+        SpriteRenderSystem(SpriteRenderSystem&&) noexcept;
+        auto operator=(SpriteRenderSystem&&) noexcept -> SpriteRenderSystem&;
+
+        auto update(Secondf delta) -> void final;
+
+        auto updateFrameGraph(FrameGraphBuilder& graph) noexcept -> void;
+
+      private:
+        auto onMessageReceived(const entities::Message& message) -> void final;
+
+        SpriteRenderer m_renderer;
+
+        HashMap<entities::Entity, UInt32> m_sprite_map;
+    };
+} // namespace stormkit::engine
+
+/////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+/////////////////////////////////////////////////////////////////////
+
+namespace stormkit::engine {
+    //////////////////////////////////////
+    //////////////////////////////////////
+    STORMKIT_INLINE auto makeSprite(entities::EntityManager& world,
+                                    const gpu::ImageView&    texture,
+                                    const math::Vector2F&    size) noexcept -> entities::Entity {
+        const auto e = world.makeEntity();
+
+        auto& sprite_component          = world.addComponent<SpriteComponent>(e);
+        sprite_component.sprite.texture = borrow(texture);
+        for (auto&& vertex : sprite_component.sprite.vertices) {
+            vertex.position.x *= size.x;
+            vertex.position.y *= size.y;
+        }
+
+        return e;
+    }
+
+    //////////////////////////////////////
+    //////////////////////////////////////
+    STORMKIT_INLINE SpriteRenderSystem::SpriteRenderSystem(const Renderer&          renderer,
+                                                           const math::ExtentF&     viewport,
+                                                           entities::EntityManager& manager)
+        : System { manager, 0, { SpriteComponent::TYPE } },
+          m_renderer { SpriteRenderer::create(renderer, viewport).value() } { // TODO handle error
+    }
+
+    //////////////////////////////////////
+    //////////////////////////////////////
+    STORMKIT_INLINE SpriteRenderSystem::~SpriteRenderSystem() = default;
+
+    //////////////////////////////////////
+    //////////////////////////////////////
+    STORMKIT_INLINE SpriteRenderSystem::SpriteRenderSystem(SpriteRenderSystem&&) noexcept = default;
+
+    //////////////////////////////////////
+    //////////////////////////////////////
+    STORMKIT_INLINE auto SpriteRenderSystem::operator=(SpriteRenderSystem&&) noexcept
+        -> SpriteRenderSystem& = default;
+
+    //////////////////////////////////////
+    //////////////////////////////////////
+    STORMKIT_INLINE auto SpriteRenderSystem::update(Secondf _) -> void {
+    }
+
+    //////////////////////////////////////
+    //////////////////////////////////////
+    STORMKIT_INLINE auto SpriteRenderSystem::updateFrameGraph(FrameGraphBuilder& graph) noexcept
+        -> void {
+        m_renderer.updateFrameGraph(graph);
+    }
+
+    //////////////////////////////////////
+    //////////////////////////////////////
+    STORMKIT_INLINE auto SpriteRenderSystem::onMessageReceived(const entities::Message& message)
+        -> void {
+        if (message.id == entities::EntityManager::ADDED_ENTITY_MESSAGE_ID) {
+            for (auto&& e : message.entities) {
+                if (not m_manager->hasComponent<SpriteComponent>(e)) continue;
+
+                const auto& sprite_component = m_manager->getComponent<SpriteComponent>(e);
+                const auto  id               = m_renderer.addSprite(sprite_component.sprite);
+                m_sprite_map[id]             = e;
+            }
+        } else if (message.id == entities::EntityManager::REMOVED_ENTITY_MESSAGE_ID) {
+            for (auto&& e : message.entities) {
+                if (not m_manager->hasComponent<SpriteComponent>(e)) continue;
+
+                const auto id = m_sprite_map[e];
+                m_renderer.removeSprite(id);
+            }
+        }
+    }
+} // namespace stormkit::engine

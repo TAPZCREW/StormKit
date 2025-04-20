@@ -22,9 +22,9 @@ namespace stormkit::log {
         if (not std::filesystem::exists(m_base_path))
             std::filesystem::create_directory(m_base_path);
 
-        core::expects(std::filesystem::is_directory(m_base_path), "path need to be a directory");
+        expects(std::filesystem::is_directory(m_base_path), "path need to be a directory");
 
-        auto filepath                = m_base_path / core::toNativeEncoding(LOG_FILE_NAME);
+        auto filepath                = m_base_path / toNativeEncoding(LOG_FILE_NAME);
         m_streams[filepath.string()] = std::ofstream { filepath.string() };
     }
 
@@ -37,9 +37,9 @@ namespace stormkit::log {
         if (not std::filesystem::exists(m_base_path))
             std::filesystem::create_directory(m_base_path);
 
-        core::expects(std::filesystem::is_directory(m_base_path), "path need to be a directory");
+        expects(std::filesystem::is_directory(m_base_path), "path need to be a directory");
 
-        auto filepath                = m_base_path / core::toNativeEncoding(LOG_FILE_NAME);
+        auto filepath                = m_base_path / toNativeEncoding(LOG_FILE_NAME);
         m_streams[filepath.string()] = std::ofstream { filepath.string() };
     }
 
@@ -67,14 +67,13 @@ namespace stormkit::log {
                            [[maybe_unused]] const Module& m,
                            [[maybe_unused]] const char*   string) -> void {
         const auto now = LogClock::now();
-        const auto time =
-            std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time).count();
+        const auto time
+            = std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time).count();
 
-        auto filepath =
-            m_base_path / std::filesystem::path { core::toNativeEncoding(LOG_FILE_NAME) };
+        auto filepath = m_base_path / std::filesystem::path { toNativeEncoding(LOG_FILE_NAME) };
         if (not std::empty(m.name)) {
-            filepath = m_base_path / core::toNativeEncoding(m.name);
-            filepath += core::toNativeEncoding("-") + core::toNativeEncoding(LOG_FILE_NAME);
+            filepath = m_base_path / toNativeEncoding(m.name);
+            filepath += toNativeEncoding("-") + toNativeEncoding(LOG_FILE_NAME);
 
             if (m_streams.find(filepath.string()) == m_streams.cend())
                 m_streams[filepath.string()] = std::ofstream { filepath.string() };

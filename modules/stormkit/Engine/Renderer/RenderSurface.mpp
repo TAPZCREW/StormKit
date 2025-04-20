@@ -1,0 +1,130 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/Core/PlatformMacro.hpp>
+
+export module stormkit.Engine:Renderer.RenderSurface;
+
+import std;
+
+import stormkit.Core;
+import stormkit.Wsi;
+import stormkit.Gpu;
+
+export namespace stormkit::engine {
+    class STORMKIT_API RenderSurface {
+        struct Tag {};
+
+      public:
+        struct Frame {
+            UInt32 current_frame;
+            UInt32 image_index;
+
+            Ref<const gpu::Semaphore> image_available;
+            Ref<const gpu::Semaphore> render_finished;
+            Ref<const gpu::Fence>     in_flight;
+        };
+
+        RenderSurface(const gpu::Instance& instance,
+                      const gpu::Device&   device,
+                      const gpu::Queue&    raster_queue,
+                      const wsi::Window&   window,
+                      Tag);
+        ~RenderSurface();
+
+        RenderSurface(const RenderSurface&)                    = delete;
+        auto operator=(const RenderSurface&) -> RenderSurface& = delete;
+
+        RenderSurface(RenderSurface&&) noexcept;
+        auto operator=(RenderSurface&&) noexcept -> RenderSurface&;
+
+        static auto createFromWindow(const gpu::Instance& instance,
+                                     const gpu::Device&   device,
+                                     const gpu::Queue&    raster_queue,
+                                     const wsi::Window&   window) noexcept
+            -> gpu::Expected<RenderSurface>;
+        static auto allocateFromWindow(const gpu::Instance& instance,
+                                       const gpu::Device&   device,
+                                       const gpu::Queue&    raster_queue,
+                                       const wsi::Window&   window) noexcept
+            -> gpu::Expected<std::unique_ptr<RenderSurface>>;
+
+        [[nodiscard]] auto beginFrame(const gpu::Device& device) -> gpu::Expected<Frame>;
+        [[nodiscard]] auto presentFrame(const gpu::Queue& queue, const Frame& frame)
+            -> gpu::Expected<void>;
+
+        [[nodiscard]] auto bufferingCount() const noexcept -> UInt32;
+
+        [[nodiscard]] auto images() const noexcept -> const std::vector<gpu::SwapchainImage>&;
+
+      private:
+        DeferInit<gpu::Surface>       m_surface;
+        DeferInit<gpu::Swapchain>     m_swapchain;
+        std::optional<gpu::Swapchain> m_old_swapchain;
+
+        RangeExtent                 m_current_frame = 0;
+        std::vector<gpu::Semaphore> m_image_availables;
+        std::vector<gpu::Semaphore> m_render_finisheds;
+        std::vector<gpu::Fence>     m_in_flight_fences;
+
+        bool m_need_recreate;
+    };
+} // namespace stormkit::engine
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit::engine {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE RenderSurface::~RenderSurface() {
+        for (auto&& fence : m_in_flight_fences) auto _ = fence.wait();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE RenderSurface::RenderSurface(RenderSurface&&) noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto RenderSurface::operator=(RenderSurface&&) noexcept
+        -> RenderSurface& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto RenderSurface::createFromWindow(const gpu::Instance& instance,
+                                                               const gpu::Device&   device,
+                                                               const gpu::Queue&    raster_queue,
+                                                               const wsi::Window&   window) noexcept
+        -> gpu::Expected<RenderSurface> try {
+        return RenderSurface { instance, device, raster_queue, window, Tag {} };
+    } catch (const gpu::Result& err) { return std::unexpected { err }; }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto RenderSurface::allocateFromWindow(const gpu::Instance& instance,
+                                                                 const gpu::Device&   device,
+                                                                 const gpu::Queue&    raster_queue,
+                                                                 const wsi::Window& window) noexcept
+        -> gpu::Expected<std::unique_ptr<RenderSurface>> try {
+        return std::make_unique<RenderSurface>(instance, device, raster_queue, window, Tag {});
+    } catch (const gpu::Result& err) { return std::unexpected { err }; }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    auto RenderSurface::bufferingCount() const noexcept -> UInt32 {
+        return as<UInt32>(std::size(images()));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto RenderSurface::images() const noexcept
+        -> const std::vector<gpu::SwapchainImage>& {
+        return m_swapchain->images();
+    }
+} // namespace stormkit::engine

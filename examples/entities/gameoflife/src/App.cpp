@@ -25,14 +25,17 @@ App::~App() {
     ilog("Cleaning");
 }
 
-auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char** argv) -> core::Int32 {
+auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char** argv) -> Int32 {
     using Clock = std::chrono::high_resolution_clock;
 
-    using namespace stormkit::core::literals;
+    using namespace stormkit::literals;
 
     doInitWindow();
 
-    m_board = image::Image { { BOARD_SIZE, BOARD_SIZE }, image::Image::Format::RGBA8_UNorm };
+    m_board = image::Image {
+        { BOARD_SIZE, BOARD_SIZE },
+        image::Image::Format::RGBA8_UNorm
+    };
 
     auto event_handler = wsi::EventHandler { *m_window };
     event_handler.addCallback(wsi::EventType::Closed,
@@ -40,19 +43,19 @@ auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char** arg
                                   m_window->close();
                               });
     event_handler.addCallback(wsi::EventType::KeyReleased, [this](const wsi::Event& event) {
-        const auto& event_data = core::as<wsi::KeyReleasedEventData>(event.data);
+        const auto& event_data = as<wsi::KeyReleasedEventData>(event.data);
 
         handleKeyboard(event_data);
     });
     event_handler.addCallback(wsi::EventType::MouseButtonPushed, [this](const wsi::Event& event) {
-        const auto& event_data = core::as<wsi::MouseButtonPushedEventData>(event.data);
+        const auto& event_data = as<wsi::MouseButtonPushedEventData>(event.data);
 
         handleMouse(event_data);
     });
 
     m_update_system = &m_entities.addSystem<UpdateBoardSystem>(m_board, *m_renderer);
 
-    for (auto i : core::range(m_board.extent().width * m_board.extent().height)) {
+    for (auto i : range(m_board.extent().width * m_board.extent().height)) {
         auto pixel = m_board.pixel(i);
         pixel[0]   = 0_b;
         pixel[1]   = 0_b;
@@ -81,15 +84,13 @@ auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char** arg
 auto App::doInitWindow() -> void {
     const auto window_style = wsi::WindowStyle::All;
 
-    m_window = std::make_unique<wsi::Window>(WINDOW_TITLE,
-                                             core::math::ExtentU { 800u, 600u },
-                                             window_style);
+    m_window = makeUnique<wsi::Window>(WINDOW_TITLE, math::ExtentU { 800u, 600u }, window_style);
 
-    m_renderer = std::make_unique<Renderer>(*m_window);
+    m_renderer = makeUnique<Renderer>(*m_window);
 }
 
 auto App::handleKeyboard(const stormkit::wsi::KeyReleasedEventData& event) -> void {
-    using namespace stormkit::core::literals;
+    using namespace stormkit::literals;
 
     const auto size = wsi::Window::getPrimaryMonitorSettings().sizes.back();
 
@@ -108,7 +109,7 @@ auto App::handleKeyboard(const stormkit::wsi::KeyReleasedEventData& event) -> vo
             }
             break;
         case wsi::Key::R:
-            for (auto i : core::range(m_board.extent().width * m_board.extent().height)) {
+            for (auto i : range(m_board.extent().width * m_board.extent().height)) {
                 auto pixel = m_board.pixel(i);
                 pixel[0]   = 0_b;
                 pixel[1]   = 0_b;
@@ -122,8 +123,8 @@ auto App::handleKeyboard(const stormkit::wsi::KeyReleasedEventData& event) -> vo
             m_is_on_edit_mode = !m_is_on_edit_mode;
             m_update_system->setEditModeEnabled(m_is_on_edit_mode);
             break;
-        case wsi::Key::Add: m_update_system->incrementDelta(core::Secondf { 0.01f }); break;
-        case wsi::Key::Substract: m_update_system->incrementDelta(core::Secondf { -0.01f }); break;
+        case wsi::Key::Add: m_update_system->incrementDelta(Secondf { 0.01f }); break;
+        case wsi::Key::Substract: m_update_system->incrementDelta(Secondf { -0.01f }); break;
         default: break;
     }
 }
@@ -133,11 +134,11 @@ auto App::handleMouse(const stormkit::wsi::MouseButtonPushedEventData& event) ->
         return;
     if (event.button != wsi::MouseButton::Left) return;
 
-    const auto cell_width  = core::as<float>(m_window->size().width) / core::as<float>(BOARD_SIZE);
-    const auto cell_height = core::as<float>(m_window->size().height) / core::as<float>(BOARD_SIZE);
+    const auto cell_width  = as<float>(m_window->size().width) / as<float>(BOARD_SIZE);
+    const auto cell_height = as<float>(m_window->size().height) / as<float>(BOARD_SIZE);
 
-    const auto x = glm::floor(core::as<float>(event.position.x) / cell_width);
-    const auto y = glm::floor(core::as<float>(event.position.y) / cell_height);
+    const auto x = glm::floor(as<float>(event.position.x) / cell_width);
+    const auto y = glm::floor(as<float>(event.position.y) / cell_height);
 
     const auto cells = m_entities.entitiesWithComponent<PositionComponent>();
     const auto it    = std::ranges::find_if(cells, [&](const auto e) {
@@ -151,7 +152,7 @@ auto App::handleMouse(const stormkit::wsi::MouseButtonPushedEventData& event) ->
         createCell(x, y);
 }
 
-auto App::createCell(stormkit::core::UInt32 x, stormkit::core::UInt32 y) -> void {
+auto App::createCell(stormkit::UInt32 x, stormkit::UInt32 y) -> void {
     auto  e        = m_entities.makeEntity();
     auto& position = m_entities.addComponent<PositionComponent>(e);
 

@@ -11,10 +11,11 @@ export module stormkit.Core:Parallelism.ThreadPool;
 import std;
 
 import :Utils.Algorithms;
-import :Utils.Numerics;
+import :Utils.NumericRange;
+import :TypeSafe.Integer;
 import :Parallelism.ThreadUtils;
 
-export namespace stormkit::core {
+export namespace stormkit { inline namespace core {
     class STORMKIT_API ThreadPool {
       public:
         static constexpr struct NoFutureType {
@@ -23,7 +24,7 @@ export namespace stormkit::core {
         template<class T>
         using Callback = std::function<T()>;
 
-        ThreadPool(Int worker_count = std::thread::hardware_concurrency() / 2);
+        explicit ThreadPool(Int worker_count = std::thread::hardware_concurrency() / 2);
         ~ThreadPool();
 
         ThreadPool(const ThreadPool&)                    = delete;
@@ -92,13 +93,13 @@ export namespace stormkit::core {
              std::invocable<class Range::element_type&> F>
     auto parallelTransformIf(ThreadPool& pool, Range&& range, Predicate&& predicate, F&& f)
         -> std::future<std::invoke_result_t<F, typename Range::element_type&>>;
-} // namespace stormkit::core
+}} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit::core {
+namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE ThreadPool::ThreadPool(Int worker_count)
@@ -257,10 +258,10 @@ namespace stormkit::core {
                  f         = std::forward<F>(f),
                  predicate = std::forward<Predicate>(predicate),
                  &pool]() {
-                    auto tasks =
-                        core::transformIf(range, predicate, [f = std::forward<F>(f)](auto& elem) {
-                            return f(elem);
-                        });
+                    auto tasks
+                        = core::transformIf(range, predicate, [f = std::forward<F>(f)](auto& elem) {
+                              return f(elem);
+                          });
 
                     auto futures = core::transform(tasks, [&pool](auto& l) {
                         return pool.postTask<OutputType>(std::move(l));
@@ -274,10 +275,10 @@ namespace stormkit::core {
                  f         = std::forward<F>(f),
                  predicate = std::forward<Predicate>(predicate),
                  &pool]() {
-                    auto tasks =
-                        core::transformIf(range, predicate, [f = std::forward<F>(f)](auto& elem) {
-                            return f(elem);
-                        });
+                    auto tasks
+                        = core::transformIf(range, predicate, [f = std::forward<F>(f)](auto& elem) {
+                              return f(elem);
+                          });
 
                     auto futures = core::transform(tasks, [&pool](auto& l) {
                         return pool.postTask<OutputType>(std::move(l));
@@ -287,4 +288,4 @@ namespace stormkit::core {
                 });
         }
     }
-} // namespace stormkit::core
+}} // namespace stormkit::core
