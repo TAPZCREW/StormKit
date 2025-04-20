@@ -84,8 +84,23 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<typename T>
     using AddConst = const T;
 
-    template<IsEnumeration T>
-    using UnderlyingType = std::underlying_type_t<T>;
+    template <typename T>
+    struct UnderlyingTypeTrait {
+        using Type = T;
+    };
+
+    template <IsContainedSemantics T>
+    struct UnderlyingTypeTrait<T> {
+        using Type = typename T::value_type;
+    };
+
+    template <IsEnumeration T>
+    struct UnderlyingTypeTrait<T> {
+        using Type = std::underlying_type_t<T>;
+    };
+
+    template <typename T>
+    using UnderlyingType = UnderlyingTypeTrait<T>::Type;
 }}} // namespace stormkit::core::meta
 
 ////////////////////////////////////////////////////////////////////
