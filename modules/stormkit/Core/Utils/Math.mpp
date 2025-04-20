@@ -523,9 +523,9 @@ namespace stormkit { inline namespace core { namespace math {
     /////////////////////////////////////
     template<core::meta::IsArithmetic T>
     constexpr auto Extent<T>::operator==(const Extent<T>& other) const noexcept -> bool {
-        return core::is<T>(width, other.width)
-               and core::is<T>(height, other.height)
-               and core::is<T>(depth, other.depth);
+        return core::is(width, other.width)
+               and core::is(height, other.height)
+               and core::is(depth, other.depth);
     }
 
     /////////////////////////////////////

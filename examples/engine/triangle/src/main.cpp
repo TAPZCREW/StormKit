@@ -35,9 +35,8 @@ auto main(std::span<const std::string_view> args) -> int {
         return app.run(args);
     } catch (const std::exception& e) {
         logger.flog("{}", e.what());
-        return -1;
     } catch (...) {
         logger.flog("Uncaught exception occured !");
-        return -1;
     }
+    return -1;
 }

@@ -34,12 +34,22 @@ export {
         using UInt16 = std::uint16_t;
         using UInt32 = std::uint32_t;
         using UInt64 = std::uint64_t;
+#ifdef __SIZEOF_INT128__
+        using UInt128 = __uint128_t;
+#else
+        using UInt128 = unsigned _m128;
+#endif
         using UInt   = std::uint_fast32_t;
 
         using Int8  = std::int8_t;
         using Int16 = std::int16_t;
         using Int32 = std::int32_t;
         using Int64 = std::int64_t;
+#ifdef __SIZEOF_INT128__
+        using Int128 = __int128_t;
+#else
+        using Int128 = _m128;
+#endif
         using Int   = std::int_fast32_t;
 
         using RangeExtent = std::size_t;

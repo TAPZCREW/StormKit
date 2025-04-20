@@ -75,7 +75,7 @@ namespace stormkit::image::details {
             for (auto [i, j] : multiRange(extent.height, extent.width)) {
                 const auto pixel = output_image.pixel(i * output_image.extent().width + j);
 
-                result += std::format("{} {} {}\n"sv, pixel[0], pixel[1], pixel[2]);
+                result += std::format("{} {} {}\n"sv, as<UInt16>(pixel[0]), as<UInt16>(pixel[1]), as<UInt16>(pixel[2]));
 
                 if (j == extent.width) result += '\n';
             }

@@ -1,8 +1,10 @@
--- set_policy("compatibility.version", "3.0")
+set_policy("compatibility.version", "3.0")
+--
+--
 
 modules = {
     core = {
-        public_packages = { "glm", "frozen", "unordered_dense", "magic_enum", "tl_function_ref" },
+        public_packages = { "glm", "frozen", "unordered_dense", "magic_enum master", "tl_function_ref" },
         modulename = "Core",
         has_headers = true,
         custom = function()
@@ -25,7 +27,7 @@ modules = {
          ]],
                 }, { configs = { languages = "c++23" }, includes = { "stacktrace" } })
 
-                if not has_stacktrace then
+                if not has_stacktrace and not target:is_plat("windows") then
                     print("No std C++23 stacktrace, falling back to cpptrace")
                     target:add("packages", "cpptrace", "libdwarf")
                 end
@@ -136,9 +138,9 @@ modules = {
         modulename = "Gpu",
         has_headers = true,
         public_packages = {
-            "vulkan-headers v1.3.297",
-            "vulkan-memory-allocator >=3.1.0",
-            "vulkan-memory-allocator-hpp_ support_vkhpp_module",
+            "vulkan-headers v1.4.309",
+            "vulkan-memory-allocator 3.2.0",
+            "vulkan-memory-allocator-hpp 3.2.1",
         },
         public_deps = { "stormkit-core", "stormkit-log", "stormkit-wsi", "stormkit-image" },
         packages = is_plat("linux") and {
@@ -206,7 +208,7 @@ includes("xmake/*.lua")
 if get_config("vsxmake") then add_rules("plugin.vsxmake.autoupdate") end
 
 if get_config("compile_commands") then
-    add_rules("plugin.compile_commands.autoupdate", { outputdir = ".vscode", lsp = "clangd" })
+    add_rules("plugin.compile_commands.autoupdate", { outputdir = "build", lsp = "clangd" })
 end
 
 add_rules(
@@ -271,6 +273,7 @@ option("tests_core", {
 option("sanitizers", { default = false, category = "root menu/build" })
 option("mold", { default = false, category = "root menu/build" })
 option("lto", { default = false, category = "root menu/build" })
+option("ci", { default = false, category = "root menu/build" })
 
 ---------------------------- module options ----------------------------
 option("log", { default = true, category = "root menu/modules" })
@@ -325,8 +328,8 @@ add_cxflags(
     "clang::-Wno-missing-field-initializers",
     "clang::-Wno-include-angled-in-module-purview",
     "clang::-Wno-unknown-attributes",
-    "clang::-Wno-deprecated-declarations",
-    "gcc::-fopenmp"
+    "clang::-Wno-deprecated-declarations"
+    -- "gcc::-fopenmp"
 )
 add_mxflags("clang::-Wno-missing-field-initializers")
 
@@ -344,15 +347,13 @@ elseif is_mode("releasedbg") then
     add_mxflags("-ggdb3", { tools = { "clang", "gcc" } })
 end
 
-  set_policy("build.c++.gcc.modules.cxx11abi", true)
-
 set_fpmodels("fast")
 add_vectorexts("fma")
 add_vectorexts("neon")
 add_vectorexts("avx", "avx2")
 add_vectorexts("sse", "sse2", "sse3", "ssse3", "sse4.2")
 
-set_warnings("all", "pedantic", "extra")
+set_warnings("all", "pedantic", "extra", "error")
 
 add_cxxflags("clang::-Wno-experimental-header-units")
 add_cxxflags("clang::-fcolor-diagnostics", "gcc::-fdiagnostics-color=always")
@@ -374,11 +375,13 @@ add_defines("MAGIC_ENUM_USE_STD_MODULE")
 add_defines("MAGIC_ENUM_DEFAULT_ENABLE_ENUM_FORMAT=0")
 add_defines("FROZEN_USE_STD_MODULE")
 
+set_policy("build.c++.modules.gcc.cxx11abi", true)
 if get_config("sanitizers") then
     set_policy("build.sanitizer.address", true)
     set_policy("build.sanitizer.undefined", true)
 end
 
+add_requireconfs("")
 if not is_plat("wasm") then
     add_requireconfs("vulkan-headers", { system = false })
     add_requireconfs("vulkan-memory-allocator")
@@ -389,7 +392,7 @@ if not is_plat("windows") then
   add_requireconfs("libktx", { configs = { cxflags = "-Wno-overriding-option" } }) 
 end
 
-add_requireconfs("*", { configs = { modules = true, std_import = true } })
+add_requireconfs("*", { configs = { modules = true, std_import = true, cpp = "latest" } })
 
 if get_config("lto") then
     set_policy("build.optimization.lto", true)
@@ -398,7 +401,14 @@ end
 
 add_requireconfs("libxkbcommon", { configs = { ["x11"] = true, wayland = true } })
 add_requireconfs("frozen", { system = false })
-add_requires("cpptrace")
+
+if not is_plat("windows") then
+    add_requires("cpptrace")
+end
+
+if get_config("ci") then
+    add_requireconfs("*", { system = false })
+end
 
 ---------------------------- targets ----------------------------
 for name, module in pairs(modules) do
@@ -502,9 +512,18 @@ for name, module in pairs(modules) do
                 add_mxxflags(module.cxxflags)
             end
 
+            if module.deps then add_deps(module.deps) end
+
             if module.public_deps then add_deps(module.public_deps, { public = true }) end
 
-            if module.deps then add_deps(module.deps, { public = is_kind("static") }) end
+            if module.packages then
+                local packages = {}
+                for _, package in ipairs(module.packages) do
+                    table.insert(packages, package:split(" ")[1])
+                end
+
+                add_packages(packages)
+            end
 
             if module.public_packages then
                 local packages = {}
@@ -513,15 +532,6 @@ for name, module in pairs(modules) do
                 end
 
                 add_packages(packages, { public = true })
-            end
-
-            if module.packages then
-                local packages = {}
-                for _, package in ipairs(module.packages) do
-                    table.insert(packages, package:split(" ")[1])
-                end
-
-                add_packages(packages, { public = false })
             end
 
             if module.frameworks then add_frameworks(module.frameworks, { public = is_kind("static") }) end

@@ -7,7 +7,7 @@ module;
 #include <stormkit/Core/PlatformMacro.hpp>
 
 #ifdef STORMKIT_OS_WINDOWS
-    #include <libloaderapi.h>
+    #include <windows.h>
 #else
     #include <dlfcn.h>
     #include <errno.h>

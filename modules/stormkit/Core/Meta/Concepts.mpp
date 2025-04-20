@@ -88,6 +88,9 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<class T>
     concept IsReference = IsLValueReference<T> or IsRValueReference<T>;
 
+    template<class T, class U>
+    concept IsReferenceTo = IsReference<T> and Is<std::remove_reference_t<T>, U>;
+
     template<class T>
     concept IsMovedOwningPointer = IsOwningPointer<T> and IsRValueReference<T>;
 
@@ -161,6 +164,13 @@ export namespace stormkit { inline namespace core { namespace meta {
         { not std::forward<T>(t) } -> details::IsBooleanTestable;
     };
 
+    template<class T>
+    concept IsContainedSemantics = requires(T &val) {
+        typename T::value_type;
+        { val.operator*() } -> IsReferenceTo<typename T::value_type>;
+        val.operator bool();
+    };
+    
     template<typename S, template<typename...> class T>
     concept IsSpecializationOf = requires(S&& s) {
         { details::isSpecializationOfHelper<T>(std::forward<S>(s)) } -> IsStrict<std::true_type>;

@@ -12,6 +12,7 @@ import std;
 
 import :Utils.Assert;
 import :Meta.Traits;
+import :Meta.Concepts;
 import :TypeSafe.Integer;
 
 export namespace stormkit { inline namespace core {
@@ -30,6 +31,14 @@ export namespace stormkit { inline namespace core {
                                          std::string_view pattern,
                                          std::string_view replacement) noexcept -> std::string;
 
+    template <meta::IsIntegral T>
+    [[nodiscard]]
+    constexpr auto fromString(std::string_view data, int base = 10) noexcept -> std::expected<T, std::errc>;
+    
+    template <meta::IsFloatingPoint T>
+    [[nodiscard]]
+    auto fromString(std::string_view data, std::chars_format fmt = std::chars_format::general) noexcept -> std::expected<T, std::errc>;
+    
     template<std::size_t N>
     struct ConstexprString {
         std::array<char, N> str {};
@@ -87,11 +96,9 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE constexpr auto toLower(std::string_view string) noexcept -> std::string {
+    STORMKIT_FORCE_INLINE constexpr auto toLower(std::string_view string) noexcept -> std::string {
         auto result = std::string { string };
         for (auto& c : result) c = toLower(c);
-        return result;
-
         return result;
     }
 
@@ -108,7 +115,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto constexpr toUpper(std::string_view string) noexcept -> std::string {
+    STORMKIT_FORCE_INLINE auto constexpr toUpper(std::string_view string) noexcept -> std::string {
         auto result = std::string { string };
         for (auto& c : result) c = toUpper(c);
         return result;
@@ -127,8 +134,8 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto constexpr toCZString(std::string_view value) noexcept -> const char* {
-        return std::data(value);
+    STORMKIT_FORCE_INLINE auto constexpr toCZString(std::string_view value) noexcept -> const char* {
+        return std::ranges::data(value);
     }
 
     ////////////////////////////////////////
@@ -139,11 +146,36 @@ namespace stormkit { inline namespace core {
         return in
                | std::views::split(pattern)
                | std::views::transform([replacement](auto&& substr) noexcept {
-                     return std::string { replacement }
-                            + std::string { std::ranges::begin(substr), std::ranges::end(substr) };
+                     auto out = std::string{};
+                     out.reserve(std::ranges::size(replacement) + std::ranges::size(substr));
+                     out += replacement;
+                     out += std::string_view{std::ranges::cbegin(substr), std::ranges::cend(substr)};
+                     return out;
                  })
                | std::views::join
                | std::views::drop(std::ranges::size(replacement))
                | std::ranges::to<std::string>();
+    }
+    
+    template <meta::IsIntegral T>
+    [[nodiscard]]
+    STORMKIT_INLINE
+    constexpr auto fromString(std::string_view data, int base) noexcept -> std::expected<T, std::errc> {
+        auto value = T{};
+        auto &&[_, errc] = std::from_chars(std::ranges::data(data), std::ranges::data(data) + std::size(data), value, base);
+        if(errc != std::errc{}) [[unlikely]] return std::unexpected<std::errc>{std::in_place, std::move(errc)};
+
+        return std::expected<T, std::errc>{std::in_place, value};
+    }
+
+    template <meta::IsFloatingPoint T>
+    [[nodiscard]]
+    STORMKIT_INLINE
+    auto fromString(std::string_view data, std::chars_format fmt) noexcept -> std::expected<T, std::errc> {
+        auto value = T{};
+        auto &&[_, errc] = std::from_chars(std::ranges::data(data), std::ranges::data(data) + std::ranges::size(data), value, fmt);
+        if(errc != std::errc{}) [[unlikely]] return std::unexpected<std::errc>{std::in_place, std::move(errc)};
+
+        return std::expected<T, std::errc>{std::in_place, value};
     }
 }} // namespace stormkit::core

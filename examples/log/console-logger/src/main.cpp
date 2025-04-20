@@ -60,6 +60,6 @@ auto main([[maybe_unused]] std::span<const std::string_view> args) -> int {
 
     const auto foo = Foo {};
     log::Logger::ilog("you can format complexes structures\n{}", foo);
-
+    
     return 0;
 }

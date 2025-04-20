@@ -114,7 +114,7 @@ export namespace stormkit::entities {
       protected:
         virtual auto onMessageReceived(const Message& message) -> void = 0;
 
-        Ref<EntityManager> m_manager;
+        Ref<const EntityManager> m_manager;
         HashSet<Entity>    m_entities;
 
         friend class EntityManager;
