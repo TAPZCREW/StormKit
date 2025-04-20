@@ -164,6 +164,13 @@ export namespace stormkit { inline namespace core { namespace meta {
         { not std::forward<T>(t) } -> details::IsBooleanTestable;
     };
 
+    template<class T>
+    concept IsContainedSemantics = requires(T &val) {
+        typename T::value_type;
+        { val.operator*() } -> IsReferenceTo<typename T::value_type>;
+        val.operator bool();
+    };
+    
     template<typename S, template<typename...> class T>
     concept IsSpecializationOf = requires(S&& s) {
         { details::isSpecializationOfHelper<T>(std::forward<S>(s)) } -> IsStrict<std::true_type>;
