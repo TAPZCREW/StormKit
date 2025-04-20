@@ -6,7 +6,7 @@ export module TriangleApp;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Gpu;
 import stormkit.Engine;
 import stormkit.Wsi;
@@ -131,7 +131,7 @@ auto TriangleApp::updateFrameGraph(engine::FrameGraphBuilder& graph,
                                      .scissors = { { .extent = m_window_extent } } },
                                   .color_blend_state = { .attachments = { {} } },
                                   .shader_state
-                                  = { .shaders = borrows(m_vertex_shader, m_fragment_shader) }
+                                  = { .shaders = as_refs(m_vertex_shader, m_fragment_shader) }
                     },
                               m_pipeline_layout,
                               *render_pass)

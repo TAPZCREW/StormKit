@@ -14,11 +14,11 @@ module;
     #endif
 #endif
 
-export module stormkit.Core:TypeSafe.Float;
+export module stormkit.core:typesafe.floating_point;
 
 import std;
 
-import :Meta.Concepts;
+import :meta.concepts;
 
 export namespace stormkit { inline namespace core {
 #ifdef __STDCPP_FLOAT16_T__
@@ -54,5 +54,5 @@ export namespace stormkit { inline namespace core {
     using Float = Float32;
 
     template<meta::IsFloatingPoint T>
-    inline constexpr auto Epsilon = std::numeric_limits<T>::epsilon();
+    inline constexpr auto EPSILON = std::numeric_limits<T>::epsilon();
 }} // namespace stormkit::core

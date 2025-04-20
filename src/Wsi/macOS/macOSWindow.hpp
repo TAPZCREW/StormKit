@@ -31,11 +31,11 @@ namespace stormkit::wsi::macos {
 
         struct Monitor {
             enum class Flags {
-                None    = 0,
+                NONE    = 0,
                 Primary = 1
             };
 
-            Flags       flags = Flags::None;
+            Flags       flags = Flags::NONE;
             std::string name;
 
             struct Extent {

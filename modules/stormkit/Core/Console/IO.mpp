@@ -8,25 +8,25 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:Console.IO;
+export module stormkit.core:console.io;
 
 import std;
 
 export namespace stormkit { inline namespace core {
-    [[nodiscard]] auto getSTDErr() noexcept -> std::FILE*;
-    [[nodiscard]] auto getSTDOut() noexcept -> std::FILE*;
+    [[nodiscard]] auto get_stderr() noexcept -> std::FILE*;
+    [[nodiscard]] auto get_stdout() noexcept -> std::FILE*;
 }} // namespace stormkit::core
 
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto getSTDErr() noexcept -> std::FILE* {
+    STORMKIT_FORCE_INLINE auto get_stderr() noexcept -> std::FILE* {
         return std::bit_cast<std::FILE*>(stderr);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto getSTDOut() noexcept -> std::FILE* {
+    STORMKIT_FORCE_INLINE auto get_stdout() noexcept -> std::FILE* {
         return std::bit_cast<std::FILE*>(stdout);
     }
 }} // namespace stormkit::core

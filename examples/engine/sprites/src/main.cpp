@@ -4,7 +4,7 @@
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Main;
 import stormkit.Log;
 import stormkit.Wsi;

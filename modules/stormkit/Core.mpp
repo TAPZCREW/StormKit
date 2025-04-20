@@ -2,16 +2,16 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.Core;
+export module stormkit.core;
 
-export import :Config;
-export import :Containers;
-export import :Console;
-export import :Coroutines;
-export import :Functional;
-export import :Hash;
-export import :Meta;
-export import :Parallelism;
-export import :String;
-export import :TypeSafe;
-export import :Utils;
+export import :config;
+export import :containers;
+export import :console;
+export import :coroutines;
+export import :functional;
+export import :hash;
+export import :meta;
+export import :parallelism;
+export import :string;
+export import :typesafe;
+export import :utils;

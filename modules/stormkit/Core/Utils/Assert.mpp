@@ -10,14 +10,14 @@ module;
     #define STORMKIT_ASSERT 1
 #endif
 
-export module stormkit.Core:Utils.Assert;
+export module stormkit.core:utils.contrat;
 
 import std;
 import frozen;
 
-import :Console;
-import :Utils.Stacktrace;
-import :Meta.Concepts;
+import :console;
+import :utils.stracktrace;
+import :meta.concepts;
 
 export namespace stormkit { inline namespace core {
     enum class AssertType {
@@ -26,13 +26,13 @@ export namespace stormkit { inline namespace core {
         PostCondition
     };
 
-    auto assertBase(bool                        cond,
+    auto assert_base(bool                        cond,
                     AssertType                  type,
                     std::string_view            message,
                     const std::source_location& location = std::source_location::current()) noexcept
         -> void;
 
-    consteval auto compileTimeAssertBase(bool             cond,
+    consteval auto consteval_assert_base(bool             cond,
                                          AssertType       type,
                                          std::string_view message) noexcept -> void;
 
@@ -122,28 +122,28 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto assertBase(bool                        cond,
+    STORMKIT_INLINE auto assert_base(bool                        cond,
                                     AssertType                  type,
                                     std::string_view            message,
                                     const std::source_location& location) noexcept -> void {
         if constexpr (STORMKIT_ASSERT == 1) {
             if (not cond) [[unlikely]] {
                 auto lock = std::unique_lock { mutex };
-                std::println(getSTDErr(),
+                std::println(get_stderr(),
                              "{} failed in \n"
                              "    > file:     {}:{}:{}\n"
                              "      function: {}\n"
                              "      reason:   {}",
-                             ConsoleStyle { .fg = ConsoleColor::Bright_Red,
+                             ConsoleStyle { .fg = ConsoleColor::BRIGHT_RED,
                                             .modifiers
-                                            = StyleModifier::Bold | StyleModifier::Inverse }
+                                            = StyleModifier::BOLD | StyleModifier::INVERSE }
                                  | "["s + casts::core::as<std::string>(type) + "]",
-                             ConsoleStyle { .fg = ConsoleColor::Green } | location.file_name(),
-                             ConsoleStyle { .fg = ConsoleColor::Blue } | location.line(),
-                             ConsoleStyle { .fg = ConsoleColor::Blue } | location.column(),
-                             ConsoleStyle { .fg = ConsoleColor::Yellow } | location.function_name(),
-                             ConsoleStyle { .fg        = ConsoleColor::Red,
-                                            .modifiers = StyleModifier::Bold }
+                             ConsoleStyle { .fg = ConsoleColor::GREEN } | location.file_name(),
+                             ConsoleStyle { .fg = ConsoleColor::BLUE } | location.line(),
+                             ConsoleStyle { .fg = ConsoleColor::BLUE } | location.column(),
+                             ConsoleStyle { .fg = ConsoleColor::YELLOW } | location.function_name(),
+                             ConsoleStyle { .fg        = ConsoleColor::RED,
+                                            .modifiers = StyleModifier::BOLD }
                                  | message);
 
                 std::terminate();
@@ -154,7 +154,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE consteval auto
-        compileTimeAssertBase(bool cond, AssertType type, std::string_view message) noexcept
+        consteval_assert_base(bool cond, AssertType type, std::string_view message) noexcept
         -> void {
         if (not cond) [[unlikely]] { constevalFailure(generateConstevalMessage(type, message)); }
     }
@@ -170,9 +170,9 @@ namespace stormkit { inline namespace core {
 #else
         if consteval {
 #endif
-            compileTimeAssertBase(cond, AssertType::Assertion, message);
+            consteval_assert_base(cond, AssertType::Assertion, message);
         } else {
-            assertBase(cond, AssertType::Assertion, message, location);
+            assert_base(cond, AssertType::Assertion, message, location);
         }
     }
 
@@ -194,9 +194,9 @@ namespace stormkit { inline namespace core {
 #else
         if consteval {
 #endif
-            compileTimeAssertBase(cond, AssertType::PreCondition, message);
+            consteval_assert_base(cond, AssertType::PreCondition, message);
         } else {
-            assertBase(cond, AssertType::PreCondition, message, location);
+            assert_base(cond, AssertType::PreCondition, message, location);
         }
     }
 
@@ -218,9 +218,9 @@ namespace stormkit { inline namespace core {
 #else
         if consteval {
 #endif
-            compileTimeAssertBase(cond, AssertType::PostCondition, message);
+            consteval_assert_base(cond, AssertType::PostCondition, message);
         } else {
-            assertBase(cond, AssertType::PostCondition, message, location);
+            assert_base(cond, AssertType::PostCondition, message, location);
         }
     }
 

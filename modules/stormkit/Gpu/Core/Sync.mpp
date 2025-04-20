@@ -10,7 +10,7 @@ export module stormkit.Gpu:Core.Sync;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Gpu.Vulkan;
 
 import :Core.Types;
@@ -100,9 +100,9 @@ namespace stormkit::gpu {
 
         device.vkHandle()
             .createFence(create_info)
-            .transform(core::monadic::set(m_vk_fence))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
-                                                core::monadic::throwAsException()));
+            .transform(core:.monadic::set(m_vk_fence))
+            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
+                                                core:.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////
@@ -129,7 +129,7 @@ namespace stormkit::gpu {
                 if (result == vk::Result::eNotReady) return Status::Unsignaled;
                 return Status::Signaled;
             })
-            .transform_error(core::monadic::narrow<Result>());
+            .transform_error(core:.monadic::narrow<Result>());
     }
 
     /////////////////////////////////////
@@ -170,7 +170,7 @@ namespace stormkit::gpu {
             std::chrono::duration_cast<std::chrono::nanoseconds>(wait_for).count());
         const auto possible_results = std::array { vk::Result::eSuccess, vk::Result::eNotReady };
 
-        if (std::ranges::any_of(possible_results, core::monadic::is(result))) [[likely]]
+        if (std::ranges::any_of(possible_results, core:.monadic::is(result))) [[likely]]
             return narrow<Result>(result);
 
         return std::unexpected { narrow<Result>(result) };
@@ -195,9 +195,9 @@ namespace stormkit::gpu {
 
         device.vkHandle()
             .createSemaphore(create_info)
-            .transform(core::monadic::set(m_vk_semaphore))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
-                                                core::monadic::throwAsException()));
+            .transform(core:.monadic::set(m_vk_semaphore))
+            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
+                                                core:.monadic::throw_as_exception()));
     };
 
     /////////////////////////////////////

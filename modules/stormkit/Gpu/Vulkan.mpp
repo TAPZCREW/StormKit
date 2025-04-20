@@ -10,8 +10,8 @@ export module stormkit.Gpu.Vulkan;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 export import vulkan_hpp;
 export import vk_mem_alloc_hpp;
-export import :Utils;
+export import :utils;

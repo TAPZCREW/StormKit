@@ -17,7 +17,7 @@ module stormkit.Gpu;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Wsi;
 
 import stormkit.Gpu.Vulkan;
@@ -92,8 +92,8 @@ namespace stormkit::gpu {
 #endif
 
         create_surface()
-            .transform(core::monadic::set(m_vk_surface))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
-                                                core::monadic::throwAsException()));
+            .transform(core:.monadic::set(m_vk_surface))
+            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
+                                                core:.monadic::throw_as_exception()));
     }
 } // namespace stormkit::gpu

@@ -6,26 +6,26 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:String.Operations;
+export module stormkit.core:string.operations;
 
 import std;
 
-import :Utils.Assert;
-import :Meta.Traits;
-import :Meta.Concepts;
-import :TypeSafe.Integer;
+import :utils.contrat;
+import :meta.traits;
+import :meta.concepts;
+import :typesafe.integer;
 
 export namespace stormkit { inline namespace core {
     [[nodiscard]] constexpr auto split(std::string_view string, char delim) noexcept
         -> std::vector<std::string>;
-    [[nodiscard]] constexpr auto toLower(std::string_view string) noexcept -> std::string;
-    [[nodiscard]] constexpr auto toUpper(std::string_view string) noexcept -> std::string;
-    [[nodiscard]] auto toLower(std::string_view string, const std::locale& locale) noexcept
+    [[nodiscard]] constexpr auto to_lower(std::string_view string) noexcept -> std::string;
+    [[nodiscard]] constexpr auto to_upper(std::string_view string) noexcept -> std::string;
+    [[nodiscard]] auto to_lower(std::string_view string, const std::locale& locale) noexcept
         -> std::string;
-    [[nodiscard]] auto toUpper(std::string_view string, const std::locale& locale) noexcept
+    [[nodiscard]] auto to_upper(std::string_view string, const std::locale& locale) noexcept
         -> std::string;
 
-    [[nodiscard]] constexpr auto toCZString(std::string_view value) noexcept -> const char*;
+    [[nodiscard]] constexpr auto as_czstring(std::string_view value) noexcept -> const char*;
 
     [[nodiscard]] constexpr auto replace(std::string_view in,
                                          std::string_view pattern,
@@ -33,11 +33,11 @@ export namespace stormkit { inline namespace core {
 
     template <meta::IsIntegral T>
     [[nodiscard]]
-    constexpr auto fromString(std::string_view data, int base = 10) noexcept -> std::expected<T, std::errc>;
+    constexpr auto from_string(std::string_view data, int base = 10) noexcept -> std::expected<T, std::errc>;
     
     template <meta::IsFloatingPoint T>
     [[nodiscard]]
-    auto fromString(std::string_view data, std::chars_format fmt = std::chars_format::general) noexcept -> std::expected<T, std::errc>;
+    auto from_string(std::string_view data, std::chars_format fmt = std::chars_format::general) noexcept -> std::expected<T, std::errc>;
     
     template<std::size_t N>
     struct ConstexprString {
@@ -66,12 +66,12 @@ export namespace stormkit { inline namespace core {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit { inline namespace core {
-    STORMKIT_FORCE_INLINE constexpr auto toUpper(char c) -> char {
+    STORMKIT_FORCE_INLINE constexpr auto to_upper(char c) -> char {
         if (c >= 'a' && c <= 'z') return c - 32;
         return c;
     }
 
-    STORMKIT_FORCE_INLINE constexpr auto toLower(char c) -> char {
+    STORMKIT_FORCE_INLINE constexpr auto to_lower(char c) -> char {
         if (c >= 'A' && c <= 'Z') return c + 32;
         return c;
     }
@@ -96,15 +96,15 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE constexpr auto toLower(std::string_view string) noexcept -> std::string {
+    STORMKIT_FORCE_INLINE constexpr auto to_lower(std::string_view string) noexcept -> std::string {
         auto result = std::string { string };
-        for (auto& c : result) c = toLower(c);
+        for (auto& c : result) c = to_lower(c);
         return result;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto toLower(std::string_view string, const std::locale& locale) noexcept
+    STORMKIT_INLINE auto to_lower(std::string_view string, const std::locale& locale) noexcept
         -> std::string {
         auto  result = std::string { string };
         auto& facet  = std::use_facet<std::ctype<typename std::string_view::value_type>>(locale);
@@ -115,15 +115,15 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto constexpr toUpper(std::string_view string) noexcept -> std::string {
+    STORMKIT_FORCE_INLINE auto constexpr to_upper(std::string_view string) noexcept -> std::string {
         auto result = std::string { string };
-        for (auto& c : result) c = toUpper(c);
+        for (auto& c : result) c = to_upper(c);
         return result;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto toUpper(std::string_view string, const std::locale& locale) noexcept
+    STORMKIT_INLINE auto to_upper(std::string_view string, const std::locale& locale) noexcept
         -> std::string {
         auto  result = std::string { string };
         auto& facet  = std::use_facet<std::ctype<typename std::string_view::value_type>>(locale);
@@ -134,7 +134,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto constexpr toCZString(std::string_view value) noexcept -> const char* {
+    STORMKIT_FORCE_INLINE auto constexpr as_czstring(std::string_view value) noexcept -> const char* {
         return std::ranges::data(value);
     }
 
@@ -160,7 +160,7 @@ namespace stormkit { inline namespace core {
     template <meta::IsIntegral T>
     [[nodiscard]]
     STORMKIT_INLINE
-    constexpr auto fromString(std::string_view data, int base) noexcept -> std::expected<T, std::errc> {
+    constexpr auto from_string(std::string_view data, int base) noexcept -> std::expected<T, std::errc> {
         auto value = T{};
         auto &&[_, errc] = std::from_chars(std::ranges::data(data), std::ranges::data(data) + std::size(data), value, base);
         if(errc != std::errc{}) [[unlikely]] return std::unexpected<std::errc>{std::in_place, std::move(errc)};
@@ -171,7 +171,7 @@ namespace stormkit { inline namespace core {
     template <meta::IsFloatingPoint T>
     [[nodiscard]]
     STORMKIT_INLINE
-    auto fromString(std::string_view data, std::chars_format fmt) noexcept -> std::expected<T, std::errc> {
+    auto from_string(std::string_view data, std::chars_format fmt) noexcept -> std::expected<T, std::errc> {
         auto value = T{};
         auto &&[_, errc] = std::from_chars(std::ranges::data(data), std::ranges::data(data) + std::ranges::size(data), value, fmt);
         if(errc != std::errc{}) [[unlikely]] return std::unexpected<std::errc>{std::in_place, std::move(errc)};

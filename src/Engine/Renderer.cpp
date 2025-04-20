@@ -6,7 +6,7 @@ module stormkit.Engine;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Log;
 import stormkit.Wsi;
 import stormkit.Gpu;
@@ -205,7 +205,7 @@ namespace stormkit::engine {
     auto Renderer::threadLoop(std::mutex&       framegraph_mutex,
                               std::atomic_bool& rebuild_graph,
                               std::stop_token   token) noexcept -> void {
-        setCurrentThreadName("StormKit:RenderThread");
+        set_current_thread_name("StormKit:RenderThread");
 
         m_command_buffers
             = m_main_command_pool->createCommandBuffers(m_device, m_surface->bufferingCount());
@@ -285,10 +285,10 @@ namespace stormkit::engine {
                                        gpu::ImageLayout::Present_Src);
         blit_cmb.end();
 
-        auto wait       = borrows<std::array>(semaphore, frame.image_available);
+        auto wait       = as_refs<std::array>(semaphore, frame.image_available);
         auto stage_mask = std::array { gpu::PipelineStageFlag::Color_Attachment_Output,
                                        gpu::PipelineStageFlag::Transfer };
-        auto signal     = borrows<std::array>(frame.render_finished);
+        auto signal     = as_refs<std::array>(frame.render_finished);
 
         blit_cmb.submit(m_raster_queue, wait, stage_mask, signal, frame.in_flight);
         return frame;

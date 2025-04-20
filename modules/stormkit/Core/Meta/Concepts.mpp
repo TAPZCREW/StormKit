@@ -2,7 +2,7 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.Core:Meta.Concepts;
+export module stormkit.core:meta.concepts;
 
 import std;
 
@@ -11,12 +11,13 @@ namespace stormkit { inline namespace core { namespace meta::details {
     concept IsBooleanTestable = std::convertible_to<T, bool>;
 
     template<template<typename...> class T, typename... Args>
-    constexpr auto isSpecializationOfHelper(const T<Args...>&) noexcept -> std::true_type {
+    constexpr auto is_specialization_of_helper(const T<Args...>&) noexcept -> std::true_type {
         return {};
     }
 
     template<template<typename, auto...> class T, typename T2, auto... Args>
-    constexpr auto isSpecializationOfWithHelper(const T<T2, Args...>&) noexcept -> std::true_type {
+    constexpr auto is_specialization_of_with_helper(const T<T2, Args...>&) noexcept
+        -> std::true_type {
         return {};
     }
 }}} // namespace stormkit::core::meta::details
@@ -49,6 +50,9 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsByte = IsStrict<T, std::byte>;
 
     template<class T>
+    concept IsByteSized = sizeof(T) == sizeof(std::byte);
+
+    template<class T>
     concept IsNotByte = not IsByte<T>;
 
     template<class T>
@@ -58,13 +62,13 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsRawPointer = std::is_pointer_v<T>;
 
     template<class T>
-        concept IsNonOwningPointer = IsRawPointer<T> or (requires {
-            typename T::element_type;
-        } and requires(T a) {
-            { a.operator->() } -> std::convertible_to<decltype(&*a)>;
-            { a.operator*() };
-            { static_cast<bool>(a) };
-        });
+    concept IsNonOwningPointer = IsRawPointer<T> or (requires {
+        typename T::element_type;
+    } and requires(T a) {
+        { a.operator->() } -> std::convertible_to<decltype(&*a)>;
+        { a.operator*() };
+        { static_cast<bool>(a) };
+    });
 
     template<class T>
     concept IsOwningPointer = IsNonOwningPointer<T> and requires(T a) {
@@ -74,10 +78,8 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<class T>
     concept IsPointer = IsNonOwningPointer<T> or IsOwningPointer<T>;
 
-    // clang-format off
-        template<class T>
-        concept IsNotPointer = not IsPointer<T>;
-    // clang-format on
+    template<class T>
+    concept IsNotPointer = not IsPointer<T>;
 
     template<class T>
     concept IsLValueReference = std::is_lvalue_reference_v<T>;
@@ -87,6 +89,9 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     template<class T>
     concept IsReference = IsLValueReference<T> or IsRValueReference<T>;
+
+    template<class T>
+    concept IsNotReference = not IsReference<T>;
 
     template<class T, class U>
     concept IsReferenceTo = IsReference<T> and Is<std::remove_reference_t<T>, U>;
@@ -99,10 +104,8 @@ export namespace stormkit { inline namespace core { namespace meta {
         = (IsOwningPointer<std::remove_cvref_t<T>> and not IsMovedOwningPointer<T>)
           or IsNonOwningPointer<std::remove_cvref_t<T>>;
 
-    // clang-format off
-        template<class T>
-        concept IsNotReference = not IsReference<T>;
-    // clang-format on
+    template<typename T>
+    concept IsRawPointerOrLValueReference = IsRawPointer<T> or IsLValueReference<T>;
 
     template<class T>
     concept IsIndirection = IsLValueReference<T> or IsPointer<T>;
@@ -165,20 +168,20 @@ export namespace stormkit { inline namespace core { namespace meta {
     };
 
     template<class T>
-    concept IsContainedSemantics = requires(T &val) {
+    concept IsContainedSemantics = requires(T& val) {
         typename T::value_type;
         { val.operator*() } -> IsReferenceTo<typename T::value_type>;
         val.operator bool();
     };
-    
+
     template<typename S, template<typename...> class T>
     concept IsSpecializationOf = requires(S&& s) {
-        { details::isSpecializationOfHelper<T>(std::forward<S>(s)) } -> IsStrict<std::true_type>;
+        { details::is_specialization_of_helper<T>(std::forward<S>(s)) } -> IsStrict<std::true_type>;
     };
 
     template<typename S, template<typename, auto...> class T>
     concept IsSpecializationWithNTTPOf = requires(S&& s) {
-        { details::isSpecializationOfHelper<T>(std::forward<S>(s)) } -> IsStrict<std::true_type>;
+        { details::is_specialization_of_helper<T>(std::forward<S>(s)) } -> IsStrict<std::true_type>;
     };
 
     template<class T>
@@ -246,6 +249,8 @@ export namespace stormkit { inline namespace core { namespace meta {
         { first == second } -> IsBooleanTestable;
     };
 
-    template<typename T, typename ... Args>
-    concept EnableCtor = sizeof...(Args) != 1 || (sizeof...(Args) == 1 && !Is<T, typename std::remove_cvref<Args...>::type>);
+    template<typename T, typename... Args>
+    concept EnableCtor
+        = sizeof...(Args) != 1
+          || (sizeof...(Args) == 1 && !Is<T, typename std::remove_cvref<Args...>::type>);
 }}} // namespace stormkit::core::meta

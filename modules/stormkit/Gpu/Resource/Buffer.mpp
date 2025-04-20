@@ -10,7 +10,7 @@ export module stormkit.Gpu:Resource.Buffer;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Gpu.Vulkan;
 
 import :Core;
@@ -263,7 +263,7 @@ namespace stormkit::gpu {
     template<meta::IsNot<std::span<const Byte>> T>
     STORMKIT_FORCE_INLINE auto
         Buffer::upload(const Device& device, const T& data, RangeOffset offset) -> void {
-        const auto bytes = asByteView(data);
+        const auto bytes = as_bytes(data);
 
         auto ptr = map(device, offset, std::size(bytes));
 

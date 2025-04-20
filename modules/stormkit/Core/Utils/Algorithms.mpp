@@ -2,16 +2,16 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.Core:Utils.Algorithms;
+export module stormkit.core:utils.algorithms;
 
 import std;
 
-import :Meta;
+import :meta;
 
 export namespace stormkit { inline namespace core {
     template<std::ranges::input_range                                             Range,
              meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type> Predicate>
-    [[nodiscard]] constexpr auto copyIf(Range&& input, Predicate&& predicate) noexcept;
+    [[nodiscard]] constexpr auto copy_if(Range&& input, Predicate&& predicate) noexcept;
 
     template<std::ranges::input_range                                               Range,
              std::invocable<const typename std::remove_cvref_t<Range>::value_type&> Lambda>
@@ -21,7 +21,7 @@ export namespace stormkit { inline namespace core {
              meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type>   Predicate,
              std::invocable<const typename std::remove_cvref_t<Range>::value_type&> Lambda>
     [[nodiscard]] constexpr auto
-        transformIf(Range&& input, Predicate&& predicate, Lambda&& lambda) noexcept;
+        transform_if(Range&& input, Predicate&& predicate, Lambda&& lambda) noexcept;
 
     template<
         std::ranges::input_range                                               Range,
@@ -31,7 +31,7 @@ export namespace stormkit { inline namespace core {
             std::invoke_result_t<Lambda, const typename std::remove_cvref_t<Range>::value_type&>>
             Iterator>
     constexpr auto
-        transformIf(Range&& input, Iterator&& it, Predicate&& predicate, Lambda&& lambda) noexcept
+        transform_if(Range&& input, Iterator&& it, Predicate&& predicate, Lambda&& lambda) noexcept
         -> void;
 }} // namespace stormkit::core
 
@@ -44,7 +44,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<std::ranges::input_range                                             Range,
              meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type> Predicate>
-    constexpr auto copyIf(Range&& input, Predicate&& predicate) noexcept {
+    constexpr auto copy_if(Range&& input, Predicate&& predicate) noexcept {
         auto output = std::vector<class std::remove_cvref_t<Range>::value_type> {};
 
         output.reserve(std::size(input));
@@ -75,7 +75,7 @@ namespace stormkit { inline namespace core {
     template<std::ranges::input_range                                               Range,
              meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type>   Predicate,
              std::invocable<const typename std::remove_cvref_t<Range>::value_type&> Lambda>
-    constexpr auto transformIf(Range&& input, Predicate&& predicate, Lambda&& lambda) noexcept {
+    constexpr auto transform_if(Range&& input, Predicate&& predicate, Lambda&& lambda) noexcept {
         auto output = std::vector<
             std::invoke_result_t<std::remove_cvref_t<Lambda>,
                                  const typename std::remove_cvref_t<Range>::value_type&>> {};
@@ -99,7 +99,7 @@ namespace stormkit { inline namespace core {
             std::invoke_result_t<Lambda, const typename std::remove_cvref_t<Range>::value_type&>>
             Iterator>
     constexpr auto
-        transformIf(Range&& input, Iterator&& it, Predicate&& predicate, Lambda&& lambda) noexcept
+        transform_if(Range&& input, Iterator&& it, Predicate&& predicate, Lambda&& lambda) noexcept
         -> void {
         std::ranges::for_each(input, [&](auto& elem) {
             if (predicate(elem)) *it++ = lambda(elem);

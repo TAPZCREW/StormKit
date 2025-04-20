@@ -16,8 +16,8 @@
 #define ALLOCATE_HELPERS(T)                                     \
     template<class... Args>                                     \
     [[nodiscard]] static inline auto allocate(Args&&... args) { \
-        return makeUnique<T>(std::forward<Args>(args)...)       \
-            .transform_error(stormkit::core::monadic::assert()) \
+        return allocate<T>(std::forward<Args>(args)...)       \
+            .transform_error(stormkit::core:.monadic::assert()) \
             .value();                                           \
     }
 

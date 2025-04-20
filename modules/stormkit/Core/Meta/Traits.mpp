@@ -2,11 +2,11 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.Core:Meta.Traits;
+export module stormkit.core:meta.traits;
 
 import std;
 
-import :Meta.Concepts;
+import :meta.concepts;
 
 export namespace stormkit { inline namespace core { namespace meta {
     template<class T>
@@ -37,13 +37,13 @@ export namespace stormkit { inline namespace core { namespace meta {
     using RangeType = CanonicalType<decltype(*std::begin(std::declval<Range>()))>;
 
     template<IsArithmetic T, IsArithmetic V>
-    constexpr auto isGreater() noexcept;
+    constexpr auto is_greater() noexcept;
 
     template<IsArithmetic T, IsArithmetic V>
-    using SafeNarrowHelperType = std::conditional_t<isGreater<T, V>(), T, V>;
+    using SafeNarrowHelperType = std::conditional_t<is_greater<T, V>(), T, V>;
 
     template<IsArithmetic T, IsArithmetic V>
-    using SafeNarrowHelperOtherType = std::conditional_t<isGreater<T, V>(), V, T>;
+    using SafeNarrowHelperOtherType = std::conditional_t<is_greater<T, V>(), V, T>;
 
     template<class T, typename U>
     struct ConstnessLikeTrait {
@@ -111,7 +111,7 @@ namespace stormkit { inline namespace core { namespace meta {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<IsArithmetic T, IsArithmetic V>
-    constexpr auto isGreater() noexcept {
+    constexpr auto is_greater() noexcept {
         using Type = decltype(T {} + V {});
 
         return static_cast<Type>(std::numeric_limits<T>::max())

@@ -6,7 +6,7 @@ module stormkit.Engine;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Gpu;
 
 import :Renderer.FrameGraph;
@@ -48,7 +48,7 @@ namespace stormkit::engine {
         -> std::unique_ptr<BakedFrameGraph> {
         auto&& [backbuffer, data] = allocatePhysicalResources(command_pool, device);
 
-        return makeUnique<BakedFrameGraph>(backbuffer, std::move(data), old);
+        return allocate<BakedFrameGraph>(backbuffer, std::move(data), old);
     }
 
     //////////////////////////////////////
@@ -334,7 +334,7 @@ namespace stormkit::engine {
 
         auto output = RenderPassData {};
         output.description.attachments
-            = moveAndConcat(std::move(creates), std::move(reads), std::move(writes));
+            = move_and_concat(std::move(creates), std::move(reads), std::move(writes));
 
         auto color_refs = std::vector<gpu::Subpass::Ref> {};
         color_refs.reserve(std::size(output.description.attachments));
@@ -403,7 +403,7 @@ namespace stormkit::engine {
                                                      .value());
                 device.setObjectName(gpu_image, std::format("FrameGraph:Image:{}", image.name));
 
-                if (image.id == m_final_resource) output.backbuffer = borrow(gpu_image);
+                if (image.id == m_final_resource) output.backbuffer = as_ref(gpu_image);
 
                 auto& gpu_image_view = output.image_views.emplace_back(
                     gpu::ImageView::create(device, gpu_image).transform_error(expects()).value());
@@ -445,12 +445,12 @@ namespace stormkit::engine {
                                                           task.clear_values,
                                                           true);
 
-                              const auto command_buffers = borrows<std::array>(task.cmb);
+                              const auto command_buffers = as_refs<std::array>(task.cmb);
                               output.cmb->executeSubCommandBuffers(command_buffers);
                               output.cmb->endRenderPass();
                           },
                            [&output](const BakedFrameGraphBuilder::Data::ComputeTask& task) {
-                               const auto command_buffers = borrows<std::array>(task.cmb);
+                               const auto command_buffers = as_refs<std::array>(task.cmb);
                                output.cmb->executeSubCommandBuffers(command_buffers);
                            } };
         for (auto&& task : output.tasks) std::visit(visitors, task);

@@ -10,7 +10,7 @@ export module stormkit.Image;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 export namespace stormkit::image {
     class STORMKIT_API Image {

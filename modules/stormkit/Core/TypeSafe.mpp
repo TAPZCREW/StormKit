@@ -2,12 +2,12 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.Core:TypeSafe;
+export module stormkit.core:typesafe;
 
-export import :TypeSafe.Boolean;
-export import :TypeSafe.Byte;
-export import :TypeSafe.Ref;
-export import :TypeSafe.Integer;
-export import :TypeSafe.Float;
-export import :TypeSafe.AsCast;
-export import :TypeSafe.Flags;
+export import :typesafe.boolean;
+export import :typesafe.byte;
+export import :typesafe.ref;
+export import :typesafe.integer;
+export import :typesafe.floating_point;
+export import :typesafe.integer_casts;
+export import :typesafe.flags;

@@ -2,7 +2,7 @@ module;
 
 #include <tl/function_ref.hpp>
 
-export module stormkit.Core:Utils.FunctionRef;
+export module stormkit.core:utils.function_ref;
 
 export namespace stormkit { inline namespace core {
     using tl::swap;

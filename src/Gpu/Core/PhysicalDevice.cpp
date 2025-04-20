@@ -6,7 +6,7 @@ module stormkit.Gpu;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import stormkit.Gpu.Vulkan;
 

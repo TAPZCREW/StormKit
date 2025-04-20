@@ -3,7 +3,7 @@ module;
 #include <cassert>
 #include <version>
 
-export module stormkit.Core:Coroutines;
+export module stormkit.core:coroutines;
 
 export import std;
 

@@ -2,7 +2,7 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.Core:Hash.HashMap;
+export module stormkit.core:hash.map;
 
 import std;
 

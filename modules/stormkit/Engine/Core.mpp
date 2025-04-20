@@ -10,7 +10,7 @@ export module stormkit.Engine:Core;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Entities;
 import stormkit.Wsi;
 

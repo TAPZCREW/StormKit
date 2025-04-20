@@ -21,7 +21,7 @@ export module stormkit.Wsi:Linux.Wayland.WindowImpl;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Wsi;
 
 import :Common.WindowImplBase;

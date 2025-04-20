@@ -12,7 +12,7 @@ module;
 
 export module Test;
 
-import stormkit.Core;
+import stormkit.core;
 import std;
 import frozen;
 
@@ -68,18 +68,18 @@ namespace test {
     namespace {
         constexpr auto StyleMap = frozen::make_unordered_map<Status, stormkit::ConsoleStyle>({
             { Status::Passed,
-             stormkit::ConsoleStyle { .fg = stormkit::ConsoleColor::Black,
-                                       .bg = stormkit::ConsoleColor::Green } },
+             stormkit::ConsoleStyle { .fg = stormkit::ConsoleColor::BLACK,
+                                       .bg = stormkit::ConsoleColor::GREEN } },
             { Status::NotPassed,
-             stormkit::ConsoleStyle { .fg = stormkit::ConsoleColor::Black,
-                                       .bg = stormkit::ConsoleColor::Red }   },
+             stormkit::ConsoleStyle { .fg = stormkit::ConsoleColor::BLACK,
+                                       .bg = stormkit::ConsoleColor::RED }   },
             { Status::CheckMark,
              stormkit::ConsoleStyle {
-                  .fg = stormkit::ConsoleColor::Green,
+                  .fg = stormkit::ConsoleColor::GREEN,
               }                                                              },
             { Status::CrossMark,
              stormkit::ConsoleStyle {
-                  .fg = stormkit::ConsoleColor::Red,
+                  .fg = stormkit::ConsoleColor::RED,
               }                                                              },
         });
 

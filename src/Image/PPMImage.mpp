@@ -6,7 +6,7 @@ export module stormkit.Image:PPMImage;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Image;
 
 export namespace stormkit::image::details {
@@ -72,7 +72,7 @@ namespace stormkit::image::details {
             auto result = std::format("P3\n{}\n{}\n255\n"sv, data.extent.width, data.extent.height);
 
             const auto& extent = output_image.extent();
-            for (auto [i, j] : multiRange(extent.height, extent.width)) {
+            for (auto [i, j] : multi_range(extent.height, extent.width)) {
                 const auto pixel = output_image.pixel(i * output_image.extent().width + j);
 
                 result += std::format("{} {} {}\n"sv, as<UInt16>(pixel[0]), as<UInt16>(pixel[1]), as<UInt16>(pixel[2]));
@@ -81,12 +81,12 @@ namespace stormkit::image::details {
             }
 
             output.reserve(std::size(result));
-            std::ranges::copy(asByteView(result), std::back_inserter(output));
+            std::ranges::copy(as_bytes(result), std::back_inserter(output));
         } else if (args == image::Image::CodecArgs::Binary) {
             auto header = std::format("P3\n{}\n{}\n255\n"sv, data.extent.width, data.extent.height);
             output.reserve(std::size(output) + std::size(output_image));
 
-            std::ranges::copy(asByteView(header), std::back_inserter(output));
+            std::ranges::copy(as_bytes(header), std::back_inserter(output));
             std::ranges::copy(output_image, std::back_inserter(output));
         }
 

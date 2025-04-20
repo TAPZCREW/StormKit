@@ -13,7 +13,7 @@ module stormkit.Gpu;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Log;
 
 import stormkit.Gpu.Vulkan;
@@ -124,7 +124,7 @@ namespace stormkit::gpu {
                                    std::span<const CZString>    extensions) noexcept -> bool {
             // clang-format off
             const auto ext = extensions 
-                             | std::views::transform(core::monadic::init<std::string_view>())
+                             | std::views::transform(core:.monadic::init<std::string_view>())
                              | std::ranges::to<std::vector>();
             // clang-format on
             return checkExtensionSupport(supported_extensions, ext);
@@ -185,7 +185,7 @@ namespace stormkit::gpu {
                                      .setPEnabledLayerNames(validation_layers);
 
         return m_vk_context->createInstance(create_info)
-            .transform(core::monadic::set(m_vk_instance))
+            .transform(core:.monadic::set(m_vk_instance))
             .and_then(bindFront(&Instance::doInitDebugReportCallback, this))
             .transform(
                 [this]() noexcept { VULKAN_HPP_DEFAULT_DISPATCHER.init(*m_vk_instance.get()); });
@@ -212,7 +212,7 @@ namespace stormkit::gpu {
         };
 
         return m_vk_instance->createDebugUtilsMessengerEXT(create_info)
-            .transform(core::monadic::set(m_vk_messenger))
+            .transform(core:.monadic::set(m_vk_messenger))
             .transform([] noexcept { ilog("Validation layers successfully enabled !"); });
     }
 

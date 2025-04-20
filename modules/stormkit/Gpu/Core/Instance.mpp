@@ -12,7 +12,7 @@ export module stormkit.Gpu:Core.Instance;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Wsi;
 import stormkit.Gpu.Vulkan;
 
@@ -220,8 +220,8 @@ namespace stormkit::gpu {
         doInitInstance()
             .and_then(bindFront(&Instance::doInitDebugReportCallback, this))
             .and_then(bindFront(&Instance::doRetrievePhysicalDevices, this))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
-                                                core::monadic::throwAsException()));
+            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
+                                                core:.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////

@@ -8,23 +8,23 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:Utils.Color;
+export module stormkit.core:utils.color;
 
 import std;
 
-import :Hash;
-import :TypeSafe.Integer;
-import :Utils.Math;
-import :Meta;
+import :hash;
+import :typesafe.integer;
+import :utils.math;
+import :meta;
 
 export {
     namespace stormkit { inline namespace core {
-        constexpr auto colorComponentAs(UInt8 component) noexcept -> float;
+        constexpr auto color_component_as(UInt8 component) noexcept -> float;
 
-        constexpr auto colorComponentAs(float component) noexcept -> UInt8;
+        constexpr auto color_component_as(float component) noexcept -> UInt8;
 
         template<meta::IsColorComponent T>
-        constexpr auto maxColorComponentValue() noexcept -> T;
+        constexpr auto max_color_component_value() noexcept -> T;
 
         template<meta::IsColorComponent T>
         struct RGBColor {
@@ -34,7 +34,7 @@ export {
             constexpr RGBColor(ValueType red,
                                ValueType green,
                                ValueType blue,
-                               ValueType alpha = maxColorComponentValue<ValueType>()) noexcept;
+                               ValueType alpha = max_color_component_value<ValueType>()) noexcept;
 
             constexpr explicit RGBColor(const math::Vector3<ValueType>& vector) noexcept;
 
@@ -73,122 +73,122 @@ export {
         ///```
         /// | name        | red |green|blue |alpha|
         /// |-------------|-----|-----|-----|-----|
-        /// | Black       | 0   | 0   | 0   | 255 |
+        /// | BLACK       | 0   | 0   | 0   | 255 |
         /// | Gray        | 127 | 127 | 127 | 255 |
-        /// | Silver      | 190 | 190 | 190 | 255 |
-        /// | White       | 255 | 255 | 255 | 255 |
+        /// | SILVER      | 190 | 190 | 190 | 255 |
+        /// | WHITE       | 255 | 255 | 255 | 255 |
         /// | Maroon      | 127 | 0   | 0   | 255 |
-        /// | Red         | 255 | 0   | 0   | 255 |
+        /// | RED         | 255 | 0   | 0   | 255 |
         /// | Olive       | 127 | 127 | 0   | 255 |
-        /// | Yellow      | 255 | 255 | 0   | 255 |
-        /// | Green       | 0   | 127 | 0   | 255 |
-        /// | Lime        | 0   | 255 | 0   | 255 |
-        /// | Teal        | 0   | 127 | 127 | 255 |
-        /// | Aqua        | 0   | 255 | 255 | 255 |
-        /// | Navy        | 0   | 0   | 127 | 255 |
-        /// | Blue        | 0   | 0   | 255 | 255 |
-        /// | Purple      | 127 | 0   | 127 | 255 |
-        /// | Fuschia     | 255 | 0   | 255 | 255 |
-        /// | Transparent | 0   | 0   | 0   | 0   |
+        /// | YELLOW      | 255 | 255 | 0   | 255 |
+        /// | GREEN       | 0   | 127 | 0   | 255 |
+        /// | LIME        | 0   | 255 | 0   | 255 |
+        /// | TEAL        | 0   | 127 | 127 | 255 |
+        /// | AQUA        | 0   | 255 | 255 | 255 |
+        /// | NAVY        | 0   | 0   | 127 | 255 |
+        /// | BLUE        | 0   | 0   | 255 | 255 |
+        /// | PURPLE      | 127 | 0   | 127 | 255 |
+        /// | FUSCHIA     | 255 | 0   | 255 | 255 |
+        /// | TRANSPARENT | 0   | 0   | 0   | 0   |
         ///```
         namespace RGBColorDef {
             template<meta::IsColorComponent T>
-            inline constexpr auto Black
-                = RGBColor<T> { T { 0 }, T { 0 }, T { 0 }, maxColorComponentValue<T>() };
+            inline constexpr auto BLACK
+                = RGBColor<T> { T { 0 }, T { 0 }, T { 0 }, max_color_component_value<T>() };
 
             template<meta::IsColorComponent T>
-            inline constexpr auto Gray = RGBColor<T> { maxColorComponentValue<T>() / T { 2 },
-                                                       maxColorComponentValue<T>() / T { 2 },
-                                                       maxColorComponentValue<T>() / T { 2 },
-                                                       maxColorComponentValue<T>() };
+            inline constexpr auto Gray = RGBColor<T> { max_color_component_value<T>() / T { 2 },
+                                                       max_color_component_value<T>() / T { 2 },
+                                                       max_color_component_value<T>() / T { 2 },
+                                                       max_color_component_value<T>() };
 
             template<meta::IsColorComponent T>
-            inline constexpr auto Silver = RGBColor<T> {
-                (maxColorComponentValue<T>() / T { 2 }) + (maxColorComponentValue<T>() / T { 4 }),
-                (maxColorComponentValue<T>() / T { 2 }) + (maxColorComponentValue<T>() / T { 4 }),
-                (maxColorComponentValue<T>() / T { 2 }) + (maxColorComponentValue<T>() / T { 4 }),
-                maxColorComponentValue<T>()
+            inline constexpr auto SILVER = RGBColor<T> {
+                (max_color_component_value<T>() / T { 2 }) + (max_color_component_value<T>() / T { 4 }),
+                (max_color_component_value<T>() / T { 2 }) + (max_color_component_value<T>() / T { 4 }),
+                (max_color_component_value<T>() / T { 2 }) + (max_color_component_value<T>() / T { 4 }),
+                max_color_component_value<T>()
             };
 
             template<meta::IsColorComponent T>
-            inline constexpr auto White = RGBColor<T> { maxColorComponentValue<T>(),
-                                                        maxColorComponentValue<T>(),
-                                                        maxColorComponentValue<T>(),
-                                                        maxColorComponentValue<T>() };
+            inline constexpr auto WHITE = RGBColor<T> { max_color_component_value<T>(),
+                                                        max_color_component_value<T>(),
+                                                        max_color_component_value<T>(),
+                                                        max_color_component_value<T>() };
 
             template<meta::IsColorComponent T>
-            inline constexpr auto Maroon = RGBColor<T> { maxColorComponentValue<T>() / T { 2 },
+            inline constexpr auto Maroon = RGBColor<T> { max_color_component_value<T>() / T { 2 },
                                                          T { 0 },
                                                          T { 0 },
-                                                         maxColorComponentValue<T>() };
+                                                         max_color_component_value<T>() };
 
             template<meta::IsColorComponent T>
-            inline constexpr auto Red = RGBColor<T> { maxColorComponentValue<T>(),
+            inline constexpr auto RED = RGBColor<T> { max_color_component_value<T>(),
                                                       T { 0 },
                                                       T { 0 },
-                                                      maxColorComponentValue<T>() };
+                                                      max_color_component_value<T>() };
 
             template<meta::IsColorComponent T>
-            inline constexpr auto Olive = RGBColor<T> { maxColorComponentValue<T>() / T { 2 },
-                                                        maxColorComponentValue<T>() / T { 2 },
+            inline constexpr auto Olive = RGBColor<T> { max_color_component_value<T>() / T { 2 },
+                                                        max_color_component_value<T>() / T { 2 },
                                                         T { 0 },
-                                                        maxColorComponentValue<T>() };
+                                                        max_color_component_value<T>() };
 
             template<meta::IsColorComponent T>
-            inline constexpr auto Yellow = RGBColor<T> { maxColorComponentValue<T>(),
-                                                         maxColorComponentValue<T>(),
+            inline constexpr auto YELLOW = RGBColor<T> { max_color_component_value<T>(),
+                                                         max_color_component_value<T>(),
                                                          T { 0 },
-                                                         maxColorComponentValue<T>() };
+                                                         max_color_component_value<T>() };
             template<meta::IsColorComponent T>
-            inline constexpr auto Green = RGBColor<T> { T { 0 },
-                                                        maxColorComponentValue<T>() / T { 2 },
+            inline constexpr auto GREEN = RGBColor<T> { T { 0 },
+                                                        max_color_component_value<T>() / T { 2 },
                                                         T { 0 },
-                                                        maxColorComponentValue<T>() };
+                                                        max_color_component_value<T>() };
 
             template<meta::IsColorComponent T>
-            inline constexpr auto Lime = RGBColor<T> { T { 0 },
-                                                       maxColorComponentValue<T>(),
+            inline constexpr auto LIME = RGBColor<T> { T { 0 },
+                                                       max_color_component_value<T>(),
                                                        T { 0 },
-                                                       maxColorComponentValue<T>() };
+                                                       max_color_component_value<T>() };
 
             template<meta::IsColorComponent T>
-            inline constexpr auto Teal = RGBColor<T> { T { 0 },
-                                                       maxColorComponentValue<T>() / T { 2 },
-                                                       maxColorComponentValue<T>() / T { 2 },
-                                                       maxColorComponentValue<T>() };
+            inline constexpr auto TEAL = RGBColor<T> { T { 0 },
+                                                       max_color_component_value<T>() / T { 2 },
+                                                       max_color_component_value<T>() / T { 2 },
+                                                       max_color_component_value<T>() };
 
             template<meta::IsColorComponent T>
-            inline constexpr auto Aqua = RGBColor<T> { T { 0 },
-                                                       maxColorComponentValue<T>(),
-                                                       maxColorComponentValue<T>(),
-                                                       maxColorComponentValue<T>() };
+            inline constexpr auto AQUA = RGBColor<T> { T { 0 },
+                                                       max_color_component_value<T>(),
+                                                       max_color_component_value<T>(),
+                                                       max_color_component_value<T>() };
 
             template<meta::IsColorComponent T>
-            inline constexpr auto Navy = RGBColor<T> { T { 0 },
+            inline constexpr auto NAVY = RGBColor<T> { T { 0 },
                                                        T { 0 },
-                                                       maxColorComponentValue<T>() / T { 2 },
-                                                       maxColorComponentValue<T>() };
+                                                       max_color_component_value<T>() / T { 2 },
+                                                       max_color_component_value<T>() };
 
             template<meta::IsColorComponent T>
-            inline constexpr auto Blue = RGBColor<T> { T { 0 },
+            inline constexpr auto BLUE = RGBColor<T> { T { 0 },
                                                        T { 0 },
-                                                       maxColorComponentValue<T>(),
-                                                       maxColorComponentValue<T>() };
+                                                       max_color_component_value<T>(),
+                                                       max_color_component_value<T>() };
 
             template<meta::IsColorComponent T>
-            inline constexpr auto Purple = RGBColor<T> { maxColorComponentValue<T>() / T { 2 },
+            inline constexpr auto PURPLE = RGBColor<T> { max_color_component_value<T>() / T { 2 },
                                                          T { 0 },
-                                                         maxColorComponentValue<T>() / T { 2 },
-                                                         maxColorComponentValue<T>() };
+                                                         max_color_component_value<T>() / T { 2 },
+                                                         max_color_component_value<T>() };
 
             template<meta::IsColorComponent T>
-            inline constexpr auto Fuchsia = RGBColor<T> { maxColorComponentValue<T>(),
+            inline constexpr auto Fuchsia = RGBColor<T> { max_color_component_value<T>(),
                                                           T { 0 },
-                                                          maxColorComponentValue<T>(),
-                                                          maxColorComponentValue<T>() };
+                                                          max_color_component_value<T>(),
+                                                          max_color_component_value<T>() };
 
             template<meta::IsColorComponent T>
-            inline constexpr auto Transparent = RGBColor<T> { T { 0 }, T { 0 }, T { 0 }, T { 0 } };
+            inline constexpr auto TRANSPARENT = RGBColor<T> { T { 0 }, T { 0 }, T { 0 }, T { 0 } };
         } // namespace RGBColorDef
     }} // namespace stormkit::core
 
@@ -208,13 +208,13 @@ export {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    constexpr auto colorComponentAs(UInt8 component) noexcept -> float {
+    constexpr auto color_component_as(UInt8 component) noexcept -> float {
         return as<float>(component) / 255.f;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    constexpr auto colorComponentAs(float component) noexcept -> UInt8 {
+    constexpr auto color_component_as(float component) noexcept -> UInt8 {
         expects(component <= 1.f);
         return as<UInt8>(component * 255u);
     }
@@ -222,7 +222,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsColorComponent T>
-    constexpr auto maxColorComponentValue() noexcept -> T {
+    constexpr auto max_color_component_value() noexcept -> T {
         if constexpr (std::is_same_v<T, float>) return 1.f;
 
         return 255u;
@@ -243,7 +243,7 @@ namespace stormkit { inline namespace core {
     template<meta::IsColorComponent T>
     constexpr RGBColor<T>::RGBColor(const math::Vector3<ValueType>& vector) noexcept
         : red { vector.r }, green { vector.g }, blue { vector.b },
-          alpha(maxColorComponentValue<T>()) {
+          alpha(max_color_component_value<T>()) {
     }
 
     /////////////////////////////////////
@@ -280,8 +280,8 @@ namespace stormkit { inline namespace core {
     template<meta::IsColorComponent T>
     template<meta::IsColorComponent U>
     constexpr RGBColor<T>::RGBColor(const RGBColor<U>& other) noexcept
-        : red { colorComponentAs(other.red) }, green { colorComponentAs(other.green) },
-          blue { colorComponentAs(other.blue) }, alpha { colorComponentAs(other.alpha) } {
+        : red { color_component_as(other.red) }, green { color_component_as(other.green) },
+          blue { color_component_as(other.blue) }, alpha { color_component_as(other.alpha) } {
     }
 
     /////////////////////////////////////
@@ -289,10 +289,10 @@ namespace stormkit { inline namespace core {
     template<meta::IsColorComponent T>
     template<meta::IsColorComponent U>
     constexpr auto RGBColor<T>::operator=(const RGBColor<U>& other) noexcept -> RGBColor& {
-        red   = colorComponentAs(other.red);
-        green = colorComponentAs(other.green);
-        blue  = colorComponentAs(other.blue);
-        alpha = colorComponentAs(other.alpha);
+        red   = color_component_as(other.red);
+        green = color_component_as(other.green);
+        blue  = color_component_as(other.blue);
+        alpha = color_component_as(other.alpha);
     }
 
     /////////////////////////////////////

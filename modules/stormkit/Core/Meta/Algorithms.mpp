@@ -6,16 +6,16 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:Meta.Algorithms;
+export module stormkit.core:meta.algorithms;
 
 import std;
 
-import :Meta.Concepts;
-import :Meta.Traits;
+import :meta.concepts;
+import :meta.traits;
 
 export namespace stormkit { inline namespace core { namespace meta {
     template<typename Predicate, template<typename...> class Variant, typename... Ts>
-    constexpr auto variantTypeFindIf(const Variant<Ts...>&, Predicate&& predicate) noexcept
+    constexpr auto variant_type_find_if(const Variant<Ts...>&, Predicate&& predicate) noexcept
         -> std::size_t;
 }}} // namespace stormkit::core::meta
 
@@ -27,7 +27,7 @@ namespace stormkit { inline namespace core { namespace meta {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename... Ts, typename Predicate>
-    STORMKIT_FORCE_INLINE constexpr auto variantTypeFindIfImpl(Predicate&& predicate) noexcept
+    STORMKIT_FORCE_INLINE constexpr auto variant_type_find_if_impl(Predicate&& predicate) noexcept
         -> std::size_t {
         auto found = std::variant_npos;
         [&]<std::size_t... Indices>(std::index_sequence<Indices...>) noexcept {
@@ -49,9 +49,9 @@ namespace stormkit { inline namespace core { namespace meta {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Predicate, template<typename...> class Variant, typename... Ts>
-    STORMKIT_FORCE_INLINE constexpr auto variantTypeFindIf(const Variant<Ts...>&,
-                                                           Predicate&& predicate) noexcept
+    STORMKIT_FORCE_INLINE constexpr auto variant_type_find_if(const Variant<Ts...>&,
+                                                              Predicate&& predicate) noexcept
         -> std::size_t {
-        return variantTypeFindIfImpl<Ts...>(std::forward<Predicate>(predicate));
+        return variant_type_find_if_impl<Ts...>(std::forward<Predicate>(predicate));
     }
 }}} // namespace stormkit::core::meta

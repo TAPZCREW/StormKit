@@ -8,11 +8,11 @@ module;
 
 #include <stormkit/Core/MemoryMacro.hpp>
 
-export module stormkit.Core:Utils.App;
+export module stormkit.core:utils.app;
 
 import std;
 
-import :TypeSafe.Integer;
+import :typesafe.integer;
 
 export namespace stormkit { inline namespace core {
     class STORMKIT_API App {

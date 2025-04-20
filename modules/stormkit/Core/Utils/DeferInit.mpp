@@ -6,12 +6,12 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:Utils.DeferInit;
+export module stormkit.core:utils.deferinit;
 
 import std;
 
-import :Meta.Traits;
-import :Utils.Assert;
+import :meta.traits;
+import :utils.contrat;
 
 export namespace stormkit { inline namespace core {
     template<typename T>
@@ -46,7 +46,7 @@ export namespace stormkit { inline namespace core {
             noexcept(std::is_nothrow_constructible_v<T, Args...>)) -> void;
 
         template<typename... Args>
-        constexpr auto constructWithNarrowing(Args&&... args) noexcept(
+        constexpr auto construct_with_narrowing(Args&&... args) noexcept(
             noexcept(std::is_nothrow_constructible_v<T, Args...>)) -> void;
 
         constexpr auto
@@ -136,7 +136,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<typename T, typename Storage>
     template<typename... Args>
-    STORMKIT_FORCE_INLINE constexpr auto DeferInit<T, Storage>::constructWithNarrowing(
+    STORMKIT_FORCE_INLINE constexpr auto DeferInit<T, Storage>::construct_with_narrowing(
         Args&&... args) noexcept(noexcept(std::is_nothrow_constructible_v<T, Args...>)) -> void {
         reset();
 

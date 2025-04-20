@@ -6,13 +6,13 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:Parallelism.Locked;
+export module stormkit.core:parallelism.locked;
 
 import std;
 
-import :Meta;
-import :TypeSafe.Integer;
-import :TypeSafe.Ref;
+import :meta;
+import :typesafe.integer;
+import :typesafe.ref;
 
 namespace stormkit { inline namespace core { namespace details {
     using DefaultMutex = std::mutex;
@@ -238,7 +238,7 @@ namespace stormkit { inline namespace core {
         Locked<T, Mutex>::Access<Lock, Mode>::Access(ReferenceType value,
                                                      MutexType&    mutex,
                                                      LockArgs&&... lock_args) noexcept
-        : lock { mutex, std::forward<LockArgs>(lock_args)... }, m_value { borrowLike(value) } {
+        : lock { mutex, std::forward<LockArgs>(lock_args)... }, m_value { as_ref_like(value) } {
     }
 
     ////////////////////////////////////////

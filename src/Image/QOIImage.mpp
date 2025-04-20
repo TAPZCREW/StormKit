@@ -8,7 +8,7 @@ import std;
 
 import frozen;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Image;
 
 export namespace stormkit::image::details {
@@ -50,8 +50,7 @@ namespace stormkit::image::details {
                                image::Image::Format::RGBA8_UNorm }                                }
         });
 
-        constexpr auto END_OF_FILE
-            = makeStaticByteArray(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01);
+        constexpr auto END_OF_FILE = into_bytes(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01);
 
         constexpr auto PIXEL_CACHE_SIZE = 64u;
     } // namespace
@@ -90,7 +89,7 @@ namespace stormkit::image::details {
         const auto  raw_header = std::span<const Byte> { std::data(data), SIZE_OF_HEADER };
         const auto* header     = std::bit_cast<const QOIHeader*>(std::data(raw_header));
 
-        const auto extent   = math::ExtentU { byteSwap(header->width), byteSwap(header->height) };
+        const auto extent   = math::ExtentU { byte_swap(header->width), byte_swap(header->height) };
         const auto channels = header->channels;
         const auto format   = CHANNELS_TO_FORMAT.at(header->channels)[header->colorspace];
 

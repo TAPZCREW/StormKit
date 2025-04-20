@@ -2,23 +2,23 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.Core:Utils;
+export module stormkit.core:utils;
 
-export import :Utils.Algorithms;
-export import :Utils.Allocation;
-export import :Utils.App;
-export import :Utils.Assert;
-export import :Utils.Color;
-export import :Utils.DeferInit;
-export import :Utils.DynamicLoader;
-export import :Utils.Filesystem;
-export import :Utils.FunctionRef;
-export import :Utils.Handle;
-export import :Utils.Math;
-export import :Utils.NumericRange;
-export import :Utils.Pimpl;
-export import :Utils.Random;
-export import :Utils.Singleton;
-export import :Utils.Stacktrace;
-export import :Utils.SignalHandler;
-export import :Utils.Time;
+export import :utils.algorithms;
+export import :utils.allocation;
+export import :utils.app;
+export import :utils.contrat;
+export import :utils.color;
+export import :utils.deferinit;
+export import :utils.dynamic_loader;
+export import :utils.filesystem;
+export import :utils.function_ref;
+export import :utils.handle;
+export import :utils.math;
+export import :utils.numeric_range;
+export import :utils.pimpl;
+export import :utils.random;
+export import :utils.Singleton;
+export import :utils.stracktrace;
+export import :utils.signal_handler;
+export import :utils.time;

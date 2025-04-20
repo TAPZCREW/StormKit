@@ -8,12 +8,12 @@ module;
 #include <stormkit/Core/FormatMacro.hpp>
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:Utils.Allocation;
+export module stormkit.core:utils.allocation;
 
 import std;
 
-import :Meta;
-import :TypeSafe.AsCast;
+import :meta;
+import :typesafe.integer_casts;
 
 struct MemoryAllocationError {
     std::string_view type;
@@ -23,11 +23,11 @@ struct MemoryAllocationError {
 export {
     namespace stormkit { inline namespace core {
         template<class T, class... Args>
-        auto makeUnique(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
+        auto allocate(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
             -> std::expected<std::unique_ptr<T>, MemoryAllocationError>;
 
         template<class T, class... Args>
-        auto makeUniqueUnsafe(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
+        auto allocateUnsafe(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
             -> std::unique_ptr<T>;
 
     }} // namespace stormkit::core
@@ -52,7 +52,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<class T, class... Args>
     STORMKIT_FORCE_INLINE auto
-        makeUnique(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
+        allocate(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
             -> std::expected<std::unique_ptr<T>, MemoryAllocationError> {
         auto value = std::unique_ptr<T> { new (std::nothrow) T(std::forward<Args>(args)...) };
         if (not value) [[unexpected]]
@@ -66,7 +66,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<class T, class... Args>
     STORMKIT_FORCE_INLINE auto
-        makeUniqueUnsafe(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
+        allocateUnsafe(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
             -> std::unique_ptr<T> {
         return std::unique_ptr<T> { new (std::nothrow) T(std::forward<Args>(args)...) };
     }

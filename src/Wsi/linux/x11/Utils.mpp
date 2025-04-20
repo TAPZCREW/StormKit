@@ -12,9 +12,9 @@ module;
 #include <xcb/xcb_icccm.h>
 #include <xcb/xcb_keysyms.h>
 
-export module stormkit.Wsi:Linux.X11.Utils;
+export module stormkit.Wsi:Linux.X11.utils;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Wsi;
 
 export namespace stormkit::wsi::linux::x11 {

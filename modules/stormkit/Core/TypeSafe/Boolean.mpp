@@ -7,12 +7,12 @@ module;
 #include <stormkit/Core/FormatMacro.hpp>
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:TypeSafe.Boolean;
+export module stormkit.core:typesafe.boolean;
 
 import std;
 
-import :Meta.Concepts;
-import :Meta.Traits;
+import :meta.concepts;
+import :meta.traits;
 
 export {
     namespace stormkit { inline namespace core {

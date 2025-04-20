@@ -6,22 +6,22 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:TypeSafe.AsCast;
+export module stormkit.core:typesafe.integer_casts;
 
 import std;
 import magic_enum;
 
-import :Utils.Assert;
-import :TypeSafe.Byte;
-import :Utils.FunctionRef;
-import :TypeSafe.Ref;
-import :Meta.Concepts;
-import :Meta.Algorithms;
-import :Meta.Traits;
-import :Meta.PriorityTag;
-import :TypeSafe.Boolean;
-import :TypeSafe.Integer;
-import :TypeSafe.Float;
+import :utils.contrat;
+import :typesafe.byte;
+import :utils.function_ref;
+import :typesafe.ref;
+import :meta.concepts;
+import :meta.algorithms;
+import :meta.traits;
+import :meta.priority_tag;
+import :typesafe.boolean;
+import :typesafe.integer;
+import :typesafe.floating_point;
 
 export namespace stormkit { inline namespace core {
     template<typename T, typename U>
@@ -604,7 +604,7 @@ namespace stormkit { inline namespace core {
         /////////////////////////////////////
         template<typename T1, meta::IsVariantType T2>
         STORMKIT_FORCE_INLINE constexpr auto is(const T2& variant, T1&& value) noexcept -> Boolean {
-            return variantTypeFindIf(variant, [&]<auto Index>() noexcept {
+            return variant_type_find_if(variant, [&]<auto Index>() noexcept {
                 if (variant.index() == Index) {
                     if constexpr (meta::IsUnaryPredicate<meta::CanonicalType<T1>,
                                                          decltype(std::get<Index>(variant))>)
@@ -632,7 +632,7 @@ namespace stormkit { inline namespace core {
             /*using PtrType = meta::ConstnessLike<From, To>*;*/
             /*auto ptr      = PtrType { nullptr };*/
             /**/
-            /*variantTypeFindIf(variant, [&]<auto Index, typename T>() noexcept {*/
+            /*variant_type_find_if(variant, [&]<auto Index, typename T>() noexcept {*/
             /*    if constexpr (meta::IsStrict<To, T>)*/
             /*        if (variant.index() == Index) {*/
             /*            ptr = &std::get<Index>(variant);*/

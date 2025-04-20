@@ -10,7 +10,7 @@ export module stormkit.Gpu:Resource.Image;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Image;
 import stormkit.Gpu.Vulkan;
 
@@ -32,7 +32,7 @@ export namespace stormkit::gpu {
             bool  enable_anisotropy = false;
             float max_anisotropy    = 0.f;
 
-            BorderColor border_color = BorderColor::Int_Opaque_Black;
+            BorderColor border_color = BorderColor::Int_Opaque_BLACK;
 
             bool unnormalized_coordinates = false;
 
@@ -126,7 +126,7 @@ export namespace stormkit::gpu {
             UInt32          layers     = 1u;
             UInt32          mip_levels = 1u;
             ImageType       type       = ImageType::T2D;
-            ImageCreateFlag flags      = ImageCreateFlag::None;
+            ImageCreateFlag flags      = ImageCreateFlag::NONE;
             SampleCountFlag samples    = SampleCountFlag::C1;
             ImageUsageFlag  usages     = ImageUsageFlag::Sampled
                                     | ImageUsageFlag::Transfer_Dst
@@ -219,8 +219,8 @@ namespace stormkit::gpu {
                   .maxLod           = m_settings.max_lod,
                   .borderColor      = narrow<vk::BorderColor>(m_settings.border_color),
                   .unnormalizedCoordinates = m_settings.unnormalized_coordinates })
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
-                                                core::monadic::throwAsException()));
+            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
+                                                core:.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////
@@ -283,16 +283,16 @@ namespace stormkit::gpu {
             .createImageView({
                 .image            = *image.vkHandle(),
                 .viewType         = narrow<vk::ImageViewType>(m_type),
-                .format           = narrow<vk::Format>(image.format()),
+                .format           = narrow<vk::format>(image.format()),
                 .components       = { .r = vk::ComponentSwizzle::eR,
                                      .g = vk::ComponentSwizzle::eG,
                                      .b = vk::ComponentSwizzle::eB,
                                      .a = vk::ComponentSwizzle::eA },
                 .subresourceRange = vk_subresource_range,
         })
-            .transform(core::monadic::set(m_vk_image_view))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
-                                                core::monadic::throwAsException()));
+            .transform(core:.monadic::set(m_vk_image_view))
+            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
+                                                core:.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////
@@ -359,7 +359,7 @@ namespace stormkit::gpu {
         const auto create_info = vk::ImageCreateInfo {}
                                      .setFlags(narrow<vk::ImageCreateFlagBits>(m_flags))
                                      .setImageType(narrow<vk::ImageType>(m_type))
-                                     .setFormat(narrow<vk::Format>(m_format))
+                                     .setFormat(narrow<vk::format>(m_format))
                                      .setExtent({ m_extent.width, m_extent.height, m_extent.depth })
                                      .setMipLevels(m_mip_levels)
                                      .setArrayLayers(m_layers * m_faces)
@@ -371,7 +371,7 @@ namespace stormkit::gpu {
 
         device.vkHandle()
             .createImage(create_info)
-            .transform(core::monadic::set(m_vk_image))
+            .transform(core:.monadic::set(m_vk_image))
             .transform([this, &info, &device] noexcept -> VulkanExpected<void> {
                 const auto requirements = m_vk_image->getMemoryRequirements();
 
@@ -395,8 +395,8 @@ namespace stormkit::gpu {
 
                 return {};
             })
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
-                                                core::monadic::throwAsException()));
+            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
+                                                core:.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////
@@ -435,7 +435,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto Image::format() const noexcept -> PixelFormat {
+    STORMKIT_FORCE_INLINE auto Image::Format() const noexcept -> PixelFormat {
         return m_format;
     }
 

@@ -6,12 +6,12 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:Utils.Random;
+export module stormkit.core:utils.random;
 
 import std;
 
-import :TypeSafe;
-import :Meta.Concepts;
+import :typesafe;
+import :meta.concepts;
 
 export namespace stormkit { inline namespace core {
     auto seed(Int seed) noexcept -> void;
@@ -34,14 +34,14 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto randomGenerator() noexcept -> std::default_random_engine& {
+    STORMKIT_FORCE_INLINE auto random_generator() noexcept -> std::default_random_engine& {
         return generator;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto seed(Int seed) noexcept -> void {
-        randomGenerator().seed(seed);
+        random_generator().seed(seed);
     }
 
     /////////////////////////////////////
@@ -49,7 +49,7 @@ namespace stormkit { inline namespace core {
     template<std::floating_point T>
     STORMKIT_FORCE_INLINE auto rand(T min, T max) noexcept -> T {
         std::uniform_real_distribution<T> dis(min, max);
-        return dis(randomGenerator());
+        return dis(random_generator());
     }
 
     /////////////////////////////////////
@@ -57,6 +57,6 @@ namespace stormkit { inline namespace core {
     template<std::integral T>
     STORMKIT_FORCE_INLINE auto rand(T min, T max) noexcept -> T {
         std::uniform_int_distribution<T> dis(min, max);
-        return dis(randomGenerator());
+        return dis(random_generator());
     }
 }} // namespace stormkit::core

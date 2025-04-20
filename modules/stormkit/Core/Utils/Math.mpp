@@ -12,16 +12,16 @@ module;
 #include <stormkit/Core/AsCastsMacro.hpp>
 #include <stormkit/Core/HashMacro.hpp>
 
-export module stormkit.Core:Utils.Math;
+export module stormkit.core:utils.math;
 
 import std;
 
-import :Meta;
-import :Hash;
-import :TypeSafe;
-import :Functional;
+import :meta;
+import :hash;
+import :typesafe;
+import :functional;
 
-// import :Utils.Details.GLM;
+// import :utils.Details.GLM;
 
 using namespace stormkit;
 

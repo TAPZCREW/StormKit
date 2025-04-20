@@ -6,14 +6,14 @@ module;
 
 #include <stormkit/Core/MemoryMacro.hpp>
 
-export module stormkit.Core:Containers.RingBuffer;
+export module stormkit.core:containers.ringbuffer;
 
 import std;
 
-import :Utils.Assert;
-import :TypeSafe.Integer;
-import :TypeSafe.Byte;
-import :Meta;
+import :utils.contrat;
+import :typesafe.integer;
+import :typesafe.byte;
+import :meta;
 
 export namespace stormkit { inline namespace core {
     template<class T>
@@ -61,7 +61,7 @@ export namespace stormkit { inline namespace core {
 
       private:
         template<class Self>
-        [[nodiscard]] auto getPtr(this Self& self, ExtentType pos) noexcept -> decltype(auto);
+        [[nodiscard]] auto get_ptr(this Self& self, ExtentType pos) noexcept -> decltype(auto);
 
         ExtentType m_capacity = 0;
         ExtentType m_count    = 0;
@@ -97,7 +97,7 @@ namespace stormkit { inline namespace core {
         m_buffer.resize(m_capacity * sizeof(ValueType));
         if (not empty()) {
             for (auto i = m_read; i < m_write;) {
-                new (&m_buffer[i * sizeof(ValueType)]) T { *copy.getPtr(i) };
+                new (&m_buffer[i * sizeof(ValueType)]) T { *copy.get_ptr(i) };
 
                 i += 1;
                 if (i >= m_capacity) i -= m_capacity;
@@ -119,7 +119,7 @@ namespace stormkit { inline namespace core {
         m_buffer.resize(m_capacity * sizeof(ValueType));
         if (not empty())
             for (auto i = m_read; i < m_write;) {
-                new (&m_buffer[i * sizeof(ValueType)]) T { *copy.getPtr(i) };
+                new (&m_buffer[i * sizeof(ValueType)]) T { *copy.get_ptr(i) };
 
                 i += 1;
                 if (i >= m_capacity) i -= m_capacity;
@@ -238,7 +238,7 @@ namespace stormkit { inline namespace core {
     auto RingBuffer<T>::pop() noexcept -> void {
         expects(not empty());
 
-        getPtr(m_write)->~ValueType();
+        get_ptr(m_write)->~ValueType();
 
         --m_count;
     }
@@ -250,21 +250,21 @@ namespace stormkit { inline namespace core {
     auto RingBuffer<T>::get(this Self& self) noexcept -> decltype(auto) {
         expects(not self.empty());
 
-        return std::forward_like<Self>(self.getPtr(self.m_read));
+        return std::forward_like<Self>(self.get_ptr(self.m_read));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T>
     auto RingBuffer<T>::data() const noexcept -> std::span<const ValueType> {
-        return std::span<const ValueType> { getPtr(0), m_capacity };
+        return std::span<const ValueType> { get_ptr(0), m_capacity };
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T>
     template<class Self>
-    auto RingBuffer<T>::getPtr(this Self& self, ExtentType pos) noexcept -> decltype(auto) {
+    auto RingBuffer<T>::get_ptr(this Self& self, ExtentType pos) noexcept -> decltype(auto) {
         using OutPtr = meta::ConstnessLike<Self, T*>;
         auto addr    = std::forward_like<Self>(&(self.m_buffer[pos * sizeof(ValueType)]));
 

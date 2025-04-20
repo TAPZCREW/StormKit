@@ -29,14 +29,14 @@ export module stormkit.Wsi:Linux.X11.WindowImpl;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Wsi;
 
 import :Common.WindowImplBase;
 import :Linux.Common.XKB;
 import :Linux.X11.XCB;
 import :Linux.X11.Log;
-import :Linux.X11.Utils;
+import :Linux.X11.utils;
 
 export namespace stormkit::wsi::linux::x11 {
     STORMKIT_RAII_CAPSULE_OPAQUE(
@@ -314,7 +314,7 @@ namespace stormkit::wsi::linux::x11 {
 
         auto error = xcb_request_check(m_connection, cookie);
         if (error) [[unlikely]] {
-            elog("Failed to create window\n    > reason: {}", getXCBError(borrowMut(error)));
+            elog("Failed to create window\n    > reason: {}", getXCBError(as_ref_mut(error)));
             return;
         }
 

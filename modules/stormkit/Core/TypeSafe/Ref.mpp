@@ -7,15 +7,15 @@ module;
 #include <stormkit/Core/HashMacro.hpp>
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:TypeSafe.Ref;
+export module stormkit.core:typesafe.ref;
 
 import std;
 
-import :Meta.Concepts;
-import :Meta.Traits;
-import :Utils.Assert;
-import :TypeSafe.Boolean;
-import :Hash.Base;
+import :meta.concepts;
+import :meta.traits;
+import :utils.contrat;
+import :typesafe.boolean;
+import :hash.base;
 
 export {
     namespace stormkit { inline namespace core {
@@ -45,7 +45,7 @@ export {
                 operator*() const noexcept STORMKIT_LIFETIMEBOUND->ReferenceType;
 
             constexpr explicit           operator bool() const noexcept;
-            [[nodiscard]] constexpr auto hasValue() const noexcept -> Boolean;
+            [[nodiscard]] constexpr auto has_value() const noexcept -> Boolean;
 
             // template<typename Self>
             // constexpr operator std::conditional_t<std::is_const_v<Self>, const T&, T&>(
@@ -234,7 +234,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T>
-    STORMKIT_FORCE_INLINE constexpr auto Ref<T>::hasValue() const noexcept -> Boolean {
+    STORMKIT_FORCE_INLINE constexpr auto Ref<T>::has_value() const noexcept -> Boolean {
         return operator bool();
     }
 

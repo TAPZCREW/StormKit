@@ -6,12 +6,12 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:TypeSafe.Flags;
+export module stormkit.core:typesafe.flags;
 
 import std;
 export import magic_enum;
 
-import :Meta;
+import :meta;
 
 export {
     namespace stormkit { inline namespace core {
@@ -23,12 +23,12 @@ export {
             };
 
             template<stormkit::meta::IsEnumeration T>
-            inline constexpr auto EnableBitmaskOperatorsEnable = EnableBitmaskOperators<T>::enable;
+            inline constexpr auto BITMASK_OPERATORS_ENABLED = EnableBitmaskOperators<T>::enable;
         } // namespace details
 
         template<class T>
-        concept FlagsType = meta::IsEnumeration<meta::CanonicalType<T>>
-                            and details::EnableBitmaskOperatorsEnable<T>;
+        concept FlagsType
+            = meta::IsEnumeration<meta::CanonicalType<T>> and details::BITMASK_OPERATORS_ENABLED<T>;
 
         /// \brief Check if a flag bit is enabled
         /// \requires `Enum` to be an enumeration promoted static_cast a flag with `FLAG_ENUM`
@@ -39,7 +39,7 @@ export {
 
         /// \exclude
         template<FlagsType T>
-        [[nodiscard]] constexpr auto nextValue(const T& value) noexcept -> T;
+        [[nodiscard]] constexpr auto next_value(const T& value) noexcept -> T;
     }} // namespace stormkit::core
 
     template<stormkit::core::FlagsType T>
@@ -79,7 +79,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<FlagsType T>
-    STORMKIT_FORCE_INLINE constexpr auto nextValue(const T& value) noexcept -> T {
+    STORMKIT_FORCE_INLINE constexpr auto next_value(const T& value) noexcept -> T {
         using Underlying = meta::UnderlyingType<T>;
         return static_cast<T>(static_cast<Underlying>(value) << 1);
     }

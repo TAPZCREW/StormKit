@@ -2,7 +2,7 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-module stormkit.Core;
+module stormkit.core;
 
 import std;
 
@@ -17,8 +17,8 @@ namespace stormkit {
 
         m_workers.reserve(m_worker_count);
         for (const auto i : range(m_worker_count)) {
-            auto& thread = m_workers.emplace_back([this] { workerMain(); });
-            setThreadName(thread, std::format("StormKit:WorkerThread:{}", i));
+            auto& thread = m_workers.emplace_back([this] { worker_main(); });
+            set_thread_name(thread, std::format("StormKit:WorkerThread:{}", i));
         }
     }
 
@@ -32,15 +32,15 @@ namespace stormkit {
         auto lock2 = std::unique_lock { other.m_mutex, std::defer_lock };
         std::lock(lock1, lock2);
 
-        joinAll();
+        join_all();
 
         m_worker_count = std::exchange(other.m_worker_count, 0u);
         m_tasks        = std::move(other.m_tasks);
 
         m_workers.reserve(m_worker_count);
         for (const auto i : range(m_worker_count)) {
-            auto& thread = m_workers.emplace_back([this] { workerMain(); });
-            setThreadName(thread, std::format("StormKit:WorkerThread:{}", i));
+            auto& thread = m_workers.emplace_back([this] { worker_main(); });
+            set_thread_name(thread, std::format("StormKit:WorkerThread:{}", i));
         }
 
         return *this;
@@ -48,9 +48,9 @@ namespace stormkit {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto ThreadPool::joinAll() -> void {
+    auto ThreadPool::join_all() -> void {
         for ([[maybe_unused]] const auto i : range(m_worker_count))
-            postTask<void>(Task::Type::Terminate, [] {}, ThreadPool::NoFuture);
+            post_task<void>(Task::Type::Terminate, [] {}, ThreadPool::NoFuture);
 
         for (auto& thread : m_workers)
             if (thread.joinable()) thread.join();
@@ -58,7 +58,7 @@ namespace stormkit {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto ThreadPool::workerMain() noexcept -> void {
+    auto ThreadPool::worker_main() noexcept -> void {
         for (;;) {
             auto task = Task {};
 

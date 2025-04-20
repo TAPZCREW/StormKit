@@ -6,12 +6,12 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:Utils.Pimpl;
+export module stormkit.core:utils.pimpl;
 
 import std;
 
-import :Meta;
-import :Utils.Assert;
+import :meta;
+import :utils.contrat;
 
 export namespace stormkit { inline namespace core {
     template<class T, bool Defer = false>

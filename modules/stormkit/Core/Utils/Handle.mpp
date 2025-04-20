@@ -8,14 +8,14 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:Utils.Handle;
+export module stormkit.core:utils.handle;
 
 import std;
 
-import :Hash;
-import :TypeSafe.AsCast;
-import :TypeSafe.Integer;
-import :Meta;
+import :hash;
+import :typesafe.integer_casts;
+import :typesafe.integer;
+import :meta;
 
 export {
     namespace stormkit { inline namespace core {
@@ -42,7 +42,7 @@ export {
 
             constexpr operator ID() const noexcept;
 
-            [[nodiscard]] static constexpr auto invalidHandle() noexcept -> Handle;
+            [[nodiscard]] static constexpr auto invalid_handle() noexcept -> Handle;
 
             ID id = INVALID_HANDLE_VALUE;
         };
@@ -119,7 +119,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T, std::integral _ID>
-    constexpr auto Handle<T, _ID>::invalidHandle() noexcept -> Handle {
+    constexpr auto Handle<T, _ID>::invalid_handle() noexcept -> Handle {
         return Handle {};
     }
 }} // namespace stormkit::core

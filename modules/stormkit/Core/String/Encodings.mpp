@@ -9,27 +9,27 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:String.Encodings;
+export module stormkit.core:string.encodings;
 
 import std;
 
-import :TypeSafe.AsCast;
-import :TypeSafe.Integer;
+import :typesafe.integer_casts;
+import :typesafe.integer;
 
 export namespace stormkit { inline namespace core {
-    auto asciiToUtf16(std::string_view) -> std::u16string;
-    auto utf16ToAscii(std::u16string_view) -> std::string;
+    auto ascii_to_utf16(std::string_view) -> std::u16string;
+    auto utf16_to_ascii(std::u16string_view) -> std::string;
 
-    auto asciiToWide(std::string_view) -> std::wstring;
-    auto wideToAscii(std::wstring_view) -> std::string;
+    auto ascii_to_wide(std::string_view) -> std::wstring;
+    auto wide_to_ascii(std::wstring_view) -> std::string;
 
-    auto asciiToUtf8(std::string_view) -> std::u8string;
-    auto utf8ToAscii(std::u8string_view) -> std::string;
+    auto ascii_to_utf8(std::string_view) -> std::u8string;
+    auto utf8_to_ascii(std::u8string_view) -> std::string;
 
 #ifdef STORMKIT_COMPILER_MSVC
-    auto toNativeEncoding(std::string_view) -> std::u16string;
+    auto to_native_encoding(std::string_view) -> std::u16string;
 #else
-    auto toNativeEncoding(std::string_view) -> std::u8string;
+    auto to_native_encoding(std::string_view) -> std::u8string;
 #endif
 }} // namespace stormkit::core
 
@@ -41,7 +41,7 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto asciiToUtf16(std::string_view input) -> std::u16string {
+    STORMKIT_INLINE auto ascii_to_utf16(std::string_view input) -> std::u16string {
         auto output = std::u16string {};
 #if not defined(STORMKIT_COMPILER_CLANG)
         auto state = std::mbstate_t {};
@@ -64,7 +64,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto utf16ToAscii(std::u16string_view input) -> std::string {
+    STORMKIT_INLINE auto utf16_to_ascii(std::u16string_view input) -> std::string {
         auto output = std::string {};
 #if not defined(STORMKIT_COMPILER_CLANG)
         auto state = std::mbstate_t {};
@@ -81,7 +81,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto asciiToWide(std::string_view input) -> std::wstring {
+    STORMKIT_INLINE auto ascii_to_wide(std::string_view input) -> std::wstring {
         [[maybe_unused]] auto state  = std::mbstate_t {};
         auto                  output = std::wstring {};
         output.resize(std::size(input));
@@ -112,7 +112,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto wideToAscii(std::wstring_view input) -> std::string {
+    STORMKIT_INLINE auto wide_to_ascii(std::wstring_view input) -> std::string {
         [[maybe_unused]] auto state  = std::mbstate_t {};
         [[maybe_unused]] auto output = std::string {};
         output.resize(std::size(input));
@@ -130,14 +130,14 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto asciiToUtf8(std::string_view input) -> std::u8string {
+    STORMKIT_INLINE auto ascii_to_utf8(std::string_view input) -> std::u8string {
         [[maybe_unused]] auto state  = std::mbstate_t {};
         [[maybe_unused]] auto output = std::u8string {};
         output.resize(std::size(input) * as<RangeExtent>(MB_LEN_MAX));
 
 #if defined(STORMKIT_COMPILER_MSVC)
         auto bytes = toByteSpan(output);
-        std::ranges::copy(asByteView(input), std::ranges::begin(bytes));
+        std::ranges::copy(as_bytes(input), std::ranges::begin(bytes));
 #elif defined(STORMKIT_COMPILER_CLANG)
         output = std::bit_cast<char8_t*>(std::data(input));
 #else
@@ -159,14 +159,14 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto utf8ToAscii(std::u8string_view input) -> std::string {
+    STORMKIT_INLINE auto utf8_to_ascii(std::u8string_view input) -> std::string {
         [[maybe_unused]] auto state  = std::mbstate_t {};
         auto                  output = std::string {};
         output.resize(std::size(input));
 
 #if defined(STORMKIT_COMPILER_MSVC)
         auto bytes = toByteSpan(output);
-        std::ranges::copy(asByteView(input), std::ranges::begin(bytes));
+        std::ranges::copy(as_bytes(input), std::ranges::begin(bytes));
 #elif defined(STORMKIT_COMPILER_CLANG)
         output = std::bit_cast<char*>(std::data(input));
 #else
@@ -181,14 +181,14 @@ namespace stormkit { inline namespace core {
 #ifdef STORMKIT_COMPILER_MSVC
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto toNativeEncoding(std::string_view input) -> std::u16string {
-        return asciiToUtf16(input);
+    STORMKIT_FORCE_INLINE auto to_native_encoding(std::string_view input) -> std::u16string {
+        return ascii_to_utf16(input);
     }
 #else
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto toNativeEncoding(std::string_view input) -> std::u8string {
-        return asciiToUtf8(input);
+    STORMKIT_FORCE_INLINE auto to_native_encoding(std::string_view input) -> std::u8string {
+        return ascii_to_utf8(input);
     }
 #endif
 }} // namespace stormkit::core

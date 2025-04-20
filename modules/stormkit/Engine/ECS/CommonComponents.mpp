@@ -10,7 +10,7 @@ export module stormkit.Engine:ECS.CommonComponents;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Entities;
 
 using namespace stormkit::entities::literals;

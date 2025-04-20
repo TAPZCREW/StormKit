@@ -2,12 +2,12 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:Utils.Stacktrace;
+export module stormkit.core:utils.stracktrace;
 
 import std;
 
-import :Parallelism.ThreadUtils;
+import :parallelism.threadutils;
 
 export namespace stormkit { inline namespace core {
-    STORMKIT_API auto printStacktrace(int ignore_count = 0) noexcept -> void;
+    STORMKIT_API auto print_stacktrace(int ignore_count = 0) noexcept -> void;
 }} // namespace stormkit::core

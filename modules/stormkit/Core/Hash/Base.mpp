@@ -2,11 +2,11 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.Core:Hash.Base;
+export module stormkit.core:hash.base;
 
 import std;
 
-import :Meta;
+import :meta;
 
 export namespace stormkit { inline namespace core {
     using Hash32 = std::uint32_t;
@@ -16,14 +16,14 @@ export namespace stormkit { inline namespace core {
     concept HashValue = meta::IsOneOf<T, Hash32, Hash64>;
 
     template<HashValue OutputType = Hash32>
-    constexpr auto hashCombine(auto&& value) -> OutputType;
+    constexpr auto hash_combine(auto&& value) -> OutputType;
 
-    constexpr auto hashCombine(HashValue auto& hash, meta::IsHashable auto&& v) noexcept;
+    constexpr auto hash_combine(HashValue auto& hash, meta::IsHashable auto&& v) noexcept;
 
-    constexpr auto hashCombine(HashValue auto& hash, std::ranges::range auto&& range) noexcept;
+    constexpr auto hash_combine(HashValue auto& hash, std::ranges::range auto&& range) noexcept;
 
     template<typename... Args>
-    constexpr auto hashCombine(HashValue auto& hash, Args&&... args) noexcept;
+    constexpr auto hash_combine(HashValue auto& hash, Args&&... args) noexcept;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -32,15 +32,15 @@ export namespace stormkit { inline namespace core {
 
 namespace stormkit { inline namespace core {
     template<HashValue OutputType>
-    constexpr auto hashCombine(auto&& value) -> OutputType {
+    constexpr auto hash_combine(auto&& value) -> OutputType {
         auto hash = OutputType { 0u };
 
-        hashCombine(hash, std::forward<decltype(value)>(value));
+        hash_combine(hash, std::forward<decltype(value)>(value));
 
         return hash;
     }
 
-    constexpr auto hashCombine(HashValue auto& hash, meta::IsHashable auto&& value) noexcept {
+    constexpr auto hash_combine(HashValue auto& hash, meta::IsHashable auto&& value) noexcept {
         const auto hasher = std::hash<std::remove_cvref_t<decltype(value)>> {};
         hash ^= hasher(std::forward<decltype(value)>(value))
                 + 0x9e3779b9
@@ -48,12 +48,12 @@ namespace stormkit { inline namespace core {
                 + (hash >> 2);
     }
 
-    constexpr auto hashCombine(HashValue auto& hash, std::ranges::range auto&& range) noexcept {
-        for (auto&& value : range) hashCombine(hash, std::forward<decltype(value)>(value));
+    constexpr auto hash_combine(HashValue auto& hash, std::ranges::range auto&& range) noexcept {
+        for (auto&& value : range) hash_combine(hash, std::forward<decltype(value)>(value));
     }
 
     template<typename... Args>
-    constexpr auto hashCombine(HashValue auto& hash, Args&&... args) noexcept {
-        (hashCombine(hash, std::forward<Args>(args)), ...);
+    constexpr auto hash_combine(HashValue auto& hash, Args&&... args) noexcept {
+        (hash_combine(hash, std::forward<Args>(args)), ...);
     }
 }} // namespace stormkit::core

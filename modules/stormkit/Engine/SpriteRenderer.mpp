@@ -10,7 +10,7 @@ export module stormkit.Engine:SpriteRenderer;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Gpu;
 
 import :Core;

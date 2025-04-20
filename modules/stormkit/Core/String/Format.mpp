@@ -6,16 +6,16 @@ module;
 
 #include <stormkit/Core/FormatMacro.hpp>
 
-export module stormkit.Core:String.Format;
+export module stormkit.core:string.format;
 
 import std;
 import magic_enum;
 
-import :Meta;
-import :TypeSafe.Integer;
-import :TypeSafe.AsCast;
-import :Utils.Time;
-import :Utils.Math;
+import :meta;
+import :typesafe.integer;
+import :typesafe.integer_casts;
+import :utils.time;
+import :utils.math;
 
 template<stormkit::math::meta::IsExtentLike T>
 using ExtentToArrayType
@@ -24,7 +24,7 @@ using ExtentToArrayType
 export {
     namespace stormkit { inline namespace core { namespace meta {
         template<meta::IsEnumeration T>
-        inline constexpr auto DisableDefaultFormaterForEnum = false;
+        inline constexpr auto DISABLE_DEFAULT_FORMATTER_FOR_ENUM = false;
     }}} // namespace stormkit::core::meta
 
     FORMATTER_INHERIT_DECLARE(int, stormkit::meta::IsStrict<std::byte>)
@@ -33,7 +33,7 @@ export {
     FORMATTER_DECLARE(stormkit::math::meta::IsExtentLike)
 
     template<stormkit::meta::IsEnumeration T, typename CharT>
-        requires(not stormkit::meta::DisableDefaultFormaterForEnum<T>)
+        requires(not stormkit::meta::DISABLE_DEFAULT_FORMATTER_FOR_ENUM<T>)
     struct std::formatter<T, CharT>: public std::formatter<basic_string_view<CharT>, CharT> {
         template<class FormatContext>
         auto format(const T& data, FormatContext& ctx) const -> decltype(ctx.out());
@@ -67,7 +67,7 @@ FORMATTER_DEFINE_FORMAT_AS_STRING(stormkit::math::meta::IsExtentLike)
 /////////////////////////////////////
 /////////////////////////////////////
 template<stormkit::meta::IsEnumeration T, typename CharT>
-    requires(not stormkit::meta::DisableDefaultFormaterForEnum<T>)
+    requires(not stormkit::meta::DISABLE_DEFAULT_FORMATTER_FOR_ENUM<T>)
 template<class FormatContext>
 auto std::formatter<T, CharT>::format(const T& data, FormatContext& ctx) const
     -> decltype(ctx.out()) {

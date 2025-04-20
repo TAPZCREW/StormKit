@@ -10,7 +10,7 @@ export module stormkit.Gpu:Resource.Shader;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Gpu.Vulkan;
 
 import :Core;
@@ -45,7 +45,7 @@ export namespace stormkit::gpu {
                                             std::span<const SpirvID> data,
                                             ShaderStageFlag type) noexcept -> Expected<Shader>;
 
-        [[nodiscard]] static auto allocateAndLoadFromFile(const Device&                device,
+        [[nodiscard]] static auto allocate_and_loadFromFile(const Device&                device,
                                                           const std::filesystem::path& filepath,
                                                           ShaderStageFlag type) noexcept
             -> Expected<std::unique_ptr<Shader>>;
@@ -68,7 +68,7 @@ export namespace stormkit::gpu {
         auto compile(const Device& device) -> void;
         auto reflect() noexcept -> void;
 
-        ShaderStageFlag      m_type   = ShaderStageFlag::None;
+        ShaderStageFlag      m_type   = ShaderStageFlag::NONE;
         std::vector<SpirvID> m_source = {};
 
         DeferInit<vk::raii::ShaderModule> m_vk_shader_module;
@@ -93,7 +93,7 @@ namespace stormkit::gpu {
 
         m_source.resize(size);
 
-        read(stream, viewAsBytes(m_source));
+        read(stream, as_bytes(m_source));
 
         compile(device);
     }
@@ -151,7 +151,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto
-        Shader::allocateAndLoadFromFile(const Device&                device,
+        Shader::allocate_and_loadFromFile(const Device&                device,
                                         const std::filesystem::path& filepath,
                                         ShaderStageFlag              type) noexcept
         -> Expected<std::unique_ptr<Shader>> try {
@@ -183,9 +183,9 @@ namespace stormkit::gpu {
 
         device.vkHandle()
             .createShaderModule(create_info)
-            .transform(core::monadic::set(m_vk_shader_module))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
-                                                core::monadic::throwAsException()));
+            .transform(core:.monadic::set(m_vk_shader_module))
+            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
+                                                core:.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////

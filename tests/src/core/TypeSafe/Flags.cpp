@@ -4,7 +4,7 @@
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import Test;
 
@@ -31,7 +31,7 @@ FLAG_ENUM(Flag2)
 
 namespace {
     auto _ = test::TestSuite {
-        "Core.TypeSafe",
+        "Core:typesafe",
         {
           {
                 "Flags.enum_class.operators",

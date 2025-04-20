@@ -12,11 +12,11 @@ export module stormkit.Wsi:Win32.WindowImpl;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Wsi;
 
 import :Common.WindowImplBase;
-import :Win32.Utils;
+import :Win32.utils;
 
 export namespace stormkit::wsi::win32 {
     class WindowImpl: public ::stormkit::wsi::common::WindowImplBase {

@@ -2,7 +2,7 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.Core:String.CString;
+export module stormkit.core:string.czstring;
 
 export namespace stormkit { inline namespace core {
     using CZString  = const char*;

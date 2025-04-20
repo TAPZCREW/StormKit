@@ -10,7 +10,7 @@ export module stormkit.Gpu:Resource.Swapchain;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Gpu.Vulkan;
 
 import :Core;
@@ -179,7 +179,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto SwapchainImage::format() const noexcept -> PixelFormat {
+    STORMKIT_FORCE_INLINE auto SwapchainImage::Format() const noexcept -> PixelFormat {
         return m_format;
     }
 

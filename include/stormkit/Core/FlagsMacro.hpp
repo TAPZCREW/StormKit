@@ -18,6 +18,6 @@
 
 #define DISABLE_DEFAULT_FORMATER_FOR_ENUM(e) \
     template<>                               \
-    inline constexpr auto stormkit::meta::DisableDefaultFormaterForEnum<e> = true;
+    inline constexpr auto stormkit::meta::DISABLE_DEFAULT_FORMATTER_FOR_ENUM<e> = true;
 
 #endif

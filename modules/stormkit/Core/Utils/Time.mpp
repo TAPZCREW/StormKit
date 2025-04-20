@@ -2,7 +2,7 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.Core:Utils.Time;
+export module stormkit.core:utils.time;
 
 import std;
 

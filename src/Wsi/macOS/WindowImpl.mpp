@@ -12,7 +12,7 @@ export module stormkit.Wsi:MacOS.WindowImpl;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Wsi;
 
 import :Common.WindowImplBase;
@@ -113,7 +113,7 @@ namespace stormkit::wsi::macos {
     STORMKIT_FORCE_INLINE auto WindowImpl::create(std::string          title,
                                                   const math::ExtentU& size,
                                                   WindowStyle          style) -> void {
-        m_window = makeUnique<macOSWindow>(std::move(title),
+        m_window = allocate<macOSWindow>(std::move(title),
                                            size.width,
                                            size.height,
                                            as<int>(as<Underlying>(style)))

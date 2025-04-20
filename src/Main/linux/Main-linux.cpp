@@ -3,15 +3,15 @@
 // found in the top-level of this distribution
 
 import std;
-import stormkit.Core;
+import stormkit.core;
 
 #include <version>
 
 extern auto userMain(std::span<const std::string_view>) -> int;
 
 auto main(int argc, char** argv) -> int {
-    stormkit::setupSignalHandler();
-    stormkit::setCurrentThreadName("MainThread");
+    stormkit::setup_signal_handler();
+    stormkit::set_current_thread_name("MainThread");
 
     auto args = std::vector<std::string_view> {};
 

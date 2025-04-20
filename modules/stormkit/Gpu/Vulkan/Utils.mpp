@@ -6,11 +6,11 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Gpu.Vulkan:Utils;
+export module stormkit.Gpu.Vulkan:utils;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Log;
 
 import vulkan_hpp;
@@ -147,7 +147,7 @@ namespace stormkit::gpu {
         auto func = std::mem_fn(std::forward<Func>(func_ref));
 
         const auto result = std::invoke(func, value, std::forward<Args>(args)...);
-        if (std::ranges::any_of(possible_results, core::monadic::is(result))) [[likely]]
+        if (std::ranges::any_of(possible_results, core:.monadic::is(result))) [[likely]]
             return result;
 
         return std::unexpected { result };

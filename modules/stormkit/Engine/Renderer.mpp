@@ -10,7 +10,7 @@ export module stormkit.Engine:Renderer;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Wsi;
 import stormkit.Gpu;
 
@@ -95,7 +95,7 @@ namespace stormkit::engine {
     Renderer::Renderer(std::string_view                      application_name,
                        std::optional<Ref<const wsi::Window>> window,
                        Tag) {
-        doInit(application_name, std::move(window)).transform_error(monadic::throwAsException());
+        doInit(application_name, std::move(window)).transform_error(monadic::throw_as_exception());
     }
 
     /////////////////////////////////////
@@ -147,7 +147,7 @@ namespace stormkit::engine {
                                                    this,
                                                    std::ref(framegraph_mutex),
                                                    std::ref(rebuild_graph)) };
-        setThreadName(m_render_thread, "StormKit:RenderThread");
+        set_thread_name(m_render_thread, "StormKit:RenderThread");
     }
 
     /////////////////////////////////////

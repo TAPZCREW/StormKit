@@ -2,7 +2,7 @@ module stormkit.Gpu;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import stormkit.Gpu.Vulkan;
 
@@ -16,7 +16,7 @@ namespace stormkit::gpu {
         auto chooseSwapSurfaceFormat(std::span<const vk::SurfaceFormatKHR> formats) noexcept
             -> vk::SurfaceFormatKHR {
             for (const auto& format : formats) {
-                if (format.format == vk::Format::eB8G8R8A8Unorm
+                if (format.format == vk::format::eB8G8R8A8Unorm
                     && format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
                     return format;
             }
@@ -113,9 +113,9 @@ namespace stormkit::gpu {
 
         device.vkHandle()
             .createSwapchainKHR(create_info)
-            .transform(core::monadic::set(m_vk_swapchain))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
-                                                core::monadic::throwAsException()));
+            .transform(core:.monadic::set(m_vk_swapchain))
+            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
+                                                core:.monadic::throw_as_exception()));
 
         m_extent       = as<math::ExtentU>(swapchain_extent);
         m_image_count  = as<UInt32>(std::size(m_images));
@@ -140,7 +140,7 @@ namespace stormkit::gpu {
                                                    vk::Result::eErrorOutOfDateKHR,
                                                    vk::Result::eSuboptimalKHR };
 
-        if (not std::ranges::any_of(possible_results, core::monadic::is(result))) [[likely]]
+        if (not std::ranges::any_of(possible_results, core:.monadic::is(result))) [[likely]]
             return std::unexpected { narrow<gpu::Result>(result) };
 
         return std::make_pair(narrow<gpu::Result>(result), index);

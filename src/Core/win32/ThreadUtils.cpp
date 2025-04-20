@@ -3,7 +3,7 @@ module;
 #include <windows.h>
 #undef __nullnullterminated
 
-module stormkit.Core;
+module stormkit.core;
 
 import std;
 
@@ -24,7 +24,7 @@ namespace stormkit { inline namespace core {
     namespace details {
         ////////////////////////////////////////
         ////////////////////////////////////////
-        auto setThreadName(HANDLE handle, std::string_view name) noexcept -> void {
+        auto set_thread_name(HANDLE handle, std::string_view name) noexcept -> void {
             const auto id   = ::GetThreadId(handle);
             auto       info = ThreadNameInfo { .szName = std::data(name), .dwThreadId = id };
 
@@ -38,14 +38,14 @@ namespace stormkit { inline namespace core {
 
         ////////////////////////////////////////
         ////////////////////////////////////////
-        auto getThreadName(HANDLE handle) noexcept -> std::string {
+        auto get_thread_name(HANDLE handle) noexcept -> std::string {
             auto       data = PWSTR { nullptr };
             const auto hr   = GetThreadDescription(handle, &data);
 
             auto out = std::string {};
 
             if (SUCCEEDED(hr)) {
-                out = wideToAscii(data);
+                out = wide_to_ascii(data);
                 LocalFree(data);
             }
 
@@ -62,43 +62,43 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto setCurrentThreadName(std::string_view name) noexcept -> void {
+    auto set_current_thread_name(std::string_view name) noexcept -> void {
         const auto handle = ::GetCurrentThread();
-        details::setThreadName(handle, name);
+        details::set_thread_name(handle, name);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto setThreadName(std::thread& thread, std::string_view name) noexcept -> void {
+    auto set_thread_name(std::thread& thread, std::string_view name) noexcept -> void {
         const auto handle = details::getThreadHandle(thread);
-        details::setThreadName(handle, name);
+        details::set_thread_name(handle, name);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto setThreadName(std::jthread& thread, std::string_view name) noexcept -> void {
+    auto set_thread_name(std::jthread& thread, std::string_view name) noexcept -> void {
         const auto handle = details::getThreadHandle(thread);
-        details::setThreadName(handle, name);
+        details::set_thread_name(handle, name);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto getCurrentThreadName() noexcept -> std::string {
+    auto get_current_thread_name() noexcept -> std::string {
         const auto handle = ::GetCurrentThread();
-        return details::getThreadName(handle);
+        return details::get_thread_name(handle);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto getThreadName(std::thread& thread) noexcept -> std::string {
+    auto get_thread_name(std::thread& thread) noexcept -> std::string {
         const auto handle = details::getThreadHandle(thread);
-        return details::getThreadName(handle);
+        return details::get_thread_name(handle);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto getThreadName(std::jthread& thread) noexcept -> std::string {
+    auto get_thread_name(std::jthread& thread) noexcept -> std::string {
         const auto handle = details::getThreadHandle(thread);
-        return details::getThreadName(handle);
+        return details::get_thread_name(handle);
     }
 }} // namespace stormkit::core

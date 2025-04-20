@@ -19,7 +19,7 @@ module stormkit.Wsi;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import :Linux.Common.XKB;
 import :Linux.Wayland.WindowImpl;
@@ -631,8 +631,8 @@ namespace stormkit::wsi::linux::wayland {
         if (!m_open) return;
         if (m_mouse_locked) {
             zwp_locked_pointer_v1_set_cursor_position_hint(m_locked_pointer.get(),
-                                                           wl_fixed_from_int(position.x),
-                                                           wl_fixed_from_int(position.y));
+                                                           wl_fixed_to_int(position.x),
+                                                           wl_fixed_to_int(position.y));
             wl_surface_commit(m_surface.get());
         }
     }
@@ -774,8 +774,8 @@ namespace stormkit::wsi::linux::wayland {
                                    wl_fixed_t                     surface_y) noexcept -> void {
         if (m_mouse_locked) return;
 
-        m_mouse_state.position_in_window.x = wl_fixed_to_int(surface_x);
-        m_mouse_state.position_in_window.y = wl_fixed_to_int(surface_y);
+        m_mouse_state.position_in_window.x = wl_fixed_from_int(surface_x);
+        m_mouse_state.position_in_window.y = wl_fixed_from_int(surface_y);
 
         WindowImplBase::mouseMoveEvent(m_mouse_state.position_in_window.x,
                                        m_mouse_state.position_in_window.y);
@@ -937,8 +937,8 @@ namespace stormkit::wsi::linux::wayland {
                                                   [[maybe_unused]] wl_fixed_t               dy,
                                                   wl_fixed_t dx_unaccel,
                                                   wl_fixed_t dy_unaccel) noexcept -> void {
-        m_mouse_state.position_in_window.x += wl_fixed_to_int(dx_unaccel);
-        m_mouse_state.position_in_window.y += wl_fixed_to_int(dy_unaccel);
+        m_mouse_state.position_in_window.x += wl_fixed_from_int(dx_unaccel);
+        m_mouse_state.position_in_window.y += wl_fixed_from_int(dy_unaccel);
 
         WindowImplBase::mouseMoveEvent(m_mouse_state.position_in_window.x,
                                        m_mouse_state.position_in_window.y);
@@ -1152,7 +1152,7 @@ namespace stormkit::wsi::linux::wayland {
 
         monitor.name = std::format("{} {}", make, model);
 
-        for (auto& [_, m] : globals.monitors) { m.flags = Monitor::Flags::None; }
+        for (auto& [_, m] : globals.monitors) { m.flags = Monitor::Flags::NONE; }
 
         if (&monitor == &globals.monitors.begin()->second) monitor.flags = Monitor::Flags::Primary;
     }

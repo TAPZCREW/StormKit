@@ -15,7 +15,7 @@ export module stormkit.Wsi:Linux.Common.XKB;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Log;
 import stormkit.Wsi;
 

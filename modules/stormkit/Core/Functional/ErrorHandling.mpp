@@ -6,15 +6,15 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:Functional.ErrorHandling;
+export module stormkit.core:functional.error_handling;
 
 import std;
 
-import :Meta.Concepts;
-import :Meta.Traits;
+import :meta.concepts;
+import :meta.traits;
 
-import :Console;
-import :Utils.Assert;
+import :console;
+import :utils.contrat;
 
 export namespace stormkit { inline namespace core { namespace monadic {
     [[nodiscard]] constexpr auto assert(std::optional<std::string> message = std::nullopt,
@@ -31,8 +31,8 @@ export namespace stormkit { inline namespace core { namespace monadic {
     [[nodiscard]] constexpr auto log(std::invocable auto&& logger, std::string&& message) noexcept
         -> decltype(auto);
 
-    [[nodiscard]] constexpr auto throwAsException() noexcept -> decltype(auto);
-}}} // namespace stormkit::core::monadic
+    [[nodiscard]] constexpr auto throw_as_exception() noexcept -> decltype(auto);
+}}} // namespace stormkit::core:.monadic
 
 #ifdef STORMKIT_COMPILER_CLANG
     #define NORETURN_LAMBDA [[noreturn]]
@@ -93,11 +93,11 @@ namespace stormkit { inline namespace core { namespace monadic {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE constexpr auto throwAsException() noexcept -> decltype(auto) {
+    STORMKIT_FORCE_INLINE constexpr auto throw_as_exception() noexcept -> decltype(auto) {
         return
             [] NORETURN_LAMBDA(
                 auto&& error) static -> std::expected<void, meta::CanonicalType<decltype(error)>> {
                 throw std::forward<decltype(error)>(error);
             };
     }
-}}} // namespace stormkit::core::monadic
+}}} // namespace stormkit::core:.monadic

@@ -6,11 +6,11 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:TypeSafe.Integer;
+export module stormkit.core:typesafe.integer;
 
 import std;
 
-import :Meta.Concepts;
+import :meta.concepts;
 
 export {
     namespace stormkit { inline namespace core {

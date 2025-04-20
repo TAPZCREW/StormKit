@@ -6,7 +6,7 @@ module stormkit.Gpu;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import stormkit.Gpu.Vulkan;
 import :Core;
@@ -51,7 +51,7 @@ namespace stormkit::gpu {
             // TODO handle error here
             std::ranges::move(device.vkHandle()
                                   .allocateCommandBuffers(allocate_info)
-                                  .transform_error(core::monadic::assert(
+                                  .transform_error(core:.monadic::assert(
                                       std::format("Failed to allocate {} command buffers",
                                                   create_count)))
                                   .value(),

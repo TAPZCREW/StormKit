@@ -13,7 +13,7 @@
     struct STORMKIT_API std::hash<x> {                                                     \
         [[nodiscard]] auto operator()(const x& value) const noexcept -> stormkit::Hash64 { \
             auto hash = stormkit::Hash64 { 0 };                                            \
-            stormkit::hashCombine(hash, __VA_ARGS__);                                      \
+            stormkit::hash_combine(hash, __VA_ARGS__);                                      \
             return hash;                                                                   \
         }                                                                                  \
     };
@@ -23,7 +23,7 @@
     struct STORMKIT_API std::hash<T> {                                                     \
         [[nodiscard]] auto operator()(const T& value) const noexcept -> stormkit::Hash64 { \
             auto hash = stormkit::Hash64 { 0 };                                            \
-            stormkit::hashCombine(hash, __VA_ARGS__);                                      \
+            stormkit::hash_combine(hash, __VA_ARGS__);                                      \
             return hash;                                                                   \
         }                                                                                  \
     };
@@ -33,7 +33,7 @@
     struct STORMKIT_API std::hash<x<y>> {                                                     \
         [[nodiscard]] auto operator()(const x<y>& value) const noexcept -> stormkit::Hash64 { \
             auto hash = stormkit::Hash64 { 0 };                                               \
-            stormkit::hashCombine(hash, __VA_ARGS__);                                         \
+            stormkit::hash_combine(hash, __VA_ARGS__);                                         \
             return hash;                                                                      \
         }                                                                                     \
     };

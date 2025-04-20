@@ -6,15 +6,15 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:Parallelism.ThreadUtils;
+export module stormkit.core:parallelism.threadutils;
 
 import std;
 
 export namespace stormkit { inline namespace core {
-    STORMKIT_API auto setCurrentThreadName(std::string_view name) noexcept -> void;
-    STORMKIT_API auto setThreadName(std::thread& thread, std::string_view name) noexcept -> void;
-    STORMKIT_API auto setThreadName(std::jthread& thread, std::string_view name) noexcept -> void;
-    STORMKIT_API auto getCurrentThreadName() noexcept -> std::string;
-    STORMKIT_API auto getThreadName(const std::thread& thread) noexcept -> std::string;
-    STORMKIT_API auto getThreadName(const std::jthread& thread) noexcept -> std::string;
+    STORMKIT_API auto set_current_thread_name(std::string_view name) noexcept -> void;
+    STORMKIT_API auto set_thread_name(std::thread& thread, std::string_view name) noexcept -> void;
+    STORMKIT_API auto set_thread_name(std::jthread& thread, std::string_view name) noexcept -> void;
+    STORMKIT_API auto get_current_thread_name() noexcept -> std::string;
+    STORMKIT_API auto get_thread_name(const std::thread& thread) noexcept -> std::string;
+    STORMKIT_API auto get_thread_name(const std::jthread& thread) noexcept -> std::string;
 }} // namespace stormkit::core

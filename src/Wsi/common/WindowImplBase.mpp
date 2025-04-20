@@ -10,7 +10,7 @@ export module stormkit.Wsi:Common.WindowImplBase;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Wsi;
 
 export namespace stormkit::wsi::common {

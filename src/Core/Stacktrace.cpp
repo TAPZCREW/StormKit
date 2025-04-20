@@ -16,18 +16,18 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-module stormkit.Core;
+module stormkit.core;
 
 import std;
 
-import :Console;
-import :String.Operations;
+import :console;
+import :string.operations;
 
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    auto printStacktrace([[maybe_unused]] int ignore_count) noexcept -> void {
-        const auto thread_name = getCurrentThreadName();
+    auto print_stacktrace([[maybe_unused]] int ignore_count) noexcept -> void {
+        const auto thread_name = get_current_thread_name();
         if (not std::empty(thread_name))
             std::println(std::cerr,
                          "================= CALLSTACK (thread name: {}, id: {}) =================",
@@ -47,7 +47,7 @@ namespace stormkit { inline namespace core {
             }
 #if defined(STORMKIT_COMPILER_MSSTL)
             auto splitted = split(frame.description(), '+');
-            const auto address = *fromString<UInt>(splitted[1].substr(2), 16);
+            const auto address = *from_string<UInt>(splitted[1].substr(2), 16);
             splitted = split(splitted[0], '!');
             const auto module = (std::size(splitted) >= 1) ? splitted[0] : "";
             auto symbol = (std::size(splitted) >= 2) ? splitted[1] : "";
@@ -62,21 +62,21 @@ namespace stormkit { inline namespace core {
                                 : std::format("{:#010x}", address));
             
             const auto formatted_symbol = (symbol == "") ? std::format(" on {}", module)
-                                                         : std::format(" in {} on {}", YellowTextStyle | symbol, module);
+                                                         : std::format(" in {} on {}", YELLOW_TEXT_STYLE | symbol, module);
 
             if (frame.source_file() != "" and frame.source_line() != 0) {
                 std::println(std::cerr,
                              "{}# {}{} at {}:{}",
                              (i++ - ignore_count),
-                             BlueTextStyle | object_address,
+                             BLUE_TEXT_STYLE | object_address,
                              formatted_symbol,
-                             BlueTextStyle | frame.source_file(),
-                             BlueTextStyle | frame.source_line());
+                             BLUE_TEXT_STYLE | frame.source_file(),
+                             BLUE_TEXT_STYLE | frame.source_line());
             } else {
                 std::println(std::cerr,
                              "{}# {}{}",
                              (i++ - ignore_count),
-                             BlueTextStyle | object_address,
+                             BLUE_TEXT_STYLE | object_address,
                              formatted_symbol);
             }
         }
@@ -103,24 +103,24 @@ namespace stormkit { inline namespace core {
                                              : std::format("{:#010x}", frame.object_address));
 
             const auto formatted_symbol
-                = (frame.symbol == "") ? "" : std::format(" in {}", YellowTextStyle | symbol);
+                = (frame.symbol == "") ? "" : std::format(" in {}", YELLOW_TEXT_STYLE | symbol);
 
             if (frame.line.has_value() and frame.column.has_value()) {
                 std::println(std::cerr,
                              "{}# {}{} at {}:{}:{}",
                              (i++ - ignore_count),
-                             BlueTextStyle | object_address,
+                             BLUE_TEXT_STYLE | object_address,
                              formatted_symbol,
-                             GreenTextStyle | frame.filename,
-                             BlueTextStyle | frame.line.value(),
-                             BlueTextStyle | frame.column.value());
+                             GREEN_TEXT_STYLE | frame.filename,
+                             BLUE_TEXT_STYLE | frame.line.value(),
+                             BLUE_TEXT_STYLE | frame.column.value());
             } else
                 std::println(std::cerr,
                              "{}# {}{} at {}",
                              (i++ - ignore_count),
-                             BlueTextStyle | object_address,
+                             BLUE_TEXT_STYLE | object_address,
                              formatted_symbol,
-                             GreenTextStyle | frame.filename);
+                             GREEN_TEXT_STYLE | frame.filename);
         }
 #endif
     }

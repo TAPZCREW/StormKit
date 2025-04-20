@@ -4,13 +4,13 @@ module;
 
 #include <csignal>
 
-export module stormkit.Core:Utils.SignalHandler;
+export module stormkit.core:utils.signal_handler;
 
 import std;
-import :Utils.Stacktrace;
+import :utils.stracktrace;
 
 export namespace stormkit { inline namespace core {
-    STORMKIT_API auto setupSignalHandler() noexcept -> void;
+    STORMKIT_API auto setup_signal_handler() noexcept -> void;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -18,20 +18,20 @@ export namespace stormkit { inline namespace core {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit { inline namespace core {
-    extern "C" auto terminateHandler() noexcept -> void {
-        printStacktrace(3);
+    extern "C" auto terminate_handler() noexcept -> void {
+        print_stacktrace(3);
     }
 
     extern "C" auto signalHandler(int signum) noexcept -> void {
         std::signal(signum, SIG_DFL);
-        printStacktrace(3);
+        print_stacktrace(3);
         std::raise(SIGABRT);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto setupSignalHandler() noexcept -> void {
-        std::set_terminate(&terminateHandler);
+    auto setup_signal_handler() noexcept -> void {
+        std::set_terminate(&terminate_handler);
         std::signal(SIGSEGV, &signalHandler);
     }
 }} // namespace stormkit::core

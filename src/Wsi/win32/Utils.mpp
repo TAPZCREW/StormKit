@@ -6,9 +6,9 @@ module;
 
 #include <windows.h>
 
-export module stormkit.Wsi:Win32.Utils;
+export module stormkit.Wsi:Win32.utils;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Wsi;
 
 export namespace stormkit::wsi::win32 {

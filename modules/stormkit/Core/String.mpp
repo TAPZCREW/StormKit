@@ -2,9 +2,9 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.Core:String;
+export module stormkit.core:string;
 
-export import :String.CString;
-export import :String.Encodings;
-export import :String.Format;
-export import :String.Operations;
+export import :string.czstring;
+export import :string.encodings;
+export import :string.format;
+export import :string.operations;

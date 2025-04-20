@@ -13,7 +13,7 @@ export module stormkit.Gpu:Core.Types;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Gpu.Vulkan;
 
 export {
@@ -29,7 +29,7 @@ export {
         };
 
         enum class QueueFlag : UInt8 {
-            None           = 0,
+            NONE           = 0,
             Graphics       = as<UInt8>(vk::QueueFlagBits::eGraphics),
             Compute        = as<UInt8>(vk::QueueFlagBits::eCompute),
             Transfer       = as<UInt8>(vk::QueueFlagBits::eTransfer),
@@ -37,7 +37,7 @@ export {
         };
 
         enum class ShaderStageFlag : UInt8 {
-            None     = 0,
+            NONE     = 0,
             Vertex   = as<UInt8>(vk::ShaderStageFlagBits::eVertex),
             Fragment = as<UInt8>(vk::ShaderStageFlagBits::eFragment),
             Geometry = as<UInt8>(vk::ShaderStageFlagBits::eGeometry),
@@ -60,7 +60,7 @@ export {
         };
 
         enum class CullModeFlag : UInt8 {
-            None       = as<UInt8>(vk::CullModeFlagBits::eNone),
+            NONE       = as<UInt8>(vk::CullModeFlagBits::eNONE),
             Front      = as<UInt8>(vk::CullModeFlagBits::eFront),
             Back       = as<UInt8>(vk::CullModeFlagBits::eBack),
             Front_Back = Front | Back,
@@ -72,7 +72,7 @@ export {
         };
 
         enum class SampleCountFlag : UInt8 {
-            None = 0,
+            NONE = 0,
             C1   = as<UInt8>(vk::SampleCountFlagBits::e1),
             C2   = as<UInt8>(vk::SampleCountFlagBits::e2),
             C4   = as<UInt8>(vk::SampleCountFlagBits::e4),
@@ -83,7 +83,7 @@ export {
         };
 
         enum class ColorComponentFlag : UInt8 {
-            None = 0,
+            NONE = 0,
             R    = as<UInt8>(vk::ColorComponentFlagBits::eR),
             G    = as<UInt8>(vk::ColorComponentFlagBits::eG),
             B    = as<UInt8>(vk::ColorComponentFlagBits::eB),
@@ -143,95 +143,95 @@ export {
         };
 
         enum class PixelFormat : UInt8 {
-            R8_SNorm    = as<UInt8>(vk::Format::eR8Snorm),
-            RG8_SNorm   = as<UInt8>(vk::Format::eR8G8Snorm),
-            RGB8_SNorm  = as<UInt8>(vk::Format::eR8G8B8Snorm),
-            RGBA8_SNorm = as<UInt8>(vk::Format::eR8G8B8A8Snorm),
+            R8_SNorm    = as<UInt8>(vk::format::eR8Snorm),
+            RG8_SNorm   = as<UInt8>(vk::format::eR8G8Snorm),
+            RGB8_SNorm  = as<UInt8>(vk::format::eR8G8B8Snorm),
+            RGBA8_SNorm = as<UInt8>(vk::format::eR8G8B8A8Snorm),
 
-            R8_UNorm    = as<UInt8>(vk::Format::eR8Unorm),
-            RG8_UNorm   = as<UInt8>(vk::Format::eR8G8Unorm),
-            RGB8_UNorm  = as<UInt8>(vk::Format::eR8G8B8Unorm),
-            RGBA8_UNorm = as<UInt8>(vk::Format::eR8G8B8A8Unorm),
+            R8_UNorm    = as<UInt8>(vk::format::eR8Unorm),
+            RG8_UNorm   = as<UInt8>(vk::format::eR8G8Unorm),
+            RGB8_UNorm  = as<UInt8>(vk::format::eR8G8B8Unorm),
+            RGBA8_UNorm = as<UInt8>(vk::format::eR8G8B8A8Unorm),
 
-            R16_SNorm    = as<UInt8>(vk::Format::eR16Snorm),
-            RG16_SNorm   = as<UInt8>(vk::Format::eR16G16Snorm),
-            RGB16_SNorm  = as<UInt8>(vk::Format::eR16G16B16Snorm),
-            RGBA16_SNorm = as<UInt8>(vk::Format::eR16G16B16A16Snorm),
+            R16_SNorm    = as<UInt8>(vk::format::eR16Snorm),
+            RG16_SNorm   = as<UInt8>(vk::format::eR16G16Snorm),
+            RGB16_SNorm  = as<UInt8>(vk::format::eR16G16B16Snorm),
+            RGBA16_SNorm = as<UInt8>(vk::format::eR16G16B16A16Snorm),
 
-            R16_UNorm    = as<UInt8>(vk::Format::eR16Unorm),
-            RG16_UNorm   = as<UInt8>(vk::Format::eR16G16Unorm),
-            RGB16_UNorm  = as<UInt8>(vk::Format::eR16G16B16Unorm),
-            RGBA16_UNorm = as<UInt8>(vk::Format::eR16G16B16A16Unorm),
+            R16_UNorm    = as<UInt8>(vk::format::eR16Unorm),
+            RG16_UNorm   = as<UInt8>(vk::format::eR16G16Unorm),
+            RGB16_UNorm  = as<UInt8>(vk::format::eR16G16B16Unorm),
+            RGBA16_UNorm = as<UInt8>(vk::format::eR16G16B16A16Unorm),
 
-            A2_RGB10_UNorm = as<UInt8>(vk::Format::eA2R10G10B10UnormPack32),
+            A2_RGB10_UNorm = as<UInt8>(vk::format::eA2R10G10B10UnormPack32),
 
-            RGBA4_UNorm_Pack16 = as<UInt8>(vk::Format::eR4G4B4A4UnormPack16),
+            RGBA4_UNorm_Pack16 = as<UInt8>(vk::format::eR4G4B4A4UnormPack16),
 
-            A1_RGB5_UNorm_Pack16 = as<UInt8>(vk::Format::eA1R5G5B5UnormPack16),
+            A1_RGB5_UNorm_Pack16 = as<UInt8>(vk::format::eA1R5G5B5UnormPack16),
 
-            R5_G6_B5_UNorm_Pack16 = as<UInt8>(vk::Format::eR5G6B5UnormPack16),
+            R5_G6_B5_UNorm_Pack16 = as<UInt8>(vk::format::eR5G6B5UnormPack16),
 
-            BGR8_UNorm  = as<UInt8>(vk::Format::eB8G8R8Unorm),
-            BGRA8_UNorm = as<UInt8>(vk::Format::eB8G8R8A8Unorm),
+            BGR8_UNorm  = as<UInt8>(vk::format::eB8G8R8Unorm),
+            BGRA8_UNorm = as<UInt8>(vk::format::eB8G8R8A8Unorm),
 
-            R8I    = as<UInt8>(vk::Format::eR8Sint),
-            RG8I   = as<UInt8>(vk::Format::eR8G8Sint),
-            RGB8I  = as<UInt8>(vk::Format::eR8G8B8Sint),
-            RGBA8I = as<UInt8>(vk::Format::eR8G8B8A8Sint),
+            R8I    = as<UInt8>(vk::format::eR8Sint),
+            RG8I   = as<UInt8>(vk::format::eR8G8Sint),
+            RGB8I  = as<UInt8>(vk::format::eR8G8B8Sint),
+            RGBA8I = as<UInt8>(vk::format::eR8G8B8A8Sint),
 
-            R8U    = as<UInt8>(vk::Format::eR8Uint),
-            RG8U   = as<UInt8>(vk::Format::eR8G8Uint),
-            RGB8U  = as<UInt8>(vk::Format::eR8G8B8Uint),
-            RGBA8U = as<UInt8>(vk::Format::eR8G8B8A8Uint),
+            R8U    = as<UInt8>(vk::format::eR8Uint),
+            RG8U   = as<UInt8>(vk::format::eR8G8Uint),
+            RGB8U  = as<UInt8>(vk::format::eR8G8B8Uint),
+            RGBA8U = as<UInt8>(vk::format::eR8G8B8A8Uint),
 
-            R16I    = as<UInt8>(vk::Format::eR16Sint),
-            RG16I   = as<UInt8>(vk::Format::eR16G16Sint),
-            RGB16I  = as<UInt8>(vk::Format::eR16G16B16Sint),
-            RGBA16I = as<UInt8>(vk::Format::eR16G16B16A16Sint),
+            R16I    = as<UInt8>(vk::format::eR16Sint),
+            RG16I   = as<UInt8>(vk::format::eR16G16Sint),
+            RGB16I  = as<UInt8>(vk::format::eR16G16B16Sint),
+            RGBA16I = as<UInt8>(vk::format::eR16G16B16A16Sint),
 
-            R16U    = as<UInt8>(vk::Format::eR16Uint),
-            RG16U   = as<UInt8>(vk::Format::eR16G16Uint),
-            RGB16U  = as<UInt8>(vk::Format::eR16G16B16Uint),
-            RGBA16U = as<UInt8>(vk::Format::eR16G16B16A16Uint),
+            R16U    = as<UInt8>(vk::format::eR16Uint),
+            RG16U   = as<UInt8>(vk::format::eR16G16Uint),
+            RGB16U  = as<UInt8>(vk::format::eR16G16B16Uint),
+            RGBA16U = as<UInt8>(vk::format::eR16G16B16A16Uint),
 
-            R32I    = as<UInt8>(vk::Format::eR32Sint),
-            RG32I   = as<UInt8>(vk::Format::eR32G32Sint),
-            RGB32I  = as<UInt8>(vk::Format::eR32G32B32Sint),
-            RGBA32I = as<UInt8>(vk::Format::eR32G32B32A32Sint),
+            R32I    = as<UInt8>(vk::format::eR32Sint),
+            RG32I   = as<UInt8>(vk::format::eR32G32Sint),
+            RGB32I  = as<UInt8>(vk::format::eR32G32B32Sint),
+            RGBA32I = as<UInt8>(vk::format::eR32G32B32A32Sint),
 
-            R32U    = as<UInt8>(vk::Format::eR32Uint),
-            RG32U   = as<UInt8>(vk::Format::eR32G32Uint),
-            RGB32U  = as<UInt8>(vk::Format::eR32G32B32Uint),
-            RGBA32U = as<UInt8>(vk::Format::eR32G32B32A32Uint),
+            R32U    = as<UInt8>(vk::format::eR32Uint),
+            RG32U   = as<UInt8>(vk::format::eR32G32Uint),
+            RGB32U  = as<UInt8>(vk::format::eR32G32B32Uint),
+            RGBA32U = as<UInt8>(vk::format::eR32G32B32A32Uint),
 
-            A2_RGB10U_Pack32 = as<UInt8>(vk::Format::eA2R10G10B10UintPack32),
+            A2_RGB10U_Pack32 = as<UInt8>(vk::format::eA2R10G10B10UintPack32),
 
-            R16F    = as<UInt8>(vk::Format::eR16Sfloat),
-            RG16F   = as<UInt8>(vk::Format::eR16G16Sfloat),
-            RGB16F  = as<UInt8>(vk::Format::eR16G16B16Sfloat),
-            RGBA16F = as<UInt8>(vk::Format::eR16G16B16A16Sfloat),
+            R16F    = as<UInt8>(vk::format::eR16Sfloat),
+            RG16F   = as<UInt8>(vk::format::eR16G16Sfloat),
+            RGB16F  = as<UInt8>(vk::format::eR16G16B16Sfloat),
+            RGBA16F = as<UInt8>(vk::format::eR16G16B16A16Sfloat),
 
-            R32F    = as<UInt8>(vk::Format::eR32Sfloat),
-            RG32F   = as<UInt8>(vk::Format::eR32G32Sfloat),
-            RGB32F  = as<UInt8>(vk::Format::eR32G32B32Sfloat),
-            RGBA32F = as<UInt8>(vk::Format::eR32G32B32A32Sfloat),
+            R32F    = as<UInt8>(vk::format::eR32Sfloat),
+            RG32F   = as<UInt8>(vk::format::eR32G32Sfloat),
+            RGB32F  = as<UInt8>(vk::format::eR32G32B32Sfloat),
+            RGBA32F = as<UInt8>(vk::format::eR32G32B32A32Sfloat),
 
-            BG11_R10F_Pack32 = as<UInt8>(vk::Format::eB10G11R11UfloatPack32),
+            BG11_R10F_Pack32 = as<UInt8>(vk::format::eB10G11R11UfloatPack32),
 
-            sRGB8  = as<UInt8>(vk::Format::eR8G8B8Srgb),
-            sRGBA8 = as<UInt8>(vk::Format::eR8G8B8A8Srgb),
-            sBGR8  = as<UInt8>(vk::Format::eB8G8R8Srgb),
-            sBGRA8 = as<UInt8>(vk::Format::eB8G8R8A8Srgb),
+            sRGB8  = as<UInt8>(vk::format::eR8G8B8Srgb),
+            sRGBA8 = as<UInt8>(vk::format::eR8G8B8A8Srgb),
+            sBGR8  = as<UInt8>(vk::format::eB8G8R8Srgb),
+            sBGRA8 = as<UInt8>(vk::format::eB8G8R8A8Srgb),
 
-            Depth16  = as<UInt8>(vk::Format::eD16Unorm),
-            Depth24  = as<UInt8>(vk::Format::eX8D24UnormPack32),
-            Depth32F = as<UInt8>(vk::Format::eD32Sfloat),
+            Depth16  = as<UInt8>(vk::format::eD16Unorm),
+            Depth24  = as<UInt8>(vk::format::eX8D24UnormPack32),
+            Depth32F = as<UInt8>(vk::format::eD32Sfloat),
 
-            Depth16_Stencil8  = as<UInt8>(vk::Format::eD16UnormS8Uint),
-            Depth24_Stencil8  = as<UInt8>(vk::Format::eD24UnormS8Uint),
-            Depth32F_Stencil8 = as<UInt8>(vk::Format::eD32SfloatS8Uint),
+            Depth16_Stencil8  = as<UInt8>(vk::format::eD16UnormS8Uint),
+            Depth24_Stencil8  = as<UInt8>(vk::format::eD24UnormS8Uint),
+            Depth32F_Stencil8 = as<UInt8>(vk::format::eD32SfloatS8Uint),
 
-            Undefined = as<UInt8>(vk::Format::eUndefined),
+            Undefined = as<UInt8>(vk::format::eUndefined),
         };
 
         enum class AttachmentLoadOperation : UInt8 {
@@ -271,7 +271,7 @@ export {
         };
 
         enum class ImageAspectMaskFlag : UInt8 {
-            None    = 0,
+            NONE    = 0,
             Color   = as<UInt8>(vk::ImageAspectFlagBits::eColor),
             Depth   = as<UInt8>(vk::ImageAspectFlagBits::eDepth),
             Stencil = as<UInt8>(vk::ImageAspectFlagBits::eStencil),
@@ -283,7 +283,7 @@ export {
         };
 
         enum class ImageCreateFlag : UInt16 {
-            None             = 0,
+            NONE             = 0,
             Sparse_Binding   = as<UInt16>(vk::ImageCreateFlagBits::eSparseBinding),
             Sparse_Residency = as<UInt16>(vk::ImageCreateFlagBits::eSparseResidency),
             Sparse_Aliased   = as<UInt16>(vk::ImageCreateFlagBits::eSparseAliased),
@@ -301,97 +301,97 @@ export {
         };
 
         enum class Format : UInt8 {
-            Byte  = as<UInt8>(vk::Format::eR8Sint),
-            Byte2 = as<UInt8>(vk::Format::eR8G8Sint),
-            Byte3 = as<UInt8>(vk::Format::eR8G8B8Sint),
-            Byte4 = as<UInt8>(vk::Format::eR8G8B8A8Sint),
+            Byte  = as<UInt8>(vk::format::eR8Sint),
+            Byte2 = as<UInt8>(vk::format::eR8G8Sint),
+            Byte3 = as<UInt8>(vk::format::eR8G8B8Sint),
+            Byte4 = as<UInt8>(vk::format::eR8G8B8A8Sint),
 
-            Byte_Norm  = as<UInt8>(vk::Format::eR8Snorm),
-            Byte2_Norm = as<UInt8>(vk::Format::eR8G8Snorm),
-            Byte3_Norm = as<UInt8>(vk::Format::eR8G8B8Snorm),
-            Byte4_Norm = as<UInt8>(vk::Format::eR8G8B8A8Snorm),
+            Byte_Norm  = as<UInt8>(vk::format::eR8Snorm),
+            Byte2_Norm = as<UInt8>(vk::format::eR8G8Snorm),
+            Byte3_Norm = as<UInt8>(vk::format::eR8G8B8Snorm),
+            Byte4_Norm = as<UInt8>(vk::format::eR8G8B8A8Snorm),
 
-            Byte_Scaled  = as<UInt8>(vk::Format::eR8Sscaled),
-            Byte2_Scaled = as<UInt8>(vk::Format::eR8G8Sscaled),
-            Byte3_Scaled = as<UInt8>(vk::Format::eR8G8B8Sscaled),
-            Byte4_Scaled = as<UInt8>(vk::Format::eR8G8B8A8Sscaled),
+            Byte_Scaled  = as<UInt8>(vk::format::eR8Sscaled),
+            Byte2_Scaled = as<UInt8>(vk::format::eR8G8Sscaled),
+            Byte3_Scaled = as<UInt8>(vk::format::eR8G8B8Sscaled),
+            Byte4_Scaled = as<UInt8>(vk::format::eR8G8B8A8Sscaled),
 
-            UByte  = as<UInt8>(vk::Format::eR8Uint),
-            UByte2 = as<UInt8>(vk::Format::eR8G8Uint),
-            UByte3 = as<UInt8>(vk::Format::eR8G8B8Uint),
-            UByte4 = as<UInt8>(vk::Format::eR8G8B8A8Uint),
+            UByte  = as<UInt8>(vk::format::eR8Uint),
+            UByte2 = as<UInt8>(vk::format::eR8G8Uint),
+            UByte3 = as<UInt8>(vk::format::eR8G8B8Uint),
+            UByte4 = as<UInt8>(vk::format::eR8G8B8A8Uint),
 
-            UByte_Norm  = as<UInt8>(vk::Format::eR8Unorm),
-            UByte2_Norm = as<UInt8>(vk::Format::eR8G8Unorm),
-            UByte3_Norm = as<UInt8>(vk::Format::eR8G8B8Unorm),
-            UByte4_Norm = as<UInt8>(vk::Format::eR8G8B8A8Unorm),
+            UByte_Norm  = as<UInt8>(vk::format::eR8Unorm),
+            UByte2_Norm = as<UInt8>(vk::format::eR8G8Unorm),
+            UByte3_Norm = as<UInt8>(vk::format::eR8G8B8Unorm),
+            UByte4_Norm = as<UInt8>(vk::format::eR8G8B8A8Unorm),
 
-            UByte_Ucaled  = as<UInt8>(vk::Format::eR8Uscaled),
-            UByte2_Ucaled = as<UInt8>(vk::Format::eR8G8Uscaled),
-            UByte3_Ucaled = as<UInt8>(vk::Format::eR8G8B8Uscaled),
-            UByte4_Ucaled = as<UInt8>(vk::Format::eR8G8B8A8Uscaled),
+            UByte_Ucaled  = as<UInt8>(vk::format::eR8Uscaled),
+            UByte2_Ucaled = as<UInt8>(vk::format::eR8G8Uscaled),
+            UByte3_Ucaled = as<UInt8>(vk::format::eR8G8B8Uscaled),
+            UByte4_Ucaled = as<UInt8>(vk::format::eR8G8B8A8Uscaled),
 
-            Short  = as<UInt8>(vk::Format::eR16Sint),
-            Short2 = as<UInt8>(vk::Format::eR16G16Sint),
-            Short3 = as<UInt8>(vk::Format::eR16G16B16Sint),
-            Short4 = as<UInt8>(vk::Format::eR16G16B16A16Sint),
+            Short  = as<UInt8>(vk::format::eR16Sint),
+            Short2 = as<UInt8>(vk::format::eR16G16Sint),
+            Short3 = as<UInt8>(vk::format::eR16G16B16Sint),
+            Short4 = as<UInt8>(vk::format::eR16G16B16A16Sint),
 
-            Short_Norm  = as<UInt8>(vk::Format::eR16Sfloat),
-            Short2_Norm = as<UInt8>(vk::Format::eR16G16Sfloat),
-            Short3_Norm = as<UInt8>(vk::Format::eR16G16B16Sfloat),
-            Short4_Norm = as<UInt8>(vk::Format::eR16G16B16A16Sfloat),
+            Short_Norm  = as<UInt8>(vk::format::eR16Sfloat),
+            Short2_Norm = as<UInt8>(vk::format::eR16G16Sfloat),
+            Short3_Norm = as<UInt8>(vk::format::eR16G16B16Sfloat),
+            Short4_Norm = as<UInt8>(vk::format::eR16G16B16A16Sfloat),
 
-            Short_Scaled  = as<UInt8>(vk::Format::eR16Sscaled),
-            Short2_Scaled = as<UInt8>(vk::Format::eR16G16Sscaled),
-            Short3_Scaled = as<UInt8>(vk::Format::eR16G16B16Sscaled),
-            Short4_Scaled = as<UInt8>(vk::Format::eR16G16B16A16Sscaled),
+            Short_Scaled  = as<UInt8>(vk::format::eR16Sscaled),
+            Short2_Scaled = as<UInt8>(vk::format::eR16G16Sscaled),
+            Short3_Scaled = as<UInt8>(vk::format::eR16G16B16Sscaled),
+            Short4_Scaled = as<UInt8>(vk::format::eR16G16B16A16Sscaled),
 
-            UShort  = as<UInt8>(vk::Format::eR16Uint),
-            UShort2 = as<UInt8>(vk::Format::eR16G16Uint),
-            UShort3 = as<UInt8>(vk::Format::eR16G16B16Uint),
-            UShort4 = as<UInt8>(vk::Format::eR16G16B16A16Uint),
+            UShort  = as<UInt8>(vk::format::eR16Uint),
+            UShort2 = as<UInt8>(vk::format::eR16G16Uint),
+            UShort3 = as<UInt8>(vk::format::eR16G16B16Uint),
+            UShort4 = as<UInt8>(vk::format::eR16G16B16A16Uint),
 
-            UShort_Norm  = as<UInt8>(vk::Format::eR16Unorm),
-            UShort2_Norm = as<UInt8>(vk::Format::eR16G16Unorm),
-            UShort3_Norm = as<UInt8>(vk::Format::eR16G16B16Unorm),
-            UShort4_Norm = as<UInt8>(vk::Format::eR16G16B16A16Unorm),
+            UShort_Norm  = as<UInt8>(vk::format::eR16Unorm),
+            UShort2_Norm = as<UInt8>(vk::format::eR16G16Unorm),
+            UShort3_Norm = as<UInt8>(vk::format::eR16G16B16Unorm),
+            UShort4_Norm = as<UInt8>(vk::format::eR16G16B16A16Unorm),
 
-            UShort_Ucaled  = as<UInt8>(vk::Format::eR16Uscaled),
-            UShort2_Ucaled = as<UInt8>(vk::Format::eR16G16Uscaled),
-            UShort3_Ucaled = as<UInt8>(vk::Format::eR16G16B16Uscaled),
-            UShort4_Ucaled = as<UInt8>(vk::Format::eR16G16B16A16Uscaled),
+            UShort_Ucaled  = as<UInt8>(vk::format::eR16Uscaled),
+            UShort2_Ucaled = as<UInt8>(vk::format::eR16G16Uscaled),
+            UShort3_Ucaled = as<UInt8>(vk::format::eR16G16B16Uscaled),
+            UShort4_Ucaled = as<UInt8>(vk::format::eR16G16B16A16Uscaled),
 
-            Int  = as<UInt8>(vk::Format::eR32Sint),
-            Int2 = as<UInt8>(vk::Format::eR32G32Sint),
-            Int3 = as<UInt8>(vk::Format::eR32G32B32Sint),
-            Int4 = as<UInt8>(vk::Format::eR32G32B32A32Sint),
+            Int  = as<UInt8>(vk::format::eR32Sint),
+            Int2 = as<UInt8>(vk::format::eR32G32Sint),
+            Int3 = as<UInt8>(vk::format::eR32G32B32Sint),
+            Int4 = as<UInt8>(vk::format::eR32G32B32A32Sint),
 
-            UInt  = as<UInt8>(vk::Format::eR32Uint),
-            UInt2 = as<UInt8>(vk::Format::eR32G32Uint),
-            UInt3 = as<UInt8>(vk::Format::eR32G32B32Uint),
-            UInt4 = as<UInt8>(vk::Format::eR32G32B32A32Uint),
+            UInt  = as<UInt8>(vk::format::eR32Uint),
+            UInt2 = as<UInt8>(vk::format::eR32G32Uint),
+            UInt3 = as<UInt8>(vk::format::eR32G32B32Uint),
+            UInt4 = as<UInt8>(vk::format::eR32G32B32A32Uint),
 
-            Long  = as<UInt8>(vk::Format::eR64Sint),
-            Long2 = as<UInt8>(vk::Format::eR64G64Sint),
-            Long3 = as<UInt8>(vk::Format::eR64G64B64Sint),
-            Long4 = as<UInt8>(vk::Format::eR64G64B64A64Sint),
+            Long  = as<UInt8>(vk::format::eR64Sint),
+            Long2 = as<UInt8>(vk::format::eR64G64Sint),
+            Long3 = as<UInt8>(vk::format::eR64G64B64Sint),
+            Long4 = as<UInt8>(vk::format::eR64G64B64A64Sint),
 
-            ULong  = as<UInt8>(vk::Format::eR64Uint),
-            ULong2 = as<UInt8>(vk::Format::eR64G64Uint),
-            ULong3 = as<UInt8>(vk::Format::eR64G64B64Uint),
-            ULong4 = as<UInt8>(vk::Format::eR64G64B64A64Uint),
+            ULong  = as<UInt8>(vk::format::eR64Uint),
+            ULong2 = as<UInt8>(vk::format::eR64G64Uint),
+            ULong3 = as<UInt8>(vk::format::eR64G64B64Uint),
+            ULong4 = as<UInt8>(vk::format::eR64G64B64A64Uint),
 
-            Float  = as<UInt8>(vk::Format::eR32Sfloat),
-            Float2 = as<UInt8>(vk::Format::eR32G32Sfloat),
-            Float3 = as<UInt8>(vk::Format::eR32G32B32Sfloat),
-            Float4 = as<UInt8>(vk::Format::eR32G32B32A32Sfloat),
+            Float  = as<UInt8>(vk::format::eR32Sfloat),
+            Float2 = as<UInt8>(vk::format::eR32G32Sfloat),
+            Float3 = as<UInt8>(vk::format::eR32G32B32Sfloat),
+            Float4 = as<UInt8>(vk::format::eR32G32B32A32Sfloat),
 
-            Double  = as<UInt8>(vk::Format::eR64Sfloat),
-            Double2 = as<UInt8>(vk::Format::eR64G64Sfloat),
-            Double3 = as<UInt8>(vk::Format::eR64G64B64Sfloat),
-            Double4 = as<UInt8>(vk::Format::eR64G64B64A64Sfloat),
+            Double  = as<UInt8>(vk::format::eR64Sfloat),
+            Double2 = as<UInt8>(vk::format::eR64G64Sfloat),
+            Double3 = as<UInt8>(vk::format::eR64G64B64Sfloat),
+            Double4 = as<UInt8>(vk::format::eR64G64B64A64Sfloat),
 
-            Undefined = as<UInt8>(vk::Format::eUndefined),
+            Undefined = as<UInt8>(vk::format::eUndefined),
         };
 
         enum class BufferUsageFlag : UInt16 {
@@ -469,12 +469,12 @@ export {
         };
 
         enum class BorderColor : UInt8 {
-            Float_Transparent_Black = as<UInt8>(vk::BorderColor::eFloatTransparentBlack),
-            Int_Transparent_Black   = as<UInt8>(vk::BorderColor::eIntTransparentBlack),
-            Float_Opaque_Black      = as<UInt8>(vk::BorderColor::eFloatOpaqueBlack),
-            Int_Opaque_Black        = as<UInt8>(vk::BorderColor::eIntOpaqueBlack),
-            Float_Opaque_White      = as<UInt8>(vk::BorderColor::eFloatOpaqueWhite),
-            Int_opaque_White        = as<UInt8>(vk::BorderColor::eIntOpaqueWhite),
+            Float_TRANSPARENT_BLACK = as<UInt8>(vk::BorderColor::eFloatTRANSPARENTBLACK),
+            Int_TRANSPARENT_BLACK   = as<UInt8>(vk::BorderColor::eIntTRANSPARENTBLACK),
+            Float_Opaque_BLACK      = as<UInt8>(vk::BorderColor::eFloatOpaqueBLACK),
+            Int_Opaque_BLACK        = as<UInt8>(vk::BorderColor::eIntOpaqueBLACK),
+            Float_Opaque_WHITE      = as<UInt8>(vk::BorderColor::eFloatOpaqueWHITE),
+            Int_opaque_WHITE        = as<UInt8>(vk::BorderColor::eIntOpaqueWHITE),
         };
 
         enum class SamplerMipmapMode : UInt8 {
@@ -487,7 +487,7 @@ export {
             Not_Ready                     = as<Int32>(vk::Result::eNotReady),
             Timeout                       = as<Int32>(vk::Result::eTimeout),
             Event_Set                     = as<Int32>(vk::Result::eEventSet),
-            Event_Reset                   = as<Int32>(vk::Result::eEventReset),
+            Event_RESET                   = as<Int32>(vk::Result::eEventRESET),
             Incomplete                    = as<Int32>(vk::Result::eIncomplete),
             Error_Out_Of_host_Memory      = as<Int32>(vk::Result::eErrorOutOfHostMemory),
             Error_Out_Of_Device_Memory    = as<Int32>(vk::Result::eErrorOutOfDeviceMemory),
@@ -576,7 +576,7 @@ export {
         };
 
         enum class AccessFlag : UInt32 {
-            None                   = as<UInt32>(vk::AccessFlagBits::eNoneKHR),
+            NONE                   = as<UInt32>(vk::AccessFlagBits::eNONEKHR),
             Indirect_Command_Read  = as<UInt32>(vk::AccessFlagBits::eIndirectCommandRead),
             Vertex_Attribute_Read  = as<UInt32>(vk::AccessFlagBits::eVertexAttributeRead),
             Uniform_Read           = as<UInt32>(vk::AccessFlagBits::eUniformRead),
@@ -598,7 +598,7 @@ export {
         };
 
         enum class PipelineStageFlag : UInt32 {
-            None          = as<UInt32>(vk::PipelineStageFlagBits::eNoneKHR),
+            NONE          = as<UInt32>(vk::PipelineStageFlagBits::eNONEKHR),
             Top_Of_Pipe   = as<UInt32>(vk::PipelineStageFlagBits::eTopOfPipe),
             Draw_Indirect = as<UInt32>(vk::PipelineStageFlagBits::eDrawIndirect),
             Vertex_Input  = as<UInt32>(vk::PipelineStageFlagBits::eVertexInput),
@@ -621,7 +621,7 @@ export {
         };
 
         enum class DependencyFlag : UInt8 {
-            None         = 0,
+            NONE         = 0,
             By_Region    = as<UInt8>(vk::DependencyFlagBits::eByRegion),
             Device_Group = as<UInt8>(vk::DependencyFlagBits::eByRegion),
             View_Local   = as<UInt8>(vk::DependencyFlagBits::eViewLocal),
@@ -906,7 +906,7 @@ export {
         };
 
         struct ClearColor {
-            RGBColorF color = stormkit::RGBColorDef::Silver<float>;
+            RGBColorF color = stormkit::RGBColorDef::SILVER<float>;
         };
 
         struct ClearDepthStencil {

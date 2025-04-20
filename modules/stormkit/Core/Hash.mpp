@@ -6,8 +6,8 @@ module;
 
 #include <stormkit/Core/PlatformMacro.hpp>
 
-export module stormkit.Core:Hash;
+export module stormkit.core:hash;
 
-export import :Hash.Base;
-export import :Hash.HashMap;
-export import :Hash.StringHash;
+export import :hash.base;
+export import :hash.map;
+export import :hash.string;

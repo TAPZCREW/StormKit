@@ -13,7 +13,7 @@ module;
     #include <errno.h>
 #endif
 
-module stormkit.Core;
+module stormkit.core;
 
 import std;
 
@@ -33,7 +33,7 @@ namespace stormkit {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto DynamicLoader::doLoad(std::filesystem::path filepath) -> Expected<void> {
+    auto DynamicLoader::do_load(std::filesystem::path filepath) -> Expected<void> {
 #ifdef STORMKIT_OS_WINDOWS
         const auto wfilepath = filepath.wstring();
 
@@ -57,7 +57,7 @@ namespace stormkit {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto DynamicLoader::doGetFunc(std::string_view name) const -> Expected<void*> {
+    auto DynamicLoader::do_get_func(std::string_view name) const -> Expected<void*> {
         expects(m_library_handle);
 #ifdef STORMKIT_OS_WINDOWS
         auto func = ::GetProcAddress(std::bit_cast<HMODULE>(m_library_handle), std::data(name));

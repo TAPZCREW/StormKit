@@ -2,8 +2,8 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.Core:Containers;
+export module stormkit.core:containers;
 
-export import :Containers.RingBuffer;
-export import :Containers.Tree;
-export import :Containers.Utils;
+export import :containers.ringbuffer;
+export import :containers.tree;
+export import :containers.utils;

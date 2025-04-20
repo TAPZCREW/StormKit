@@ -10,7 +10,7 @@ module stormkit.Wsi;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 #if defined(STORMKIT_OS_WINDOWS)
 import :Win32.WindowImpl;
