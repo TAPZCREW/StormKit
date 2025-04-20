@@ -252,11 +252,11 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::IsNotPointer T>
     STORMKIT_FORCE_INLINE constexpr auto borrow(const T& value) noexcept -> decltype(auto) {
-        if constexpr (meta::IsOptionalType<T>) {
-            expects(value != std::nullopt);
-            return borrow(&(value.get()));
+        if constexpr (meta::IsContainedSemantics<T>) {
+            expects(value.operator bool());
+            return Ref<const meta::UnderlyingType<T>> { &(value.operator *()) };
         } else
-            return borrow(&value);
+            return Ref<const meta::CanonicalType<T>>{ &value };
     }
 
     /////////////////////////////////////
@@ -290,11 +290,11 @@ namespace stormkit { inline namespace core {
     template<meta::IsNotPointer T>
         requires meta::IsNotConst<T>
     STORMKIT_FORCE_INLINE constexpr auto borrowMut(T& value) noexcept -> decltype(auto) {
-        if constexpr (meta::IsOptionalType<T>) {
-            expects(value != std::nullopt);
-            return borrowMut(&(value.get()));
+        if constexpr (meta::IsContainedSemantics<T>) {
+            expects(value.operator bool());
+            return Ref<meta::UnderlyingType<T>> { &(value.operator *()) };
         } else
-            return borrowMut(&value);
+            return Ref<meta::CanonicalType<T>>{ &value };
     }
 
     /////////////////////////////////////
