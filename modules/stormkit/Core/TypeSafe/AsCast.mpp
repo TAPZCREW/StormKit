@@ -39,7 +39,7 @@ export namespace stormkit { inline namespace core {
     constexpr auto narrow(U&& value) noexcept -> decltype(auto);
 
     template<typename To, typename From>
-    constexpr auto isSafeNarrowing(const From& from) noexcept -> Boolean {
+    constexpr auto is_safe_narrowing(const From& from) noexcept -> Boolean {
         if constexpr ((meta::IsArithmetic<From> and meta::IsByte<To>)
                       or (meta::IsByte<From> and meta::IsArithmetic<To>))
             return (static_cast<From>(static_cast<To>(from)) == from);
@@ -49,7 +49,7 @@ export namespace stormkit { inline namespace core {
                        and ((static_cast<To>(from) < To {}) == (from < From {})));
         else
             static_assert(false,
-                          "isSafeNarrowing called with argument that are not bytes or "
+                          "is_safe_narrowing called with argument that are not bytes or "
                           "arithmetic types");
         std::unreachable();
     }
@@ -84,7 +84,7 @@ export namespace stormkit { inline namespace core {
         template<typename To, auto from>
         concept IsSafeNarrowing = IsArithmetic<To>
                                   and IsArithmetic<CanonicalTypeOf<from>>
-                                  and not isSafeNarrowing<To>(from);
+                                  and not is_safe_narrowing<To>(from);
     } // namespace meta
 
     struct Underlying {};
@@ -176,45 +176,16 @@ export namespace stormkit { inline namespace core {
                                             const std::source_location& location
                                             = std::source_location::current()) noexcept -> To;
 
-            // to / from byte(s)
-            template<meta::IsStrictOneOf<ByteView, MutableByteView> To, typename From>
-                requires(not meta::IsPointer<meta::CanonicalType<From>>)
-            [[nodiscard]] constexpr auto as(STORMKIT_LIFETIMEBOUND From& value,
-                                            const std::source_location&  location
-                                            = std::source_location::current()) noexcept -> To;
-
-            template<meta::IsStrictOneOf<ByteView, MutableByteView> To, typename From>
-                requires(meta::IsPointer<meta::CanonicalType<From>>
-                         and not meta::IsMovedOwningPointer<From>)
-            [[nodiscard]] constexpr auto as(From&&                      value,
-                                            const std::source_location& location
-                                            = std::source_location::current()) noexcept -> To;
-
-            template<meta::IsNonOwningPointer To, typename From>
-                requires(meta::IsStrictOneOf<meta::CanonicalType<From>, ByteView, MutableByteView>)
-            [[nodiscard]] constexpr auto as(From&&                      value,
-                                            const std::source_location& location
-                                            = std::source_location::current()) noexcept
-                -> std::conditional_t<meta::IsRawPointer<To>, Ref<meta::ElementType<To>>, To>;
-
-            template<meta::IsLValueReference To, typename From>
-                requires(meta::IsStrictOneOf<meta::CanonicalType<From>, ByteView, MutableByteView>)
-            [[nodiscard]] constexpr auto as(From&&                      value,
-                                            const std::source_location& location
-                                            = std::source_location::current()) noexcept -> To;
-
             // polymorphism
-            template<meta::IsPolymorphicIndirection To, typename From>
-                requires(meta::IsPolymorphicPointer<meta::CanonicalType<From>>
-                         and not meta::IsMovedOwningPointer<From>)
+            template<meta::IsPolymorphicIndirection To, meta::IsRawPointerOrLValueReference From>
+                requires(meta::IsPolymorphicPointer<meta::CanonicalType<From>>)
             [[nodiscard]] constexpr auto as(From&&                      value,
                                             const std::source_location& location
                                             = std::source_location::current()) noexcept
                 -> decltype(auto);
 
-            template<meta::IsPolymorphicIndirection To, typename From>
-                requires(meta::IsPolymorphic<meta::CanonicalType<From>>
-                         and not meta::IsRValueReference<From>)
+            template<meta::IsPolymorphicIndirection To, meta::IsRawPointerOrLValueReference From>
+                requires(meta::IsPolymorphic<meta::CanonicalType<From>>)
             [[nodiscard]] constexpr auto as(From&&                      value,
                                             const std::source_location& location
                                             = std::source_location::current()) noexcept
@@ -433,7 +404,7 @@ namespace stormkit { inline namespace core {
                 using TO           = meta::SafeNarrowHelperOtherType<T1, CanonicalT2>;
                 const auto first_  = as<T>(first);
                 const auto second_ = as<T>(second);
-                const auto epsilon = as<T>(Epsilon<TO>);
+                const auto epsilon = as<T>(EPSILON<TO>);
                 return std::abs(first_ - second_)
                        <= epsilon * std::max({ T { 1 }, std::abs(first_), std::abs(second_) });
             } else if constexpr ((meta::IsFloatingPoint<T1> and meta::IsIntegral<CanonicalT2>)
@@ -442,7 +413,7 @@ namespace stormkit { inline namespace core {
 
                 return is(as<T>(first), as<T>(second));
             } else if constexpr (meta::IsIntegral<T1> and meta::IsIntegral<CanonicalT2>) {
-                if (not(isSafeNarrowing<T1>(second) or isSafeNarrowing<CanonicalT2>(first)))
+                if (not(is_safe_narrowing<T1>(second) or is_safe_narrowing<CanonicalT2>(first)))
                     return false;
 
                 using T = meta::SafeNarrowHelperType<T1, CanonicalT2>;
@@ -510,7 +481,7 @@ namespace stormkit { inline namespace core {
             -> To {
             if constexpr (meta::IsNarrowing<To, meta::CanonicalType<From>>
                           or meta::IsByteNarrowing<To, meta::CanonicalType<From>>)
-                expects(isSafeNarrowing<To>(value),
+                expects(is_safe_narrowing<To>(value),
                         "Lossy narrowing detected, please use narrow() only if you "
                         "really want "
                         "unsafe "
@@ -558,82 +529,15 @@ namespace stormkit { inline namespace core {
                     as<meta::UnderlyingType>(std::forward<From>(value), location));
         }
 
-        // to / from byte(s)
-        /////////////////////////////////////
-        /////////////////////////////////////
-        template<meta::IsStrictOneOf<ByteView, MutableByteView> To, typename From>
-            requires(not meta::IsPointer<meta::CanonicalType<From>>)
-        STORMKIT_FORCE_INLINE constexpr auto as(From&                       value,
-                                                const std::source_location& location) noexcept
-            -> To {
-            return as<To>(&value, location);
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        template<meta::IsStrictOneOf<ByteView, MutableByteView> To, typename From>
-            requires(meta::IsPointer<meta::CanonicalType<From>>
-                     and not meta::IsMovedOwningPointer<From>)
-        STORMKIT_FORCE_INLINE constexpr auto as(From&&                      value,
-                                                const std::source_location& location) noexcept
-            -> To {
-            using CanonicalFrom = meta::CanonicalType<From>;
-            using ElementFrom   = meta::ElementType<CanonicalFrom>;
-            using BytePtr       = meta::ConstnessLike<ElementFrom, Byte>* const;
-
-            static_assert(not(meta::IsStrict<To, MutableByteView>
-                              and meta::IsConst<meta::ElementType<CanonicalFrom>>),
-                          "as<MutableByteView, Pointer> call with a pointer of const type");
-            expects(value != nullptr, "as<Bytes, Pointer> called with a null pointer", location);
-
-            return To { std::bit_cast<BytePtr>(std::to_address(value)),
-                        sizeof(Byte) * sizeof(ElementFrom) };
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        template<meta::IsNonOwningPointer To, typename From>
-            requires(meta::IsStrictOneOf<meta::CanonicalType<From>, ByteView, MutableByteView>)
-        STORMKIT_FORCE_INLINE constexpr auto
-            as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept
-            -> std::conditional_t<meta::IsRawPointer<To>, Ref<meta::ElementType<To>>, To> {
-            using Type    = meta::ElementType<To>;
-            using Pointer = Type*;
-            using To_ = std::conditional_t<meta::IsRawPointer<To>, Ref<meta::ElementType<To>>, To>;
-
-            if constexpr (meta::IsSpecializationOf<To_, Ref>) {
-                if constexpr (meta::IsConst<Type>)
-                    return borrow(std::bit_cast<Pointer>(std::data(std::forward<From>(value))));
-                else
-                    return borrowMut(std::bit_cast<Pointer>(std::data(std::forward<From>(value))));
-            } else
-                return To_ { std::bit_cast<Pointer>(std::data(std::forward<From>(value))) };
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        template<meta::IsLValueReference To, typename From>
-            requires(meta::IsStrictOneOf<meta::CanonicalType<From>, ByteView, MutableByteView>)
-        STORMKIT_FORCE_INLINE constexpr auto
-            as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept -> To {
-            using Type    = meta::RemoveIndirectionsType<To>;
-            using Pointer = Type*;
-
-            return To { *std::bit_cast<Pointer>(std::data(std::forward<From>(value))) };
-        }
-
         // polymorphism
-        template<meta::IsPolymorphicIndirection To, typename From>
-            requires(meta::IsPolymorphicPointer<meta::CanonicalType<From>>
-                     and not meta::IsMovedOwningPointer<From>)
+        template<meta::IsPolymorphicIndirection To, meta::IsRawPointerOrLValueReference From>
+            requires(meta::IsPolymorphicPointer<meta::CanonicalType<From>>)
         STORMKIT_FORCE_INLINE constexpr auto
             as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept
             -> decltype(auto) {
             using CanonicalFrom = std::remove_reference_t<From>;
 
-            const auto ptr = std::to_address(value);
-
-            if constexpr (meta::IsPointer<To>) {
+            if constexpr (meta::IsNonOwningPointer<To>) {
                 using PointerElement = meta::ElementType<CanonicalFrom>;
                 using ToPointerType  = meta::PointerType<To>;
                 using ToElementType  = meta::ElementType<To>;
@@ -641,24 +545,20 @@ namespace stormkit { inline namespace core {
                 static_assert(meta::Is<PointerElement, ToElementType>,
                               "Invalid Polymorphic cast !");
 
-                if constexpr (meta::IsSpecializationOf<To_, Ref>) {
-                    if constexpr (meta::IsConst<ToElementType>)
-                        return borrow(static_cast<ToPointerType>(ptr));
-                    else
-                        return borrowMut(static_cast<ToPointerType>(ptr));
-                } else
-                    return To_ { static_cast<ToPointerType>(ptr) };
+                if constexpr (meta::IsSpecializationOf<To_, Ref>) return as_ref_like(value);
+                else
+                    return To_ { *static_cast<ToPointerType>(std::to_address(value)) };
+
             } else {
                 static_assert(meta::Is<CanonicalFrom, meta::CanonicalType<To>>,
                               "Invalid Polymorphic cast !");
 
-                return static_cast<To>(*ptr);
+                return static_cast<To>(*std::to_address(value));
             }
         }
 
-        template<meta::IsPolymorphicIndirection To, typename From>
-            requires(meta::IsPolymorphic<meta::CanonicalType<From>>
-                     and not meta::IsRValueReference<From>)
+        template<meta::IsPolymorphicIndirection To, meta::IsRawPointerOrLValueReference From>
+            requires(meta::IsPolymorphic<meta::CanonicalType<From>>)
         STORMKIT_FORCE_INLINE constexpr auto
             as(From&& value, [[maybe_unused]] const std::source_location& location) noexcept
             -> decltype(auto) {
@@ -670,13 +570,11 @@ namespace stormkit { inline namespace core {
                 using To_ = std::conditional_t<meta::IsRawPointer<To>, Ref<ToElementType>, To>;
                 static_assert(meta::Is<CanonicalFrom, ToElementType>, "Invalid Polymorphic cast !");
 
-                if constexpr (meta::IsSpecializationOf<To_, Ref>) {
-                    if constexpr (meta::IsConst<ToElementType>)
-                        return borrow(static_cast<ToPointerType>(&value));
-                    else
-                        return borrowMut(static_cast<ToPointerType>(&value));
-                } else
-                    return To_ { static_cast<ToPointerType>(&value) };
+                const auto ptr = static_cast<ToPointerType>(&value);
+
+                if constexpr (meta::IsSpecializationOf<To_, Ref>) return as_ref_like(value);
+                else
+                    return To_ { *static_cast<ToPointerType>(&value) };
             } else {
                 static_assert(meta::Is<CanonicalFrom, meta::CanonicalType<To>>,
                               "Invalid Polymorphic cast !");
