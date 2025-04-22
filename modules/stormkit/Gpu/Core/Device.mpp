@@ -4,7 +4,7 @@
 
 module;
 
-#include <stormkit/Core/PlatformMacro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 #include <vulkan/vulkan_core.h>
 
@@ -12,7 +12,7 @@ export module stormkit.Gpu:Core.Device;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Gpu.Vulkan;
 
 import :Core.Types;
@@ -159,13 +159,13 @@ namespace stormkit::gpu {
         Device::waitForFence(const Fence&                     fence,
                              const std::chrono::milliseconds& timeout) const noexcept
         -> Expected<Result> {
-        return waitForFences(borrows<std::array>(fence), true, timeout);
+        return waitForFences(as_refs<std::array>(fence), true, timeout);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto Device::resetFence(const Fence& fence) const noexcept -> void {
-        resetFences(borrows<std::array>(fence));
+        resetFences(as_refs<std::array>(fence));
     }
 
     /////////////////////////////////////

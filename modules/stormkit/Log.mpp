@@ -4,15 +4,15 @@
 
 module;
 
-#include <stormkit/Core/FlagsMacro.hpp>
-#include <stormkit/Core/PlatformMacro.hpp>
+#include <stormkit/core/flags_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.Log;
 
 import std;
 import frozen;
 
-import stormkit.Core;
+import stormkit.core;
 
 export {
     namespace stormkit::log {

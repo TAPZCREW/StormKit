@@ -10,7 +10,7 @@ export module stormkit.Wsi:Linux.Wayland.Log;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Log;
 
 export namespace stormkit::wsi::linux::wayland {

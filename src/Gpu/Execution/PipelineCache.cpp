@@ -6,7 +6,7 @@ module stormkit.Gpu;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Log;
 
 #include <stormkit/Log/LogMacro.hpp>
@@ -36,7 +36,7 @@ namespace stormkit::gpu {
 
         return device.vkHandle()
             .createPipelineCache({})
-            .transform(core::monadic::set(m_vk_pipeline_cache))
+            .transform(core:.monadic::set(m_vk_pipeline_cache))
             .transform([this] noexcept -> void {
                 ilog("Created new pipeline cache at {}", m_path.string());
             });
@@ -48,9 +48,9 @@ namespace stormkit::gpu {
         const auto physical_device_infos = device.physicalDevice().info();
 
         auto stream = std::ifstream { m_path.string(), std::ios::binary };
-        read(stream, asByteView(m_serialized.guard));
-        read(stream, asByteView(m_serialized.infos));
-        read(stream, asByteView(m_serialized.uuid.value));
+        read(stream, as_bytes(m_serialized.guard));
+        read(stream, as_bytes(m_serialized.infos));
+        read(stream, as_bytes(m_serialized.uuid.value));
 
         if (m_serialized.guard.magic != MAGIC) {
             elog("Invalid pipeline cache magic number, have {}, expected: {}",
@@ -98,7 +98,7 @@ namespace stormkit::gpu {
 
         return device.vkHandle()
             .createPipelineCache(create_info)
-            .transform(core::monadic::set(m_vk_pipeline_cache))
+            .transform(core:.monadic::set(m_vk_pipeline_cache))
             .transform([this]() noexcept -> void {
                 ilog("Loading pipeline cache {}", m_path.string());
                 return;
@@ -112,15 +112,15 @@ namespace stormkit::gpu {
         m_serialized.guard.data_size = std::size(data);
         m_serialized.guard.data_hash = 0u;
 
-        for (auto v : data) hashCombine(m_serialized.guard.data_hash, v);
+        for (auto v : data) hash_combine(m_serialized.guard.data_hash, v);
 
         auto stream = std::ofstream { m_path.string(), std::ios::binary | std::ios::trunc };
 
-        write(stream, asByteView(m_serialized.guard));
+        write(stream, as_bytes(m_serialized.guard));
 
-        write(stream, asByteView(m_serialized.infos));
-        write(stream, asByteView(m_serialized.uuid.value));
-        write(stream, asByteView(data));
+        write(stream, as_bytes(m_serialized.infos));
+        write(stream, as_bytes(m_serialized.uuid.value));
+        write(stream, as_bytes(data));
         ilog("Saving pipeline cache at {}", m_path.string());
         // elog("Failed to save pipeline cache at {}, reason: {}", m_path.string(), error);
         // return error;

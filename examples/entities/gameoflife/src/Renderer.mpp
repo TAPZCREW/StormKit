@@ -5,7 +5,7 @@ export module Renderer;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Wsi;
 import stormkit.Gpu;
 
@@ -13,7 +13,7 @@ export {
 #else
     #include <stormkit/std.hpp>
 
-    #include <stormkit/Core.hpp>
+    #include <stormkit.core.hpp>
     #include <stormkit/Gpu.hpp>
     #include <stormkit/Wsi.hpp>
 #endif

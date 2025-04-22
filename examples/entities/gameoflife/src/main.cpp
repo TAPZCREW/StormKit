@@ -1,13 +1,13 @@
 #ifdef STORMKIT_BUILD_MODULES
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Log;
 import stormkit.Main;
 
 import App;
 #else
-    #include <stormkit/Core.hpp>
+    #include <stormkit.core.hpp>
     #include <stormkit/Log.hpp>
     #include <stormkit/Main.hpp>
 
@@ -17,7 +17,7 @@ import App;
 auto main([[maybe_unused]] std::span<const std::string_view> args) -> int {
     using namespace stormkit;
 
-    setupSignalHandler();
+    setup_signal_handler();
 
     log::LogHandler::setupDefaultLogger();
 

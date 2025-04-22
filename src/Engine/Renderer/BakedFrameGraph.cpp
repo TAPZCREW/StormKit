@@ -6,7 +6,7 @@ module stormkit.Engine;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Gpu;
 
 import :Renderer.FrameGraph;
@@ -18,7 +18,7 @@ namespace stormkit::engine {
     BakedFrameGraph::BakedFrameGraph(const gpu::Image&                 backbuffer,
                                      Data&&                            data,
                                      [[maybe_unused]] BakedFrameGraph* old)
-        : m_backbuffer { borrow(backbuffer) }, m_data { std::move(data) } {
+        : m_backbuffer { as_ref(backbuffer) }, m_data { std::move(data) } {
     }
 
     /////////////////////////////////////
@@ -28,10 +28,10 @@ namespace stormkit::engine {
         return m_data.fence->wait().transform([&](auto&&) noexcept {
             m_data.fence->reset();
 
-            auto signal = borrows<std::array>(std::as_const(m_data.semaphore));
-            m_data.cmb->submit(queue, {}, {}, signal, borrow(m_data.fence));
+            auto signal = as_refs<std::array>(std::as_const(m_data.semaphore));
+            m_data.cmb->submit(queue, {}, {}, signal, as_ref(m_data.fence));
 
-            return borrow(std::as_const(*m_data.semaphore));
+            return as_ref(std::as_const(*m_data.semaphore));
         });
     }
 } // namespace stormkit::engine

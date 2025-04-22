@@ -4,7 +4,7 @@
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import Test;
 
@@ -14,9 +14,9 @@ using namespace stormkit::core;
 
 namespace {
     auto _ = test::TestSuite {
-        "Core.TypeSafe",
+        "Core:typesafe",
         {
-          { "Ref.borrows<std::vector>.all_ref",
+          { "Ref.to_refs<std::vector>.all_ref",
               [] static noexcept {
                   auto a = 0;
                   auto b = 1;
@@ -25,12 +25,12 @@ namespace {
                   auto e = 4;
                   auto f = 5;
 
-                  auto refs = borrows<std::vector>(a, b, c, d, e, f);
+                  auto refs = to_refs<std::vector>(a, b, c, d, e, f);
 
                   auto i = 0;
                   for (auto&& ref : refs) expects(*ref == i++);
               } },
-          { "Ref.borrows<std::array>.all_ref",
+          { "Ref.as_refs<std::array>.all_ref",
               [] static noexcept {
                   auto a = 0;
                   auto b = 1;
@@ -39,12 +39,12 @@ namespace {
                   auto e = 4;
                   auto f = 5;
 
-                  auto refs = borrows<std::array>(a, b, c, d, e, f);
+                  auto refs = as_refs<std::array>(a, b, c, d, e, f);
 
                   auto i = 0;
                   for (auto&& ref : refs) expects(*ref == i++);
               } },
-          { "Ref.borrows<default>.all_ref",
+          { "Ref.as_refs<default>.all_ref",
               [] static noexcept {
                   auto a = 0;
                   auto b = 1;
@@ -53,12 +53,12 @@ namespace {
                   auto e = 4;
                   auto f = 5;
 
-                  auto refs = borrows(a, b, c, d, e, f);
+                  auto refs = as_refs(a, b, c, d, e, f);
 
                   auto i = 0;
                   for (auto&& ref : refs) expects(*ref == i++);
               } },
-          { "Ref.borrows<std::vector>.all_ptr",
+          { "Ref.to_refs<std::vector>.all_ptr",
               [] static noexcept {
                   auto a = std::make_unique<int>(0);
                   auto b = std::make_unique<int>(1);
@@ -67,7 +67,7 @@ namespace {
                   auto e = new int { 4 };
                   auto f = 5;
 
-                  auto refs = borrows<std::vector>(a, b, c, d, e, &f);
+                  auto refs = to_refs<std::vector>(a, b, c, d, e, &f);
 
                   auto i = 0;
                   for (auto&& ref : refs) expects(*ref == i++);
@@ -75,7 +75,7 @@ namespace {
                   delete d;
                   delete e;
               } },
-          { "Ref.borrows<std::array>.all_ptr",
+          { "Ref.as_refs<std::array>.all_ptr",
               [] static noexcept {
                   auto a = std::make_unique<int>(0);
                   auto b = std::make_unique<int>(1);
@@ -84,12 +84,12 @@ namespace {
                   auto e = new int { 4 };
                   auto f = 5;
 
-                  auto refs = borrows<std::array>(a, b, c, d, e, &f);
+                  auto refs = as_refs<std::array>(a, b, c, d, e, &f);
 
                   auto i = 0;
                   for (auto&& ref : refs) expects(*ref == i++);
               } },
-          { "Ref.borrows<default>.all_ptr",
+          { "Ref.as_refs<default>.all_ptr",
               [] static noexcept {
                   auto a = std::make_unique<int>(0);
                   auto b = std::make_unique<int>(1);
@@ -98,23 +98,23 @@ namespace {
                   auto e = new int { 4 };
                   auto f = 5;
 
-                  auto refs = borrows(a, b, c, d, e, &f);
+                  auto refs = as_refs(a, b, c, d, e, &f);
 
                   auto i = 0;
                   for (auto&& ref : refs) expects(*ref == i++);
               } },
-          { "Ref.toRefs<std::set>",
+          { "Ref.to_refs<std::set>",
               [] static noexcept {
-                  /*auto vec = std::vector { 1, 3, 5, 6, 9 };*/
-                  /*/*auto refs = toRefs<std::set>(vec);*/
-                  /**/
-                  /*auto i = 0;*/
-                  /*for (auto&& ref : refs) expects(*ref == vec[i++]);*/
+                  auto vec = std::vector { 1, 3, 5, 6, 9 };
+                  auto refs = to_refs<std::set>(vec);
+                  
+                  auto i = 0;
+                  for (auto&& ref : refs) expects(*ref == vec[i++]);
               } },
-          { "Ref.toRefs<default>",
+          { "Ref.to_refs<default>",
               [] static noexcept {
                   constexpr auto vec  = std::array { 1, 3, 5, 6, 9 };
-                  auto           refs = toRefs(vec);
+                  auto           refs = to_refs(vec);
 
                   auto i = 0;
                   for (auto&& ref : refs) expects(ref == vec[i++]);

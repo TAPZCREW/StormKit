@@ -1,0 +1,105 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/format_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
+
+export module stormkit.core:typesafe.boolean;
+
+import std;
+
+import :meta.concepts;
+import :meta.traits;
+
+export {
+    namespace stormkit { inline namespace core {
+        class Boolean {
+          public:
+            constexpr Boolean() noexcept;
+            constexpr Boolean(bool value) noexcept;
+
+            template<meta::IsIntegral T>
+            constexpr Boolean(T) noexcept = delete;
+
+            constexpr auto operator=(bool value) noexcept -> Boolean&;
+
+            template<meta::IsIntegral T>
+            constexpr auto operator=(T) noexcept -> Boolean& = delete;
+
+            constexpr      operator bool() const noexcept;
+            constexpr auto operator!() const noexcept -> Boolean;
+
+          private:
+            bool m_value = false;
+        };
+
+        constexpr auto operator==(Boolean first, Boolean second) noexcept -> bool;
+        constexpr auto operator==(bool first, Boolean second) noexcept -> bool;
+        constexpr auto operator==(Boolean first, bool second) noexcept -> bool;
+
+    }} // namespace stormkit::core
+
+    FORMATTER_INHERIT_DECLARE(bool, stormkit::meta::IsStrict<stormkit::core::Boolean>)
+}
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit { inline namespace core {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    constexpr Boolean::Boolean() noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr Boolean::Boolean(bool value) noexcept : m_value { value } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto Boolean::operator=(bool value) noexcept -> Boolean& {
+        m_value = value;
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr Boolean::operator bool() const noexcept {
+        return m_value;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto Boolean::operator!() const noexcept -> Boolean {
+        return Boolean { !m_value };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto operator==(Boolean first, Boolean second) noexcept
+        -> bool {
+        return static_cast<bool>(first) == static_cast<bool>(second);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto operator==(bool first, Boolean second) noexcept -> bool {
+        return first == static_cast<bool>(second);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto operator==(Boolean first, bool second) noexcept -> bool {
+        return static_cast<bool>(first) == second;
+    }
+}} // namespace stormkit::core
+
+/////////////////////////////////////
+/////////////////////////////////////
+FORMATTER_INHERIT_DEFINE_FORMAT(stormkit::meta::IsStrict<stormkit::core::Boolean>) {
+    return formatter<bool, CharT>::format(static_cast<bool>(data), ctx);
+}

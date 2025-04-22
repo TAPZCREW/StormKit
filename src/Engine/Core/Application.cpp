@@ -8,7 +8,7 @@ import std;
 
 import :Core;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Wsi;
 import stormkit.Entities;
 
@@ -20,7 +20,7 @@ namespace stormkit::engine {
         m_window = wsi::Window { std::move(window_title), window_extent, wsi::WindowStyle::Close };
         m_event_handler = wsi::EventHandler {};
 
-        m_renderer = Renderer::create(application_name, borrow(m_window))
+        m_renderer = Renderer::create(application_name, as_ref(m_window))
                          .transform_error(monadic::assert("Failed to initialize renderer"))
                          .value();
 

@@ -6,7 +6,7 @@ module stormkit.Gpu;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Image;
 
 import :Core;
@@ -19,7 +19,7 @@ import :Resource.Image;
 namespace stormkit::gpu {
     /* constexpr auto toPixelFormat(gli::format format) {
     switch (format) {
-        case gli::FORMAT_RGBA16_SFLOAT_PACK16: return gpu::PixelFormat::RGBA16F;
+        case gli::format_RGBA16_SFLOAT_PACK16: return gpu::PixelFormat::RGBA16F;
         default: STORMKIT_ENSURES(false);
     }*/
 

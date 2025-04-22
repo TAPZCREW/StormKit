@@ -4,7 +4,7 @@
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import Test;
 
@@ -38,7 +38,7 @@ static_assert(std::is_assignable_v<Integer<unsigned long long>, unsigned long lo
 namespace {
 
     auto _ = test::TestSuite {
-        "Core.TypeSafe",
+        "Core:typesafe",
         { { "Integer.constructor",
             [] static noexcept {
                 // auto integer_1 = Integer { 0 };

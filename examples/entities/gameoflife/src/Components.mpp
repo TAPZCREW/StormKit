@@ -5,14 +5,14 @@ export module Components;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Entities;
 
 export {
 #else
     #include <stormkit/std.hpp>
 
-    #include <stormkit/Core.hpp>
+    #include <stormkit.core.hpp>
     #include <stormkit/Entities.hpp>
 #endif
 

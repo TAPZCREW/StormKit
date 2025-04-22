@@ -4,7 +4,7 @@
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import Test;
 
@@ -15,7 +15,7 @@ using namespace stormkit::core;
 namespace {
 
     auto _ = test::TestSuite {
-        "Core.Utils",
+        "Core.utils",
         { { "Numerics.range.simple",
             [] {
                 auto rng     = range(10);
@@ -86,7 +86,7 @@ namespace {
                 auto i       = 0;
                 auto j       = 0;
 
-                for (auto [v1, v2] : multiRange(10, 5)) {
+                for (auto [v1, v2] : multi_range(10, 5)) {
                     if (v1 != i or v2 != j) {
                         success = false;
                         break;
@@ -107,7 +107,7 @@ namespace {
                 auto i       = 0;
                 auto j       = 0u;
 
-                for (auto [v1, v2] : multiRange(10, 5u)) {
+                for (auto [v1, v2] : multi_range(10, 5u)) {
                     if (v1 != i or v2 != j or not std::same_as<decltype(v2), decltype(j)>) {
                         success = false;
                         break;
@@ -128,7 +128,7 @@ namespace {
                 auto i       = 5;
                 auto j       = 2;
 
-                auto rng = multiRange(NumericsRange { 5, 10 }, NumericsRange { 2, 5 });
+                auto rng = multi_range(NumericsRange { 5, 10 }, NumericsRange { 2, 5 });
                 for (auto [v1, v2] : rng) {
                     if (v1 != i or v2 != j) {
                         success = false;
@@ -150,7 +150,7 @@ namespace {
                 auto i       = 0;
                 auto j       = 0;
 
-                auto rng = multiRange(NumericsRange { 0, 10, 5 }, NumericsRange { 0, 6, 2 });
+                auto rng = multi_range(NumericsRange { 0, 10, 5 }, NumericsRange { 0, 6, 2 });
                 for (auto [v1, v2] : rng) {
                     if (v1 != i or v2 != j) {
                         success = false;

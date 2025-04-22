@@ -6,7 +6,7 @@ module stormkit.Entities;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 namespace stormkit::entities {
     /////////////////////////////////////

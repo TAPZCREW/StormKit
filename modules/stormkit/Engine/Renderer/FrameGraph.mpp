@@ -1,12 +1,12 @@
 module;
 
-#include <stormkit/Core/PlatformMacro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.Engine:Renderer.FrameGraph;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Gpu;
 
 import :Renderer.RenderSurface;
@@ -825,7 +825,7 @@ namespace stormkit::engine {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE GraphTaskBuilder::GraphTaskBuilder(GraphTask&         task,
                                                              FrameGraphBuilder& framegraph) noexcept
-        : m_task { borrowMut(task) }, m_framegraph { borrowMut(framegraph) } {
+        : m_task { as_ref_mut(task) }, m_framegraph { as_ref_mut(framegraph) } {
     }
 
     /////////////////////////////////////

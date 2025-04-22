@@ -1,0 +1,31 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+#include <stormkit/core/memory_macro.hpp>
+
+export module stormkit.core:utils.app;
+
+import std;
+
+import :typesafe.integer;
+
+export namespace stormkit { inline namespace core {
+    class STORMKIT_API App {
+      public:
+        App() noexcept          = default;
+        virtual ~App() noexcept = default;
+
+        App(App&&) noexcept                    = delete;
+        auto operator=(App&&) noexcept -> App& = delete;
+
+        App(const App&) noexcept                    = delete;
+        auto operator=(const App&) noexcept -> App& = delete;
+
+        virtual auto run(std::span<const std::string_view> args) -> Int = 0;
+    };
+}} // namespace stormkit::core

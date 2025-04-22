@@ -1,4 +1,4 @@
-#include <stormkit/Core/PlatformMacro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 #include <vulkan/vulkan_hpp_macros.hpp>
 

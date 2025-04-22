@@ -4,13 +4,13 @@
 
 module;
 
-#include <stormkit/Core/PlatformMacro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.Image;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 export namespace stormkit::image {
     class STORMKIT_API Image {

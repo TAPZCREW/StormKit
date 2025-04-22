@@ -4,7 +4,7 @@
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import Test;
 
@@ -14,7 +14,7 @@ using namespace stormkit::core;
 
 namespace {
     auto _
-        = test::TestSuite { "Core.Utils",
+        = test::TestSuite { "Core.utils",
                             { { "Math.scale", [] static noexcept {
                                    expects(math::scale(5, 0, 10, 0, 20) == 10);
                                    expects(math::scale<UInt32>(5, 0, 10, 0u, 20u) == 10u);

@@ -1,0 +1,32 @@
+// Copyright (C) 2023 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <cstdio>
+
+#include <stormkit/core/platform_macro.hpp>
+
+export module stormkit.core:console.io;
+
+import std;
+
+export namespace stormkit { inline namespace core {
+    [[nodiscard]] auto get_stderr() noexcept -> std::FILE*;
+    [[nodiscard]] auto get_stdout() noexcept -> std::FILE*;
+}} // namespace stormkit::core
+
+namespace stormkit { inline namespace core {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto get_stderr() noexcept -> std::FILE* {
+        return std::bit_cast<std::FILE*>(stderr);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto get_stdout() noexcept -> std::FILE* {
+        return std::bit_cast<std::FILE*>(stdout);
+    }
+}} // namespace stormkit::core

@@ -11,7 +11,7 @@ module stormkit.Log;
 import std;
 import frozen;
 
-import stormkit.Core;
+import stormkit.core;
 
 using namespace std::literals;
 
@@ -19,15 +19,15 @@ namespace stormkit::log {
     namespace {
         constexpr auto StyleMap = frozen::make_unordered_map<Severity, ConsoleStyle>({
             { Severity::Info,
-             ConsoleStyle { .fg = ConsoleColor::Green, .modifiers = StyleModifier::Inverse }   },
+             ConsoleStyle { .fg = ConsoleColor::GREEN, .modifiers = StyleModifier::INVERSE }   },
             { Severity::Warning,
-             ConsoleStyle { .fg = ConsoleColor::Magenta, .modifiers = StyleModifier::Inverse } },
+             ConsoleStyle { .fg = ConsoleColor::MAGENTA, .modifiers = StyleModifier::INVERSE } },
             { Severity::Error,
-             ConsoleStyle { .fg = ConsoleColor::Yellow, .modifiers = StyleModifier::Inverse }  },
+             ConsoleStyle { .fg = ConsoleColor::YELLOW, .modifiers = StyleModifier::INVERSE }  },
             { Severity::Fatal,
-             ConsoleStyle { .fg = ConsoleColor::Red, .modifiers = StyleModifier::Inverse }     },
+             ConsoleStyle { .fg = ConsoleColor::RED, .modifiers = StyleModifier::INVERSE }     },
             { Severity::Debug,
-             ConsoleStyle { .fg = ConsoleColor::Cyan, .modifiers = StyleModifier::Inverse }    },
+             ConsoleStyle { .fg = ConsoleColor::CYAN, .modifiers = StyleModifier::INVERSE }    },
         });
     }
 
@@ -60,7 +60,7 @@ namespace stormkit::log {
         }();
 
         const auto is_error = severity == Severity::Error or severity == Severity::Fatal;
-        const auto output   = (is_error) ? getSTDErr() : getSTDOut();
+        const auto output   = (is_error) ? get_stderr() : get_stdout();
 
         // not yet
         /*
@@ -78,7 +78,7 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     auto ConsoleLogger::flush() noexcept -> void {
-        std::fflush(getSTDOut());
-        std::fflush(getSTDErr());
+        std::fflush(get_stdout());
+        std::fflush(get_stderr());
     }
 } // namespace stormkit::log

@@ -4,7 +4,7 @@
 
 export module stormkit;
 
-export import stormkit.Core;
+export import stormkit.core;
 export import stormkit.Main;
 export import stormkit.Log;
 export import stormkit.Entities;

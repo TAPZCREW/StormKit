@@ -10,14 +10,14 @@ module;
 #include <xcb/xcb_keysyms.h>
 #include <xcb/xinput.h>
 
-#include <stormkit/Core/MemoryMacro.hpp>
-#include <stormkit/Core/PlatformMacro.hpp>
+#include <stormkit/core/memory_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.Wsi:Linux.X11.XCB;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import :Linux.X11.Log;
 
@@ -66,7 +66,7 @@ namespace stormkit::wsi::linux::x11 {
         ensures(xcb_connection != nullptr and not xcb_connection_has_error(xcb_connection.get()),
                 "Failed to connect to X server");
 
-        return borrowMut(xcb_connection);
+        return as_ref_mut(xcb_connection);
     }
 
     /////////////////////////////////////
@@ -88,7 +88,7 @@ namespace stormkit::wsi::linux::x11 {
             = XCBInternAtomReplyScoped { xcb_intern_atom_reply(connection.get(), cookie, &error) };
 
         if (error || !reply)
-            return std::unexpected { Error { (error) ? getXCBError(borrowMut(error))
+            return std::unexpected { Error { (error) ? getXCBError(as_ref_mut(error))
                                                      : std::string { " " } } };
 
         auto atom = reply->atom;
@@ -105,7 +105,7 @@ namespace stormkit::wsi::linux::x11 {
         const auto reply
             = XCBGetAtomReplyScoped { xcb_get_atom_name_reply(connection, cookie, &error) };
 
-        if (error) return std::unexpected { Error { getXCBError(borrowMut(error)) } };
+        if (error) return std::unexpected { Error { getXCBError(as_ref_mut(error)) } };
 
         return std::string { xcb_get_atom_name_name(reply.get()),
                              as<RangeExtent>(xcb_get_atom_name_name_length(reply.get())) };
@@ -123,7 +123,7 @@ namespace stormkit::wsi::linux::x11 {
         }
 
         ensures(xcb_error_context != nullptr, "Failed to allocate XCB errors context");
-        return borrowMut(xcb_error_context);
+        return as_ref_mut(xcb_error_context);
     }
 
     /////////////////////////////////////
@@ -161,13 +161,13 @@ namespace stormkit::wsi::linux::x11 {
             xcb_input_xi_query_device_reply(connection, cookie, &error)
         };
 
-        if (error) return std::unexpected { Error { getXCBError(borrowMut(error)) } };
+        if (error) return std::unexpected { Error { getXCBError(as_ref_mut(error)) } };
 
         auto device_info_it = xcb_input_xi_query_device_infos_iterator(reply.get());
         for (; device_info_it.rem; xcb_input_xi_device_info_next(&device_info_it)) {
             auto info = device_info_it.data;
 
-            if (info->deviceid == device_id) return borrowMut(info);
+            if (info->deviceid == device_id) return as_ref_mut(info);
         }
 
         return std::unexpected { Error { "Device ID not found" } };

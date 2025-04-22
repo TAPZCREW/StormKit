@@ -4,7 +4,7 @@
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import Test;
 
@@ -20,7 +20,7 @@ namespace {
 
                                                          auto node = TreeNode {};
                                                          expects(node.name() == ""s);
-                                                         node.setName(name);
+                                                         node.set_name(name);
                                                          expects(node.name() == name);
                                                      } } } };
 } // namespace

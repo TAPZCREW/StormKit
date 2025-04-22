@@ -3,7 +3,7 @@
 
 #include <string_view>
 
-auto setupSignalHandler() -> void;
-auto setCurrentThreadName(std::string_view name) -> void;
+auto setup_signal_handler() -> void;
+auto set_current_thread_name(std::string_view name) -> void;
 
 #endif

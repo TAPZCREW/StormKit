@@ -5,7 +5,7 @@ export module App;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Image;
 import stormkit.Wsi;
 import stormkit.Entities;
@@ -16,7 +16,7 @@ export {
 #else
     #include <stormkit/std.hpp>
 
-    #include <stormkit/Core.hpp>
+    #include <stormkit.core.hpp>
     #include <stormkit/Entities.hpp>
     #include <stormkit/Image.hpp>
     #include <stormkit/Wsi.hpp>

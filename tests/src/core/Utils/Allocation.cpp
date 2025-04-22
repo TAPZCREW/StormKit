@@ -4,7 +4,7 @@
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import Test;
 
@@ -14,16 +14,16 @@ using namespace stormkit::core;
 
 namespace {
     auto _ = test::TestSuite {
-        "Core.Utils",
+        "Core.utils",
         { { "Allocation.safe",
             [] static noexcept {
-                auto allocation = makeUnique<int>(5);
+                auto allocation = allocate<int>(5);
                 expects(allocation.has_value());
                 expects(*allocation.value() == 5);
             } },
           { "Allocation.unsafe",
             [] static noexcept {
-                auto allocation = makeUniqueUnsafe<int>(5);
+                auto allocation = allocateUnsafe<int>(5);
                 expects(*allocation == 5);
             } } }
     };

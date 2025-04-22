@@ -6,7 +6,7 @@ export module stormkit.Image:HDRImage;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Image;
 
 export namespace stormkit::image::details {

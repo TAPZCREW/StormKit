@@ -1,0 +1,234 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+#ifndef STORMKIT_ASSERT
+    #define STORMKIT_ASSERT 1
+#endif
+
+export module stormkit.core:utils.contrat;
+
+import std;
+import frozen;
+
+import :console;
+import :utils.stracktrace;
+import :meta.concepts;
+
+export namespace stormkit { inline namespace core {
+    enum class AssertType {
+        Assertion,
+        PreCondition,
+        PostCondition
+    };
+
+    auto assert_base(bool                        cond,
+                    AssertType                  type,
+                    std::string_view            message,
+                    const std::source_location& location = std::source_location::current()) noexcept
+        -> void;
+
+    consteval auto consteval_assert_base(bool             cond,
+                                         AssertType       type,
+                                         std::string_view message) noexcept -> void;
+
+    constexpr auto assert(bool                        cond,
+                          std::string_view            message,
+                          const std::source_location& location
+                          = std::source_location::current()) noexcept -> void;
+
+    constexpr auto assert(bool                        cond,
+                          const std::source_location& location
+                          = std::source_location::current()) noexcept -> void;
+
+    constexpr auto expects(bool                        cond,
+                           std::string_view            message,
+                           const std::source_location& location
+                           = std::source_location::current()) noexcept -> void;
+
+    constexpr auto expects(bool                        cond,
+                           const std::source_location& location
+                           = std::source_location::current()) noexcept -> void;
+
+    constexpr auto ensures(bool                        cond,
+                           std::string_view            message,
+                           const std::source_location& location
+                           = std::source_location::current()) noexcept -> void;
+
+    constexpr auto ensures(bool                        cond,
+                           const std::source_location& location
+                           = std::source_location::current()) noexcept -> void;
+
+    namespace casts::core {
+        template<meta::IsStrictOneOf<std::string, std::string_view> To>
+        [[nodiscard]] constexpr auto as(AssertType t) noexcept -> To;
+    }
+}} // namespace stormkit::core
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+using namespace std::literals;
+using namespace frozen::string_literals;
+
+namespace stormkit { inline namespace core {
+    namespace casts::core {
+        namespace {
+            constexpr auto AssertTypeToString
+                = frozen::make_unordered_map<AssertType, frozen::string>({
+                    { AssertType::Assertion,     "Assertion"_s },
+                    { AssertType::PreCondition,  "Expects"_s   },
+                    { AssertType::PostCondition, "Ensures"_s   },
+            });
+        } // namespace
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<meta::IsStrictOneOf<std::string, std::string_view> To>
+        constexpr auto as(AssertType t) noexcept -> To {
+            const auto val = AssertTypeToString.at(t);
+            return { std::ranges::cbegin(val), std::ranges::cend(val) };
+        }
+    } // namespace casts::core
+
+    namespace {
+        std::mutex mutex;
+    } // namespace
+
+    struct StringLiteral {
+        std::array<char, 512> buff;
+        std::size_t           size;
+
+        consteval auto view() noexcept -> std::string_view { return { std::data(buff), size }; }
+    };
+
+    auto constevalFailure(StringLiteral) -> void;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    consteval auto generateConstevalMessage(AssertType type, std::string_view message) noexcept
+        -> StringLiteral {
+        auto       result = StringLiteral {};
+        const auto str = "["s + casts::core::as<std::string>(type) + "] " + std::string { message };
+        std::ranges::copy(str, std::begin(result.buff));
+        result.size = std::size(str);
+        return result;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_INLINE auto assert_base(bool                        cond,
+                                    AssertType                  type,
+                                    std::string_view            message,
+                                    const std::source_location& location) noexcept -> void {
+        if constexpr (STORMKIT_ASSERT == 1) {
+            if (not cond) [[unlikely]] {
+                auto lock = std::unique_lock { mutex };
+                std::println(get_stderr(),
+                             "{} failed in \n"
+                             "    > file:     {}:{}:{}\n"
+                             "      function: {}\n"
+                             "      reason:   {}",
+                             ConsoleStyle { .fg = ConsoleColor::BRIGHT_RED,
+                                            .modifiers
+                                            = StyleModifier::BOLD | StyleModifier::INVERSE }
+                                 | "["s + casts::core::as<std::string>(type) + "]",
+                             ConsoleStyle { .fg = ConsoleColor::GREEN } | location.file_name(),
+                             ConsoleStyle { .fg = ConsoleColor::BLUE } | location.line(),
+                             ConsoleStyle { .fg = ConsoleColor::BLUE } | location.column(),
+                             ConsoleStyle { .fg = ConsoleColor::YELLOW } | location.function_name(),
+                             ConsoleStyle { .fg        = ConsoleColor::RED,
+                                            .modifiers = StyleModifier::BOLD }
+                                 | message);
+
+                std::terminate();
+            }
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE consteval auto
+        consteval_assert_base(bool cond, AssertType type, std::string_view message) noexcept
+        -> void {
+        if (not cond) [[unlikely]] { constevalFailure(generateConstevalMessage(type, message)); }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto
+        assert(bool                                         cond,
+               std::string_view                             message,
+               [[maybe_unused]] const std::source_location& location) noexcept -> void {
+#ifdef STORMKIT_COMPILER_MSVC
+        if constexpr (std::is_constant_evaluated()) {
+#else
+        if consteval {
+#endif
+            consteval_assert_base(cond, AssertType::Assertion, message);
+        } else {
+            assert_base(cond, AssertType::Assertion, message, location);
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto assert(bool                        cond,
+                                                const std::source_location& location) noexcept
+        -> void {
+        assert(cond, "Condition check failed", location);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto
+        expects(bool cond, std::string_view message, const std::source_location& location) noexcept
+        -> void {
+#ifdef STORMKIT_COMPILER_MSVC
+        if constexpr (std::is_constant_evaluated()) {
+#else
+        if consteval {
+#endif
+            consteval_assert_base(cond, AssertType::PreCondition, message);
+        } else {
+            assert_base(cond, AssertType::PreCondition, message, location);
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto expects(bool                        cond,
+                                                 const std::source_location& location) noexcept
+        -> void {
+        expects(cond, "Pre Condition check failed", location);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto
+        ensures(bool cond, std::string_view message, const std::source_location& location) noexcept
+        -> void {
+#ifdef STORMKIT_COMPILER_MSVC
+        if constexpr (std::is_constant_evaluated()) {
+#else
+        if consteval {
+#endif
+            consteval_assert_base(cond, AssertType::PostCondition, message);
+        } else {
+            assert_base(cond, AssertType::PostCondition, message, location);
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto ensures(bool                        cond,
+                                                 const std::source_location& location) noexcept
+        -> void {
+        ensures(cond, "Post Condition check failed", location);
+    }
+}} // namespace stormkit::core

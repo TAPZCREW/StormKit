@@ -6,7 +6,7 @@ export module stormkit.Image:TARGAImage;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import stormkit.Image;
 

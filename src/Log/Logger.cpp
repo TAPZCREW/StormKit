@@ -6,7 +6,7 @@ module stormkit.Log;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 namespace stormkit::log {
     namespace {

@@ -1,0 +1,20 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+export module stormkit.core:meta;
+
+export import :meta.concepts;
+export import :meta.traits;
+export import :meta.strong_type;
+export import :meta.priority_tag;
+
+export namespace stormkit { inline namespace core {
+    template<class... Ts>
+    struct Overloaded: Ts... {
+        using Ts::operator()...;
+    };
+
+    template<class... Ts>
+    Overloaded(Ts...) -> Overloaded<Ts...>;
+}} // namespace stormkit::core

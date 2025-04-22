@@ -7,7 +7,7 @@ export module Constants;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Log;
 import stormkit.Gpu;
 
@@ -15,7 +15,7 @@ export {
 #else
     #include <stormkit/std.hpp>
 
-    #include <stormkit/Core.hpp>
+    #include <stormkit.core.hpp>
     #include <stormkit/Gpu.hpp>
     #include <stormkit/Log.hpp>
 #endif
@@ -30,11 +30,11 @@ export {
     inline constexpr auto MESH_VERTEX_ATTRIBUTE_DESCRIPTIONS = std::array {
         stormkit::gpu::VertexInputAttributeDescription { .location = 0,
                                                         .binding  = 0,
-                                                        .format   = stormkit::gpu::Format::Float2,
+                                                        .format   = stormkit::gpu::format::Float2,
                                                         .offset   = 0                       },
         stormkit::gpu::VertexInputAttributeDescription { .location = 1,
                                                         .binding  = 0,
-                                                        .format   = stormkit::gpu::Format::Float2,
+                                                        .format   = stormkit::gpu::format::Float2,
                                                         .offset
                                                          = sizeof(stormkit::math::Vector2F) }
     };
@@ -43,7 +43,7 @@ export {
     inline constexpr auto BOARD_BUFFERING_COUNT = 3u;
     inline constexpr auto REFRESH_BOARD_DELTA   = stormkit::Secondf { 1 };
 
-    inline constexpr auto SHADER_DATA = stormkit::makeStaticByteArray(
+    inline constexpr auto SHADER_DATA = stormkit::as_bytes(
 #include <shader.spv.h>
     );
 

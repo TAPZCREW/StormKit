@@ -13,7 +13,7 @@ export module stormkit.Image:PNGImage;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Image;
 
 export namespace stormkit::image::details {
@@ -50,7 +50,7 @@ namespace stormkit::image::details {
         static auto read_func(png_struct* ps, png_byte* d, png_size_t length) noexcept -> void {
             auto& param = *reinterpret_cast<ReadParam*>(png_get_io_ptr(ps));
 
-            auto _d   = asByteView(d, length);
+            auto _d   = as_bytes(d, length);
             auto data = param.data.subspan(param.readed, length);
 
             std::ranges::copy(data, std::ranges::begin(_d));
@@ -63,7 +63,7 @@ namespace stormkit::image::details {
         static auto write_func(png_struct* ps, png_byte* d, png_size_t length) -> void {
             auto& param = *reinterpret_cast<WriteParam*>(png_get_io_ptr(ps));
 
-            auto _d = asByteView(d, length);
+            auto _d = as_bytes(d, length);
             param.data.reserve(std::size(param.data) + length);
 
             std::ranges::copy(_d, std::back_inserter(param.data));

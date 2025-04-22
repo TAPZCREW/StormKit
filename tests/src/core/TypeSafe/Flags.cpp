@@ -4,11 +4,11 @@
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import Test;
 
-#include <stormkit/Core/FlagsMacro.hpp>
+#include <stormkit/core/flags_macro.hpp>
 
 using namespace stormkit::core;
 
@@ -31,7 +31,7 @@ FLAG_ENUM(Flag2)
 
 namespace {
     auto _ = test::TestSuite {
-        "Core.TypeSafe",
+        "Core:typesafe",
         {
           {
                 "Flags.enum_class.operators",
@@ -76,10 +76,10 @@ namespace {
                     expects(checkFlag(foo, Flag::A));
                 },
             }, {
-                "Flags.enum_class.nextValue",
+                "Flags.enum_class.next_value",
                 [] static noexcept {
                     auto foo = Flag::A;
-                    expects(nextValue(foo) == Flag::B);
+                    expects(next_value(foo) == Flag::B);
                 },
             }, {
                 "Flags.enum.operators",
@@ -124,10 +124,10 @@ namespace {
                     expects(checkFlag(foo, Flag2::A));
                 },
             }, {
-                "Flags.enum.nextValue",
+                "Flags.enum.next_value",
                 [] static noexcept {
                     auto foo = Flag2::A;
-                    expects(nextValue(foo) == Flag2::B);
+                    expects(next_value(foo) == Flag2::B);
                 },
             }, }
     };

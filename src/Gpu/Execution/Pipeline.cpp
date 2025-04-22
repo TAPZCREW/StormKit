@@ -6,7 +6,7 @@ module stormkit.Gpu;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import stormkit.Gpu.Vulkan;
 import :Core;
@@ -43,7 +43,7 @@ namespace stormkit::gpu {
                 return vk::VertexInputAttributeDescription {
                     .location = input_attribute_description.location,
                     .binding  = input_attribute_description.binding,
-                    .format   = narrow<vk::Format>(input_attribute_description.format),
+                    .format   = narrow<vk::format>(input_attribute_description.format),
                     .offset   = input_attribute_description.offset
                 };
             }) 
@@ -60,11 +60,11 @@ namespace stormkit::gpu {
             };
 
         const auto viewports = state.viewport_state.viewports 
-                               | std::views::transform(core::monadic::narrow<vk::Viewport>())
+                               | std::views::transform(core:.monadic::narrow<vk::Viewport>())
                                | std::ranges::to<std::vector>();
 
         const auto scissors = state.viewport_state.scissors 
-                               | std::views::transform(core::monadic::narrow<vk::Rect2D>())
+                               | std::views::transform(core:.monadic::narrow<vk::Rect2D>())
                                | std::ranges::to<std::vector>();
 
         const auto viewport_state =
@@ -114,7 +114,7 @@ namespace stormkit::gpu {
        
 
         const auto states = state.dynamic_state.dynamics 
-            | std::views::transform(core::monadic::narrow<vk::DynamicState>())
+            | std::views::transform(core:.monadic::narrow<vk::DynamicState>())
             | std::ranges::to<std::vector>();
 
         const auto dynamic_state = vk::PipelineDynamicStateCreateInfo {}.setDynamicStates(states);
@@ -167,9 +167,9 @@ namespace stormkit::gpu {
 
         const auto vk_pipeline_cache
             = core::either(pipeline_cache,
-                           core::monadic::map(monadic::toRaiiVkHandle(),
-                                              core::monadic::init<PipelineCacheOpt>()),
-                           core::monadic::init<PipelineCacheOpt>(nullptr));
+                           core:.monadic::map(monadic::toRaiiVkHandle(),
+                                              core:.monadic::init<PipelineCacheOpt>()),
+                           core:.monadic::init<PipelineCacheOpt>(nullptr));
 
         return toRaiiVkHandle(device)
             .createGraphicsPipelines(vk_pipeline_cache, create_info)

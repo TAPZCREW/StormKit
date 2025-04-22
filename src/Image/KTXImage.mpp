@@ -13,7 +13,7 @@ export module stormkit.Image:KTXImage;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Image;
 
 export namespace stormkit::image::details {
@@ -39,63 +39,63 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     /*constexpr auto toStormFormat(gli::format format) noexcept {*/
     /*switch (format) {*/
-    /*    case gli::FORMAT_R8_SNORM_PACK8: return Format::R8_SNorm;*/
-    /*    case gli::FORMAT_R8_UNORM_PACK8: return Format::R8_UNorm;*/
-    /*    case gli::FORMAT_R16_SNORM_PACK16: return Format::R16_SNorm;*/
-    /*    case gli::FORMAT_R16_UNORM_PACK16: return Format::R16_UNorm;*/
-    /*    case gli::FORMAT_R8_SINT_PACK8: return Format::R8I;*/
-    /*    case gli::FORMAT_R8_UINT_PACK8: return Format::R8U;*/
-    /*    case gli::FORMAT_R16_SINT_PACK16: return Format::R16I;*/
-    /*    case gli::FORMAT_R16_UINT_PACK16: return Format::R16U;*/
-    /*    case gli::FORMAT_R32_SINT_PACK32: return Format::R32I;*/
-    /*    case gli::FORMAT_R32_UINT_PACK32: return Format::R32U;*/
-    /*    case gli::FORMAT_R16_SFLOAT_PACK16: return Format::R16F;*/
-    /*    case gli::FORMAT_R32_SFLOAT_PACK32: return Format::R32F;*/
+    /*    case gli::format_R8_SNORM_PACK8: return Format::R8_SNorm;*/
+    /*    case gli::format_R8_UNORM_PACK8: return Format::R8_UNorm;*/
+    /*    case gli::format_R16_SNORM_PACK16: return Format::R16_SNorm;*/
+    /*    case gli::format_R16_UNORM_PACK16: return Format::R16_UNorm;*/
+    /*    case gli::format_R8_SINT_PACK8: return Format::R8I;*/
+    /*    case gli::format_R8_UINT_PACK8: return Format::R8U;*/
+    /*    case gli::format_R16_SINT_PACK16: return Format::R16I;*/
+    /*    case gli::format_R16_UINT_PACK16: return Format::R16U;*/
+    /*    case gli::format_R32_SINT_PACK32: return Format::R32I;*/
+    /*    case gli::format_R32_UINT_PACK32: return Format::R32U;*/
+    /*    case gli::format_R16_SFLOAT_PACK16: return Format::R16F;*/
+    /*    case gli::format_R32_SFLOAT_PACK32: return Format::R32F;*/
     /**/
-    /*    case gli::FORMAT_RG8_SNORM_PACK8: return Format::RG8_SNorm;*/
-    /*    case gli::FORMAT_RG8_UNORM_PACK8: return Format::RG8_UNorm;*/
-    /*    case gli::FORMAT_RG16_SNORM_PACK16: return Format::RG16_SNorm;*/
-    /*    case gli::FORMAT_RG16_UNORM_PACK16: return Format::RG16_UNorm;*/
-    /*    case gli::FORMAT_RG8_SINT_PACK8: return Format::RG8I;*/
-    /*    case gli::FORMAT_RG8_UINT_PACK8: return Format::RG8U;*/
-    /*    case gli::FORMAT_RG16_SINT_PACK16: return Format::RG16I;*/
-    /*    case gli::FORMAT_RG16_UINT_PACK16: return Format::RG16U;*/
-    /*    case gli::FORMAT_RG32_SINT_PACK32: return Format::RG32I;*/
-    /*    case gli::FORMAT_RG32_UINT_PACK32: return Format::RG32U;*/
-    /*    case gli::FORMAT_RG16_SFLOAT_PACK16: return Format::RG16F;*/
-    /*    case gli::FORMAT_RG32_SFLOAT_PACK32: return Format::RG32F;*/
+    /*    case gli::format_RG8_SNORM_PACK8: return Format::RG8_SNorm;*/
+    /*    case gli::format_RG8_UNORM_PACK8: return Format::RG8_UNorm;*/
+    /*    case gli::format_RG16_SNORM_PACK16: return Format::RG16_SNorm;*/
+    /*    case gli::format_RG16_UNORM_PACK16: return Format::RG16_UNorm;*/
+    /*    case gli::format_RG8_SINT_PACK8: return Format::RG8I;*/
+    /*    case gli::format_RG8_UINT_PACK8: return Format::RG8U;*/
+    /*    case gli::format_RG16_SINT_PACK16: return Format::RG16I;*/
+    /*    case gli::format_RG16_UINT_PACK16: return Format::RG16U;*/
+    /*    case gli::format_RG32_SINT_PACK32: return Format::RG32I;*/
+    /*    case gli::format_RG32_UINT_PACK32: return Format::RG32U;*/
+    /*    case gli::format_RG16_SFLOAT_PACK16: return Format::RG16F;*/
+    /*    case gli::format_RG32_SFLOAT_PACK32: return Format::RG32F;*/
     /**/
-    /*    case gli::FORMAT_RGB8_SNORM_PACK8: return Format::RGB8_SNorm;*/
-    /*    case gli::FORMAT_RGB8_UNORM_PACK8: return Format::RGB8_UNorm;*/
-    /*    case gli::FORMAT_RGB16_SNORM_PACK16: return Format::RGB16_SNorm;*/
-    /*    case gli::FORMAT_RGB16_UNORM_PACK16: return Format::RGB16_UNorm;*/
-    /*    case gli::FORMAT_BGR8_UNORM_PACK8: return Format::RGB16_UNorm;*/
-    /*    case gli::FORMAT_RGB8_SINT_PACK8: return Format::RGB8I;*/
-    /*    case gli::FORMAT_RGB8_UINT_PACK8: return Format::RGB8U;*/
-    /*    case gli::FORMAT_RGB16_SINT_PACK16: return Format::RGB16I;*/
-    /*    case gli::FORMAT_RGB16_UINT_PACK16: return Format::RGB16U;*/
-    /*    case gli::FORMAT_RGB32_SINT_PACK32: return Format::RGB32I;*/
-    /*    case gli::FORMAT_RGB32_UINT_PACK32: return Format::RGB32U;*/
-    /*    case gli::FORMAT_RGB16_SFLOAT_PACK16: return Format::RGB16F;*/
-    /*    case gli::FORMAT_RGB32_SFLOAT_PACK32: return Format::RGB32F;*/
-    /*    case gli::FORMAT_RGB8_SRGB_PACK8: return Format::sRGB8;*/
-    /*    case gli::FORMAT_BGR8_SRGB_PACK8: return Format::sBGR8;*/
+    /*    case gli::format_RGB8_SNORM_PACK8: return Format::RGB8_SNorm;*/
+    /*    case gli::format_RGB8_UNORM_PACK8: return Format::RGB8_UNorm;*/
+    /*    case gli::format_RGB16_SNORM_PACK16: return Format::RGB16_SNorm;*/
+    /*    case gli::format_RGB16_UNORM_PACK16: return Format::RGB16_UNorm;*/
+    /*    case gli::format_BGR8_UNORM_PACK8: return Format::RGB16_UNorm;*/
+    /*    case gli::format_RGB8_SINT_PACK8: return Format::RGB8I;*/
+    /*    case gli::format_RGB8_UINT_PACK8: return Format::RGB8U;*/
+    /*    case gli::format_RGB16_SINT_PACK16: return Format::RGB16I;*/
+    /*    case gli::format_RGB16_UINT_PACK16: return Format::RGB16U;*/
+    /*    case gli::format_RGB32_SINT_PACK32: return Format::RGB32I;*/
+    /*    case gli::format_RGB32_UINT_PACK32: return Format::RGB32U;*/
+    /*    case gli::format_RGB16_SFLOAT_PACK16: return Format::RGB16F;*/
+    /*    case gli::format_RGB32_SFLOAT_PACK32: return Format::RGB32F;*/
+    /*    case gli::format_RGB8_SRGB_PACK8: return Format::sRGB8;*/
+    /*    case gli::format_BGR8_SRGB_PACK8: return Format::sBGR8;*/
     /**/
-    /*    case gli::FORMAT_RGBA8_SNORM_PACK8: return Format::RGBA8_SNorm;*/
-    /*    case gli::FORMAT_RGBA8_UNORM_PACK8: return Format::RGBA8_UNorm;*/
-    /*    case gli::FORMAT_RGBA16_SNORM_PACK16: return Format::RGBA16_SNorm;*/
-    /*    case gli::FORMAT_RGBA16_UNORM_PACK16: return Format::RGBA16_UNorm;*/
-    /*    case gli::FORMAT_BGRA8_UNORM_PACK8: return Format::RGBA16_UNorm;*/
-    /*    case gli::FORMAT_RGBA8_SINT_PACK8: return Format::RGBA8I;*/
-    /*    case gli::FORMAT_RGBA8_UINT_PACK8: return Format::RGBA8U;*/
-    /*    case gli::FORMAT_RGBA16_SINT_PACK16: return Format::RGBA16I;*/
-    /*    case gli::FORMAT_RGBA16_UINT_PACK16: return Format::RGBA16U;*/
-    /*    case gli::FORMAT_RGBA32_SINT_PACK32: return Format::RGBA32I;*/
-    /*    case gli::FORMAT_RGBA32_UINT_PACK32: return Format::RGBA32U;*/
-    /*    case gli::FORMAT_RGBA16_SFLOAT_PACK16: return Format::RGBA16F;*/
-    /*    case gli::FORMAT_RGBA32_SFLOAT_PACK32: return Format::RGBA32F;*/
-    /*    case gli::FORMAT_RGBA8_SRGB_PACK8: return Format::sRGBA8;*/
-    /*    case gli::FORMAT_BGRA8_SRGB_PACK8: return Format::sBGRA8;*/
+    /*    case gli::format_RGBA8_SNORM_PACK8: return Format::RGBA8_SNorm;*/
+    /*    case gli::format_RGBA8_UNORM_PACK8: return Format::RGBA8_UNorm;*/
+    /*    case gli::format_RGBA16_SNORM_PACK16: return Format::RGBA16_SNorm;*/
+    /*    case gli::format_RGBA16_UNORM_PACK16: return Format::RGBA16_UNorm;*/
+    /*    case gli::format_BGRA8_UNORM_PACK8: return Format::RGBA16_UNorm;*/
+    /*    case gli::format_RGBA8_SINT_PACK8: return Format::RGBA8I;*/
+    /*    case gli::format_RGBA8_UINT_PACK8: return Format::RGBA8U;*/
+    /*    case gli::format_RGBA16_SINT_PACK16: return Format::RGBA16I;*/
+    /*    case gli::format_RGBA16_UINT_PACK16: return Format::RGBA16U;*/
+    /*    case gli::format_RGBA32_SINT_PACK32: return Format::RGBA32I;*/
+    /*    case gli::format_RGBA32_UINT_PACK32: return Format::RGBA32U;*/
+    /*    case gli::format_RGBA16_SFLOAT_PACK16: return Format::RGBA16F;*/
+    /*    case gli::format_RGBA32_SFLOAT_PACK32: return Format::RGBA32F;*/
+    /*    case gli::format_RGBA8_SRGB_PACK8: return Format::sRGBA8;*/
+    /*    case gli::format_BGRA8_SRGB_PACK8: return Format::sBGRA8;*/
     /*    default: break;*/
     /*}*/
     /**/
@@ -121,7 +121,7 @@ namespace stormkit::image::details {
         /*auto image_memory = std::vector<Byte> {};*/
         /*image_memory.resize(image.size());*/
         /**/
-        /*std::ranges::copy(asByteView(image.data(), image.size()), std::begin(image_memory));*/
+        /*std::ranges::copy(as_bytes(image.data(), image.size()), std::begin(image_memory));*/
         /**/
         /*auto image_data = image::Image::ImageData {};*/
         /**/
@@ -151,7 +151,7 @@ namespace stormkit::image::details {
         auto& output = *result;
 
         auto stream = std::ofstream { filepath, std::ios::binary };
-        write(stream, asByteView(output));
+        write(stream, as_bytes(output));
 
         return {};
     }

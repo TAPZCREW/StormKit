@@ -9,7 +9,7 @@ import Constants;
 #else
     #include <stormkit/std.hpp>
 
-    #include <stormkit/Core.hpp>
+    #include <stormkit.core.hpp>
     #include <stormkit/Gpu.hpp>
 
     #include "App.mpp"
@@ -84,9 +84,9 @@ auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char** arg
 auto App::doInitWindow() -> void {
     const auto window_style = wsi::WindowStyle::All;
 
-    m_window = makeUnique<wsi::Window>(WINDOW_TITLE, math::ExtentU { 800u, 600u }, window_style);
+    m_window = allocate<wsi::Window>(WINDOW_TITLE, math::ExtentU { 800u, 600u }, window_style);
 
-    m_renderer = makeUnique<Renderer>(*m_window);
+    m_renderer = allocate<Renderer>(*m_window);
 }
 
 auto App::handleKeyboard(const stormkit::wsi::KeyReleasedEventData& event) -> void {
