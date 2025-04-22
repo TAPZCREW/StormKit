@@ -1,0 +1,550 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/memory_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
+
+export module stormkit.core:containers.tree;
+
+import std;
+
+import :typesafe.integer;
+import :utils.handle;
+
+export namespace stormkit { inline namespace core {
+    class STORMKIT_API TreeNode {
+      public:
+        using IndexType    = Handle32<TreeNode>;
+        using DirtyBitType = UInt32;
+
+        static constexpr auto INVALID_INDEX = IndexType { IndexType::INVALID_HANDLE_VALUE };
+
+        [[nodiscard]] auto name() const noexcept -> const std::string&;
+        auto               set_name(std::string name) noexcept -> void;
+
+        [[nodiscard]] auto parent() const noexcept -> IndexType;
+        auto               set_parent(IndexType index) noexcept -> void;
+
+        auto next_sibling() const noexcept -> IndexType;
+        auto set_next_sibling(IndexType index) noexcept -> void;
+
+        auto first_child() const noexcept -> IndexType;
+        auto set_first_child(IndexType index) noexcept -> void;
+
+        auto dirty_bits() const noexcept -> const DirtyBitType&;
+        auto set_dirty_bits(DirtyBitType bits) noexcept -> void;
+
+        auto invalidate() noexcept -> void;
+
+      private:
+        IndexType    m_parent       = INVALID_INDEX;
+        IndexType    m_next_sibling = INVALID_INDEX;
+        IndexType    m_first_child  = INVALID_INDEX;
+        DirtyBitType m_dirty_bits   = 0;
+
+        std::string m_name;
+    };
+
+    template<class TreeNodeClass = TreeNode>
+    class Tree {
+      public:
+        static constexpr auto DEFAULT_PREALLOCATED_TREE_SIZE = RangeExtent { 1000 };
+
+        using TreeNodeType         = TreeNodeClass;
+        using TreeNodeIndexType    = typename TreeNodeType::IndexType;
+        using TreeNodeDirtyBitType = typename TreeNodeType::DirtyBitType;
+
+        Tree();
+        ~Tree();
+
+        Tree(const Tree&);
+        auto operator=(const Tree&) -> Tree&;
+
+        Tree(Tree&&);
+        auto operator=(Tree&&) -> Tree&;
+
+        auto getFreeNode() -> TreeNodeIndexType;
+
+        auto insert(TreeNodeType&&    node,
+                    TreeNodeIndexType parent_index,
+                    TreeNodeIndexType previous_sibling) -> TreeNodeIndexType;
+        auto remove(TreeNodeIndexType index) -> void;
+
+        auto markDirty(TreeNodeIndexType index, TreeNodeDirtyBitType bits) -> void;
+
+        auto operator[](TreeNodeIndexType index) noexcept -> TreeNodeType&;
+        auto operator[](TreeNodeIndexType index) const noexcept -> const TreeNodeType&;
+
+        [[nodiscard]] auto size() const noexcept -> RangeExtent;
+
+        [[nodiscard]] auto begin() noexcept;
+        [[nodiscard]] auto begin() const noexcept;
+        [[nodiscard]] auto cbegin() const noexcept;
+
+        [[nodiscard]] auto end() noexcept;
+        [[nodiscard]] auto end() const noexcept;
+        [[nodiscard]] auto cend() const noexcept;
+
+        auto               clearDirties() noexcept -> void;
+        [[nodiscard]] auto dirties() const noexcept -> std::span<const TreeNodeIndexType>;
+
+        auto genDotFile(std::filesystem::path                             filepath,
+                        std::function<std::string_view(std::string_view)> colorize_node) const
+            -> void;
+
+        auto genDotFile(std::filesystem::path                             filepath,
+                        core::UInt32                                      highlight,
+                        std::function<std::string_view(std::string_view)> colorize_node) const
+            -> void;
+
+      private:
+        TreeNodeIndexType              m_first_free_index = 0;
+        std::vector<TreeNodeType>      m_tree;
+        std::vector<TreeNodeIndexType> m_dirties;
+    };
+}} // namespace stormkit::core
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit { inline namespace core {
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_INLINE auto TreeNode::name() const noexcept -> const std::string& {
+        return m_name;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_INLINE auto TreeNode::set_name(std::string name) noexcept -> void {
+        m_name = std::move(name);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_INLINE auto TreeNode::parent() const noexcept -> TreeNode::IndexType {
+        return m_parent;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_INLINE auto TreeNode::set_parent(IndexType index) noexcept -> void {
+        m_parent = index;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_INLINE auto TreeNode::next_sibling() const noexcept -> TreeNode::IndexType {
+        return m_next_sibling;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_INLINE auto TreeNode::set_next_sibling(IndexType index) noexcept -> void {
+        m_next_sibling = index;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_INLINE auto TreeNode::first_child() const noexcept -> TreeNode::IndexType {
+        return m_first_child;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_INLINE auto TreeNode::set_first_child(IndexType index) noexcept -> void {
+        m_first_child = index;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_INLINE auto TreeNode::dirty_bits() const noexcept -> const TreeNode::DirtyBitType& {
+        return m_dirty_bits;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_INLINE auto TreeNode::set_dirty_bits(DirtyBitType bits) noexcept -> void {
+        m_dirty_bits = bits;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_INLINE auto TreeNode::invalidate() noexcept -> void {
+        m_parent       = { INVALID_INDEX };
+        m_next_sibling = { INVALID_INDEX };
+        m_first_child  = { INVALID_INDEX };
+        m_dirty_bits   = 0;
+        m_name         = "";
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    Tree<TreeNodeClass>::Tree() {
+        m_tree.resize(DEFAULT_PREALLOCATED_TREE_SIZE);
+
+        for (auto i : range<TreeNodeIndexType>(std::size(m_tree) - 1u))
+            m_tree[i].set_next_sibling(i + 1u);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    Tree<TreeNodeClass>::~Tree() = default;
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    Tree<TreeNodeClass>::Tree(const Tree&) = default;
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    Tree<TreeNodeClass>::Tree(Tree&&) = default;
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    auto Tree<TreeNodeClass>::operator=(const Tree&) -> Tree& = default;
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    auto Tree<TreeNodeClass>::operator=(Tree&&) -> Tree& = default;
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    auto Tree<TreeNodeClass>::getFreeNode() -> TreeNodeIndexType {
+        if (m_tree[m_first_free_index].next_sibling() == TreeNode::INVALID_INDEX) {
+            const auto size      = as<float>(std::size(m_tree));
+            const auto first_new = as<TreeNodeIndexType>(size);
+
+            m_tree.resize(as<RangeExtent>(size * 1.5f));
+            const auto new_size = std::size(m_tree);
+
+            // generate a new chain of free objects, with the last one pointing to
+            // ~0
+            m_tree[m_first_free_index].set_next_sibling(first_new);
+            for (auto i : range(first_new, new_size - 1u)) m_tree[i].set_next_sibling(i + 1u);
+        }
+
+        auto index         = m_first_free_index;
+        m_first_free_index = m_tree[m_first_free_index].next_sibling();
+
+        return index;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    auto Tree<TreeNodeClass>::insert(TreeNodeType&&    node,
+                                     TreeNodeIndexType parent_index,
+                                     TreeNodeIndexType previous_sibling) -> TreeNodeIndexType {
+        const auto index = getFreeNode();
+
+        auto& _node = m_tree[index];
+        _node       = std::forward<TreeNodeType>(node);
+
+        _node.set_parent(parent_index);
+
+        // check if parent is real node
+        if (parent_index != TreeNode::INVALID_INDEX) {
+            auto& parent_node = *(std::ranges::begin(m_tree) + parent_index);
+
+            // new node is first child
+            if (parent_node.first_child() == TreeNode::INVALID_INDEX)
+                parent_node.set_first_child(index);
+            else if (previous_sibling == TreeNode::INVALID_INDEX) { // insert a beginning of childs
+                _node.set_next_sibling(parent_node.first_child());
+                parent_node.set_first_child(index);
+            } else { // insert at the end
+                auto& prev_sibling_node = m_tree[previous_sibling];
+                _node.set_next_sibling(prev_sibling_node.next_sibling());
+                prev_sibling_node.set_next_sibling(index);
+            }
+        }
+
+        return index;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    auto Tree<TreeNodeClass>::remove(TreeNodeIndexType index) -> void {
+        auto& node = m_tree[index];
+
+        if (node.parent() != TreeNode::INVALID_INDEX) {
+            auto& parent = m_tree[node.parent()];
+
+            // Remove sibling
+            auto current_index = parent.first_child();
+            while (current_index != TreeNode::INVALID_INDEX) {
+                auto& current_node = m_tree[current_index];
+
+                if (current_node.next_sibling() == index) {
+                    current_node.set_next_sibling(node.next_sibling());
+                    break;
+                }
+                current_index = current_node.next_sibling();
+            }
+
+            // remove parent
+            if (parent.first_child() == index) parent.set_first_child(node.next_sibling());
+
+            node.set_parent(TreeNode::INVALID_INDEX);
+        }
+
+        auto last_index = TreeNode::INVALID_INDEX;
+        auto queue      = std::deque<TreeNodeIndexType> {};
+        queue.emplace_back(index);
+        while (not queue.empty()) {
+            auto  current_index = queue.front();
+            auto& current_node  = m_tree[current_index];
+            queue.pop_front();
+
+            auto child_index = current_node.first_child();
+            while (child_index != TreeNode::INVALID_INDEX) {
+                queue.emplace_back(child_index);
+                child_index = m_tree[child_index].next_sibling();
+            }
+
+            node.invalidate();
+
+            if (last_index != TreeNode::INVALID_INDEX)
+                m_tree[last_index].set_next_sibling(current_index);
+
+            last_index = current_index;
+        }
+
+        m_tree[last_index].set_next_sibling(m_first_free_index);
+        m_first_free_index = index;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    auto Tree<TreeNodeClass>::markDirty(TreeNodeIndexType index, TreeNodeDirtyBitType bits)
+        -> void {
+        auto& node = m_tree[index];
+        if (not node.dirty_bits()) {
+            m_dirties.emplace_back(index);
+            node.set_dirty_bits(bits);
+            return;
+        }
+
+        node.set_dirty_bits(bits);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    auto Tree<TreeNodeClass>::operator[](TreeNodeIndexType index) noexcept -> TreeNodeType& {
+        expects(index < std::size(m_tree));
+
+        return m_tree[index];
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    auto Tree<TreeNodeClass>::operator[](TreeNodeIndexType index) const noexcept
+        -> const TreeNodeType& {
+        expects(index < std::size(m_tree));
+
+        return m_tree[index];
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    auto Tree<TreeNodeClass>::size() const noexcept -> RangeExtent {
+        return std::size(m_tree);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    auto Tree<TreeNodeClass>::begin() noexcept {
+        return std::ranges::begin(m_tree);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    auto Tree<TreeNodeClass>::begin() const noexcept {
+        return std::cbegin(m_tree);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    auto Tree<TreeNodeClass>::cbegin() const noexcept {
+        return std::cbegin(m_tree);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    auto Tree<TreeNodeClass>::end() noexcept {
+        return std::ranges::end(m_tree);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    auto Tree<TreeNodeClass>::end() const noexcept {
+        return std::cend(m_tree);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    auto Tree<TreeNodeClass>::cend() const noexcept {
+        return std::cend(m_tree);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    auto Tree<TreeNodeClass>::clearDirties() noexcept -> void {
+        if (std::empty(m_dirties)) return;
+
+        for (auto i : m_dirties) { m_tree[i].set_dirty_bits(0); }
+
+        m_dirties.clear();
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    auto Tree<TreeNodeClass>::dirties() const noexcept -> std::span<const TreeNodeIndexType> {
+        return m_dirties;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    auto Tree<TreeNodeClass>::genDotFile(
+        std::filesystem::path                             filepath,
+        std::function<std::string_view(std::string_view)> colorize_node) const -> void {
+        auto stream = std::fstream(filepath, std::ios::out);
+
+        stream
+            << "digraph G { \n"
+            << "    rankdir = LR\n"
+            << "    bgcolor = black\n\n"
+            << "    node [shape=box, fontname=\"helvetica\", fontsize=12];\n\n";
+
+        for (auto i : range(m_first_free_index)) {
+            const auto name  = operator[](i).name();
+            const auto dirty = bool(operator[](i).dirty_bits());
+
+            stream
+                << "    \"node"
+                << i
+                << "\" [label=\"id: "
+                << i
+                << " type: "
+                << name
+                << " dirty: "
+                << std::boolalpha
+                << dirty
+                << "\", style=filled,color=\""
+                << colorize_node(name)
+                << "\"];\n";
+        }
+
+        for (auto i : range(m_first_free_index)) {
+            if (operator[](i).first_child() == TreeNodeClass::INVALID_INDEX) continue;
+
+            for (auto current = operator[](i).first_child();
+                 current != TreeNodeClass::INVALID_INDEX;
+                 current = operator[](current).next_sibling()) {
+                stream
+                    << "    \"node"
+                    << i
+                    << "\" -> \"node"
+                    << current
+                    << "\" [color=seagreen] ;\n";
+            }
+        }
+
+        stream << "}" << std::flush;
+
+        stream.close();
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class TreeNodeClass>
+    auto Tree<TreeNodeClass>::genDotFile(
+        std::filesystem::path                             filepath,
+        core::UInt32                                      highlight,
+        std::function<std::string_view(std::string_view)> colorize_node) const -> void {
+        std::fstream stream(filepath.string(), std::ios::out);
+
+        stream
+            << "digraph G { \n"
+            << "    rankdir = LR\n"
+            << "    bgcolor = black\n\n"
+            << "    node [shape=box, fontname=\"helvetica\", fontsize=12];\n\n";
+
+        for (auto i : range(m_first_free_index)) {
+            const auto name  = operator[](i).name();
+            const auto dirty = bool(operator[](i).dirty_bits());
+            if (i != highlight)
+                stream
+                    << "    \"node"
+                    << i
+                    << "\" [label=\"id: "
+                    << i
+                    << " type: "
+                    << name
+                    << " dirty: "
+                    << std::boolalpha
+                    << dirty
+                    << "\", style=filled,color=\""
+                    << colorize_node(name)
+                    << "\"];\n";
+            else
+                stream
+                    << "    \"node"
+                    << i
+                    << "\" [shape=polygon,sides=5,peripheries=3, label=\"id: "
+                    << i
+                    << " type: "
+                    << name
+                    << " dirty: "
+                    << std::boolalpha
+                    << dirty
+                    << "\", style=filled,color=\""
+                    << colorize_node(name)
+                    << "\"];\n";
+        }
+
+        for (auto i : range(m_first_free_index)) {
+            if (operator[](i).first_child() == TreeNodeClass::INVALID_INDEX) continue;
+
+            for (auto current = operator[](i).first_child();
+                 current != TreeNodeClass::INVALID_INDEX;
+                 current = operator[](current).next_sibling()) {
+                stream
+                    << "    \"node"
+                    << i
+                    << "\" -> \"nodeNode"
+                    << current
+                    << "\" [color=seagreen] ;\n";
+            }
+        }
+
+        stream << "}" << std::flush;
+
+        stream.close();
+    }
+}} // namespace stormkit::core

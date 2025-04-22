@@ -6,7 +6,7 @@ module stormkit.Log;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 using namespace std::literals;
 
@@ -24,7 +24,7 @@ namespace stormkit::log {
 
         expects(std::filesystem::is_directory(m_base_path), "path need to be a directory");
 
-        auto filepath                = m_base_path / toNativeEncoding(LOG_FILE_NAME);
+        auto filepath                = m_base_path / to_native_encoding(LOG_FILE_NAME);
         m_streams[filepath.string()] = std::ofstream { filepath.string() };
     }
 
@@ -39,7 +39,7 @@ namespace stormkit::log {
 
         expects(std::filesystem::is_directory(m_base_path), "path need to be a directory");
 
-        auto filepath                = m_base_path / toNativeEncoding(LOG_FILE_NAME);
+        auto filepath                = m_base_path / to_native_encoding(LOG_FILE_NAME);
         m_streams[filepath.string()] = std::ofstream { filepath.string() };
     }
 
@@ -70,10 +70,10 @@ namespace stormkit::log {
         const auto time
             = std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time).count();
 
-        auto filepath = m_base_path / std::filesystem::path { toNativeEncoding(LOG_FILE_NAME) };
+        auto filepath = m_base_path / std::filesystem::path { to_native_encoding(LOG_FILE_NAME) };
         if (not std::empty(m.name)) {
-            filepath = m_base_path / toNativeEncoding(m.name);
-            filepath += toNativeEncoding("-") + toNativeEncoding(LOG_FILE_NAME);
+            filepath = m_base_path / to_native_encoding(m.name);
+            filepath += to_native_encoding("-") + to_native_encoding(LOG_FILE_NAME);
 
             if (m_streams.find(filepath.string()) == m_streams.cend())
                 m_streams[filepath.string()] = std::ofstream { filepath.string() };

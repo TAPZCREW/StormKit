@@ -4,13 +4,13 @@
 
 module;
 
-#include <stormkit/Core/PlatformMacro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.Gpu:Execution.RasterPipelineState;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Gpu.Vulkan;
 
 import :Core;

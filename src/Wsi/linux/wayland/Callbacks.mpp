@@ -14,7 +14,7 @@ export module stormkit.Wsi:Linux.Wayland.Callbacks;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import :Linux.Wayland.Log;
 

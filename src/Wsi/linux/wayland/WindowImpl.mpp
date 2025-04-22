@@ -14,14 +14,14 @@ module;
 #include <xdg-decoration-unstable-v1.h>
 #include <xdg-shell.h>
 
-#include <stormkit/Core/MemoryMacro.hpp>
-#include <stormkit/Core/PlatformMacro.hpp>
+#include <stormkit/core/memory_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.Wsi:Linux.Wayland.WindowImpl;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Wsi;
 
 import :Common.WindowImplBase;

@@ -5,7 +5,7 @@ import Constants;
 #else
     #include <stormkit/std.hpp>
 
-    #include <stormkit/Core.hpp>
+    #include <stormkit.core.hpp>
 
     #include "Constants.mpp"
     #include "Renderer.mpp"
@@ -88,7 +88,7 @@ auto Renderer::updateBoard(const stormkit::image::Image& board) -> void {
 
     if (m_current_fence) m_current_fence->wait();
 
-    const auto descriptors = makeStaticArray(gpu::Descriptor {
+    const auto descriptors = into_array(gpu::Descriptor {
         gpu::ImageDescriptor { .type    = gpu::DescriptorType::Combined_Image_Sampler,
                               .binding = 0,
                               .layout  = gpu::ImageLayout::Shader_Read_Only_Optimal,
@@ -101,7 +101,7 @@ auto Renderer::updateBoard(const stormkit::image::Image& board) -> void {
 
 auto Renderer::doInitBaseRenderObjects() -> void {
     // We create an instance and initialize device on best available GPU
-    m_instance = makeUnique<gpu::Instance>();
+    m_instance = allocate<gpu::Instance>();
     ilog("Render backend successfully initialized");
     ilog("Using StormKit {}.{}.{} {} {}, built with {}",
          STORMKIT_MAJOR_VERSION,
@@ -180,9 +180,9 @@ auto Renderer::doInitMeshRenderObjects() -> void {
         .shader_state
         = { .shaders = makeConstObserverArray(m_board.vertex_shader, m_board.fragment_shader) },
         /*.vertex_input_state   = { .binding_descriptions =
-                                    toArray(MESH_VERTEX_BINDING_DESCRIPTIONS),
+                                    to_dyn_array(MESH_VERTEX_BINDING_DESCRIPTIONS),
                                   .input_attribute_descriptions =
-                                    toArray(MESH_VERTEX_ATTRIBUTE_DESCRIPTIONS) },*/
+                                    to_dyn_array(MESH_VERTEX_ATTRIBUTE_DESCRIPTIONS) },*/
         .layout = { .descriptor_set_layouts = makeConstObserverArray(m_descriptor_set_layout) }
     };
 

@@ -6,7 +6,7 @@ module stormkit.Gpu;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import :Execution.RenderPass;
 
@@ -32,7 +32,7 @@ namespace stormkit::gpu {
             = m_description.attachments
               | std::views::transform([](auto&& attachment) {
                     return vk::AttachmentDescription {}
-                        .setFormat(narrow<vk::Format>(attachment.format))
+                        .setFormat(narrow<vk::format>(attachment.format))
                         .setSamples(narrow<vk::SampleCountFlagBits>(attachment.samples))
                         .setLoadOp(narrow<vk::AttachmentLoadOp>(attachment.load_op))
                         .setStoreOp(narrow<vk::AttachmentStoreOp>(attachment.store_op))
@@ -95,7 +95,7 @@ namespace stormkit::gpu {
 
         return device.vkHandle()
             .createRenderPass(create_info)
-            .transform(core::monadic::set(m_vk_render_pass));
+            .transform(core:.monadic::set(m_vk_render_pass));
     }
 
     /////////////////////////////////////

@@ -18,7 +18,7 @@ export module stormkit.Image:JPEGImage;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Image;
 
 export namespace stormkit::image::details {
@@ -152,7 +152,7 @@ namespace stormkit::image::details {
         error_mgr.error_exit = jpg::error_callback;
 
         for (auto i : range(image_rgb.mipLevels())) {
-            if (i >= 1u) _filename += toNativeEncoding(std::format("_mip{}", i));
+            if (i >= 1u) _filename += to_native_encoding(std::format("_mip{}", i));
 
             auto file = std::fopen(_filename.string().c_str(), "wb");
             if (file == nullptr) {
@@ -260,7 +260,7 @@ namespace stormkit::image::details {
         auto output = std::vector<Byte> {};
         output.reserve((out_size));
 
-        std::ranges::copy(asByteView(output_ptr, out_size), std::back_inserter(output));
+        std::ranges::copy(as_bytes(output_ptr, out_size), std::back_inserter(output));
         if (output_ptr != nullptr) std::free(output_ptr);
 
         return output;

@@ -4,13 +4,13 @@
 
 module;
 
-#include <stormkit/Core/PlatformMacro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.Engine:Core;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Entities;
 import stormkit.Wsi;
 

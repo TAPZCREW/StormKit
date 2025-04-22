@@ -4,13 +4,13 @@
 
 module;
 
-#include <stormkit/Core/PlatformMacro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.Engine:ECS.SpriteRenderSystem;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Entities;
 import stormkit.Gpu;
 
@@ -73,7 +73,7 @@ namespace stormkit::engine {
         const auto e = world.makeEntity();
 
         auto& sprite_component          = world.addComponent<SpriteComponent>(e);
-        sprite_component.sprite.texture = borrow(texture);
+        sprite_component.sprite.texture = as_ref(texture);
         for (auto&& vertex : sprite_component.sprite.vertices) {
             vertex.position.x *= size.x;
             vertex.position.y *= size.y;

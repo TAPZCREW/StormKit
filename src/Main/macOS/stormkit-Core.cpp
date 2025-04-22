@@ -1,11 +1,11 @@
-#include "stormkit-Core.hpp"
+#include "stormkit.core.hpp"
 
-import stormkit.Core;
+import stormkit.core;
 
-auto setupSignalHandler() -> void {
-    stormkit::setupSignalHandler();
+auto setup_signal_handler() -> void {
+    stormkit::setup_signal_handler();
 }
 
-auto setCurrentThreadName(std::string_view name) -> void {
-    stormkit::setCurrentThreadName(name);
+auto set_current_thread_name(std::string_view name) -> void {
+    stormkit::set_current_thread_name(name);
 }

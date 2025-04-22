@@ -13,7 +13,7 @@ module stormkit.Gpu;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Log;
 
 import :Core.Device;
@@ -52,7 +52,7 @@ namespace stormkit::gpu {
                    const Instance&       instance,
                    const Info&           info,
                    Tag)
-        : m_physical_device { borrow(physical_device) } {
+        : m_physical_device { as_ref(physical_device) } {
         const auto& queue_families = m_physical_device->queueFamilies();
 
         struct Queue_ {
@@ -158,13 +158,13 @@ namespace stormkit::gpu {
         }();
 
         const auto extensions = [&] {
-            constexpr auto toCZString = [](const auto& v) { return std::data(v); };
+            constexpr auto as_czstring = [](const auto& v) { return std::data(v); };
 
-            auto e = transform(BASE_EXTENSIONS, toCZString);
+            auto e = transform(BASE_EXTENSIONS, as_czstring);
             if (swapchain_available and info.enable_swapchain)
-                merge(e, transform(SWAPCHAIN_EXTENSIONS, toCZString));
+                merge(e, transform(SWAPCHAIN_EXTENSIONS, as_czstring));
             if (raytracing_available and info.enable_raytracing)
-                merge(e, transform(RAYTRACING_EXTENSIONS, toCZString));
+                merge(e, transform(RAYTRACING_EXTENSIONS, as_czstring));
 
             return e;
         }();
@@ -188,7 +188,7 @@ namespace stormkit::gpu {
 
         m_physical_device->vkHandle()
             .createDevice(create_info)
-            .transform(core::monadic::set(m_vk_device))
+            .transform(core:.monadic::set(m_vk_device))
             .transform([this, &instance] noexcept -> VulkanExpected<void> {
                 VULKAN_HPP_DEFAULT_DISPATCHER.init(*vkHandle());
 
@@ -210,8 +210,8 @@ namespace stormkit::gpu {
 
                 return {};
             })
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
-                                                core::monadic::throwAsException()));
+            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
+                                                core:.monadic::throw_as_exception()));
 
         if (raster_queue.id)
             m_raster_queue = QueueEntry { .id    = *raster_queue.id,
@@ -240,8 +240,8 @@ namespace stormkit::gpu {
                       vk_fences,
                       wait_all,
                       std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count())
-            .transform(core::monadic::narrow<Result>())
-            .transform_error(core::monadic::narrow<Result>());
+            .transform(core:.monadic::narrow<Result>())
+            .transform_error(core:.monadic::narrow<Result>());
     }
 
     /////////////////////////////////////

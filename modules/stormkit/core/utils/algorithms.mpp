@@ -1,0 +1,108 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+export module stormkit.core:utils.algorithms;
+
+import std;
+
+import :meta;
+
+export namespace stormkit { inline namespace core {
+    template<std::ranges::input_range                                             Range,
+             meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type> Predicate>
+    [[nodiscard]] constexpr auto copy_if(Range&& input, Predicate&& predicate) noexcept;
+
+    template<std::ranges::input_range                                               Range,
+             std::invocable<const typename std::remove_cvref_t<Range>::value_type&> Lambda>
+    [[nodiscard]] constexpr auto transform(Range&& input, Lambda&& lambda) noexcept;
+
+    template<std::ranges::input_range                                               Range,
+             meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type>   Predicate,
+             std::invocable<const typename std::remove_cvref_t<Range>::value_type&> Lambda>
+    [[nodiscard]] constexpr auto
+        transform_if(Range&& input, Predicate&& predicate, Lambda&& lambda) noexcept;
+
+    template<
+        std::ranges::input_range                                               Range,
+        meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type>   Predicate,
+        std::invocable<const typename std::remove_cvref_t<Range>::value_type&> Lambda,
+        std::output_iterator<
+            std::invoke_result_t<Lambda, const typename std::remove_cvref_t<Range>::value_type&>>
+            Iterator>
+    constexpr auto
+        transform_if(Range&& input, Iterator&& it, Predicate&& predicate, Lambda&& lambda) noexcept
+        -> void;
+}} // namespace stormkit::core
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit { inline namespace core {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<std::ranges::input_range                                             Range,
+             meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type> Predicate>
+    constexpr auto copy_if(Range&& input, Predicate&& predicate) noexcept {
+        auto output = std::vector<class std::remove_cvref_t<Range>::value_type> {};
+
+        output.reserve(std::size(input));
+
+        std::ranges::copy_if(input, std::back_inserter(output), std::forward<Predicate>(predicate));
+
+        return output;
+
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<std::ranges::input_range                                               Range,
+             std::invocable<const typename std::remove_cvref_t<Range>::value_type&> Lambda>
+    constexpr auto transform(Range&& input, Lambda&& lambda) noexcept {
+        auto output = std::vector<
+            std::invoke_result_t<std::remove_cvref_t<Lambda>,
+                                 const typename std::remove_cvref_t<Range>::value_type&>> {};
+        output.reserve(std::size(input));
+
+        std::ranges::transform(input, std::back_inserter(output), lambda);
+
+        return output;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<std::ranges::input_range                                               Range,
+             meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type>   Predicate,
+             std::invocable<const typename std::remove_cvref_t<Range>::value_type&> Lambda>
+    constexpr auto transform_if(Range&& input, Predicate&& predicate, Lambda&& lambda) noexcept {
+        auto output = std::vector<
+            std::invoke_result_t<std::remove_cvref_t<Lambda>,
+                                 const typename std::remove_cvref_t<Range>::value_type&>> {};
+        output.reserve(std::size(input));
+
+        std::ranges::for_each(input, [&](auto& elem) {
+            if (predicate(elem)) output.emplace_back(lambda(elem));
+        });
+
+        return output;
+
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<
+        std::ranges::input_range                                               Range,
+        meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type>   Predicate,
+        std::invocable<const typename std::remove_cvref_t<Range>::value_type&> Lambda,
+        std::output_iterator<
+            std::invoke_result_t<Lambda, const typename std::remove_cvref_t<Range>::value_type&>>
+            Iterator>
+    constexpr auto
+        transform_if(Range&& input, Iterator&& it, Predicate&& predicate, Lambda&& lambda) noexcept
+        -> void {
+        std::ranges::for_each(input, [&](auto& elem) {
+            if (predicate(elem)) *it++ = lambda(elem);
+        });
+    }
+}} // namespace stormkit::core

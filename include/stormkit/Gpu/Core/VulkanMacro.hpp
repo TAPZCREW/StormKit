@@ -2,7 +2,7 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-#include <stormkit/Core/PlatformMacro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 #ifdef STORMKIT_BUILD_DEBUG
     #define STORMKIT_RENDER_VERBOSE_VULKAN

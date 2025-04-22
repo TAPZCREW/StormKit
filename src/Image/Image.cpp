@@ -6,7 +6,7 @@ module stormkit.Image;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import :HDRImage;
 import :JPEGImage;
@@ -19,25 +19,15 @@ import :TARGAImage;
 namespace stormkit::image {
     namespace details {
         using namespace stormkit::literals;
-        inline constexpr auto KTX_HEADER = makeStaticByteArray(0xAB_b,
-                                                               0x4B_b,
-                                                               0x54_b,
-                                                               0x58_b,
-                                                               0x20_b,
-                                                               0x31_b,
-                                                               0x31_b,
-                                                               0xBB_b,
-                                                               0x0D_b,
-                                                               0x0A_b,
-                                                               0x1A_b,
-                                                               0x0A_b);
+        inline constexpr auto KTX_HEADER
+            = into_bytes(0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A);
 
         inline constexpr auto PNG_HEADER
-            = makeStaticByteArray(0x89_b, 0x50_b, 0x4E_b, 0x47_b, 0x0D_b, 0x0A_b, 0x1A_b, 0x0A_b);
+            = into_bytes(0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A);
 
-        inline constexpr auto QOI_HEADER = makeStaticByteArray(0x71_b, 0x6f_b, 0x69_b, 0x66_b);
+        inline constexpr auto QOI_HEADER = into_bytes(0x71, 0x6f, 0x69, 0x66);
 
-        inline constexpr auto JPEG_HEADER = makeStaticByteArray(0xFF_b, 0xD8_b);
+        inline constexpr auto JPEG_HEADER = into_bytes(0xFF, 0xD8);
 
         auto filenameToCodec(const std::filesystem::path& filename) noexcept -> Image::Codec {
             expects(std::filesystem::exists(filename));
@@ -47,18 +37,18 @@ namespace stormkit::image {
 
             const auto ext = filename.extension().string();
 
-            if (toLower(ext) == ".jpg" or toLower(ext) == ".jpeg") return Image::Codec::JPEG;
-            else if (toLower(ext) == ".png")
+            if (to_lower(ext) == ".jpg" or to_lower(ext) == ".jpeg") return Image::Codec::JPEG;
+            else if (to_lower(ext) == ".png")
                 return Image::Codec::PNG;
-            else if (toLower(ext) == ".tga" or toLower(ext) == ".targa")
+            else if (to_lower(ext) == ".tga" or to_lower(ext) == ".targa")
                 return Image::Codec::TARGA;
-            else if (toLower(ext) == ".ppm")
+            else if (to_lower(ext) == ".ppm")
                 return Image::Codec::PPM;
-            else if (toLower(ext) == ".hdr")
+            else if (to_lower(ext) == ".hdr")
                 return Image::Codec::HDR;
-            else if (toLower(ext) == ".ktx")
+            else if (to_lower(ext) == ".ktx")
                 return Image::Codec::KTX;
-            else if (toLower(ext) == ".qoi")
+            else if (to_lower(ext) == ".qoi")
                 return Image::Codec::QOI;
 
             return Image::Codec::Unknown;
@@ -481,7 +471,7 @@ namespace stormkit::image {
         auto image = Image { std::move(image_data) };
 
         for (auto [layer, face, level, i] :
-             multiRange(image.layers(), image.faces(), image.layers(), pixel_count)) {
+             multi_range(image.layers(), image.faces(), image.layers(), pixel_count)) {
             const auto from_image = details::map(pixel(as<RangeExtent>(i), layer, face, level),
                                                  m_data.bytes_per_channel,
                                                  image.bytesPerChannel());
@@ -516,7 +506,7 @@ namespace stormkit::image {
 
         auto image = Image { std::move(image_data) };
 
-        for (auto [layer, face, mip, x, y, z] : multiRange(m_data.layers,
+        for (auto [layer, face, mip, x, y, z] : multi_range(m_data.layers,
                                                            m_data.faces,
                                                            m_data.mip_levels,
                                                            m_data.extent.width,
@@ -547,7 +537,7 @@ namespace stormkit::image {
 
         auto image = Image { std::move(image_data) };
 
-        for (auto [layer, face, mip, x, y, z] : multiRange(m_data.layers,
+        for (auto [layer, face, mip, x, y, z] : multi_range(m_data.layers,
                                                            m_data.faces,
                                                            m_data.mip_levels,
                                                            m_data.extent.width,
@@ -576,7 +566,7 @@ namespace stormkit::image {
 
         auto image = Image { std::move(image_data) };
 
-        for (auto [layer, face, mip, x, y, z] : multiRange(m_data.layers,
+        for (auto [layer, face, mip, x, y, z] : multi_range(m_data.layers,
                                                            m_data.faces,
                                                            m_data.mip_levels,
                                                            m_data.extent.width,

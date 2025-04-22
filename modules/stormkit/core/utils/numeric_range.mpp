@@ -1,0 +1,295 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+export module stormkit.core:utils.numeric_range;
+
+import std;
+
+import :meta.traits;
+import :meta.concepts;
+import :typesafe.integer_casts;
+import :typesafe.integer;
+import :typesafe.floating_point;
+
+import :coroutines;
+
+export namespace stormkit { inline namespace core {
+    template<meta::IsArithmetic T>
+    struct NumericsRange {
+        using RangeType = T;
+        T begin;
+        T end;
+        T step = T { 1 };
+    };
+
+    namespace meta {
+        template<class T>
+        concept IsNumericsRange = requires(const T& t) {
+            t.begin;
+            t.end;
+            t.step;
+            typename T::RangeType;
+        };
+
+        template<class T>
+        concept IsNumericsRangePure = IsNumericsRange<CanonicalType<T>>;
+    } // namespace meta
+
+    template<meta::IsArithmetic T>
+    [[nodiscard]] constexpr auto range(const T& end) noexcept -> decltype(auto);
+
+    template<meta::IsArithmetic T, meta::IsArithmetic U, meta::IsArithmetic V = U>
+    [[nodiscard]] constexpr auto
+        range(const T& begin, const U& end, const V& step = V { 1 }) noexcept -> decltype(auto);
+
+    [[nodiscard]] constexpr auto range(meta::IsNumericsRangePure auto&& range) noexcept
+        -> decltype(auto);
+
+    template<meta::IsArithmetic... Args>
+    [[nodiscard]] constexpr auto multi_range(const Args&... args) noexcept -> decltype(auto);
+
+    template<meta::IsNumericsRangePure... Args>
+    [[nodiscard]] constexpr auto multi_range(Args&&... args) noexcept -> decltype(auto);
+}} // namespace stormkit::core
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit { inline namespace core {
+#define FOR(a, b)  for (auto a = b.begin; a < b.end; a += b.step)
+#define YIELD(...) co_yield { __VA_ARGS__ };
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsNumericsRange T, meta::IsNumericsRange U>
+    auto range_implementation(T a, U b) noexcept
+        -> std::generator<std::tuple<decltype(a.begin), decltype(b.begin)>> {
+        FOR(i, a)
+        FOR(j, b)
+        YIELD(i, j)
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsNumericsRange T, meta::IsNumericsRange U, meta::IsNumericsRange V>
+    auto range_implementation(T a, U b, V c) noexcept
+        -> std::generator<std::tuple<decltype(a.begin), decltype(b.begin), decltype(c.begin)>> {
+        FOR(i, a)
+        FOR(j, b)
+        FOR(k, c)
+        YIELD(i, j, k)
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsNumericsRange T,
+             meta::IsNumericsRange U,
+             meta::IsNumericsRange V,
+             meta::IsNumericsRange W>
+    auto range_implementation(T a, U b, V c, W d) noexcept -> std::generator<
+        std::tuple<decltype(a.begin), decltype(b.begin), decltype(c.begin), decltype(d.begin)>> {
+        FOR(i, a)
+        FOR(j, b)
+        FOR(k, c)
+        FOR(l, d)
+        YIELD(i, j, k, l)
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsNumericsRange T,
+             meta::IsNumericsRange U,
+             meta::IsNumericsRange V,
+             meta::IsNumericsRange W,
+             meta::IsNumericsRange X>
+    auto range_implementation(T a, U b, V c, W d, X e) noexcept
+        -> std::generator<std::tuple<decltype(a.begin),
+                                     decltype(b.begin),
+                                     decltype(c.begin),
+                                     decltype(d.begin),
+                                     decltype(e.begin)>> {
+        FOR(i, a)
+        FOR(j, b)
+        FOR(k, c)
+        FOR(l, d)
+        FOR(m, e)
+        YIELD(i, j, k, l, m)
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsNumericsRange T,
+             meta::IsNumericsRange U,
+             meta::IsNumericsRange V,
+             meta::IsNumericsRange W,
+             meta::IsNumericsRange X,
+             meta::IsNumericsRange Y>
+    auto range_implementation(T a, U b, V c, W d, X e, Y f) noexcept
+        -> std::generator<std::tuple<decltype(a.begin),
+                                     decltype(b.begin),
+                                     decltype(c.begin),
+                                     decltype(d.begin),
+                                     decltype(e.begin),
+                                     decltype(f.begin)>> {
+        FOR(i, a)
+        FOR(j, b)
+        FOR(k, c)
+        FOR(l, d)
+        FOR(m, e)
+        FOR(n, f)
+        YIELD(i, j, k, l, m, n)
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsNumericsRange T,
+             meta::IsNumericsRange U,
+             meta::IsNumericsRange V,
+             meta::IsNumericsRange W,
+             meta::IsNumericsRange X,
+             meta::IsNumericsRange Y,
+             meta::IsNumericsRange Z>
+    auto range_implementation(T a, U b, V c, W d, X e, Y f, Z g) noexcept
+        -> std::generator<std::tuple<decltype(a.begin),
+                                     decltype(b.begin),
+                                     decltype(c.begin),
+                                     decltype(d.begin),
+                                     decltype(e.begin),
+                                     decltype(f.begin),
+                                     decltype(g.begin)>> {
+        FOR(i, a)
+        FOR(j, b)
+        FOR(k, c)
+        FOR(l, d)
+        FOR(m, e)
+        FOR(n, f)
+        FOR(o, g)
+        YIELD(i, j, k, l, m, n, g)
+    }
+
+#undef FOR
+#undef YIELD
+
+    template<typename T>
+    struct Range {
+        using Type = typename T::RangeType;
+
+        struct Iterator {
+            Iterator(Type val, Type step) noexcept : m_val { val }, m_step { step } {}
+
+            auto operator+(std::size_t index) -> decltype(auto) {
+                auto cpy = auto(*this);
+                for (auto i = 0u; i < index; ++i) ++cpy;
+                return cpy;
+            }
+
+            auto operator++() -> decltype(auto) {
+                m_val += m_step;
+                return *this;
+            }
+
+            auto operator++(int) -> decltype(auto) {
+                auto old = auto(*this);
+                m_val += m_step;
+                return old;
+            }
+
+            auto operator--() -> decltype(auto) {
+                m_val -= m_step;
+                return *this;
+            }
+
+            auto operator--(int) -> decltype(auto) {
+                auto old = auto(*this);
+                m_val -= m_step;
+                return old;
+            }
+
+            auto operator==(const Iterator& other) const noexcept { return m_val == other.m_val; }
+
+            auto operator!=(const Iterator& other) const noexcept { return m_val != other.m_val; }
+
+            template<typename Self>
+            auto operator*(this Self&& self) noexcept -> decltype(auto) {
+                return std::forward_like<Self>(self.m_val);
+            }
+
+          private:
+            Type m_val;
+            Type m_step;
+        };
+
+        constexpr explicit Range(T&& range)
+            : m_begin { range.begin, range.step }, m_end { range.end, range.step } {}
+
+        template<typename Self>
+        constexpr auto begin(this Self&& self) noexcept -> decltype(auto) {
+            return std::forward_like<Self>(self.m_begin);
+        }
+
+        constexpr auto cbegin() const noexcept -> const Iterator& { return m_begin; }
+
+        template<typename Self>
+        constexpr auto end(this Self&& self) noexcept -> decltype(auto) {
+            return std::forward_like<Self>(self.m_end);
+        }
+
+        constexpr auto cend() const noexcept -> const Iterator& { return m_end; }
+
+        template<typename Self>
+        auto operator[](this Self&& self, std::size_t index) noexcept -> decltype(auto) {
+            return *(std::forward<Self>(self).begin() + index);
+        }
+
+      private:
+        Iterator m_begin;
+        Iterator m_end;
+    };
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto range(meta::IsNumericsRangePure auto&& range) noexcept
+        -> decltype(auto) {
+        // return ranges::views::iota(range.begin, range.end) | ranges::view::stride(range.step);
+        return Range { std::forward<decltype(range)>(range) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsArithmetic T, meta::IsArithmetic U, meta::IsArithmetic V>
+    STORMKIT_FORCE_INLINE constexpr auto range(const T& begin, const U& end, const V& step) noexcept
+        -> decltype(auto) {
+        using Type = meta::SafeNarrowHelperType<meta::SafeNarrowHelperType<T, U>, V>;
+        return range(NumericsRange<Type> { .begin = as<Type>(begin),
+                                           .end   = as<Type>(end),
+                                           .step  = as<Type>(step) });
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsArithmetic T>
+    STORMKIT_FORCE_INLINE constexpr auto range(const T& end) noexcept -> decltype(auto) {
+        return range(T { 0 }, end);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsArithmetic... Args>
+    STORMKIT_FORCE_INLINE constexpr auto multi_range(const Args&... args) noexcept
+        -> decltype(auto) {
+        return range_implementation(NumericsRange<Args> { .begin = 0, .end = args }...);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsNumericsRangePure... Args>
+    STORMKIT_FORCE_INLINE constexpr auto multi_range(Args&&... args) noexcept -> decltype(auto) {
+        return range_implementation(std::forward<Args>(args)...);
+    }
+}} // namespace stormkit::core

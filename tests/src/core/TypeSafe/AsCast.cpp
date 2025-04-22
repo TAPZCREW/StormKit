@@ -4,7 +4,7 @@
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import Test;
 
@@ -58,7 +58,7 @@ namespace {
     const auto unsigned_longlongint2 = ulonglongint { 2 };
 
     auto _ = test::TestSuite {
-        "Core.TypeSafe",
+        "Core:typesafe",
         {
           { "AsCast.same_type",
               [] static noexcept {

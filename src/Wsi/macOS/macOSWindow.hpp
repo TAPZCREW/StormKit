@@ -5,7 +5,7 @@
 #ifndef MACOS_WINDOW_HPP
 #define MACOS_WINDOW_HPP
 
-#include <stormkit/Core/PlatformMacro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 #include <cstdint>
 #include <functional>
@@ -31,11 +31,11 @@ namespace stormkit::wsi::macos {
 
         struct Monitor {
             enum class Flags {
-                None    = 0,
+                NONE    = 0,
                 Primary = 1
             };
 
-            Flags       flags = Flags::None;
+            Flags       flags = Flags::NONE;
             std::string name;
 
             struct Extent {

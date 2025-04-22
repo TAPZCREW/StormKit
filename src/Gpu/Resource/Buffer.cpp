@@ -6,7 +6,7 @@ module stormkit.Gpu;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import :Core;
 import stormkit.Gpu.Vulkan;
@@ -23,7 +23,7 @@ namespace stormkit::gpu {
             .createBuffer({ .size        = m_size,
                             .usage       = narrow<vk::BufferUsageFlagBits>(m_usages),
                             .sharingMode = vk::SharingMode::eExclusive })
-            .transform(core::monadic::set(m_vk_buffer))
+            .transform(core:.monadic::set(m_vk_buffer))
             .transform([this, &info, &device]() noexcept -> VulkanExpected<void> {
                 const auto requirements = m_vk_buffer->getMemoryRequirements();
 
@@ -48,8 +48,8 @@ namespace stormkit::gpu {
 
                 return {};
             })
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
-                                                core::monadic::throwAsException()));
+            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
+                                                core:.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////

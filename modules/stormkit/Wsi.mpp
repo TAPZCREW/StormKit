@@ -4,16 +4,16 @@
 
 module;
 
-#include <stormkit/Core/AsCastsMacro.hpp>
-#include <stormkit/Core/FlagsMacro.hpp>
-#include <stormkit/Core/PlatformMacro.hpp>
+#include <stormkit/core/as_casts_macro.hpp>
+#include <stormkit/core/flags_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.Wsi;
 
 import std;
 import frozen;
 
-import stormkit.Core;
+import stormkit.core;
 
 namespace stormkit::wsi {
     class WindowImpl;
@@ -155,11 +155,11 @@ export {
 
         struct Monitor {
             enum class Flags {
-                None = 0,
+                NONE = 0,
                 Primary
             };
 
-            Flags       flags = Flags::None;
+            Flags       flags = Flags::NONE;
             std::string name;
 
             std::vector<math::ExtentU> extents;
@@ -179,7 +179,7 @@ export {
         };
 
         enum class EventType : UInt8 {
-            None,
+            NONE,
             Closed,
             Resized,
             Minimized,
@@ -195,8 +195,8 @@ export {
             GainedFocus,
         };
 
-        struct NoneEventData {
-            static constexpr auto TYPE = EventType::None;
+        struct NONEEventData {
+            static constexpr auto TYPE = EventType::NONE;
         };
 
         struct ClosedEventData {
@@ -261,7 +261,7 @@ export {
             static constexpr auto TYPE = EventType::GainedFocus;
         };
 
-        using EventData = std::variant<NoneEventData,
+        using EventData = std::variant<NONEEventData,
                                        ClosedEventData,
                                        ResizedEventData,
                                        MinimizedEventData,
@@ -277,8 +277,8 @@ export {
                                        GainedFocusEventData>;
 
         struct Event {
-            EventType type = EventType::None;
-            EventData data = NoneEventData {};
+            EventType type = EventType::NONE;
+            EventData data = NONEEventData {};
         };
 
         class STORMKIT_API Window {
@@ -382,7 +382,7 @@ export {
 ////////////////////////////////////////////////////////////////////
 
 ASCASTER_STRICT_DEFINE(std::string, stormkit::wsi::Monitor) {
-    if (from.flags == stormkit::wsi::Monitor::Flags::None)
+    if (from.flags == stormkit::wsi::Monitor::Flags::NONE)
         return std::format("[Monitor: name = {}, extents = {}]", from.name, from.extents);
 
     return std::format("[Monitor: flags = {}, name = {}, extents = {}]",

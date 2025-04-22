@@ -5,7 +5,7 @@ import Components;
 #else
     #include <stormkit/std.hpp>
 
-    #include <stormkit/Core.hpp>
+    #include <stormkit.core.hpp>
 
     #include "Components.mpp"
     #include "Systems.mpp"

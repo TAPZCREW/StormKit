@@ -4,15 +4,15 @@
 
 module;
 
-#include <stormkit/Core/PlatformMacro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
-#include <stormkit/Core/MemoryMacro.hpp>
+#include <stormkit/core/memory_macro.hpp>
 
 export module stormkit.Entities;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 export namespace stormkit::entities {
     using Entity                                  = UInt32;
@@ -373,7 +373,7 @@ namespace stormkit::entities {
                    return EntityManager::isKeyEntity(entity, pair.first);
                }) 
                | std::views::values 
-               | std::views::transform(monadic::borrow()) 
+               | std::views::transform(monadic::as_ref()) 
                | std::ranges::to<std::vector>();
         // clang-format on
     }
@@ -387,8 +387,8 @@ namespace stormkit::entities {
         return self.m_entities 
                | std::views::filter(bindFront(&EntityManager::hasComponent<T>, &self))
                | std::views::transform(bindFront(&EntityManager::getComponent<T>, &self))
-               | std::views::transform(monadic::forwardLike<Self>())
-               | std::views::transform(monadic::borrow())
+               | std::views::transform(monadic::forward_like<Self>())
+               | std::views::transform(monadic::as_ref())
                | std::ranges::to<std::vector>();
         // clang-format on
     }
@@ -418,13 +418,13 @@ namespace stormkit::entities {
     template<class Self>
     auto EntityManager::systems(this Self& self) noexcept
         -> std::vector<Ref<core::meta::ConstnessLike<Self, System>>> {
-        constexpr auto borrower = [] {
-            if constexpr (core::meta::IsConst<Self>) return monadic::borrow();
+        constexpr auto as_refer = [] {
+            if constexpr (core::meta::IsConst<Self>) return monadic::as_ref();
             else
-                return monadic::borrowMut();
+                return monadic::as_ref_mut();
         }();
 
-        return self.m_systems | std::views::transform(borrower) | std::ranges::to<std::vector>();
+        return self.m_systems | std::views::transform(as_refer) | std::ranges::to<std::vector>();
     }
 
     /////////////////////////////////////

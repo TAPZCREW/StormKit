@@ -4,7 +4,7 @@
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import Test;
 
@@ -14,7 +14,7 @@ using namespace stormkit::core;
 
 namespace {
     auto _ = test::TestSuite {
-        "Core.Parallelism",
+        "Core.parallelism",
         {
           { "Locked.write",
               [] static noexcept {

@@ -2,7 +2,7 @@ module stormkit.Engine;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Log;
 import stormkit.Wsi;
 import stormkit.Gpu;
@@ -27,17 +27,17 @@ namespace stormkit::engine {
                                 std::cref(window.extent()),
                                 std::nullopt))
             .transform(monadic::set(m_swapchain))
-            .transform_error(monadic::throwAsException());
+            .transform_error(monadic::throw_as_exception());
 
         for (auto _ : range(std::size(m_swapchain->images()))) {
             gpu::Semaphore::create(device)
-                .transform(monadic::emplaceTo(m_image_availables))
+                .transform(monadic::emplace_to(m_image_availables))
                 .and_then(bindFront(gpu::Semaphore::create, std::cref(device)))
-                .transform(monadic::emplaceTo(m_render_finisheds))
+                .transform(monadic::emplace_to(m_render_finisheds))
                 .and_then(bindFront(gpu::Fence::createSignaled, std::cref(device)))
-                .transform(monadic::emplaceTo(m_in_flight_fences))
+                .transform(monadic::emplace_to(m_in_flight_fences))
                 .transform_error(
-                    monadic::map(monadic::narrow<gpu::Result>(), monadic::throwAsException()));
+                    monadic::map(monadic::narrow<gpu::Result>(), monadic::throw_as_exception()));
         }
 
         const auto command_pool
@@ -61,14 +61,14 @@ namespace stormkit::engine {
 
         auto fence = gpu::Fence::create(device)
                          .transform_error(monadic::map(monadic::narrow<gpu::Result>(),
-                                                       monadic::throwAsException()))
+                                                       monadic::throw_as_exception()))
                          .value();
 
-        auto cmbs = toRefs(transition_command_buffers);
+        auto cmbs = to_refs(transition_command_buffers);
         raster_queue.submit({ .command_buffers = cmbs }, fence);
 
         fence.wait().transform_error(
-            monadic::map(monadic::narrow<gpu::Result>(), monadic::throwAsException()));
+            monadic::map(monadic::narrow<gpu::Result>(), monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////
@@ -102,8 +102,8 @@ namespace stormkit::engine {
     auto RenderSurface::presentFrame(const gpu::Queue& queue, const Frame& frame)
         -> gpu::Expected<void> {
         const auto image_indices   = std::array { frame.image_index };
-        const auto wait_semaphores = borrows<std::array>(*frame.render_finished);
-        const auto swapchains      = borrows<std::array>(*m_swapchain);
+        const auto wait_semaphores = as_refs<std::array>(*frame.render_finished);
+        const auto swapchains      = as_refs<std::array>(*m_swapchain);
 
         return queue.present(swapchains, wait_semaphores, image_indices)
             .transform([this](auto&& _) noexcept {

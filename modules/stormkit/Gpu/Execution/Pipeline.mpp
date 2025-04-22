@@ -4,13 +4,13 @@
 
 module;
 
-#include <stormkit/Core/PlatformMacro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.Gpu:Execution.Pipeline;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Gpu.Vulkan;
 
 import :Core;
@@ -180,8 +180,8 @@ namespace stormkit::gpu {
         either(std::filesystem::exists(m_path),
                bindFront(&PipelineCache::readPipelineCache, this, std::cref(device)),
                bindFront(&PipelineCache::createNewPipelineCache, this, std::cref(device)))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
-                                                core::monadic::throwAsException()));
+            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
+                                                core:.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////
@@ -248,9 +248,9 @@ namespace stormkit::gpu {
 
         device.vkHandle()
             .createPipelineLayout(create_info)
-            .transform(core::monadic::set(m_vk_pipeline_layout))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
-                                                core::monadic::throwAsException()));
+            .transform(core:.monadic::set(m_vk_pipeline_layout))
+            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
+                                                core:.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////
@@ -300,8 +300,8 @@ namespace stormkit::gpu {
                        Tag)
         : m_type { Type::Raster }, m_state { state } {
         doInitRasterPipeline(device, layout, render_pass, std::move(cache))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
-                                                core::monadic::throwAsException()));
+            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
+                                                core:.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////

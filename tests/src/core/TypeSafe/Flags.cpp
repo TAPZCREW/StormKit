@@ -4,11 +4,11 @@
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import Test;
 
-#include <stormkit/Core/FlagsMacro.hpp>
+#include <stormkit/core/flags_macro.hpp>
 
 using namespace stormkit::core;
 
@@ -31,7 +31,7 @@ FLAG_ENUM(Flag2)
 
 namespace {
     auto _ = test::TestSuite {
-        "Core.TypeSafe",
+        "Core:typesafe",
         {
           {
                 "Flags.enum_class.operators",

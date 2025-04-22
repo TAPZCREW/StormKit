@@ -5,16 +5,16 @@ set_policy("compatibility.version", "3.0")
 modules = {
     core = {
         public_packages = { "glm", "frozen", "unordered_dense", "magic_enum master", "tl_function_ref" },
-        modulename = "Core",
+        modulename = "core",
         has_headers = true,
         custom = function()
             if is_plat("windows") then add_packages("wil") end
 
             set_configdir("$(buildir)/.gens/include/")
-            add_configfiles("include/(stormkit/Core/**.hpp.in)")
-            add_headerfiles("$(buildir)/.gens/include/(stormkit/Core/**.hpp)")
+            add_configfiles("include/(stormkit/core/**.hpp.in)")
+            add_headerfiles("$(buildir)/.gens/include/(stormkit/core/**.hpp)")
 
-            add_files("modules/stormkit/Core.mpp")
+            add_files("modules/stormkit/core.mpp")
             add_includedirs("$(buildir)/.gens/include", { public = true })
             add_cxflags("clang::-Wno-language-extension-token")
 

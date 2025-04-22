@@ -1,0 +1,12 @@
+// Copyright (C) 2023 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+export module stormkit.core:string.czstring;
+
+export namespace stormkit { inline namespace core {
+    using CZString  = const char*;
+    using ZString   = char*;
+    using CWZString = const wchar_t*;
+    using WZString  = wchar_t*;
+}} // namespace stormkit::core

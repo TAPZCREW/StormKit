@@ -1,0 +1,62 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+export module stormkit.core:utils.random;
+
+import std;
+
+import :typesafe;
+import :meta.concepts;
+
+export namespace stormkit { inline namespace core {
+    auto seed(Int seed) noexcept -> void;
+
+    template<std::floating_point T>
+    [[nodiscard]] auto rand(T min, T max) noexcept -> T;
+
+    template<std::integral T>
+    [[nodiscard]] auto rand(T min, T max) noexcept -> T;
+}} // namespace stormkit::core
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit { inline namespace core {
+    namespace {
+        std::default_random_engine generator {};
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto random_generator() noexcept -> std::default_random_engine& {
+        return generator;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto seed(Int seed) noexcept -> void {
+        random_generator().seed(seed);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<std::floating_point T>
+    STORMKIT_FORCE_INLINE auto rand(T min, T max) noexcept -> T {
+        std::uniform_real_distribution<T> dis(min, max);
+        return dis(random_generator());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<std::integral T>
+    STORMKIT_FORCE_INLINE auto rand(T min, T max) noexcept -> T {
+        std::uniform_int_distribution<T> dis(min, max);
+        return dis(random_generator());
+    }
+}} // namespace stormkit::core

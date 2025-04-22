@@ -4,14 +4,14 @@
 
 module;
 
-#include <stormkit/Core/HashMacro.hpp>
-#include <stormkit/Core/PlatformMacro.hpp>
+#include <stormkit/core/hash_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.Gpu:Execution.RenderPass;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Gpu.Vulkan;
 
 import :Core;
@@ -201,9 +201,9 @@ namespace stormkit::gpu {
 
         device.vkHandle()
             .createFramebuffer(create_info)
-            .transform(core::monadic::set(m_vk_framebuffer))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
-                                                core::monadic::throwAsException()));
+            .transform(core:.monadic::set(m_vk_framebuffer))
+            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
+                                                core:.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////
@@ -271,7 +271,7 @@ namespace stormkit::gpu {
     RenderPass::RenderPass(const Device& device, const RenderPassDescription& description, Tag)
         : m_description { description } {
         doInitRenderPass(device).transform_error(
-            core::monadic::map(core::monadic::narrow<Result>(), core::monadic::throwAsException()));
+            core:.monadic::map(core:.monadic::narrow<Result>(), core:.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////

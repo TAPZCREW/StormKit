@@ -4,14 +4,14 @@
 
 module;
 
-#include <stormkit/Core/HashMacro.hpp>
-#include <stormkit/Core/PlatformMacro.hpp>
+#include <stormkit/core/hash_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.Gpu:Execution.Descriptors;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Gpu.Vulkan;
 
 import :Core;
@@ -188,7 +188,7 @@ export {
             -> stormkit::Hash64 {
             auto hash = stormkit::Hash64 { 0 };
 
-            std::visit([&hash](auto& descriptor) { stormkit::hashCombine(hash, descriptor); },
+            std::visit([&hash](auto& descriptor) { stormkit::hash_combine(hash, descriptor); },
                        value);
 
             return hash;
@@ -237,7 +237,7 @@ namespace stormkit::gpu {
 
             std::ranges::for_each(
                 descriptors,
-                core::monadic::either(
+                core:.monadic::either(
                     [&buffers](const BufferDescriptor& descriptor) noexcept -> decltype(auto) {
                         buffers.emplace_back(vk::DescriptorBufferInfo {}
                                                  .setBuffer(toVkHandle(descriptor.buffer))
@@ -288,9 +288,9 @@ namespace stormkit::gpu {
 
         device.vkHandle()
             .createDescriptorSetLayout(create_info)
-            .transform(core::monadic::set(m_vk_descriptor_set_layout))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
-                                                core::monadic::throwAsException()));
+            .transform(core:.monadic::set(m_vk_descriptor_set_layout))
+            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
+                                                core:.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////
@@ -376,9 +376,9 @@ namespace stormkit::gpu {
 
         device.vkHandle()
             .createDescriptorPool(create_info)
-            .transform(core::monadic::set(m_vk_descriptor_pool))
-            .transform_error(core::monadic::map(core::monadic::narrow<Result>(),
-                                                core::monadic::throwAsException()));
+            .transform(core:.monadic::set(m_vk_descriptor_pool))
+            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
+                                                core:.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////

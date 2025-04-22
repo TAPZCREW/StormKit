@@ -4,7 +4,7 @@
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 import Test;
 
@@ -14,7 +14,7 @@ using namespace stormkit::core;
 
 namespace {
     auto _ = test::TestSuite {
-        "Core.TypeSafe",
+        "Core:typesafe",
         {
           { "Ref.to_refs<std::vector>.all_ref",
               [] static noexcept {

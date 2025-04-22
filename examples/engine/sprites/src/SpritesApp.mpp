@@ -6,7 +6,7 @@ export module SpritesApp;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 import stormkit.Gpu;
 import stormkit.Engine;
 import stormkit.Wsi;

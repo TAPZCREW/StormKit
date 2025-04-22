@@ -4,13 +4,13 @@
 
 module;
 
-#include <stormkit/Core/PlatformMacro.hpp> // can't use headerunit because macros won't be defined before the import
+#include <stormkit/core/platform_macro.hpp> // can't use headerunit because macros won't be defined before the import
 
 module stormkit.Wsi;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 #if defined(STORMKIT_OS_WINDOWS)
 import :Win32.WindowImpl;

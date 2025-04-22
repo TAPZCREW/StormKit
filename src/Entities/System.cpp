@@ -6,13 +6,13 @@ module stormkit.Entities;
 
 import std;
 
-import stormkit.Core;
+import stormkit.core;
 
 namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
     System::System(EntityManager& manager, UInt32 priority, ComponentTypes types)
-        : m_manager { borrow(manager) }, m_priority { priority }, m_types { std::move(types) } {
+        : m_manager { as_ref(manager) }, m_priority { priority }, m_types { std::move(types) } {
     }
 
     /////////////////////////////////////

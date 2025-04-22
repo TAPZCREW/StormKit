@@ -1,0 +1,24 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+export module stormkit.core:hash.map;
+
+import std;
+
+import ankerl.unordered_dense;
+
+export namespace stormkit { inline namespace core {
+    template<class Key,
+             class T,
+             class Hash                 = ankerl::unordered_dense::hash<Key>,
+             class KeyEqual             = std::equal_to<Key>,
+             class AllocatorOrContainer = std::allocator<std::pair<Key, T>>>
+    using HashMap = ankerl::unordered_dense::map<Key, T, Hash, KeyEqual, AllocatorOrContainer>;
+
+    template<class Key,
+             class Hash                 = ankerl::unordered_dense::hash<Key>,
+             class KeyEqual             = std::equal_to<Key>,
+             class AllocatorOrContainer = std::allocator<Key>>
+    using HashSet = ankerl::unordered_dense::set<Key, Hash, KeyEqual, AllocatorOrContainer>;
+}} // namespace stormkit::core
