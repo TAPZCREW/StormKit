@@ -1,7 +1,7 @@
 module;
 
 extern "C" {
-#include "ThreadUtilsImpl.h"
+#include "threadutils_impl.h"
 }
 
 module stormkit.core;
@@ -20,7 +20,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     auto set_thread_name([[maybe_unused]] std::thread&     thread,
-                       [[maybe_unused]] std::string_view name) noexcept -> void {
+                         [[maybe_unused]] std::string_view name) noexcept -> void {
         // auto id = thread.native_handle();
         // details::set_thread_name(id, name);
     }
@@ -28,7 +28,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     auto set_thread_name([[maybe_unused]] std::jthread&    thread,
-                       [[maybe_unused]] std::string_view name) noexcept -> void {
+                         [[maybe_unused]] std::string_view name) noexcept -> void {
         // auto id = thread.native_handle();
         // details::set_thread_name(id, name);
     }
