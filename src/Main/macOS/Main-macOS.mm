@@ -13,8 +13,8 @@ auto main(const int argc, const char **argv) -> int {
     [[NSFileManager defaultManager]
         changeCurrentDirectoryPath:[[NSBundle mainBundle] resourcePath]];
 
-    setupSignalHandler();
-    setCurrentThreadName("MainThread");
+    setup_signal_handler();
+    set_current_thread_name("MainThread");
 
     auto args = std::vector<std::string_view> {};
 
