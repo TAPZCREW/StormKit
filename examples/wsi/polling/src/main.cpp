@@ -9,7 +9,7 @@ import stormkit.Log;
 import stormkit.Wsi;
 
 #include <stormkit/Log/LogMacro.hpp>
-#include <stormkit/Main/MainMacro.hpp>
+#include <stormkit/main/main_macro.hpp>
 
 NAMED_LOGGER(polling_logger, "StormKit.Examples.Log.Polling");
 

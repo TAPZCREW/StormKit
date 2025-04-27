@@ -7,7 +7,7 @@ import stormkit.core;
 
 #include <version>
 
-extern auto userMain(std::span<const std::string_view>) -> int;
+extern auto user_main(std::span<const std::string_view>) -> int;
 
 auto main(int argc, char** argv) -> int {
     stormkit::setup_signal_handler();
@@ -17,5 +17,5 @@ auto main(int argc, char** argv) -> int {
 
     for (auto i : stormkit::range(argc)) args.emplace_back(argv[i]);
 
-    return userMain(args);
+    return user_main(args);
 }

@@ -18,7 +18,7 @@ namespace {
     constexpr auto BUF_SIZE = 1024;
 }
 
-extern auto userMain(std::span<const std::string_view>) -> int;
+extern auto user_main(std::span<const std::string_view>) -> int;
 
 auto __stdcall main(int argc, char** argv) -> int {
     std::locale::global(std::locale { "" });
@@ -39,7 +39,7 @@ auto __stdcall main(int argc, char** argv) -> int {
 
     for (auto&& i : stormkit::range(argc)) args.emplace_back(argv[i]);
 
-    return userMain(args);
+    return user_main(args);
 }
 
 auto __stdcall WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) -> int {
@@ -64,5 +64,5 @@ auto __stdcall WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) -> int {
 
     for (auto&& i : stormkit::range(argc)) args.emplace_back(argv[i]);
 
-    return userMain(args);
+    return user_main(args);
 }

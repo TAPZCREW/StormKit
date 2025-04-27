@@ -1,4 +1,4 @@
-#include "stormkit-Core.hpp"
+#include "stormkit_core.hpp"
 
 import stormkit.core;
 

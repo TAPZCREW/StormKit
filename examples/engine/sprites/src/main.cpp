@@ -12,7 +12,7 @@ import stormkit.Wsi;
 import SpritesApp;
 
 #include <stormkit/core/platform_macro.hpp>
-#include <stormkit/Main/MainMacro.hpp>
+#include <stormkit/main/main_macro.hpp>
 
 ////////////////////////////////////////
 ////////////////////////////////////////
