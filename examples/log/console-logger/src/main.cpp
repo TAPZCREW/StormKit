@@ -7,7 +7,7 @@ import std;
 import stormkit.core;
 import stormkit.Log;
 
-#include <stormkit/Main/MainMacro.hpp>
+#include <stormkit/main/main_macro.hpp>
 
 using namespace stormkit;
 

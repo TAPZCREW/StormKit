@@ -2,8 +2,9 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.Main;
+#ifndef STORMKIT_MAIN_MACRO_HPP
+#define STORMKIT_MAIN_MACRO_HPP
 
-// clang-format off
+#define main user_main
 
-// clang-format on
+#endif

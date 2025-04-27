@@ -9,7 +9,7 @@ import stormkit.Log;
 
 #include <stormkit/core/platform_macro.hpp>
 
-#include <stormkit/Main/MainMacro.hpp>
+#include <stormkit/main/main_macro.hpp>
 
 using namespace stormkit;
 

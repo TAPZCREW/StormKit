@@ -64,7 +64,7 @@ modules = {
         public_deps = { "stormkit-core" },
     },
     main = {
-        modulename = "Main",
+        modulename = "main",
         has_headers = true,
         deps = { "stormkit-core" },
         custom = function()
@@ -475,27 +475,27 @@ for name, module in pairs(modules) do
             end
 
             if is_plat("windows") or is_plat("mingw") then
-                for _, plat in ipairs({ "posix", "linux", "darwin", "macOS", "iOS", "BSD", "Android" }) do
+                for _, plat in ipairs({ "posix", "linux", "darwin", "macos", "ios", "bsd", "android" }) do
                     remove_files(path.join(src_path, plat, "**"))
                     remove_headerfiles(path.join(src_path, plat, "**"))
                 end
             elseif is_plat("macosx") then
-                for _, plat in ipairs({ "linux", "win32", "iOS", "BSD", "Android" }) do
+                for _, plat in ipairs({ "linux", "win32", "ios", "bsd", "android" }) do
                     remove_files(path.join(src_path, plat, "**"))
                     remove_headerfiles(path.join(src_path, plat, "**"))
                 end
             elseif is_plat("ios") then
-                for _, plat in ipairs({ "linux", "macOS", "win32", "BSD", "Android" }) do
+                for _, plat in ipairs({ "linux", "macOS", "win32", "bsd", "android" }) do
                     remove_files(path.join(src_path, plat, "**"))
                     remove_headerfiles(path.join(src_path, plat, "**"))
                 end
             elseif is_plat("android") then
-                for _, plat in ipairs({ "linux", "darwin", "macOS", "iOS", "BSD", "win32" }) do
+                for _, plat in ipairs({ "linux", "darwin", "macos", "ios", "bsd", "win32" }) do
                     remove_files(path.join(src_path, plat, "**"))
                     remove_headerfiles(path.join(src_path, plat, "**"))
                 end
             elseif is_plat("linux") then
-                for _, plat in ipairs({ "win32", "darwin", "macOS", "iOS", "BSD", "Android" }) do
+                for _, plat in ipairs({ "win32", "darwin", "macos", "ios", "bsd", "android" }) do
                     remove_files(path.join(src_path, plat, "**"))
                     remove_headerfiles(path.join(src_path, plat, "**"))
                 end
