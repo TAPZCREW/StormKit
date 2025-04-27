@@ -1,6 +1,4 @@
 set_policy("compatibility.version", "3.0")
---
---
 
 modules = {
     core = {
@@ -273,7 +271,7 @@ option("tests_core", {
 option("sanitizers", { default = false, category = "root menu/build" })
 option("mold", { default = false, category = "root menu/build" })
 option("lto", { default = false, category = "root menu/build" })
-option("ci", { default = false, category = "root menu/build" })
+option("on_ci", { default = false, category = "root menu/build" })
 
 ---------------------------- module options ----------------------------
 option("log", { default = true, category = "root menu/modules" })
@@ -381,7 +379,6 @@ if get_config("sanitizers") then
     set_policy("build.sanitizer.undefined", true)
 end
 
-add_requireconfs("")
 if not is_plat("wasm") then
     add_requireconfs("vulkan-headers", { system = false })
     add_requireconfs("vulkan-memory-allocator")
@@ -389,7 +386,7 @@ if not is_plat("wasm") then
 end
 
 if not is_plat("windows") then
-  add_requireconfs("libktx", { configs = { cxflags = "-Wno-overriding-option" } }) 
+  add_requireconfs("libktx", { configs = { cxflags = "-Wno-overriding-option" } })
 end
 
 add_requireconfs("*", { configs = { modules = true, std_import = true, cpp = "latest" } })
@@ -406,7 +403,7 @@ if not is_plat("windows") then
     add_requires("cpptrace")
 end
 
-if get_config("ci") then
+if get_config("on_ci") then
     add_requireconfs("*", { system = false })
 end
 

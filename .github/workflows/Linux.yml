@@ -81,6 +81,7 @@ jobs:
               pkg-config
               libelf-dev
               libdwarf-dev
+              mold
               llvm${{ env.LLVM_VERSION }}
               llvm${{ env.LLVM_VERSION }}-dev
               llvm${{ env.LLVM_VERSION }}-runtime
@@ -98,35 +99,7 @@ jobs:
               libomp${{ env.LLVM_VERSION }}-dev
               libclc${{ env.LLVM_VERSION }}-dev
               libunwind${{ env.LLVM_VERSION }}-dev
-              libxkbcommon0
-              libxkbcommon-dev
-              libxkbcommon-x11-dev
-              libxkbcommon-x11-0
-              libxkbcommon-x11-dev
-              xutils-dev
-              x11proto-dev
-              libxcb1
-              libxcb1-dev
-              libxcb-randr0
-              libxcb-randr0-dev
-              libxcb-xinput0
-              libxcb-xinput-dev
-              libxcb-xf86dri0
-              libxcb-xf86dri0-dev
-              libxcb-dri3-0
-              libxcb-dri3-dev
-              libxcb-xkb1
-              libxcb-xkb-dev
-              libxcb-xfixes0
-              libxcb-xfixes0-dev
-              libxau6
-              libxau-dev
-              libzstd-dev
               ninja-build
-              libjpeg-turbo8-dev
-              libpng
-              libpng-dev
-              zlib1g-dev
           version: 1.0
 
       - name: Force Install libc++
@@ -139,7 +112,7 @@ jobs:
       - name: Setup XMake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: Arthapz/xmake#branch@xmake3-0-modules
+          xmake-version: Arthapz/xmake#branch@improve-jobgraph-support
           actions-cache-folder: .xmake-cache${{ steps.cache_key.outputs.key }}
 
       - name: Update xmake repository
@@ -161,7 +134,18 @@ jobs:
       - name: Configure & Install dependencies
         id: configure
         run: |
-          xmake f -vD -a ${{ (matrix.arch  == 'x64') && 'x86_64' || (matrix.arch == 'arm64') && 'aarch64' || matrix.arch }} --yes -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} --examples=y --tests=y --gpu=n --engine=n --mold=y ${{ (matrix.compiler == 'LLVM-libc++') && '--toolchain=llvm --sdk="/usr/lib/llvm$LLVM_VERSION/" --runtimes="c++_shared"' || '' }}
+          xmake f -vD -a ${{ (matrix.arch  == 'x64') && 'x86_64' || (matrix.arch == 'arm64') && 'aarch64' || matrix.arch }} \
+           --yes \
+           -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} \
+           --examples=y \
+           --tests=y \
+           --gpu=n \
+           --wsi=n \
+           --engine=n \
+           --mold=y \
+           --on_ci=y \
+           ${{ (matrix.compiler == 'LLVM-libc++') && '--toolchain=llvm --sdk="/usr/lib/llvm$LLVM_VERSION/" --runtimes="c++_shared"' || '' }} \
+           --lto=y
 
       - name: Save cached xmake dependencies
         if: ${{ !steps.restore-depcache.outputs.cache-hit }}
