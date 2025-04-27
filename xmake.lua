@@ -10,12 +10,12 @@ modules = {
         custom = function()
             if is_plat("windows") then add_packages("wil") end
 
-            set_configdir("$(buildir)/.gens/include/")
+            set_configdir("$(builddir)/.gens/include/")
             add_configfiles("include/(stormkit/core/**.hpp.in)")
-            add_headerfiles("$(buildir)/.gens/include/(stormkit/core/**.hpp)")
+            add_headerfiles("$(builddir)/.gens/include/(stormkit/core/**.hpp)")
 
             add_files("modules/stormkit/core.mpp")
-            add_includedirs("$(buildir)/.gens/include", { public = true })
+            add_includedirs("$(builddir)/.gens/include", { public = true })
             add_cxflags("clang::-Wno-language-extension-token")
 
             on_load(function(target)
