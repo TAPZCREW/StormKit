@@ -136,7 +136,8 @@ jobs:
         run: |
           xmake f -vD -a ${{ (matrix.arch  == 'x64') && 'x86_64' || (matrix.arch == 'arm64') && 'aarch64' || matrix.arch }} \
            --yes \
-           -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} -k ${{ matrix.kind }} \
+           -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} \
+           -k ${{ matrix.kind }} \
            --examples=y \
            --tests=y \
            --gpu=n \
@@ -145,7 +146,7 @@ jobs:
            --mold=y \
            --on_ci=y \
            ${{ (matrix.compiler == 'LLVM-libc++') && '--toolchain=llvm --sdk="/usr/lib/llvm$LLVM_VERSION/" --runtimes="c++_shared"' || '' }} \
-           --lto=y
+           --lto=${{ (matrix.mode == 'release') && 'y' || 'n' }}
 
       - name: Save cached xmake dependencies
         if: ${{ !steps.restore-depcache.outputs.cache-hit }}
