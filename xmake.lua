@@ -381,13 +381,11 @@ end
 
 if not is_plat("wasm") then
     add_requireconfs("vulkan-headers", { system = false })
-    add_requireconfs("vulkan-memory-allocator")
+    -- add_requireconfs("vulkan-memory-allocator")
     add_requireconfs("vulkan-memory-allocator-hpp", { system = false, configs = { use_vulkanheaders = true } })
 end
 
-if not is_plat("windows") then
-  add_requireconfs("libktx", { configs = { cxflags = "-Wno-overriding-option" } })
-end
+if not is_plat("windows") then add_requireconfs("libktx", { configs = { cxflags = "-Wno-overriding-option" } }) end
 
 add_requireconfs("*", { configs = { modules = true, std_import = true, cpp = "latest" } })
 
@@ -399,20 +397,21 @@ end
 add_requireconfs("libxkbcommon", { configs = { ["x11"] = true, wayland = true } })
 add_requireconfs("frozen", { system = false })
 
-if not is_plat("windows") then
-    add_requires("cpptrace")
-end
-
-if get_config("on_ci") then
-    add_requireconfs("*", { system = false })
-end
+if not is_plat("windows") then add_requires("cpptrace") end
 
 ---------------------------- targets ----------------------------
 for name, module in pairs(modules) do
     local modulename = module.modulename
 
-    if name == "core" or name == "main" or get_config("" .. name) then
-        add_requires(table.join(module.packages or {}, module.public_packages or {}))
+    if name == "core" or name == "main" or get_config(name) then
+        local packages = table.join(module.packages or {}, module.public_packages or {})
+        add_requires(packages)
+        local _packages = {}
+        for _, package in ipairs(_packages) do
+            table.insert(packages, package:split(" ")[1])
+        end
+        add_requireconfs(_packages, { configs = { modules = true, std_import = true, cpp = "latest" } })
+        if get_config("on_ci") then add_requireconfs(_packages, { system = false }) end
         target("stormkit-" .. name, function()
             set_group("libraries")
 
