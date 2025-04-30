@@ -25,9 +25,12 @@ modules = {
          ]],
                 }, { configs = { languages = "c++23" }, includes = { "stacktrace" } })
 
-                if not has_stacktrace and not target:is_plat("windows") then
+                if not has_stacktrace then
                     print("No std C++23 stacktrace, falling back to cpptrace")
-                    target:add("packages", "cpptrace", "libdwarf")
+                    target:add("packages", "cpptrace")
+                    if not target:is_plat("windows") then
+                        target:add("packages", "libdwarf")
+                    end
                 end
             end)
             on_config(function(target)
@@ -57,7 +60,7 @@ modules = {
         public_deps = { "stormkit-core" },
     },
     image = {
-        packages = { "libktx", "libpng", "libjpeg-turbo" },
+        packages = { "libktx", "libpng", "libjpeg-turbo 3.1.0" },
         modulename = "Image",
         public_deps = { "stormkit-core" },
     },
@@ -222,6 +225,12 @@ add_rules(
 
 if not is_plat("windows") or not is_plat("mingw") then add_rules("mode.valgrind") end
 
+set_fpmodels("fast")
+add_vectorexts("fma")
+add_vectorexts("neon")
+add_vectorexts("avx", "avx2")
+add_vectorexts("sse", "sse2", "sse3", "ssse3", "sse4.2")
+
 ---------------------------- options ----------------------------
 option("examples_engine", {
     default = false,
@@ -293,91 +302,11 @@ set_allowedmodes(allowedmodes)
 set_allowedplats("windows", "mingw", "linux", "macosx", "wasm")
 set_allowedarchs("windows|x64", "mingw|x86_64", "linux|x86_64", "linux|aarch64", "macosx|x86_64", "macosx|arm64")
 
--- set_runtimes(is_mode("debug") and "MDd" or "MD")
-add_cxxflags(
-    "/utf-8",
-    "/bigobj",
-    "/permissive-",
-    "/Zc:wchar_t",
-    "/Zc:__cplusplus",
-    "/Zc:inline",
-    "/Zc:lambda",
-    "/Zc:preprocessor",
-    "/Zc:referenceBinding",
-    "/Zc:strictStrings",
-    { tools = { "cl", "clang_cl" } }
-)
-
-add_cxflags(
-    "/wd4251", -- Disable warning: class needs to have dll-interface to be used by clients of class blah blah blah
-    "/wd4297",
-    "/wd5063",
-    "/wd5260",
-    "/wd5050",
-    "/wd4005",
-    "/wd4611", -- Disable setjmp warning
-    { tools = { "cl", "clang_cl" } }
-)
-
-add_cxflags("-fstrict-aliasing", "-Wstrict-aliasing", { tools = { "clang", "gcc" } })
-add_mxflags("-fstrict-aliasing", "-Wstrict-aliasing", { tools = { "clang", "gcc" } })
-
-add_cxflags(
-    "clang::-Wno-missing-field-initializers",
-    "clang::-Wno-include-angled-in-module-purview",
-    "clang::-Wno-unknown-attributes",
-    "clang::-Wno-deprecated-declarations"
-    -- "gcc::-fopenmp"
-)
-add_mxflags("clang::-Wno-missing-field-initializers")
-
-set_symbols("hidden")
-set_optimize("fastest")
-if is_mode("debug") then
-    set_symbols("debug", "hidden")
-    add_cxflags("-ggdb3", { tools = { "clang", "gcc" } })
-    -- add_cxflags("-D_GLIBCXX_DEBUG", { tools = { "gcc" } })
-    add_mxflags("-ggdb3", { tools = { "clang", "gcc" } })
-elseif is_mode("releasedbg") then
-    set_optimize("fast")
-    set_symbols("debug", "hidden")
-    add_cxflags("-fno-omit-frame-pointer", { tools = { "clang", "gcc" } })
-    add_mxflags("-ggdb3", { tools = { "clang", "gcc" } })
-end
-
-set_fpmodels("fast")
-add_vectorexts("fma")
-add_vectorexts("neon")
-add_vectorexts("avx", "avx2")
-add_vectorexts("sse", "sse2", "sse3", "ssse3", "sse4.2")
-
-set_warnings("all", "pedantic", "extra", "error")
-
-add_cxxflags("clang::-Wno-experimental-header-units")
-add_cxxflags("clang::-fcolor-diagnostics", "gcc::-fdiagnostics-color=always")
-
-if is_plat("windows") then
-    add_defines("_CRT_SECURE_NO_WARNINGS")
-    add_defines("WIN32_LEAN_AND_MEAN")
-    add_defines("__SPECSTRINGS_STRICT_LEVEL=0")
-    add_defines("NOMINMAX")
-    add_cxflags("clang::-fansi-escape-codes")
-end
-
-add_cxxflags("clang::-fexperimental-library", { force = true })
-add_ldflags("clang::-fexperimental-library", { force = true })
-add_shflags("clang::-fexperimental-library", { force = true })
-add_mxxflags("clang::-fexperimental-library", { force = true })
-
 add_defines("MAGIC_ENUM_USE_STD_MODULE")
 add_defines("MAGIC_ENUM_DEFAULT_ENABLE_ENUM_FORMAT=0")
 add_defines("FROZEN_USE_STD_MODULE")
 
 set_policy("build.c++.modules.gcc.cxx11abi", true)
-if get_config("sanitizers") then
-    set_policy("build.sanitizer.address", true)
-    set_policy("build.sanitizer.undefined", true)
-end
 
 if not is_plat("wasm") then
     add_requireconfs("vulkan-headers", { system = false })
@@ -385,7 +314,9 @@ if not is_plat("wasm") then
     add_requireconfs("vulkan-memory-allocator-hpp", { system = false, configs = { use_vulkanheaders = true } })
 end
 
-if not is_plat("windows") then add_requireconfs("libktx", { configs = { cxflags = "-Wno-overriding-option" } }) end
+if get_config("toolchain") == "llvm" then
+    add_requireconfs("libktx", { configs = { cxflags = "-Wno-overriding-option" } })
+end
 
 add_requireconfs("*", { configs = { modules = true, std_import = true, cpp = "latest" } })
 
@@ -397,7 +328,10 @@ end
 add_requireconfs("libxkbcommon", { configs = { ["x11"] = true, wayland = true } })
 add_requireconfs("frozen", { system = false })
 
-if not is_plat("windows") then add_requires("cpptrace") end
+add_requires("cpptrace")
+if not is_plat("windows") then
+    add_requires("libdwarf")
+end
 
 ---------------------------- targets ----------------------------
 for name, module in pairs(modules) do
@@ -425,6 +359,7 @@ for name, module in pairs(modules) do
 
             set_languages("cxxlatest", "clatest")
 
+            add_rules("stormkit.flags")
             add_defines("STORMKIT_BUILD")
             if is_mode("debug") then
                 add_defines("STORMKIT_BUILD_DEBUG")
@@ -531,6 +466,28 @@ for name, module in pairs(modules) do
             end
 
             if module.frameworks then add_frameworks(module.frameworks, { public = is_kind("static") }) end
+            
+            set_fpmodels("fast")
+            add_vectorexts("fma")
+            add_vectorexts("neon")
+            add_vectorexts("avx", "avx2")
+            add_vectorexts("sse", "sse2", "sse3", "ssse3", "sse4.2")
+
+            set_symbols("hidden")
+            if is_mode("release") then
+                set_optimize("fastest")
+            elseif is_mode("debug") then
+                set_symbols("debug", "hidden")
+                add_cxflags("-ggdb3", { tools = { "clang", "gcc" } })
+                add_mxflags("-ggdb3", { tools = { "clang", "gcc" } })
+            elseif is_mode("releasedbg") then
+                set_optimize("fast")
+                set_symbols("debug", "hidden")
+                add_cxflags("-fno-omit-frame-pointer", { tools = { "clang", "gcc" } })
+                add_mxflags("-ggdb3", { tools = { "clang", "gcc" } })
+            end
+            
+            add_options("sanitizers")
         end)
     end
 end

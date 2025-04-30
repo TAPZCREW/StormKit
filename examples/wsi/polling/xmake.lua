@@ -2,6 +2,10 @@ target("polling")
 do
 	set_kind("binary")
 	set_languages("cxxlatest", "clatest")
+
+  add_rules("stormkit.flags")
+  add_rules("windows.subsystem.windows")
+
 	add_deps("stormkit-core", "stormkit-main", "stormkit-log", "stormkit-wsi")
 
 	if is_mode("debug") then
@@ -15,7 +19,6 @@ do
 	add_files("src/main.cpp")
 	if is_plat("windows") then
 		add_files("win32/*.manifest")
-    add_ldflags("-Wl,/SUBSYSTEM:WINDOWS", {force = true})
 	end
 
 	if has_config("mold") then

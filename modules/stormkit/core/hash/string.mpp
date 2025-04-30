@@ -19,7 +19,11 @@ export namespace stormkit { inline namespace core {
         using is_transparent = void;
         using is_avalanching = void;
 
+#ifdef STORMKIT_COMPILER_MSVC
+        [[nodiscard]] auto operator()(std::string_view value, UInt32 seed = 0) const noexcept -> UInt64;
+#else
         [[nodiscard]] static auto operator()(std::string_view value, UInt32 seed = 0) noexcept -> UInt64;
+#endif
     };
 
     template<class Value, class Key = std::string>
@@ -80,7 +84,7 @@ namespace stormkit { inline namespace core {
                 // Pierre L’Ecuyer. 1999. Tables of linear congruential generators of different sizes and good lattice structure. Mathematics of Computation of the American Mathematical Society 68, 225 (1999), 249–260.
                 // https://www.ams.org/journals/mcom/1999-68-225/S0025-5718-99-00996-5/S0025-5718-99-00996-5.pdf
                 seed128 *= 4292484099903637661;
-                return seed128 >> 64;
+                return static_cast<UInt32>(seed128 >> 64);
             }
 
             UInt32 m_hash;
@@ -95,7 +99,11 @@ namespace stormkit { inline namespace core {
 
             if ((mask & (3 << 0)) == (3 << 0)) {
                 auto w  = UInt16{0};
-                if consteval {
+#ifdef STORMKIT_COMPILER_MSVC
+        if constexpr (std::is_constant_evaluated()) {
+#else
+        if consteval {
+#endif
                     w = s[0] | (s[1] << 8);
                 } else {
                     // FIXME(strager): This is endian-dependent, but it makes GCC
@@ -117,7 +125,11 @@ namespace stormkit { inline namespace core {
 
             if ((mask & (3 << 2)) == (3 << 2)) {
                 auto w  = UInt16{0};
-                if consteval {
+#ifdef STORMKIT_COMPILER_MSVC
+        if constexpr (std::is_constant_evaluated()) {
+#else
+        if consteval {
+#endif
                     w = s[size-2] | (s[size-1] << 8);
                 } else {
                     // FIXME(strager): This is endian-dependent, but it makes GCC
@@ -164,9 +176,13 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
+#ifdef STORMKIT_COMPILER_MSVC
+    auto StringHash::operator()(std::string_view value, UInt32 seed) const noexcept
+#else
     auto StringHash::operator()(std::string_view value, UInt32 seed) noexcept
+#endif
         -> UInt64 {
-        auto mask = 0b01111;
+        auto mask = UInt8{0b01111};
         auto hasher = Lehmer128Hasher{seed};
         hashSelectedCharacters(mask, hasher, std::data(value), std::size(value));
         return hasher.hash();

@@ -159,7 +159,7 @@ namespace std {
         -> decltype(ctx.out()) {
         auto&& out = ctx.out();
 
-        const auto attributes = [&stylized] noexcept {
+        const auto attributes = [&stylized]() noexcept {
             auto out = std::string {};
             out.reserve(14);
             if (stylized.fg) out += std::string_view { ecma48::FOREGROUND.at(*stylized.fg) };
