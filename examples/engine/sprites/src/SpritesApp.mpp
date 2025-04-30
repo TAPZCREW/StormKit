@@ -48,7 +48,7 @@ auto SpritesApp::run(std::span<const std::string_view> _) -> Int {
     auto& renderer      = m_application->renderer();
     auto& world         = m_application->world();
 
-    auto& render_system = world.addSystem<engine::SpriteRenderSystem>(renderer, window.extent());
+    auto& render_system = world.add_system<engine::SpriteRenderSystem>(renderer, window.extent());
     m_application->setUpdateFrameGraphCallback(
         bindFront(&engine::SpriteRenderSystem::updateFrameGraph, &render_system));
 

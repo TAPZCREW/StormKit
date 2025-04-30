@@ -98,19 +98,19 @@ auto UpdateBoardSystem::update(stormkit::Secondf delta) -> void {
         const auto alive
             = cell.adjacent_alive_cells == 3 || (cell.alive && cell.adjacent_alive_cells == 2);
 
-        if (alive && !m_manager->hasEntity(cell.e)) {
-            auto  e        = m_manager->makeEntity();
-            auto& position = m_manager->addComponent<PositionComponent>(e);
+        if (alive && !m_manager->has_entity(cell.e)) {
+            auto  e        = m_manager->make_entity();
+            auto& position = m_manager->add_component<PositionComponent>(e);
             position.x     = cell.x;
             position.y     = cell.y;
-        } else if (!alive && m_manager->hasEntity(cell.e))
-            m_manager->destroyEntity(cell.e);
+        } else if (!alive && m_manager->has_entity(cell.e))
+            m_manager->destroy_entity(cell.e);
     }
     /*
         for (const auto &cell : cell_status) {
             if (m_entities.contains(cell.e)) {
                 if (!cell.alive) {
-                    m_manager->destroyEntity(cell.e);
+                    m_manager->destroy_entity(cell.e);
 
                     const auto x = cell.x;
                     const auto y = cell.y;
@@ -135,15 +135,15 @@ auto UpdateBoardSystem::update(stormkit::Secondf delta) -> void {
             if (cell.adjacent_alive_cells == 3) {
                 cell.alive = true;
 
-                auto e         = m_manager->makeEntity();
-                auto &position = m_manager->addComponent<PositionComponent>(e);
+                auto e         = m_manager->make_entity();
+                auto &position = m_manager->add_component<PositionComponent>(e);
                 position.x     = cell.x;
                 position.y     = cell.y;
             }
         }*/
 }
 
-auto UpdateBoardSystem::postUpdate() -> void {
+auto UpdateBoardSystem::post_update() -> void {
     using namespace stormkit::literals;
     if (m_updated) {
         m_updated          = false;

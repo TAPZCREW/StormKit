@@ -2,7 +2,7 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-module stormkit.Entities;
+module stormkit.entities;
 
 import std;
 
@@ -27,7 +27,7 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto EntityManager::makeEntity() -> Entity {
+    auto EntityManager::make_entity() -> Entity {
         const auto entity = [this]() {
             if (std::empty(m_free_entities)) return m_next_valid_entity++;
             else {
@@ -47,10 +47,10 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto EntityManager::destroyEntity(Entity entity) -> void {
+    auto EntityManager::destroy_entity(Entity entity) -> void {
         expects(entity != INVALID_ENTITY);
 
-        if (hasEntity(entity)) {
+        if (has_entity(entity)) {
             m_removed_entities.emplace(entity);
             m_message_bus.push(Message { REMOVED_ENTITY_MESSAGE_ID, { entity } });
         }
@@ -58,7 +58,7 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto EntityManager::destroyAllEntities() -> void {
+    auto EntityManager::destroy_all_entities() -> void {
         for (auto&& e : entities()) {
             m_removed_entities.emplace(e);
             m_message_bus.push(Message { REMOVED_ENTITY_MESSAGE_ID, { e } });
@@ -67,7 +67,7 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto EntityManager::hasEntity(Entity entity) const -> bool {
+    auto EntityManager::has_entity(Entity entity) const -> bool {
         expects(entity != INVALID_ENTITY);
 
         return std::ranges::any_of(entities(), monadic::is(entity))
@@ -76,7 +76,7 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto EntityManager::hasComponent(Entity entity, Component::Type type) const -> bool {
+    auto EntityManager::has_component(Entity entity, Component::Type type) const -> bool {
         expects(entity != INVALID_ENTITY and type != Component::INVALID_TYPE);
 
         return std::ranges::any_of(m_registered_components_for_entities.at(entity),
@@ -94,13 +94,13 @@ namespace stormkit::entities {
             ensures(it != std::ranges::cend(m_registered_components_for_entities));
 
             for (auto&& key : it->second | std::views::transform([entity](auto&& type) {
-                                  return componentKeyFor(entity, type);
+                                  return component_key_for(entity, type);
                               }))
                 m_components.erase(key);
 
             m_entities.erase(entity);
 
-            removeFromSystems(entity);
+            remove_from_systems(entity);
 
             if (not std::ranges::any_of(m_added_entities, monadic::is(entity)))
                 m_free_entities.push(entity);
@@ -113,54 +113,54 @@ namespace stormkit::entities {
         m_added_entities.clear();
 
         std::ranges::for_each(m_updated_entities,
-                              [this](auto&& entity) { purposeToSystems(entity); });
+                              [this](auto&& entity) { purpose_to_systems(entity); });
         m_updated_entities.clear();
 
         while (!m_message_bus.empty()) {
-            for (auto& system : m_systems) system->onMessageReceived(m_message_bus.top());
+            for (auto& system : m_systems) system->on_message_received(m_message_bus.top());
             m_message_bus.pop();
         }
 
-        for (auto& system : m_systems) system->preUpdate();
+        for (auto& system : m_systems) system->pre_update();
         for (auto& system : m_systems) system->update(delta);
-        for (auto& system : m_systems) system->postUpdate();
+        for (auto& system : m_systems) system->post_update();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto EntityManager::purposeToSystems(Entity e) -> void {
+    auto EntityManager::purpose_to_systems(Entity e) -> void {
         expects(e != INVALID_ENTITY);
 
         const auto reliable_system_filter = [e, this](auto&& system) {
-            for (auto component_type : system->componentsUsed())
-                if (not hasComponent(e, component_type)) return false;
+            for (auto component_type : system->components_used())
+                if (not has_component(e, component_type)) return false;
 
             return true;
         };
 
         std::ranges::for_each(systems() | std::views::filter(reliable_system_filter),
-                              [e](auto&& system) { system->addEntity(e); });
+                              [e](auto&& system) { system->add_entity(e); });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto EntityManager::removeFromSystems(Entity e) -> void {
+    auto EntityManager::remove_from_systems(Entity e) -> void {
         expects(e != INVALID_ENTITY);
 
-        for (auto& s : m_systems) { s->removeEntity(e); }
+        for (auto& s : m_systems) { s->remove_entity(e); }
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto EntityManager::getNeededEntities(System& system) -> void {
+    auto EntityManager::get_needed_entities(System& system) -> void {
         const auto reliable_entity_filter = [&system, this](auto&& entity) {
-            for (auto component_type : system.componentsUsed())
-                if (not hasComponent(entity, component_type)) return false;
+            for (auto component_type : system.components_used())
+                if (not has_component(entity, component_type)) return false;
 
             return true;
         };
 
         std::ranges::for_each(entities() | std::views::filter(reliable_entity_filter),
-                              [&system](auto&& e) { system.addEntity(e); });
+                              [&system](auto&& e) { system.add_entity(e); });
     }
 } // namespace stormkit::entities

@@ -8,7 +8,7 @@ import std;
 import stormkit.core;
 import stormkit.Image;
 import stormkit.Wsi;
-import stormkit.Entities;
+import stormkit.entities;
 
 import Renderer;
 

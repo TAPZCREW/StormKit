@@ -7,6 +7,6 @@ export module stormkit;
 export import stormkit.core;
 export import stormkit.Main;
 export import stormkit.log;
-export import stormkit.Entities;
+export import stormkit.entities;
 export import stormkit.Gpu;
 export import stormkit.Engine;

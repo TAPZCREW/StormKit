@@ -2,7 +2,7 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-module stormkit.Entities;
+module stormkit.entities;
 
 import std;
 
@@ -29,17 +29,17 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto System::preUpdate() -> void {
+    auto System::pre_update() -> void {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto System::postUpdate() -> void {
+    auto System::post_update() -> void {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto System::addEntity(Entity e) -> void {
+    auto System::add_entity(Entity e) -> void {
         expects(e != INVALID_ENTITY);
 
         m_entities.insert(e);
@@ -47,7 +47,7 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto System::removeEntity(Entity e) -> void {
+    auto System::remove_entity(Entity e) -> void {
         expects(e != INVALID_ENTITY);
 
         m_entities.erase(e);

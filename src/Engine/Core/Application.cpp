@@ -10,7 +10,7 @@ import :Core;
 
 import stormkit.core;
 import stormkit.Wsi;
-import stormkit.Entities;
+import stormkit.entities;
 
 namespace stormkit::engine {
     Application::Application(std::string_view     application_name,
