@@ -7,7 +7,7 @@ import std;
 
 import stormkit.core;
 import stormkit.Image;
-import stormkit.Entities;
+import stormkit.entities;
 
 import Constants;
 import Renderer;
@@ -35,7 +35,7 @@ export {
         auto operator=(UpdateBoardSystem&&) noexcept -> UpdateBoardSystem&;
 
         auto update(stormkit::Secondf delta) -> void override;
-        auto postUpdate() -> void override;
+        auto post_update() -> void override;
 
         auto setEditModeEnabled(bool enabled) noexcept { m_is_on_edit_mode = enabled; }
 
@@ -44,7 +44,7 @@ export {
       private:
         using Clock = std::chrono::high_resolution_clock;
 
-        auto onMessageReceived(const stormkit::entities::Message& message) -> void override {};
+        auto on_message_received(const stormkit::entities::Message& message) -> void override {};
 
         bool                    m_is_on_edit_mode = true;
         stormkit::image::Image* m_board           = nullptr;

@@ -56,7 +56,7 @@ modules = {
         has_headers = true,
     },
     entities = {
-        modulename = "Entities",
+        modulename = "entities",
         public_deps = { "stormkit-core" },
     },
     image = {

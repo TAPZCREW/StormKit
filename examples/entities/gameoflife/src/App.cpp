@@ -53,7 +53,7 @@ auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char** arg
         handleMouse(event_data);
     });
 
-    m_update_system = &m_entities.addSystem<UpdateBoardSystem>(m_board, *m_renderer);
+    m_update_system = &m_entities.add_system<UpdateBoardSystem>(m_board, *m_renderer);
 
     for (auto i : range(m_board.extent().width * m_board.extent().height)) {
         auto pixel = m_board.pixel(i);
@@ -117,7 +117,7 @@ auto App::handleKeyboard(const stormkit::wsi::KeyReleasedEventData& event) -> vo
                 pixel[3]   = 255_b;
             }
 
-            m_entities.destroyAllEntities();
+            m_entities.destroy_all_entities();
             break;
         case wsi::Key::Space:
             m_is_on_edit_mode = !m_is_on_edit_mode;
@@ -140,21 +140,21 @@ auto App::handleMouse(const stormkit::wsi::MouseButtonPushedEventData& event) ->
     const auto x = glm::floor(as<float>(event.position.x) / cell_width);
     const auto y = glm::floor(as<float>(event.position.y) / cell_height);
 
-    const auto cells = m_entities.entitiesWithComponent<PositionComponent>();
+    const auto cells = m_entities.entities_with_component<PositionComponent>();
     const auto it    = std::ranges::find_if(cells, [&](const auto e) {
         const auto& position = m_entities.getComponent<PositionComponent>(e);
 
         return position.x == x && position.y == y;
     });
 
-    if (it != std::ranges::cend(cells)) m_entities.destroyEntity(*it);
+    if (it != std::ranges::cend(cells)) m_entities.destroy_entity(*it);
     else
         createCell(x, y);
 }
 
 auto App::createCell(stormkit::UInt32 x, stormkit::UInt32 y) -> void {
-    auto  e        = m_entities.makeEntity();
-    auto& position = m_entities.addComponent<PositionComponent>(e);
+    auto  e        = m_entities.make_entity();
+    auto& position = m_entities.add_component<PositionComponent>(e);
 
     position.x = x;
     position.y = y;

@@ -11,7 +11,7 @@ export module stormkit.Engine:ECS.SpriteRenderSystem;
 import std;
 
 import stormkit.core;
-import stormkit.Entities;
+import stormkit.entities;
 import stormkit.Gpu;
 
 import :Renderer;
@@ -52,7 +52,7 @@ export namespace stormkit::engine {
         auto updateFrameGraph(FrameGraphBuilder& graph) noexcept -> void;
 
       private:
-        auto onMessageReceived(const entities::Message& message) -> void final;
+        auto on_message_received(const entities::Message& message) -> void final;
 
         SpriteRenderer m_renderer;
 
@@ -70,9 +70,9 @@ namespace stormkit::engine {
     STORMKIT_INLINE auto makeSprite(entities::EntityManager& world,
                                     const gpu::ImageView&    texture,
                                     const math::Vector2F&    size) noexcept -> entities::Entity {
-        const auto e = world.makeEntity();
+        const auto e = world.make_entity();
 
-        auto& sprite_component          = world.addComponent<SpriteComponent>(e);
+        auto& sprite_component          = world.add_component<SpriteComponent>(e);
         sprite_component.sprite.texture = as_ref(texture);
         for (auto&& vertex : sprite_component.sprite.vertices) {
             vertex.position.x *= size.x;
@@ -118,11 +118,11 @@ namespace stormkit::engine {
 
     //////////////////////////////////////
     //////////////////////////////////////
-    STORMKIT_INLINE auto SpriteRenderSystem::onMessageReceived(const entities::Message& message)
+    STORMKIT_INLINE auto SpriteRenderSystem::on_message_received(const entities::Message& message)
         -> void {
         if (message.id == entities::EntityManager::ADDED_ENTITY_MESSAGE_ID) {
             for (auto&& e : message.entities) {
-                if (not m_manager->hasComponent<SpriteComponent>(e)) continue;
+                if (not m_manager->has_component<SpriteComponent>(e)) continue;
 
                 const auto& sprite_component = m_manager->getComponent<SpriteComponent>(e);
                 const auto  id               = m_renderer.addSprite(sprite_component.sprite);
@@ -130,7 +130,7 @@ namespace stormkit::engine {
             }
         } else if (message.id == entities::EntityManager::REMOVED_ENTITY_MESSAGE_ID) {
             for (auto&& e : message.entities) {
-                if (not m_manager->hasComponent<SpriteComponent>(e)) continue;
+                if (not m_manager->has_component<SpriteComponent>(e)) continue;
 
                 const auto id = m_sprite_map[e];
                 m_renderer.removeSprite(id);
