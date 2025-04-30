@@ -7,7 +7,7 @@ module stormkit.Gpu;
 import std;
 
 import stormkit.core;
-import stormkit.Image;
+import stormkit.image;
 
 import :Core;
 import stormkit.Gpu.Vulkan;
@@ -25,34 +25,34 @@ namespace stormkit::gpu {
 
     constexpr auto toPixelFormat(image::Image::Format format) noexcept {
         switch (format) {
-            case image::Image::Format::R8_SNorm: return PixelFormat::R8_SNorm;
-            case image::Image::Format::R8_UNorm: return PixelFormat::R8_UNorm;
-            case image::Image::Format::RG8_SNorm: return PixelFormat::RG8_SNorm;
-            case image::Image::Format::RG8_UNorm: return PixelFormat::RG8_UNorm;
+            case image::Image::Format::R8_SNORM: return PixelFormat::R8_SNORM;
+            case image::Image::Format::R8_UNORM: return PixelFormat::R8_UNORM;
+            case image::Image::Format::RG8_SNORM: return PixelFormat::RG8_SNORM;
+            case image::Image::Format::RG8_UNORM: return PixelFormat::RG8_UNORM;
             case image::Image::Format::R8I: return PixelFormat::R8I;
             case image::Image::Format::R8U: return PixelFormat::R8U;
             case image::Image::Format::RG8I: return PixelFormat::RG8I;
             case image::Image::Format::RG8U: return PixelFormat::RG8U;
-            case image::Image::Format::RGB8_SNorm: return PixelFormat::RGB8_SNorm;
-            case image::Image::Format::RGB8_UNorm: return PixelFormat::RGB8_UNorm;
-            case image::Image::Format::BGR8_UNorm: return PixelFormat::BGR8_UNorm;
+            case image::Image::Format::RGB8_SNORM: return PixelFormat::RGB8_SNORM;
+            case image::Image::Format::RGB8_UNORM: return PixelFormat::RGB8_UNORM;
+            case image::Image::Format::BGR8_UNORM: return PixelFormat::BGR8_UNORM;
             case image::Image::Format::RGB8I: return PixelFormat::RGB8I;
             case image::Image::Format::RGB8U: return PixelFormat::RGB8U;
-            case image::Image::Format::RGBA8_SNorm: return PixelFormat::RGBA8_SNorm;
-            case image::Image::Format::RGBA8_UNorm: return PixelFormat::RGBA8_UNorm;
-            case image::Image::Format::RGBA16_SNorm: return PixelFormat::RGBA16_SNorm;
-            case image::Image::Format::BGRA8_UNorm: return PixelFormat::BGRA8_UNorm;
-            case image::Image::Format::sRGB8: return PixelFormat::sRGB8;
-            case image::Image::Format::sBGR8: return PixelFormat::sBGR8;
-            case image::Image::Format::sRGBA8: return PixelFormat::sRGBA8;
-            case image::Image::Format::sBGRA8: return PixelFormat::sBGRA8;
+            case image::Image::Format::RGBA8_SNORM: return PixelFormat::RGBA8_SNORM;
+            case image::Image::Format::RGBA8_UNORM: return PixelFormat::RGBA8_UNORM;
+            case image::Image::Format::RGBA16_SNORM: return PixelFormat::RGBA16_SNORM;
+            case image::Image::Format::BGRA8_UNORM: return PixelFormat::BGRA8_UNORM;
+            case image::Image::Format::SRGB8: return PixelFormat::SRGB8;
+            case image::Image::Format::SBGR8: return PixelFormat::SBGR8;
+            case image::Image::Format::SRGBA8: return PixelFormat::SRGBA8;
+            case image::Image::Format::SBGRA8: return PixelFormat::SBGRA8;
 
-            case image::Image::Format::R16_SNorm: return PixelFormat::R16_SNorm;
-            case image::Image::Format::R16_UNorm: return PixelFormat::R16_UNorm;
+            case image::Image::Format::R16_SNORM: return PixelFormat::R16_SNORM;
+            case image::Image::Format::R16_UNORM: return PixelFormat::R16_UNORM;
             case image::Image::Format::R16I: return PixelFormat::R16I;
             case image::Image::Format::R16U: return PixelFormat::R16U;
-            case image::Image::Format::RG16_SNorm: return PixelFormat::RG16_SNorm;
-            case image::Image::Format::RG16_UNorm: return PixelFormat::RG16_UNorm;
+            case image::Image::Format::RG16_SNORM: return PixelFormat::RG16_SNORM;
+            case image::Image::Format::RG16_UNORM: return PixelFormat::RG16_UNORM;
             case image::Image::Format::RG16I: return PixelFormat::RG16I;
             case image::Image::Format::RG16U: return PixelFormat::RG16U;
             case image::Image::Format::RG16F: return PixelFormat::RG16F;
@@ -70,7 +70,7 @@ namespace stormkit::gpu {
             case image::Image::Format::RG32I: return PixelFormat::RG32I;
             case image::Image::Format::RG32U: return PixelFormat::RG32U;
             case image::Image::Format::RG32F: return PixelFormat::RG32F;
-            case image::Image::Format::RGB16_SNorm: return PixelFormat::RGB16_SNorm;
+            case image::Image::Format::RGB16_SNORM: return PixelFormat::RGB16_SNORM;
             case image::Image::Format::RGB32I: return PixelFormat::RGB32I;
             case image::Image::Format::RGB32U: return PixelFormat::RGB32U;
             case image::Image::Format::RGB32F: return PixelFormat::RGB32F;
@@ -80,10 +80,10 @@ namespace stormkit::gpu {
             case image::Image::Format::RGBA32U: return PixelFormat::RGBA32U;
             case image::Image::Format::RGBA32F: return PixelFormat::RGBA32F;
 
-            default: return PixelFormat::Undefined;
+            default: return PixelFormat::UNDEFINED;
         }
 
-        return PixelFormat::Undefined;
+        return PixelFormat::UNDEFINED;
     }
 
 } // namespace stormkit::gpu

@@ -6,7 +6,7 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-export module stormkit.Image;
+export module stormkit.image;
 
 import std;
 
@@ -16,25 +16,25 @@ export namespace stormkit::image {
     class STORMKIT_API Image {
       public:
         enum class Format : UInt8 {
-            R8_SNorm     = 0,
-            RG8_SNorm    = 1,
-            RGB8_SNorm   = 2,
-            RGBA8_SNorm  = 3,
-            R8_UNorm     = 4,
-            RG8_UNorm    = 5,
-            RGB8_UNorm   = 6,
-            RGBA8_UNorm  = 7,
-            R16_SNorm    = 8,
-            RG16_SNorm   = 9,
-            RGB16_SNorm  = 10,
-            RGBA16_SNorm = 11,
-            R16_UNorm    = 12,
-            RG16_UNorm   = 13,
-            RGB16_UNorm  = 14,
-            RGBA16_UNorm = 15,
-            RGBA4_UNorm  = 17,
-            BGR8_UNorm   = 20,
-            BGRA8_UNorm  = 21,
+            R8_SNORM     = 0,
+            RG8_SNORM    = 1,
+            RGB8_SNORM   = 2,
+            RGBA8_SNORM  = 3,
+            R8_UNORM     = 4,
+            RG8_UNORM    = 5,
+            RGB8_UNORM   = 6,
+            RGBA8_UNORM  = 7,
+            R16_SNORM    = 8,
+            RG16_SNORM   = 9,
+            RGB16_SNORM  = 10,
+            RGBA16_SNORM = 11,
+            R16_UNORM    = 12,
+            RG16_UNORM   = 13,
+            RGB16_UNORM  = 14,
+            RGBA16_UNORM = 15,
+            RGBA4_UNORM  = 17,
+            BGR8_UNORM   = 20,
+            BGRA8_UNORM  = 21,
             R8I          = 22,
             RG8I         = 23,
             RGB8I        = 24,
@@ -67,15 +67,15 @@ export namespace stormkit::image {
             RG32F        = 52,
             RGB32F       = 53,
             RGBA32F      = 54,
-            sRGB8        = 56,
-            sRGBA8       = 57,
-            sBGR8        = 58,
-            sBGRA8       = 59,
-            Undefined    = 254
+            SRGB8        = 56,
+            SRGBA8       = 57,
+            SBGR8        = 58,
+            SBGRA8       = 59,
+            UNDEFINED    = 254
         };
 
         enum class Codec : UInt8 {
-            Autodetect = 0,
+            AUTODETECT = 0,
             JPEG       = 1,
             PNG        = 2,
             TARGA      = 3,
@@ -83,21 +83,21 @@ export namespace stormkit::image {
             HDR        = 5,
             KTX        = 6,
             QOI        = 7,
-            Unknown    = 255
+            UNKNOWN    = 255
         };
 
         enum class CodecArgs : UInt8 {
-            Binary = 0,
-            Ascii  = 1
+            BINARY = 0,
+            ASCII  = 1
         };
 
         struct Error {
             enum class Reason {
-                Not_Implemented,
-                Failed_To_Parse,
-                Failed_To_Save,
-                File_Not_Found,
-                Invalid_Format
+                NOT_IMPLEMENTED,
+                FAILED_TO_PARSE,
+                FAILED_TO_SAVE,
+                FILE_NOT_FOUND,
+                INVALID_FORMAT
             } reason;
 
             std::string str_error;
@@ -110,7 +110,7 @@ export namespace stormkit::image {
             UInt32        layers            = 1u;
             UInt32        faces             = 1u;
             UInt32        mip_levels        = 1u;
-            Format        format            = Format::Undefined;
+            Format        format            = Format::UNDEFINED;
 
             std::vector<Byte> data = {};
         };
@@ -118,8 +118,8 @@ export namespace stormkit::image {
         Image() noexcept;
         explicit Image(ImageData&& data) noexcept;
         Image(const math::ExtentU& extent, Format format) noexcept;
-        Image(const std::filesystem::path& filepath, Codec codec = Codec::Autodetect) noexcept;
-        Image(std::span<const Byte> data, Codec codec = Codec::Autodetect) noexcept;
+        Image(const std::filesystem::path& filepath, Codec codec = Codec::AUTODETECT) noexcept;
+        Image(std::span<const Byte> data, Codec codec = Codec::AUTODETECT) noexcept;
         ~Image() noexcept;
 
         Image(const Image& rhs) noexcept;
@@ -129,39 +129,39 @@ export namespace stormkit::image {
         auto operator=(Image&& rhs) noexcept -> Image&;
 
         [[nodiscard]]
-        auto loadFromFile(std::filesystem::path filepath, Codec codec = Codec::Autodetect) noexcept
+        auto load_from_file(std::filesystem::path filepath,
+                            Codec codec = Codec::AUTODETECT) noexcept -> std::expected<void, Error>;
+        [[nodiscard]]
+        auto load_from_memory(std::span<const Byte> data, Codec codec = Codec::AUTODETECT) noexcept
             -> std::expected<void, Error>;
         [[nodiscard]]
-        auto loadFromMemory(std::span<const Byte> data, Codec codec = Codec::Autodetect) noexcept
-            -> std::expected<void, Error>;
-        [[nodiscard]]
-        auto saveToFile(std::filesystem::path filename,
-                        Codec                 codec,
-                        CodecArgs             args = CodecArgs::Binary) const noexcept
+        auto save_to_file(std::filesystem::path filename,
+                          Codec                 codec,
+                          CodecArgs             args = CodecArgs::BINARY) const noexcept
             -> std::expected<void, Error>;
 
         [[nodiscard]]
-        auto saveToMemory(Codec codec, CodecArgs args = CodecArgs::Binary) const noexcept
+        auto save_to_memory(Codec codec, CodecArgs args = CodecArgs::BINARY) const noexcept
             -> std::expected<std::vector<Byte>, Error>;
 
         auto create(math::ExtentU extent, Format format) noexcept -> void;
 
         [[nodiscard]]
-        auto toFormat(Format format) const noexcept -> Image;
+        auto convert_to(Format format) const noexcept -> Image;
         [[nodiscard]]
         auto scale(const math::ExtentU& scale_to) const noexcept -> Image;
         [[nodiscard]]
-        auto flipX() const noexcept -> Image;
+        auto flip_x() const noexcept -> Image;
         [[nodiscard]]
-        auto flipY() const noexcept -> Image;
+        auto flip_y() const noexcept -> Image;
         [[nodiscard]]
-        auto flipZ() const noexcept -> Image;
+        auto flip_z() const noexcept -> Image;
         [[nodiscard]]
-        auto rotate90() const noexcept -> Image;
+        auto rotate_90() const noexcept -> Image;
         [[nodiscard]]
-        auto rotate180() const noexcept -> Image;
+        auto rotate_180() const noexcept -> Image;
         [[nodiscard]]
-        auto rotate270() const noexcept -> Image;
+        auto rotate_270() const noexcept -> Image;
 
         [[nodiscard]]
         auto pixel(RangeExtent id, UInt32 layer = 0u, UInt32 face = 0u, UInt32 level = 0u) noexcept
@@ -250,13 +250,13 @@ export namespace stormkit::image {
         auto cend(UInt32 layer, UInt32 face, UInt32 level) const noexcept;
 
         [[nodiscard]]
-        auto imageData() const noexcept -> const ImageData&;
+        auto image_data() const noexcept -> const ImageData&;
 
       private:
         ImageData m_data;
     };
 
-    constexpr auto getChannelCountFor(Image::Format format) noexcept -> UInt8;
+    constexpr auto get_format_channel_count(Image::Format format) noexcept -> UInt8;
     constexpr auto getSizeof(Image::Format format) noexcept -> UInt8;
 } // namespace stormkit::image
 
@@ -557,18 +557,18 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto Image::imageData() const noexcept -> const ImageData& {
+    inline auto Image::image_data() const noexcept -> const ImageData& {
         return m_data;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    constexpr auto getChannelCountFor(Image::Format format) noexcept -> UInt8 {
+    constexpr auto get_format_channel_count(Image::Format format) noexcept -> UInt8 {
         switch (format) {
-            case Image::Format::R8_SNorm:
-            case Image::Format::R8_UNorm:
-            case Image::Format::R16_SNorm:
-            case Image::Format::R16_UNorm:
+            case Image::Format::R8_SNORM:
+            case Image::Format::R8_UNORM:
+            case Image::Format::R16_SNORM:
+            case Image::Format::R16_UNORM:
             case Image::Format::R8I:
             case Image::Format::R8U:
             case Image::Format::R16I:
@@ -578,10 +578,10 @@ namespace stormkit::image {
             case Image::Format::R16F:
             case Image::Format::R32F: return 1;
 
-            case Image::Format::RG8_SNorm:
-            case Image::Format::RG8_UNorm:
-            case Image::Format::RG16_SNorm:
-            case Image::Format::RG16_UNorm:
+            case Image::Format::RG8_SNORM:
+            case Image::Format::RG8_UNORM:
+            case Image::Format::RG16_SNORM:
+            case Image::Format::RG16_UNORM:
             case Image::Format::RG8I:
             case Image::Format::RG8U:
             case Image::Format::RG16I:
@@ -591,11 +591,11 @@ namespace stormkit::image {
             case Image::Format::RG16F:
             case Image::Format::RG32F: return 2;
 
-            case Image::Format::RGB8_SNorm:
-            case Image::Format::RGB8_UNorm:
-            case Image::Format::RGB16_SNorm:
-            case Image::Format::RGB16_UNorm:
-            case Image::Format::BGR8_UNorm:
+            case Image::Format::RGB8_SNORM:
+            case Image::Format::RGB8_UNORM:
+            case Image::Format::RGB16_SNORM:
+            case Image::Format::RGB16_UNORM:
+            case Image::Format::BGR8_UNORM:
             case Image::Format::RGB8I:
             case Image::Format::RGB8U:
             case Image::Format::RGB16I:
@@ -604,14 +604,14 @@ namespace stormkit::image {
             case Image::Format::RGB32U:
             case Image::Format::RGB16F:
             case Image::Format::RGB32F:
-            case Image::Format::sRGB8:
-            case Image::Format::sBGR8: return 3;
+            case Image::Format::SRGB8:
+            case Image::Format::SBGR8: return 3;
 
-            case Image::Format::RGBA8_SNorm:
-            case Image::Format::RGBA8_UNorm:
-            case Image::Format::RGBA16_SNorm:
-            case Image::Format::RGBA16_UNorm:
-            case Image::Format::BGRA8_UNorm:
+            case Image::Format::RGBA8_SNORM:
+            case Image::Format::RGBA8_UNORM:
+            case Image::Format::RGBA16_SNORM:
+            case Image::Format::RGBA16_UNORM:
+            case Image::Format::BGRA8_UNORM:
             case Image::Format::RGBA8I:
             case Image::Format::RGBA8U:
             case Image::Format::RGBA16I:
@@ -620,8 +620,8 @@ namespace stormkit::image {
             case Image::Format::RGBA32U:
             case Image::Format::RGBA16F:
             case Image::Format::RGBA32F:
-            case Image::Format::sRGBA8:
-            case Image::Format::sBGRA8: return 4;
+            case Image::Format::SRGBA8:
+            case Image::Format::SBGRA8: return 4;
 
             default: break;
         }
@@ -633,34 +633,34 @@ namespace stormkit::image {
     /////////////////////////////////////
     constexpr auto getSizeof(Image::Format format) noexcept -> UInt8 {
         switch (format) {
-            case Image::Format::R8_SNorm:
-            case Image::Format::R8_UNorm:
-            case Image::Format::RG8_SNorm:
-            case Image::Format::RG8_UNorm:
+            case Image::Format::R8_SNORM:
+            case Image::Format::R8_UNORM:
+            case Image::Format::RG8_SNORM:
+            case Image::Format::RG8_UNORM:
             case Image::Format::R8I:
             case Image::Format::R8U:
             case Image::Format::RG8I:
             case Image::Format::RG8U:
-            case Image::Format::RGB8_SNorm:
-            case Image::Format::RGB8_UNorm:
-            case Image::Format::BGR8_UNorm:
+            case Image::Format::RGB8_SNORM:
+            case Image::Format::RGB8_UNORM:
+            case Image::Format::BGR8_UNORM:
             case Image::Format::RGB8I:
             case Image::Format::RGB8U:
-            case Image::Format::RGBA8_SNorm:
-            case Image::Format::RGBA8_UNorm:
-            case Image::Format::RGBA16_SNorm:
-            case Image::Format::BGRA8_UNorm:
-            case Image::Format::sRGB8:
-            case Image::Format::sBGR8:
-            case Image::Format::sRGBA8:
-            case Image::Format::sBGRA8: return 1u;
+            case Image::Format::RGBA8_SNORM:
+            case Image::Format::RGBA8_UNORM:
+            case Image::Format::RGBA16_SNORM:
+            case Image::Format::BGRA8_UNORM:
+            case Image::Format::SRGB8:
+            case Image::Format::SBGR8:
+            case Image::Format::SRGBA8:
+            case Image::Format::SBGRA8: return 1u;
 
-            case Image::Format::R16_SNorm:
-            case Image::Format::R16_UNorm:
+            case Image::Format::R16_SNORM:
+            case Image::Format::R16_UNORM:
             case Image::Format::R16I:
             case Image::Format::R16U:
-            case Image::Format::RG16_SNorm:
-            case Image::Format::RG16_UNorm:
+            case Image::Format::RG16_SNORM:
+            case Image::Format::RG16_UNORM:
             case Image::Format::RG16I:
             case Image::Format::RG16U:
             case Image::Format::RG16F:
@@ -678,7 +678,7 @@ namespace stormkit::image {
             case Image::Format::RG32I:
             case Image::Format::RG32U:
             case Image::Format::RG32F:
-            case Image::Format::RGB16_SNorm:
+            case Image::Format::RGB16_SNORM:
             case Image::Format::RGB32I:
             case Image::Format::RGB32U:
             case Image::Format::RGB32F:

@@ -140,7 +140,7 @@ namespace stormkit::engine {
                                             engine::ImageDescription {
                                                 .extent = m_viewport,
                                                 .type   = gpu::ImageType::T2D,
-                                                .format = gpu::PixelFormat::BGRA8_UNorm }));
+                                                .format = gpu::PixelFormat::BGRA8_UNORM }));
 
                 if (transfer_task_data)
                     task_data.vertex_buffers = builder.read((*transfer_task_data)->vertex_buffers);

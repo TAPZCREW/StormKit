@@ -78,7 +78,7 @@ export {
             AttachmentLoadOperation  stencil_load_op  = AttachmentLoadOperation::Dont_Care;
             AttachmentStoreOperation stencil_store_op = AttachmentStoreOperation::Dont_Care;
 
-            ImageLayout source_layout      = ImageLayout::Undefined;
+            ImageLayout source_layout      = ImageLayout::UNDEFINED;
             ImageLayout destination_layout = ImageLayout::Present_Src;
 
             bool resolve = false;

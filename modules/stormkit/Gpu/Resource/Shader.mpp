@@ -36,7 +36,7 @@ export namespace stormkit::gpu {
         auto operator=(Shader&&) noexcept -> Shader&;
 
         [[nodiscard]]
-        static auto loadFromFile(const Device&                device,
+        static auto load_from_file(const Device&                device,
                                  const std::filesystem::path& filepath,
                                  ShaderStageFlag              type) noexcept -> Expected<Shader>;
         [[nodiscard]]
@@ -49,7 +49,7 @@ export namespace stormkit::gpu {
                               ShaderStageFlag          type) noexcept -> Expected<Shader>;
 
         [[nodiscard]]
-        static auto allocate_and_loadFromFile(const Device&                device,
+        static auto allocate_and_load_from_file(const Device&                device,
                                               const std::filesystem::path& filepath,
                                               ShaderStageFlag              type) noexcept
             -> Expected<std::unique_ptr<Shader>>;
@@ -131,7 +131,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto Shader::loadFromFile(const Device&                device,
+    STORMKIT_FORCE_INLINE auto Shader::load_from_file(const Device&                device,
                                                     const std::filesystem::path& filepath,
                                                     ShaderStageFlag              type) noexcept
         -> Expected<Shader> try {
@@ -159,7 +159,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto
-        Shader::allocate_and_loadFromFile(const Device&                device,
+        Shader::allocate_and_load_from_file(const Device&                device,
                                           const std::filesystem::path& filepath,
                                           ShaderStageFlag              type) noexcept
         -> Expected<std::unique_ptr<Shader>> try {

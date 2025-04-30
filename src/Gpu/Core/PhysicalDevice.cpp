@@ -21,7 +21,7 @@ namespace stormkit::gpu {
             case 0x13B5: return "ARM";
         }
 
-        return "Unknown";
+        return "UNKNOWN";
     }
 
     // TODO implement

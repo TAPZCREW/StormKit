@@ -11,7 +11,7 @@ export module stormkit.Gpu:Resource.Image;
 import std;
 
 import stormkit.core;
-import stormkit.Image;
+import stormkit.image;
 import stormkit.Gpu.Vulkan;
 
 import :Core;
@@ -131,7 +131,7 @@ export namespace stormkit::gpu {
       public:
         struct CreateInfo {
             math::ExtentU   extent;
-            PixelFormat     format     = PixelFormat::RGBA8_UNorm;
+            PixelFormat     format     = PixelFormat::RGBA8_UNORM;
             UInt32          layers     = 1u;
             UInt32          mip_levels = 1u;
             ImageType       type       = ImageType::T2D;

@@ -2,19 +2,19 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-module stormkit.Image;
+module stormkit.image;
 
 import std;
 
 import stormkit.core;
 
-import :HDRImage;
-import :JPEGImage;
-import :KTXImage;
-import :PNGImage;
-import :PPMImage;
-import :QOIImage;
-import :TARGAImage;
+import :hdr;
+import :jpg;
+import :ktx;
+import :png;
+import :ppm;
+import :qoi;
+import :tga;
 
 namespace stormkit::image {
     namespace details {
@@ -29,32 +29,32 @@ namespace stormkit::image {
 
         inline constexpr auto JPEG_HEADER = into_bytes(0xFF, 0xD8);
 
-        auto filenameToCodec(const std::filesystem::path& filename) noexcept -> Image::Codec {
+        auto filename_to_codec(const std::filesystem::path& filename) noexcept -> Image::Codec {
             expects(std::filesystem::exists(filename));
             expects(filename.has_extension());
             expects(!std::filesystem::is_directory(filename));
             expects(std::filesystem::is_regular_file(filename));
 
-            const auto ext = filename.extension().string();
+            const auto ext = to_lower(filename.extension().string());
 
-            if (to_lower(ext) == ".jpg" or to_lower(ext) == ".jpeg") return Image::Codec::JPEG;
-            else if (to_lower(ext) == ".png")
+            if (ext == ".jpg" or ext == ".jpeg") return Image::Codec::JPEG;
+            else if (ext == ".png")
                 return Image::Codec::PNG;
-            else if (to_lower(ext) == ".tga" or to_lower(ext) == ".targa")
+            else if (ext == ".tga" or ext == ".targa")
                 return Image::Codec::TARGA;
-            else if (to_lower(ext) == ".ppm")
+            else if (ext == ".ppm")
                 return Image::Codec::PPM;
-            else if (to_lower(ext) == ".hdr")
+            else if (ext == ".hdr")
                 return Image::Codec::HDR;
-            else if (to_lower(ext) == ".ktx")
+            else if (ext == ".ktx")
                 return Image::Codec::KTX;
-            else if (to_lower(ext) == ".qoi")
+            else if (ext == ".qoi")
                 return Image::Codec::QOI;
 
-            return Image::Codec::Unknown;
+            return Image::Codec::UNKNOWN;
         }
 
-        auto headerToCodec(std::span<const Byte> data) noexcept -> Image::Codec {
+        auto header_to_codec(std::span<const Byte> data) noexcept -> Image::Codec {
             expects(std::size(data) >= 12);
 
             if (std::memcmp(std::data(data), std::data(KTX_HEADER), std::size(KTX_HEADER)) == 0)
@@ -69,7 +69,7 @@ namespace stormkit::image {
                      == 0)
                 return Image::Codec::QOI;
 
-            return Image::Codec::Unknown;
+            return Image::Codec::UNKNOWN;
         }
 
         auto map(std::span<const Byte> bytes,
@@ -176,13 +176,13 @@ namespace stormkit::image {
     /////////////////////////////////////
     /////////////////////////////////////
     Image::Image(const std::filesystem::path& filepath, Image::Codec codec) noexcept : Image {} {
-        const auto _ = loadFromFile(filepath, codec);
+        const auto _ = load_from_file(filepath, codec);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     Image::Image(std::span<const Byte> data, Image::Codec codec) noexcept : Image {} {
-        const auto _ = loadFromMemory(data, codec);
+        const auto _ = load_from_memory(data, codec);
     }
 
     ////////////////////////////////////////
@@ -221,17 +221,17 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::loadFromFile(std::filesystem::path filepath, Image::Codec codec) noexcept
+    auto Image::load_from_file(std::filesystem::path filepath, Image::Codec codec) noexcept
         -> std::expected<void, Error> {
         filepath = std::filesystem::canonical(filepath);
 
-        expects(codec != Image::Codec::Unknown);
+        expects(codec != Image::Codec::UNKNOWN);
         expects(!std::empty(filepath));
 
         if (!std::filesystem::exists(filepath)) {
             return std::unexpected<Error> {
                 std::in_place,
-                Error::Reason::File_Not_Found,
+                Error::Reason::FILE_NOT_FOUND,
                 std::format("Failed to open file {}\n    > Incorrect path", filepath.string())
             };
         }
@@ -243,28 +243,28 @@ namespace stormkit::image {
             return read(stream, size);
         }();
 
-        if (codec == Image::Codec::Autodetect) codec = details::filenameToCodec(filepath);
+        if (codec == Image::Codec::AUTODETECT) codec = details::filename_to_codec(filepath);
         switch (codec) {
-            CASE_DO (JPEG, loadJPG)
+            CASE_DO (JPEG, load_jpg)
                 ;
-            CASE_DO (PNG, loadPNG)
+            CASE_DO (PNG, load_png)
                 ;
-            CASE_DO (TARGA, loadTGA)
+            CASE_DO (TARGA, load_tga)
                 ;
-            CASE_DO (PPM, loadPPM)
+            CASE_DO (PPM, load_ppm)
                 ;
-            CASE_DO (HDR, loadHDR)
+            CASE_DO (HDR, load_hdr)
                 ;
-            CASE_DO (KTX, loadKTX)
+            CASE_DO (KTX, load_ktx)
                 ;
-            CASE_DO (QOI, loadQOI)
+            CASE_DO (QOI, load_qoi)
                 ;
             default: break;
         }
 
         return std::unexpected<Error> {
             std::in_place,
-            Error::Reason::Invalid_Format,
+            Error::Reason::INVALID_FORMAT,
             std::format("Failed to save image from {}\n    > Invalid format", filepath.string())
         };
     }
@@ -286,32 +286,32 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::loadFromMemory(std::span<const Byte> data, Image::Codec codec) noexcept
+    auto Image::load_from_memory(std::span<const Byte> data, Image::Codec codec) noexcept
         -> std::expected<void, Error> {
-        expects(codec != Image::Codec::Unknown);
+        expects(codec != Image::Codec::UNKNOWN);
         expects(!std::empty(data));
 
-        if (codec == Image::Codec::Autodetect) codec = details::headerToCodec(data);
+        if (codec == Image::Codec::AUTODETECT) codec = details::header_to_codec(data);
         switch (codec) {
-            CASE_DO (JPEG, loadJPG, "JPEG")
+            CASE_DO (JPEG, load_jpg, "JPEG")
                 ;
-            CASE_DO (PNG, loadPNG, "PNG")
+            CASE_DO (PNG, load_png, "PNG")
                 ;
-            CASE_DO (TARGA, loadTGA, "TARGA")
+            CASE_DO (TARGA, load_tga, "TARGA")
                 ;
-            CASE_DO (PPM, loadPPM, "PPM")
+            CASE_DO (PPM, load_ppm, "PPM")
                 ;
-            CASE_DO (HDR, loadHDR, "HDR")
+            CASE_DO (HDR, load_hdr, "HDR")
                 ;
-            CASE_DO (KTX, loadKTX, "KTX")
+            CASE_DO (KTX, load_ktx, "KTX")
                 ;
-            CASE_DO (QOI, loadQOI, "QOI")
+            CASE_DO (QOI, load_qoi, "QOI")
                 ;
             default: break;
         }
 
         return std::unexpected<Error> { std::in_place,
-                                        Error::Reason::Invalid_Format,
+                                        Error::Reason::INVALID_FORMAT,
                                         "Failed to load image\n    > Invalid format" };
     }
 
@@ -343,38 +343,38 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::saveToFile(std::filesystem::path filepath,
-                           Codec                 codec,
-                           CodecArgs args) const noexcept -> std::expected<void, Error> {
+    auto Image::save_to_file(std::filesystem::path filepath,
+                             Codec                 codec,
+                             CodecArgs args) const noexcept -> std::expected<void, Error> {
         filepath = std::filesystem::canonical(filepath.parent_path()) / filepath.filename();
 
-        expects(codec != Image::Codec::Unknown);
-        expects(codec != Image::Codec::Autodetect);
+        expects(codec != Image::Codec::UNKNOWN);
+        expects(codec != Image::Codec::AUTODETECT);
         expects(!std::empty(filepath));
         expects(!std::empty(m_data.data));
         expects(std::filesystem::exists(filepath.root_directory()));
 
         switch (codec) {
-            CASE_DO (JPEG, saveJPG)
+            CASE_DO (JPEG, save_jpg)
                 ;
-            CASE_DO (PNG, savePNG)
+            CASE_DO (PNG, save_png)
                 ;
-            CASE_DO (TARGA, saveTGA)
+            CASE_DO (TARGA, save_tga)
                 ;
-            CASE_ARGS_DO (PPM, savePPM)
+            CASE_ARGS_DO (PPM, save_ppm)
                 ;
-            CASE_DO (HDR, saveHDR)
+            CASE_DO (HDR, save_hdr)
                 ;
-            CASE_DO (KTX, saveKTX)
+            CASE_DO (KTX, save_ktx)
                 ;
-            CASE_DO (QOI, saveQOI)
+            CASE_DO (QOI, save_qoi)
                 ;
             default: break;
         }
 
         return std::unexpected<Error> {
             std::in_place,
-            Error::Reason::Invalid_Format,
+            Error::Reason::INVALID_FORMAT,
             std::format("Failed to save image to {}\n    > Invalid format", filepath.string())
         };
     }
@@ -408,34 +408,34 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::saveToMemory(Codec codec, CodecArgs args) const noexcept
+    auto Image::save_to_memory(Codec codec, CodecArgs args) const noexcept
         -> std::expected<std::vector<Byte>, Error> {
-        expects(codec != Image::Codec::Unknown);
-        expects(codec != Image::Codec::Autodetect);
+        expects(codec != Image::Codec::UNKNOWN);
+        expects(codec != Image::Codec::AUTODETECT);
         expects(!std::empty(m_data.data));
 
         auto output = std::vector<Byte> {};
 
         switch (codec) {
-            CASE_DO (JPEG, saveJPG, "JPEG")
+            CASE_DO (JPEG, save_jpg, "JPEG")
                 ;
-            CASE_DO (PNG, savePNG, "PNG")
+            CASE_DO (PNG, save_png, "PNG")
                 ;
-            CASE_DO (TARGA, saveTGA, "TARGA")
+            CASE_DO (TARGA, save_tga, "TARGA")
                 ;
-            CASE_ARGS_DO (PPM, savePPM, "PPM")
+            CASE_ARGS_DO (PPM, save_ppm, "PPM")
                 ;
-            CASE_DO (HDR, saveHDR, "HDR")
+            CASE_DO (HDR, save_hdr, "HDR")
                 ;
-            CASE_DO (KTX, saveKTX, "KTX")
+            CASE_DO (KTX, save_ktx, "KTX")
                 ;
-            CASE_DO (QOI, saveQOI, "QOI")
+            CASE_DO (QOI, save_qoi, "QOI")
                 ;
             default: break;
         }
 
         return std::unexpected<Error> { std::in_place,
-                                        Error::Reason::Invalid_Format,
+                                        Error::Reason::INVALID_FORMAT,
                                         "Failed to save image\n    > Invalid format" };
     }
 
@@ -448,11 +448,11 @@ namespace stormkit::image {
         expects(extent.width > 0u
                 and extent.height > 0u
                 and extent.depth > 0u
-                and format != Format::Undefined);
+                and format != Format::UNDEFINED);
         m_data.data.clear();
 
         m_data.extent            = extent;
-        m_data.channel_count     = getChannelCountFor(format);
+        m_data.channel_count     = get_format_channel_count(format);
         m_data.bytes_per_channel = getSizeof(format);
         m_data.layers            = 1u;
         m_data.faces             = 1u;
@@ -471,14 +471,14 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::toFormat(Format format) const noexcept -> Image {
+    auto Image::convert_to(Format format) const noexcept -> Image {
         expects(!std::empty(m_data.data));
-        expects(format != Format::Undefined);
+        expects(format != Format::UNDEFINED);
 
         if (m_data.format == format) return *this;
 
         auto image_data = ImageData { .extent            = m_data.extent,
-                                      .channel_count     = getChannelCountFor(format),
+                                      .channel_count     = get_format_channel_count(format),
                                       .bytes_per_channel = getSizeof(format),
                                       .layers            = m_data.layers,
                                       .faces             = m_data.faces,
@@ -521,7 +521,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::flipX() const noexcept -> Image {
+    auto Image::flip_x() const noexcept -> Image {
         auto image_data = ImageData { .extent            = m_data.extent,
                                       .channel_count     = m_data.channel_count,
                                       .bytes_per_channel = m_data.bytes_per_channel,
@@ -552,7 +552,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::flipY() const noexcept -> Image {
+    auto Image::flip_y() const noexcept -> Image {
         auto image_data = ImageData { .extent            = m_data.extent,
                                       .channel_count     = m_data.channel_count,
                                       .bytes_per_channel = m_data.bytes_per_channel,
@@ -582,7 +582,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::flipZ() const noexcept -> Image {
+    auto Image::flip_z() const noexcept -> Image {
         auto image_data = ImageData { .extent            = m_data.extent,
                                       .channel_count     = m_data.channel_count,
                                       .bytes_per_channel = m_data.bytes_per_channel,
@@ -611,7 +611,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::rotate90() const noexcept -> Image {
+    auto Image::rotate_90() const noexcept -> Image {
         auto image_data = ImageData { .extent            = m_data.extent,
                                       .channel_count     = m_data.channel_count,
                                       .bytes_per_channel = m_data.bytes_per_channel,
@@ -629,7 +629,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::rotate180() const noexcept -> Image {
+    auto Image::rotate_180() const noexcept -> Image {
         auto image_data = ImageData { .extent            = m_data.extent,
                                       .channel_count     = m_data.channel_count,
                                       .bytes_per_channel = m_data.bytes_per_channel,
@@ -645,7 +645,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::rotate270() const noexcept -> Image {
+    auto Image::rotate_270() const noexcept -> Image {
         auto image_data = ImageData { .extent            = m_data.extent,
                                       .channel_count     = m_data.channel_count,
                                       .bytes_per_channel = m_data.bytes_per_channel,

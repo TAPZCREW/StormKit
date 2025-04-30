@@ -59,7 +59,7 @@ modules = {
     },
     image = {
         packages = { "libktx", "libpng", "libjpeg-turbo 3.1.0" },
-        modulename = "Image",
+        modulename = "image",
         public_deps = { "stormkit-core" },
     },
     main = {

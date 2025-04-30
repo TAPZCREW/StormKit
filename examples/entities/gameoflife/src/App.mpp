@@ -6,7 +6,7 @@ export module App;
 import std;
 
 import stormkit.core;
-import stormkit.Image;
+import stormkit.image;
 import stormkit.Wsi;
 import stormkit.entities;
 

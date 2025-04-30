@@ -143,36 +143,36 @@ export {
         };
 
         enum class PixelFormat : UInt8 {
-            R8_SNorm    = as<UInt8>(vk::format::eR8Snorm),
-            RG8_SNorm   = as<UInt8>(vk::format::eR8G8Snorm),
-            RGB8_SNorm  = as<UInt8>(vk::format::eR8G8B8Snorm),
-            RGBA8_SNorm = as<UInt8>(vk::format::eR8G8B8A8Snorm),
+            R8_SNORM    = as<UInt8>(vk::format::eR8Snorm),
+            RG8_SNORM   = as<UInt8>(vk::format::eR8G8Snorm),
+            RGB8_SNORM  = as<UInt8>(vk::format::eR8G8B8Snorm),
+            RGBA8_SNORM = as<UInt8>(vk::format::eR8G8B8A8Snorm),
 
-            R8_UNorm    = as<UInt8>(vk::format::eR8Unorm),
-            RG8_UNorm   = as<UInt8>(vk::format::eR8G8Unorm),
-            RGB8_UNorm  = as<UInt8>(vk::format::eR8G8B8Unorm),
-            RGBA8_UNorm = as<UInt8>(vk::format::eR8G8B8A8Unorm),
+            R8_UNORM    = as<UInt8>(vk::format::eR8Unorm),
+            RG8_UNORM   = as<UInt8>(vk::format::eR8G8Unorm),
+            RGB8_UNORM  = as<UInt8>(vk::format::eR8G8B8Unorm),
+            RGBA8_UNORM = as<UInt8>(vk::format::eR8G8B8A8Unorm),
 
-            R16_SNorm    = as<UInt8>(vk::format::eR16Snorm),
-            RG16_SNorm   = as<UInt8>(vk::format::eR16G16Snorm),
-            RGB16_SNorm  = as<UInt8>(vk::format::eR16G16B16Snorm),
-            RGBA16_SNorm = as<UInt8>(vk::format::eR16G16B16A16Snorm),
+            R16_SNORM    = as<UInt8>(vk::format::eR16Snorm),
+            RG16_SNORM   = as<UInt8>(vk::format::eR16G16Snorm),
+            RGB16_SNORM  = as<UInt8>(vk::format::eR16G16B16Snorm),
+            RGBA16_SNORM = as<UInt8>(vk::format::eR16G16B16A16Snorm),
 
-            R16_UNorm    = as<UInt8>(vk::format::eR16Unorm),
-            RG16_UNorm   = as<UInt8>(vk::format::eR16G16Unorm),
-            RGB16_UNorm  = as<UInt8>(vk::format::eR16G16B16Unorm),
-            RGBA16_UNorm = as<UInt8>(vk::format::eR16G16B16A16Unorm),
+            R16_UNORM    = as<UInt8>(vk::format::eR16Unorm),
+            RG16_UNORM   = as<UInt8>(vk::format::eR16G16Unorm),
+            RGB16_UNORM  = as<UInt8>(vk::format::eR16G16B16Unorm),
+            RGBA16_UNORM = as<UInt8>(vk::format::eR16G16B16A16Unorm),
 
             A2_RGB10_UNorm = as<UInt8>(vk::format::eA2R10G10B10UnormPack32),
 
-            RGBA4_UNorm_Pack16 = as<UInt8>(vk::format::eR4G4B4A4UnormPack16),
+            RGBA4_UNORM_Pack16 = as<UInt8>(vk::format::eR4G4B4A4UnormPack16),
 
             A1_RGB5_UNorm_Pack16 = as<UInt8>(vk::format::eA1R5G5B5UnormPack16),
 
             R5_G6_B5_UNorm_Pack16 = as<UInt8>(vk::format::eR5G6B5UnormPack16),
 
-            BGR8_UNorm  = as<UInt8>(vk::format::eB8G8R8Unorm),
-            BGRA8_UNorm = as<UInt8>(vk::format::eB8G8R8A8Unorm),
+            BGR8_UNORM  = as<UInt8>(vk::format::eB8G8R8Unorm),
+            BGRA8_UNORM = as<UInt8>(vk::format::eB8G8R8A8Unorm),
 
             R8I    = as<UInt8>(vk::format::eR8Sint),
             RG8I   = as<UInt8>(vk::format::eR8G8Sint),
@@ -218,10 +218,10 @@ export {
 
             BG11_R10F_Pack32 = as<UInt8>(vk::format::eB10G11R11UfloatPack32),
 
-            sRGB8  = as<UInt8>(vk::format::eR8G8B8Srgb),
-            sRGBA8 = as<UInt8>(vk::format::eR8G8B8A8Srgb),
-            sBGR8  = as<UInt8>(vk::format::eB8G8R8Srgb),
-            sBGRA8 = as<UInt8>(vk::format::eB8G8R8A8Srgb),
+            SRGB8  = as<UInt8>(vk::format::eR8G8B8Srgb),
+            SRGBA8 = as<UInt8>(vk::format::eR8G8B8A8Srgb),
+            SBGR8  = as<UInt8>(vk::format::eB8G8R8Srgb),
+            SBGRA8 = as<UInt8>(vk::format::eB8G8R8A8Srgb),
 
             Depth16  = as<UInt8>(vk::format::eD16Unorm),
             Depth24  = as<UInt8>(vk::format::eX8D24UnormPack32),
@@ -979,7 +979,7 @@ export {
         constexpr auto isDepthFormat(PixelFormat format) noexcept -> bool;
 
         [[nodiscard]]
-        constexpr auto getChannelCountFor(PixelFormat format) noexcept -> UInt8;
+        constexpr auto get_format_channel_count(PixelFormat format) noexcept -> UInt8;
         [[nodiscard]]
         constexpr auto getArraySizeByChannelFor(PixelFormat format) noexcept -> UInt8;
 
@@ -1047,12 +1047,12 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE constexpr auto getChannelCountFor(PixelFormat format) noexcept -> UInt8 {
+    STORMKIT_FORCE_INLINE constexpr auto get_format_channel_count(PixelFormat format) noexcept -> UInt8 {
         switch (format) {
-            case PixelFormat::R8_SNorm:
-            case PixelFormat::R8_UNorm:
-            case PixelFormat::R16_SNorm:
-            case PixelFormat::R16_UNorm:
+            case PixelFormat::R8_SNORM:
+            case PixelFormat::R8_UNORM:
+            case PixelFormat::R16_SNORM:
+            case PixelFormat::R16_UNORM:
             case PixelFormat::R8I:
             case PixelFormat::R8U:
             case PixelFormat::R16I:
@@ -1065,10 +1065,10 @@ namespace stormkit::gpu {
             case PixelFormat::Depth24:
             case PixelFormat::Depth32F: return 1;
 
-            case PixelFormat::RG8_SNorm:
-            case PixelFormat::RG8_UNorm:
-            case PixelFormat::RG16_SNorm:
-            case PixelFormat::RG16_UNorm:
+            case PixelFormat::RG8_SNORM:
+            case PixelFormat::RG8_UNORM:
+            case PixelFormat::RG16_SNORM:
+            case PixelFormat::RG16_UNORM:
             case PixelFormat::RG8I:
             case PixelFormat::RG8U:
             case PixelFormat::RG16I:
@@ -1081,11 +1081,11 @@ namespace stormkit::gpu {
             case PixelFormat::Depth24_Stencil8:
             case PixelFormat::Depth32F_Stencil8: return 2;
 
-            case PixelFormat::RGB8_SNorm:
-            case PixelFormat::RGB8_UNorm:
-            case PixelFormat::RGB16_SNorm:
-            case PixelFormat::RGB16_UNorm:
-            case PixelFormat::BGR8_UNorm:
+            case PixelFormat::RGB8_SNORM:
+            case PixelFormat::RGB8_UNORM:
+            case PixelFormat::RGB16_SNORM:
+            case PixelFormat::RGB16_UNORM:
+            case PixelFormat::BGR8_UNORM:
             case PixelFormat::RGB8I:
             case PixelFormat::RGB8U:
             case PixelFormat::RGB16I:
@@ -1094,16 +1094,16 @@ namespace stormkit::gpu {
             case PixelFormat::RGB32U:
             case PixelFormat::RGB16F:
             case PixelFormat::RGB32F:
-            case PixelFormat::sRGB8:
-            case PixelFormat::sBGR8:
+            case PixelFormat::SRGB8:
+            case PixelFormat::SBGR8:
             case PixelFormat::R5_G6_B5_UNorm_Pack16:
             case PixelFormat::BG11_R10F_Pack32: return 3;
 
-            case PixelFormat::RGBA8_SNorm:
-            case PixelFormat::RGBA8_UNorm:
-            case PixelFormat::RGBA16_SNorm:
-            case PixelFormat::RGBA16_UNorm:
-            case PixelFormat::BGRA8_UNorm:
+            case PixelFormat::RGBA8_SNORM:
+            case PixelFormat::RGBA8_UNORM:
+            case PixelFormat::RGBA16_SNORM:
+            case PixelFormat::RGBA16_UNORM:
+            case PixelFormat::BGRA8_UNORM:
             case PixelFormat::RGBA8I:
             case PixelFormat::RGBA8U:
             case PixelFormat::RGBA16I:
@@ -1112,8 +1112,8 @@ namespace stormkit::gpu {
             case PixelFormat::RGBA32U:
             case PixelFormat::RGBA16F:
             case PixelFormat::RGBA32F:
-            case PixelFormat::sRGBA8:
-            case PixelFormat::sBGRA8: return 4;
+            case PixelFormat::SRGBA8:
+            case PixelFormat::SBGRA8: return 4;
 
             default: break;
         }
@@ -1126,34 +1126,34 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE constexpr auto getArraySizeByChannelFor(PixelFormat format) noexcept
         -> UInt8 {
         switch (format) {
-            case PixelFormat::R8_SNorm:
-            case PixelFormat::R8_UNorm:
-            case PixelFormat::RG8_SNorm:
-            case PixelFormat::RG8_UNorm:
+            case PixelFormat::R8_SNORM:
+            case PixelFormat::R8_UNORM:
+            case PixelFormat::RG8_SNORM:
+            case PixelFormat::RG8_UNORM:
             case PixelFormat::R8I:
             case PixelFormat::R8U:
             case PixelFormat::RG8I:
             case PixelFormat::RG8U:
-            case PixelFormat::RGB8_SNorm:
-            case PixelFormat::RGB8_UNorm:
-            case PixelFormat::BGR8_UNorm:
+            case PixelFormat::RGB8_SNORM:
+            case PixelFormat::RGB8_UNORM:
+            case PixelFormat::BGR8_UNORM:
             case PixelFormat::RGB8I:
             case PixelFormat::RGB8U:
-            case PixelFormat::RGBA8_SNorm:
-            case PixelFormat::RGBA8_UNorm:
-            case PixelFormat::RGBA16_SNorm:
-            case PixelFormat::BGRA8_UNorm:
-            case PixelFormat::sRGB8:
-            case PixelFormat::sBGR8:
-            case PixelFormat::sRGBA8:
-            case PixelFormat::sBGRA8: return 1u;
+            case PixelFormat::RGBA8_SNORM:
+            case PixelFormat::RGBA8_UNORM:
+            case PixelFormat::RGBA16_SNORM:
+            case PixelFormat::BGRA8_UNORM:
+            case PixelFormat::SRGB8:
+            case PixelFormat::SBGR8:
+            case PixelFormat::SRGBA8:
+            case PixelFormat::SBGRA8: return 1u;
 
-            case PixelFormat::R16_SNorm:
-            case PixelFormat::R16_UNorm:
+            case PixelFormat::R16_SNORM:
+            case PixelFormat::R16_UNORM:
             case PixelFormat::R16I:
             case PixelFormat::R16U:
-            case PixelFormat::RG16_SNorm:
-            case PixelFormat::RG16_UNorm:
+            case PixelFormat::RG16_SNORM:
+            case PixelFormat::RG16_UNORM:
             case PixelFormat::RG16I:
             case PixelFormat::RG16U:
             case PixelFormat::RG16F:
@@ -1171,7 +1171,7 @@ namespace stormkit::gpu {
             case PixelFormat::RG32I:
             case PixelFormat::RG32U:
             case PixelFormat::RG32F:
-            case PixelFormat::RGB16_SNorm:
+            case PixelFormat::RGB16_SNORM:
             case PixelFormat::RGB32I:
             case PixelFormat::RGB32U:
             case PixelFormat::RGB32F:
