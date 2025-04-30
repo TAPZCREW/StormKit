@@ -2,24 +2,24 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.Image:HDRImage;
+export module stormkit.image:hdr;
 
 import std;
 
 import stormkit.core;
-import stormkit.Image;
+import stormkit.image;
 
 export namespace stormkit::image::details {
     [[nodiscard]]
-    auto loadHDR(std::span<const Byte> data) noexcept
+    auto load_hdr(std::span<const Byte> data) noexcept
         -> std::expected<image::Image, image::Image::Error>;
 
     [[nodiscard]]
-    auto saveHDR(const image::Image& image, const std::filesystem::path& filepath) noexcept
+    auto save_hdr(const image::Image& image, const std::filesystem::path& filepath) noexcept
         -> std::expected<void, image::Image::Error>;
 
     [[nodiscard]]
-    auto saveHDR(const image::Image& image) noexcept
+    auto save_hdr(const image::Image& image) noexcept
         -> std::expected<std::vector<Byte>, image::Image::Error>;
 } // namespace stormkit::image::details
 
@@ -31,17 +31,17 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto loadHDR(std::span<const Byte>) noexcept
+    auto load_hdr(std::span<const Byte>) noexcept
         -> std::expected<image::Image, image::Image::Error> {
         return std::unexpected(
-            Error { .reason = Reason::Not_Implemented, .str_error = "loader from file" });
+            Error { .reason = Reason::NOT_IMPLEMENTED, .str_error = "loader from file" });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto saveHDR(const image::Image& image, const std::filesystem::path& filepath) noexcept
+    auto save_hdr(const image::Image& image, const std::filesystem::path& filepath) noexcept
         -> std::expected<void, image::Image::Error> {
-        auto result = saveHDR(image);
+        auto result = save_hdr(image);
 
         if (!result) return std::unexpected(result.error());
 
@@ -53,9 +53,9 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto saveHDR(const image::Image&) noexcept
+    auto save_hdr(const image::Image&) noexcept
         -> std::expected<std::vector<Byte>, image::Image::Error> {
         return std::unexpected(
-            Error { .reason = Reason::Not_Implemented, .str_error = "save to file" });
+            Error { .reason = Reason::NOT_IMPLEMENTED, .str_error = "save to file" });
     }
 } // namespace stormkit::image::details

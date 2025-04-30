@@ -6,7 +6,7 @@ export module Systems;
 import std;
 
 import stormkit.core;
-import stormkit.Image;
+import stormkit.image;
 import stormkit.entities;
 
 import Constants;

@@ -9,24 +9,24 @@ module;
 
 #include <png.h>
 
-export module stormkit.Image:PNGImage;
+export module stormkit.image:png;
 
 import std;
 
 import stormkit.core;
-import stormkit.Image;
+import stormkit.image;
 
 export namespace stormkit::image::details {
     [[nodiscard]]
-    auto loadPNG(std::span<const Byte> data) noexcept
+    auto load_png(std::span<const Byte> data) noexcept
         -> std::expected<image::Image, image::Image::Error>;
 
     [[nodiscard]]
-    auto savePNG(const image::Image& image, const std::filesystem::path& filepath) noexcept
+    auto save_png(const image::Image& image, const std::filesystem::path& filepath) noexcept
         -> std::expected<void, image::Image::Error>;
 
     [[nodiscard]]
-    auto savePNG(const image::Image& image) noexcept
+    auto save_png(const image::Image& image) noexcept
         -> std::expected<std::vector<Byte>, image::Image::Error>;
 } // namespace stormkit::image::details
 
@@ -74,7 +74,7 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto loadPNG(std::span<const Byte> data) noexcept
+    auto load_png(std::span<const Byte> data) noexcept
         -> std::expected<image::Image, image::Image::Error> {
         auto image_memory = std::vector<Byte> {};
         auto format       = Format {};
@@ -85,20 +85,20 @@ namespace stormkit::image::details {
         auto sig = reinterpret_cast<png_const_bytep>(std::data(data));
         if (!png_check_sig(sig, 8u))
             return std::unexpected(
-                Error { .reason    = Reason::Failed_To_Parse,
+                Error { .reason    = Reason::FAILED_TO_PARSE,
                         .str_error = "[libpng] Failed to validate PNG signature" });
 
         auto png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
         if (!png_ptr)
             return std::unexpected(
-                Error { .reason    = Reason::Failed_To_Parse,
+                Error { .reason    = Reason::FAILED_TO_PARSE,
                         .str_error = "[libpng] Failed to init (png_create_read_struct)" });
 
         auto info_ptr = png_create_info_struct(png_ptr);
         if (!info_ptr) {
             png_destroy_read_struct(&png_ptr, nullptr, nullptr);
             return std::unexpected(
-                Error { .reason    = Reason::Failed_To_Parse,
+                Error { .reason    = Reason::FAILED_TO_PARSE,
                         .str_error = "[libpng] Failed to init (png_create_info_struct)" });
         }
 
@@ -139,37 +139,37 @@ namespace stormkit::image::details {
 
         switch (color_type) {
             case PNG_COLOR_TYPE_GRAY: {
-                if (bit_depth == 8) format = Format::R8_UNorm;
+                if (bit_depth == 8) format = Format::R8_UNORM;
                 else if (bit_depth == 16)
-                    format = Format::R16_UNorm;
+                    format = Format::R16_UNORM;
 
                 break;
             }
             case PNG_COLOR_TYPE_GRAY_ALPHA: {
-                if (bit_depth == 8) format = Format::RG8_UNorm;
+                if (bit_depth == 8) format = Format::RG8_UNORM;
                 else if (bit_depth == 16)
-                    format = Format::RG16_UNorm;
+                    format = Format::RG16_UNORM;
 
                 break;
             }
             case PNG_COLOR_TYPE_RGB: {
-                if (bit_depth == 8) format = Format::RGB8_UNorm;
+                if (bit_depth == 8) format = Format::RGB8_UNORM;
                 else if (bit_depth == 16)
-                    format = Format::RGB16_UNorm;
+                    format = Format::RGB16_UNORM;
 
                 break;
             }
             case PNG_COLOR_TYPE_RGB_ALPHA: {
-                if (bit_depth == 8) format = Format::RGBA8_UNorm;
+                if (bit_depth == 8) format = Format::RGBA8_UNORM;
                 else if (bit_depth == 16)
-                    format = Format::RGBA16_UNorm;
+                    format = Format::RGBA16_UNORM;
 
                 break;
             }
             case PNG_COLOR_TYPE_PALETTE: {
-                if (bit_depth == 8) format = Format::RGBA8_UNorm;
+                if (bit_depth == 8) format = Format::RGBA8_UNORM;
                 else if (bit_depth == 16)
-                    format = Format::RGBA16_UNorm;
+                    format = Format::RGBA16_UNORM;
 
                 break;
             }
@@ -194,23 +194,24 @@ namespace stormkit::image::details {
         png_destroy_info_struct(png_ptr, &info_ptr);
         png_destroy_read_struct(&png_ptr, nullptr, nullptr);
 
-        auto image_data = image::Image::ImageData { .extent            = std::move(extent),
-                                                    .channel_count     = getChannelCountFor(format),
-                                                    .bytes_per_channel = getSizeof(format),
-                                                    .layers            = 1u,
-                                                    .faces             = 1u,
-                                                    .mip_levels        = 1u,
-                                                    .format            = format,
-                                                    .data              = std::move(image_memory) };
+        auto image_data
+            = image::Image::ImageData { .extent            = std::move(extent),
+                                        .channel_count     = get_format_channel_count(format),
+                                        .bytes_per_channel = getSizeof(format),
+                                        .layers            = 1u,
+                                        .faces             = 1u,
+                                        .mip_levels        = 1u,
+                                        .format            = format,
+                                        .data              = std::move(image_memory) };
 
         return Image { std::move(image_data) };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto savePNG(const image::Image& image, const std::filesystem::path& filepath) noexcept
+    auto save_png(const image::Image& image, const std::filesystem::path& filepath) noexcept
         -> std::expected<void, image::Image::Error> {
-        auto result = savePNG(image);
+        auto result = save_png(image);
 
         if (!result) return std::unexpected(result.error());
 
@@ -222,7 +223,7 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto savePNG(const image::Image& image) noexcept
+    auto save_png(const image::Image& image) noexcept
         -> std::expected<std::vector<Byte>, image::Image::Error> {
         auto output = std::vector<Byte> {};
 
@@ -231,14 +232,14 @@ namespace stormkit::image::details {
         auto png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
         if (!png_ptr)
             return std::unexpected(
-                Error { .reason    = Reason::Failed_To_Parse,
+                Error { .reason    = Reason::FAILED_TO_PARSE,
                         .str_error = "[libpng] Failed to init (png_create_write_struct)" });
 
         auto info_ptr = png_create_info_struct(png_ptr);
         if (!info_ptr) {
             png_destroy_write_struct(&png_ptr, nullptr);
             return std::unexpected(
-                Error { .reason    = Reason::Failed_To_Parse,
+                Error { .reason    = Reason::FAILED_TO_PARSE,
                         .str_error = "[libpng] Failed to init (png_create_info_struct)" });
         }
 
@@ -246,13 +247,13 @@ namespace stormkit::image::details {
             png_destroy_info_struct(png_ptr, &info_ptr);
             png_destroy_write_struct(&png_ptr, nullptr);
             return std::unexpected(
-                Error { .reason    = Reason::Failed_To_Parse,
+                Error { .reason    = Reason::FAILED_TO_PARSE,
                         .str_error = "[libpng] Unkown error during png creation" });
         }
 
         png_set_write_fn(png_ptr, &write_param, png::write_func, nullptr);
 
-        const auto& data = image.imageData();
+        const auto& data = image.image_data();
 
         png_set_IHDR(png_ptr,
                      info_ptr,

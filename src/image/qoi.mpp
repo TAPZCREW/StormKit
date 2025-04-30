@@ -2,26 +2,26 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.Image:QOIImage;
+export module stormkit.image:qoi;
 
 import std;
 
 import frozen;
 
 import stormkit.core;
-import stormkit.Image;
+import stormkit.image;
 
 export namespace stormkit::image::details {
     [[nodiscard]]
-    auto loadQOI(std::span<const Byte> data) noexcept
+    auto load_qoi(std::span<const Byte> data) noexcept
         -> std::expected<image::Image, image::Image::Error>;
 
     [[nodiscard]]
-    auto saveQOI(const image::Image& image, const std::filesystem::path& filepath) noexcept
+    auto save_qoi(const image::Image& image, const std::filesystem::path& filepath) noexcept
         -> std::expected<void, image::Image::Error>;
 
     [[nodiscard]]
-    auto saveQOI(const image::Image& image) noexcept
+    auto save_qoi(const image::Image& image) noexcept
         -> std::expected<std::vector<Byte>, image::Image::Error>;
 } // namespace stormkit::image::details
 
@@ -46,10 +46,10 @@ namespace stormkit::image::details {
 
         constexpr auto CHANNELS_TO_FORMAT
             = frozen::make_unordered_map<Int32, std::array<image::Image::Format, 2>>({
-                { 3, std::array { image::Image::Format::sRGB8, image::Image::Format::RGB8_UNorm } },
+                { 3, std::array { image::Image::Format::SRGB8, image::Image::Format::RGB8_UNORM } },
                 { 4,
-                 std::array { image::Image::Format::sRGBA8,
-                               image::Image::Format::RGBA8_UNorm }                                }
+                 std::array { image::Image::Format::SRGBA8,
+                               image::Image::Format::RGBA8_UNORM }                                }
         });
 
         constexpr auto END_OF_FILE = into_bytes(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01);
@@ -86,7 +86,7 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto loadQOI(std::span<const Byte> data) noexcept
+    auto load_qoi(std::span<const Byte> data) noexcept
         -> std::expected<image::Image, image::Image::Error> {
         const auto  raw_header = std::span<const Byte> { std::data(data), SIZE_OF_HEADER };
         const auto* header     = std::bit_cast<const QOIHeader*>(std::data(raw_header));
@@ -196,9 +196,9 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto saveQOI(const image::Image& image, const std::filesystem::path& filepath) noexcept
+    auto save_qoi(const image::Image& image, const std::filesystem::path& filepath) noexcept
         -> std::expected<void, image::Image::Error> {
-        auto result = saveQOI(image);
+        auto result = save_qoi(image);
 
         if (!result) return std::unexpected(result.error());
 
@@ -211,9 +211,9 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     /////////////////////////////////////
     [[nodiscard]]
-    auto saveQOI(const image::Image&) noexcept
+    auto save_qoi(const image::Image&) noexcept
         -> std::expected<std::vector<Byte>, image::Image::Error> {
         return std::unexpected(
-            Error { .reason = Reason::Not_Implemented, .str_error = "save to file" });
+            Error { .reason = Reason::NOT_IMPLEMENTED, .str_error = "save to file" });
     }
 } // namespace stormkit::image::details

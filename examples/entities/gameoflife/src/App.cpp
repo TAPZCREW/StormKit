@@ -34,7 +34,7 @@ auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char** arg
 
     m_board = image::Image {
         { BOARD_SIZE, BOARD_SIZE },
-        image::Image::Format::RGBA8_UNorm
+        image::Image::Format::RGBA8_UNORM
     };
 
     auto event_handler = wsi::EventHandler { *m_window };

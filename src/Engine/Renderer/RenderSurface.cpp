@@ -54,7 +54,7 @@ namespace stormkit::engine {
 
             transition_command_buffer.begin(true);
             transition_command_buffer.transitionImageLayout(image,
-                                                            gpu::ImageLayout::Undefined,
+                                                            gpu::ImageLayout::UNDEFINED,
                                                             gpu::ImageLayout::Present_Src);
             transition_command_buffer.end();
         }

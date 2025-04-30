@@ -239,7 +239,7 @@ namespace stormkit::engine {
                         .store_op           = gpu::AttachmentStoreOperation::Store,
                         .stencil_load_op    = gpu::AttachmentLoadOperation::Dont_Care,
                         .stencil_store_op   = gpu::AttachmentStoreOperation::Dont_Care,
-                        .source_layout      = gpu::ImageLayout::Undefined,
+                        .source_layout      = gpu::ImageLayout::UNDEFINED,
                         .destination_layout = gpu::ImageLayout::Color_Attachment_Optimal
                     };
 

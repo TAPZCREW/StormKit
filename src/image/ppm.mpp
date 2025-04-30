@@ -2,26 +2,26 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-export module stormkit.Image:PPMImage;
+export module stormkit.image:ppm;
 
 import std;
 
 import stormkit.core;
-import stormkit.Image;
+import stormkit.image;
 
 export namespace stormkit::image::details {
     [[nodiscard]]
-    auto loadPPM(std::span<const Byte> data) noexcept
+    auto load_ppm(std::span<const Byte> data) noexcept
         -> std::expected<image::Image, image::Image::Error>;
 
     [[nodiscard]]
-    auto savePPM(const image::Image&          image,
+    auto save_ppm(const image::Image&          image,
                  image::Image::CodecArgs      args,
                  const std::filesystem::path& filepath) noexcept
         -> std::expected<void, image::Image::Error>;
 
     [[nodiscard]]
-    auto savePPM(const image::Image& image, image::Image::CodecArgs args) noexcept
+    auto save_ppm(const image::Image& image, image::Image::CodecArgs args) noexcept
         -> std::expected<std::vector<Byte>, image::Image::Error>;
 } // namespace stormkit::image::details
 
@@ -36,25 +36,25 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto loadPPM(std::span<const Byte>) noexcept
+    auto load_ppm(std::span<const Byte>) noexcept
         -> std::expected<image::Image, image::Image::Error> {
         return std::unexpected(
-            Error { .reason = Reason::Not_Implemented, .str_error = "loader from memory" });
+            Error { .reason = Reason::NOT_IMPLEMENTED, .str_error = "loader from memory" });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto savePPM(const image::Image&          image,
+    auto save_ppm(const image::Image&          image,
                  image::Image::CodecArgs      args,
                  const std::filesystem::path& filepath) noexcept
         -> std::expected<void, image::Image::Error> {
-        auto result = savePPM(image, args);
+        auto result = save_ppm(image, args);
 
         if (!result) return std::unexpected(result.error());
 
         auto stream = std::ofstream {};
 
-        if (args == image::Image::CodecArgs::Ascii) stream.open(filepath);
+        if (args == image::Image::CodecArgs::ASCII) stream.open(filepath);
         else
             stream.open(filepath, std::ios::binary);
 
@@ -65,13 +65,13 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto savePPM(const image::Image& image, image::Image::CodecArgs args) noexcept
+    auto save_ppm(const image::Image& image, image::Image::CodecArgs args) noexcept
         -> std::expected<std::vector<Byte>, image::Image::Error> {
-        const auto  output_image = image.toFormat(Format::RGB8_UNorm);
-        const auto& data         = output_image.imageData();
+        const auto  output_image = image.convert_to(Format::RGB8_UNORM);
+        const auto& data         = output_image.image_data();
 
         auto output = std::vector<Byte> {};
-        if (args == image::Image::CodecArgs::Ascii) {
+        if (args == image::Image::CodecArgs::ASCII) {
             auto result = std::format("P3\n{}\n{}\n255\n"sv, data.extent.width, data.extent.height);
 
             const auto& extent = output_image.extent();
@@ -88,7 +88,7 @@ namespace stormkit::image::details {
 
             output.reserve(std::size(result));
             std::ranges::copy(as_bytes(result), std::back_inserter(output));
-        } else if (args == image::Image::CodecArgs::Binary) {
+        } else if (args == image::Image::CodecArgs::BINARY) {
             auto header = std::format("P3\n{}\n{}\n255\n"sv, data.extent.width, data.extent.height);
             output.reserve(std::size(output) + std::size(output_image));
 

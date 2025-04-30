@@ -111,7 +111,7 @@ auto TriangleApp::updateFrameGraph(engine::FrameGraphBuilder& graph,
                                                    engine::ImageDescription {
                                                        .extent = m_window_extent,
                                                        .type   = gpu::ImageType::T2D,
-                                                       .format = gpu::PixelFormat::BGRA8_UNorm })
+                                                       .format = gpu::PixelFormat::BGRA8_UNORM })
                                            .id();
 
                 graph.setFinalResource(task_data.backbuffer);

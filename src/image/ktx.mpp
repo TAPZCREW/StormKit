@@ -9,24 +9,24 @@ module;
 #include <glm/gtc/quaternion.hpp>
 #include <glm/integer.hpp>
 
-export module stormkit.Image:KTXImage;
+export module stormkit.image:ktx;
 
 import std;
 
 import stormkit.core;
-import stormkit.Image;
+import stormkit.image;
 
 export namespace stormkit::image::details {
     [[nodiscard]]
-    auto loadKTX(std::span<const Byte> data) noexcept
+    auto load_ktx(std::span<const Byte> data) noexcept
         -> std::expected<image::Image, image::Image::Error>;
 
     [[nodiscard]]
-    auto saveKTX(const image::Image& image, const std::filesystem::path& filepath) noexcept
+    auto save_ktx(const image::Image& image, const std::filesystem::path& filepath) noexcept
         -> std::expected<void, image::Image::Error>;
 
     [[nodiscard]]
-    auto saveKTX(const image::Image& image) noexcept
+    auto save_ktx(const image::Image& image) noexcept
         -> std::expected<std::vector<Byte>, image::Image::Error>;
 } // namespace stormkit::image::details
 
@@ -41,10 +41,10 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     /*constexpr auto toStormFormat(gli::format format) noexcept {*/
     /*switch (format) {*/
-    /*    case gli::format_R8_SNORM_PACK8: return Format::R8_SNorm;*/
-    /*    case gli::format_R8_UNORM_PACK8: return Format::R8_UNorm;*/
-    /*    case gli::format_R16_SNORM_PACK16: return Format::R16_SNorm;*/
-    /*    case gli::format_R16_UNORM_PACK16: return Format::R16_UNorm;*/
+    /*    case gli::format_R8_SNORM_PACK8: return Format::R8_SNORM;*/
+    /*    case gli::format_R8_UNORM_PACK8: return Format::R8_UNORM;*/
+    /*    case gli::format_R16_SNORM_PACK16: return Format::R16_SNORM;*/
+    /*    case gli::format_R16_UNORM_PACK16: return Format::R16_UNORM;*/
     /*    case gli::format_R8_SINT_PACK8: return Format::R8I;*/
     /*    case gli::format_R8_UINT_PACK8: return Format::R8U;*/
     /*    case gli::format_R16_SINT_PACK16: return Format::R16I;*/
@@ -54,10 +54,10 @@ namespace stormkit::image::details {
     /*    case gli::format_R16_SFLOAT_PACK16: return Format::R16F;*/
     /*    case gli::format_R32_SFLOAT_PACK32: return Format::R32F;*/
     /**/
-    /*    case gli::format_RG8_SNORM_PACK8: return Format::RG8_SNorm;*/
-    /*    case gli::format_RG8_UNORM_PACK8: return Format::RG8_UNorm;*/
-    /*    case gli::format_RG16_SNORM_PACK16: return Format::RG16_SNorm;*/
-    /*    case gli::format_RG16_UNORM_PACK16: return Format::RG16_UNorm;*/
+    /*    case gli::format_RG8_SNORM_PACK8: return Format::RG8_SNORM;*/
+    /*    case gli::format_RG8_UNORM_PACK8: return Format::RG8_UNORM;*/
+    /*    case gli::format_RG16_SNORM_PACK16: return Format::RG16_SNORM;*/
+    /*    case gli::format_RG16_UNORM_PACK16: return Format::RG16_UNORM;*/
     /*    case gli::format_RG8_SINT_PACK8: return Format::RG8I;*/
     /*    case gli::format_RG8_UINT_PACK8: return Format::RG8U;*/
     /*    case gli::format_RG16_SINT_PACK16: return Format::RG16I;*/
@@ -67,11 +67,11 @@ namespace stormkit::image::details {
     /*    case gli::format_RG16_SFLOAT_PACK16: return Format::RG16F;*/
     /*    case gli::format_RG32_SFLOAT_PACK32: return Format::RG32F;*/
     /**/
-    /*    case gli::format_RGB8_SNORM_PACK8: return Format::RGB8_SNorm;*/
-    /*    case gli::format_RGB8_UNORM_PACK8: return Format::RGB8_UNorm;*/
-    /*    case gli::format_RGB16_SNORM_PACK16: return Format::RGB16_SNorm;*/
-    /*    case gli::format_RGB16_UNORM_PACK16: return Format::RGB16_UNorm;*/
-    /*    case gli::format_BGR8_UNORM_PACK8: return Format::RGB16_UNorm;*/
+    /*    case gli::format_RGB8_SNORM_PACK8: return Format::RGB8_SNORM;*/
+    /*    case gli::format_RGB8_UNORM_PACK8: return Format::RGB8_UNORM;*/
+    /*    case gli::format_RGB16_SNORM_PACK16: return Format::RGB16_SNORM;*/
+    /*    case gli::format_RGB16_UNORM_PACK16: return Format::RGB16_UNORM;*/
+    /*    case gli::format_BGR8_UNORM_PACK8: return Format::RGB16_UNORM;*/
     /*    case gli::format_RGB8_SINT_PACK8: return Format::RGB8I;*/
     /*    case gli::format_RGB8_UINT_PACK8: return Format::RGB8U;*/
     /*    case gli::format_RGB16_SINT_PACK16: return Format::RGB16I;*/
@@ -80,14 +80,14 @@ namespace stormkit::image::details {
     /*    case gli::format_RGB32_UINT_PACK32: return Format::RGB32U;*/
     /*    case gli::format_RGB16_SFLOAT_PACK16: return Format::RGB16F;*/
     /*    case gli::format_RGB32_SFLOAT_PACK32: return Format::RGB32F;*/
-    /*    case gli::format_RGB8_SRGB_PACK8: return Format::sRGB8;*/
-    /*    case gli::format_BGR8_SRGB_PACK8: return Format::sBGR8;*/
+    /*    case gli::format_RGB8_SRGB_PACK8: return Format::SRGB8;*/
+    /*    case gli::format_BGR8_SRGB_PACK8: return Format::SBGR8;*/
     /**/
-    /*    case gli::format_RGBA8_SNORM_PACK8: return Format::RGBA8_SNorm;*/
-    /*    case gli::format_RGBA8_UNORM_PACK8: return Format::RGBA8_UNorm;*/
-    /*    case gli::format_RGBA16_SNORM_PACK16: return Format::RGBA16_SNorm;*/
-    /*    case gli::format_RGBA16_UNORM_PACK16: return Format::RGBA16_UNorm;*/
-    /*    case gli::format_BGRA8_UNORM_PACK8: return Format::RGBA16_UNorm;*/
+    /*    case gli::format_RGBA8_SNORM_PACK8: return Format::RGBA8_SNORM;*/
+    /*    case gli::format_RGBA8_UNORM_PACK8: return Format::RGBA8_UNORM;*/
+    /*    case gli::format_RGBA16_SNORM_PACK16: return Format::RGBA16_SNORM;*/
+    /*    case gli::format_RGBA16_UNORM_PACK16: return Format::RGBA16_UNORM;*/
+    /*    case gli::format_BGRA8_UNORM_PACK8: return Format::RGBA16_UNORM;*/
     /*    case gli::format_RGBA8_SINT_PACK8: return Format::RGBA8I;*/
     /*    case gli::format_RGBA8_UINT_PACK8: return Format::RGBA8U;*/
     /*    case gli::format_RGBA16_SINT_PACK16: return Format::RGBA16I;*/
@@ -96,17 +96,17 @@ namespace stormkit::image::details {
     /*    case gli::format_RGBA32_UINT_PACK32: return Format::RGBA32U;*/
     /*    case gli::format_RGBA16_SFLOAT_PACK16: return Format::RGBA16F;*/
     /*    case gli::format_RGBA32_SFLOAT_PACK32: return Format::RGBA32F;*/
-    /*    case gli::format_RGBA8_SRGB_PACK8: return Format::sRGBA8;*/
-    /*    case gli::format_BGRA8_SRGB_PACK8: return Format::sBGRA8;*/
+    /*    case gli::format_RGBA8_SRGB_PACK8: return Format::SRGBA8;*/
+    /*    case gli::format_BGRA8_SRGB_PACK8: return Format::SBGRA8;*/
     /*    default: break;*/
     /*}*/
     /**/
-    /*    return Format::Undefined;*/
+    /*    return Format::UNDEFINED;*/
     /*}*/
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto loadKTX([[maybe_unused]] std::span<const Byte> data) noexcept
+    auto load_ktx([[maybe_unused]] std::span<const Byte> data) noexcept
         -> std::expected<image::Image, image::Image::Error> {
         /*auto image = gli::load_ktx(reinterpret_cast<const char*>(std::data(data)),
          * std::size(data));*/
@@ -116,8 +116,8 @@ namespace stormkit::image::details {
         /*const auto mip_levels = as<UInt32>(image.levels());*/
         /*const auto format     = toStormFormat(image.format());*/
         /**/
-        /*if (format == Format::Undefined)*/
-        /*    return std::unexpected(Error { .reason    = Reason::Failed_To_Parse,*/
+        /*if (format == Format::UNDEFINED)*/
+        /*    return std::unexpected(Error { .reason    = Reason::FAILED_TO_PARSE,*/
         /*                                   .str_error = "Unsupported pixel format" });*/
         /**/
         /*auto image_memory = std::vector<Byte> {};*/
@@ -129,7 +129,7 @@ namespace stormkit::image::details {
         /**/
         /*image_data.extent = math::ExtentI { image.extent().x, image.extent().y, image.extent().z
          * };*/
-        /*image_data.channel_count     = getChannelCountFor(format);*/
+        /*image_data.channel_count     = get_format_channel_count(format);*/
         /*image_data.bytes_per_channel = getSizeof(format);*/
         /*image_data.mip_levels        = mip_levels;*/
         /*image_data.faces             = faces;*/
@@ -139,14 +139,14 @@ namespace stormkit::image::details {
         /**/
         /*return Image { std::move(image_data) };*/
         return std::unexpected(
-            Error { .reason = Reason::Not_Implemented, .str_error = "load to memory" });
+            Error { .reason = Reason::NOT_IMPLEMENTED, .str_error = "load to memory" });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto saveKTX(const image::Image& image, const std::filesystem::path& filepath) noexcept
+    auto save_ktx(const image::Image& image, const std::filesystem::path& filepath) noexcept
         -> std::expected<void, image::Image::Error> {
-        auto result = saveKTX(image);
+        auto result = save_ktx(image);
 
         if (!result) return std::unexpected(result.error());
 
@@ -160,9 +160,9 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto saveKTX(const image::Image&) noexcept
+    auto save_ktx(const image::Image&) noexcept
         -> std::expected<std::vector<Byte>, image::Image::Error> {
         return std::unexpected(
-            Error { .reason = Reason::Not_Implemented, .str_error = "save to memory" });
+            Error { .reason = Reason::NOT_IMPLEMENTED, .str_error = "save to memory" });
     }
 } // namespace stormkit::image::details
