@@ -7,7 +7,7 @@ module stormkit.Gpu;
 import std;
 
 import stormkit.core;
-import stormkit.Log;
+import stormkit.log;
 
 #include <stormkit/Log/LogMacro.hpp>
 

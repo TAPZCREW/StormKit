@@ -11,7 +11,7 @@ export module Constants;
 import std;
 
 import stormkit.core;
-import stormkit.Log;
+import stormkit.log;
 
 export {
     struct Vertex {

@@ -5,7 +5,7 @@
 import std;
 
 import stormkit.core;
-import stormkit.Log;
+import stormkit.log;
 
 #include <stormkit/main/main_macro.hpp>
 
@@ -44,7 +44,7 @@ struct std::formatter<Foo, CharT>: std::formatter<std::basic_string<CharT>, Char
 auto main([[maybe_unused]] std::span<const std::string_view> args) -> int {
     using log::operator""_module;
 
-    auto logger = log::Logger::createLoggerInstance<log::ConsoleLogger>();
+    auto logger = log::Logger::create_logger_instance<log::ConsoleLogger>();
 
     log::Logger::ilog("This is an information");
     log::Logger::dlog("This is a debug information");

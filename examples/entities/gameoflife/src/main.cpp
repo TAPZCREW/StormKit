@@ -2,7 +2,7 @@
 import std;
 
 import stormkit.core;
-import stormkit.Log;
+import stormkit.log;
 import stormkit.Main;
 
 import App;

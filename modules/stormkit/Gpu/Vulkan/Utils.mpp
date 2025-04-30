@@ -11,7 +11,7 @@ export module stormkit.Gpu.Vulkan:utils;
 import std;
 
 import stormkit.core;
-import stormkit.Log;
+import stormkit.log;
 
 import vulkan_hpp;
 
