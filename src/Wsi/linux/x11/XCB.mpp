@@ -57,7 +57,7 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto getXCBConnection() noexcept -> Ref<xcb_connection_t> {
+    inline auto getXCBConnection() noexcept -> Ref<xcb_connection_t> {
         if (!xcb_connection) [[unlikely]] {
             xcb_connection.reset(xcb_connect(nullptr, nullptr));
             dlog("New xcb connection {}", std::bit_cast<void*>(xcb_connection.get()));
@@ -71,7 +71,7 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto getXCBAtom(std::string_view name, bool only_if_exists) noexcept
+    inline auto getXCBAtom(std::string_view name, bool only_if_exists) noexcept
         -> std::expected<xcb_atom_t, Error> {
         auto it = xcb_atoms.find(name);
 
@@ -97,7 +97,7 @@ namespace stormkit::wsi::linux::x11 {
         return atom;
     }
 
-    STORMKIT_INLINE auto getXCBAtomName(xcb_atom_t atom) -> std::expected<std::string, Error> {
+    inline auto getXCBAtomName(xcb_atom_t atom) -> std::expected<std::string, Error> {
         const auto connection = getXCBConnection();
 
         const auto cookie = xcb_get_atom_name(connection, atom);
@@ -113,7 +113,7 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto getXCBErrorContext() noexcept -> Ref<xcb_errors_context_t> {
+    inline auto getXCBErrorContext() noexcept -> Ref<xcb_errors_context_t> {
         if (!xcb_error_context) [[unlikely]] {
             using XCBErrorCtxPtr = xcb_errors_context_t*;
             auto ctx             = XCBErrorCtxPtr { nullptr };
@@ -128,7 +128,7 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto getXCBError(Ref<xcb_generic_error_t> error) -> std::string {
+    inline auto getXCBError(Ref<xcb_generic_error_t> error) -> std::string {
         expects(error);
 
         auto guard = XCBGenericErrorScoped { error };
@@ -151,7 +151,7 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto getXIDeviceInfo(xcb_input_device_id_t device_id)
+    inline auto getXIDeviceInfo(xcb_input_device_id_t device_id)
         -> std::expected<Ref<xcb_input_xi_device_info_t>, Error> {
         auto connection = getXCBConnection();
 

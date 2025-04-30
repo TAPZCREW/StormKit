@@ -62,8 +62,9 @@ namespace stormkit::engine {
             .shader_state         = { .shaders = as_refs<std::vector>(m_render_data->vertex_shader,
                                      m_render_data->fragment_shader) },
             .vertex_input_state
-            = { .binding_descriptions         = to_dyn_array(Sprite_Vertex_Binding_Descriptions),
-                                     .input_attribute_descriptions = to_dyn_array(Sprite_Vertex_Attribute_Descriptions) },
+            = { .binding_descriptions = to_dyn_array(Sprite_Vertex_Binding_Descriptions),
+                                     .input_attribute_descriptions
+                = to_dyn_array(Sprite_Vertex_Attribute_Descriptions) },
         };
     }
 
@@ -148,10 +149,10 @@ namespace stormkit::engine {
 
                 graph.setFinalResource(task_data.backbuffer->id());
             },
-            [this](const DrawTask&                               task_data,
-                   OptionalRef<gpu::RenderPass>                  render_pass,
-                   gpu::CommandBuffer&                           cmb,
-                   [[maybe_unused]] const BakedFrameGraph::Data& graph_data) noexcept {
+            [this](const DrawTask&              task_data,
+                   OptionalRef<gpu::RenderPass> render_pass,
+                   gpu::CommandBuffer&          cmb,
+                   const BakedFrameGraph::Data&) noexcept {
                 if (not m_render_data->pipeline) {
                     m_render_data->pipeline
                         = gpu::Pipeline::create(m_renderer->device(),

@@ -14,16 +14,19 @@ import :typesafe.byte;
 import :typesafe.integer;
 
 export namespace stormkit { inline namespace core {
-    [[nodiscard]] auto read(std::istream& stream, RangeExtent size) noexcept -> std::vector<Byte>;
+    [[nodiscard]]
+    auto read(std::istream& stream, RangeExtent size) noexcept -> std::vector<Byte>;
 
     template<RangeExtent size>
-    [[nodiscard]] auto read(std::istream& stream) noexcept -> std::array<Byte, size>;
+    [[nodiscard]]
+    auto read(std::istream& stream) noexcept -> std::array<Byte, size>;
 
     auto read(std::istream& stream, std::span<Byte> output) noexcept -> void;
 
     auto write(std::ostream& stream, std::span<const Byte> data) noexcept -> void;
 
-    [[nodiscard]] auto read_text(std::istream& stream, RangeExtent size) noexcept -> std::string;
+    [[nodiscard]]
+    auto read_text(std::istream& stream, RangeExtent size) noexcept -> std::string;
 
     auto read_text(std::istream& stream, std::span<char> output) noexcept -> void;
 

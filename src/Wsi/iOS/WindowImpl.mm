@@ -53,8 +53,8 @@ void WindowImpl::create(const std::string &title,
     m_view.backgroundColor = UIColor.redColor;
 
     m_view_controller = [ViewController alloc];
-    m_view_controller.hideStatusBar =
-        ((m_style & WindowStyle::Fullscreen) == WindowStyle::Fullscreen) ? YES : NO;
+    m_view_controller.hideStatusBar
+        = ((m_style & WindowStyle::Fullscreen) == WindowStyle::Fullscreen) ? YES : NO;
     m_view_controller.view = m_view;
     // m_view_controller.title = title;
 
@@ -69,21 +69,17 @@ void WindowImpl::close() noexcept {
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool WindowImpl::pollEvent(storm::window::Event &event,
-                           [[maybe_unused]] void *native_event) noexcept {
-    while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0001, true) == kCFRunLoopRunHandledSource)
-        ;
+bool WindowImpl::pollEvent(storm::window::Event &event, void *) noexcept {
+    while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0001, true) == kCFRunLoopRunHandledSource);
 
     return AbstractWindow::pollEvent(event);
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-bool WindowImpl::waitEvent(storm::window::Event &event,
-                           [[maybe_unused]] void *native_event) noexcept {
+bool WindowImpl::waitEvent(storm::window::Event &event, void *native_event) noexcept {
     ;
-    while (!AbstractWindow::waitEvent(event, native_event))
-        ;
+    while (!AbstractWindow::waitEvent(event, native_event));
 
     return true;
 }

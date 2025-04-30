@@ -38,19 +38,20 @@ export {
             Instance(Instance&&) noexcept;
             auto operator=(Instance&&) noexcept -> Instance&;
 
-            [[nodiscard]] static auto create(std::string app_name = "",
-                                             bool        verbose
-                                             = (STORMKIT_BUILD_TYPE == "DEBUG")) noexcept
+            [[nodiscard]]
+            static auto create(std::string app_name = "",
+                               bool        verbose  = (STORMKIT_BUILD_TYPE == "DEBUG")) noexcept
                 -> Expected<Instance>;
-            [[nodiscard]] static auto allocate(std::string app_name = "",
-                                               bool        verbose
-                                               = (STORMKIT_BUILD_TYPE == "DEBUG")) noexcept
+            [[nodiscard]]
+            static auto allocate(std::string app_name = "",
+                                 bool        verbose  = (STORMKIT_BUILD_TYPE == "DEBUG")) noexcept
                 -> Expected<std::unique_ptr<Instance>>;
 
-            [[nodiscard]] auto physicalDevices() const noexcept
-                -> const std::vector<PhysicalDevice>&;
+            [[nodiscard]]
+            auto physicalDevices() const noexcept -> const std::vector<PhysicalDevice>&;
 
-            [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::Instance&;
+            [[nodiscard]]
+            auto vkHandle() const noexcept -> const vk::raii::Instance&;
 
             // #ifdef STORMKIT_WSI_ENABLED
             //[[nodiscard]] auto createWindowSurface(
@@ -108,22 +109,26 @@ export {
             PhysicalDevice(PhysicalDevice&&) noexcept;
             auto operator=(PhysicalDevice&&) noexcept -> PhysicalDevice&;
 
-            [[nodiscard]] auto checkExtensionSupport(std::string_view extension) const noexcept
+            [[nodiscard]]
+            auto checkExtensionSupport(std::string_view extension) const noexcept -> bool;
+            [[nodiscard]]
+            auto checkExtensionSupport(std::span<const std::string_view> extensions) const noexcept
                 -> bool;
-            [[nodiscard]] auto
-                checkExtensionSupport(std::span<const std::string_view> extensions) const noexcept
-                -> bool;
-            [[nodiscard]] auto
-                checkExtensionSupport(std::span<const CZString> extensions) const noexcept -> bool;
+            [[nodiscard]]
+            auto checkExtensionSupport(std::span<const CZString> extensions) const noexcept -> bool;
 
-            [[nodiscard]] auto info() const noexcept -> const PhysicalDeviceInfo&;
-            [[nodiscard]] auto capabilities() const noexcept -> const RenderCapabilities&;
-            [[nodiscard]] auto memoryProperties() const noexcept
-                -> const std::vector<MemoryPropertyFlag>&;
+            [[nodiscard]]
+            auto info() const noexcept -> const PhysicalDeviceInfo&;
+            [[nodiscard]]
+            auto capabilities() const noexcept -> const RenderCapabilities&;
+            [[nodiscard]]
+            auto memoryProperties() const noexcept -> const std::vector<MemoryPropertyFlag>&;
 
-            [[nodiscard]] auto queueFamilies() const noexcept -> const std::vector<QueueFamily>&;
+            [[nodiscard]]
+            auto queueFamilies() const noexcept -> const std::vector<QueueFamily>&;
 
-            [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::PhysicalDevice&;
+            [[nodiscard]]
+            auto vkHandle() const noexcept -> const vk::raii::PhysicalDevice&;
 
           private:
             explicit PhysicalDevice(vk::raii::PhysicalDevice physical_device);
@@ -164,14 +169,16 @@ export {
             //     allocateOffscreen(const Instance& instance) noexcept ->
             //     Expected<std::unique_ptr<Surface>>;
 
-            [[nodiscard]] static auto createFromWindow(const Instance&    instance,
-                                                       const wsi::Window& window) noexcept
-                -> Expected<Surface>;
-            [[nodiscard]] static auto allocateFromWindow(const Instance&    instance,
-                                                         const wsi::Window& window) noexcept
+            [[nodiscard]]
+            static auto createFromWindow(const Instance&    instance,
+                                         const wsi::Window& window) noexcept -> Expected<Surface>;
+            [[nodiscard]]
+            static auto allocateFromWindow(const Instance&    instance,
+                                           const wsi::Window& window) noexcept
                 -> Expected<std::unique_ptr<Surface>>;
 
-            [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::SurfaceKHR&;
+            [[nodiscard]]
+            auto vkHandle() const noexcept -> const vk::raii::SurfaceKHR&;
 
           private:
             DeferInit<vk::raii::SurfaceKHR> m_vk_surface;
@@ -220,8 +227,8 @@ namespace stormkit::gpu {
         doInitInstance()
             .and_then(bindFront(&Instance::doInitDebugReportCallback, this))
             .and_then(bindFront(&Instance::doRetrievePhysicalDevices, this))
-            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
-                                                core:.monadic::throw_as_exception()));
+            .transform_error(core :.monadic::map(core :.monadic::narrow<Result>(),
+                                                 core :.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////

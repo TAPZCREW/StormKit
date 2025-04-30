@@ -12,14 +12,16 @@ import stormkit.core;
 import stormkit.Image;
 
 export namespace stormkit::image::details {
-    [[nodiscard]] auto loadQOI(std::span<const Byte> data) noexcept
+    [[nodiscard]]
+    auto loadQOI(std::span<const Byte> data) noexcept
         -> std::expected<image::Image, image::Image::Error>;
 
-    [[nodiscard]] auto saveQOI(const image::Image&          image,
-                               const std::filesystem::path& filepath) noexcept
+    [[nodiscard]]
+    auto saveQOI(const image::Image& image, const std::filesystem::path& filepath) noexcept
         -> std::expected<void, image::Image::Error>;
 
-    [[nodiscard]] auto saveQOI(const image::Image& image) noexcept
+    [[nodiscard]]
+    auto saveQOI(const image::Image& image) noexcept
         -> std::expected<std::vector<Byte>, image::Image::Error>;
 } // namespace stormkit::image::details
 
@@ -84,7 +86,7 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto loadQOI([[maybe_unused]] std::span<const Byte> data) noexcept
+    auto loadQOI(std::span<const Byte> data) noexcept
         -> std::expected<image::Image, image::Image::Error> {
         const auto  raw_header = std::span<const Byte> { std::data(data), SIZE_OF_HEADER };
         const auto* header     = std::bit_cast<const QOIHeader*>(std::data(raw_header));
@@ -112,7 +114,7 @@ namespace stormkit::image::details {
         auto       it   = std::ranges::begin(chunks);
 
         const auto chunks_size = output_size - std::size(END_OF_FILE);
-        for ([[maybe_unused]] auto _ : range(output_size, channels)) {
+        for (auto _ : range(output_size, channels)) {
             const auto tag = *it;
 
             const auto position = as<RangeExtent>(std::distance(std::ranges::begin(chunks), it));
@@ -208,7 +210,8 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    [[nodiscard]] auto saveQOI([[maybe_unused]] const image::Image& image) noexcept
+    [[nodiscard]]
+    auto saveQOI(const image::Image&) noexcept
         -> std::expected<std::vector<Byte>, image::Image::Error> {
         return std::unexpected(
             Error { .reason = Reason::Not_Implemented, .str_error = "save to file" });

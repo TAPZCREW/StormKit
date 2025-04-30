@@ -36,11 +36,13 @@ export namespace stormkit::engine {
         Renderer(Renderer&&) noexcept;
         auto operator=(Renderer&&) noexcept -> Renderer&;
 
-        [[nodiscard]] static auto create(std::string_view                      application_name,
-                                         std::optional<Ref<const wsi::Window>> window) noexcept
+        [[nodiscard]]
+        static auto create(std::string_view                      application_name,
+                           std::optional<Ref<const wsi::Window>> window) noexcept
             -> gpu::Expected<Renderer>;
-        [[nodiscard]] static auto allocate(std::string_view                      application_name,
-                                           std::optional<Ref<const wsi::Window>> window) noexcept
+        [[nodiscard]]
+        static auto allocate(std::string_view                      application_name,
+                             std::optional<Ref<const wsi::Window>> window) noexcept
             -> gpu::Expected<std::unique_ptr<Renderer>>;
 
         auto updateFrameGraph(std::mutex&                 mutex,
@@ -91,10 +93,9 @@ export namespace stormkit::engine {
 namespace stormkit::engine {
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    Renderer::Renderer(std::string_view                      application_name,
-                       std::optional<Ref<const wsi::Window>> window,
-                       Tag) {
+    STORMKIT_FORCE_INLINE Renderer::Renderer(std::string_view                      application_name,
+                                             std::optional<Ref<const wsi::Window>> window,
+                                             Tag) {
         doInit(application_name, std::move(window)).transform_error(monadic::throw_as_exception());
     }
 

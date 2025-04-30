@@ -19,36 +19,49 @@ export namespace stormkit { inline namespace core {
     using ByteDynArray    = std::vector<std::byte>;
     using MutableByteView = std::span<std::byte>;
 
-    [[nodiscard]] constexpr auto byte_swap(auto value) noexcept;
+    [[nodiscard]]
+    constexpr auto byte_swap(auto value) noexcept;
 
-    [[nodiscard]] constexpr auto as_bytes(std::ranges::range auto& container);
+    [[nodiscard]]
+    constexpr auto as_bytes(std::ranges::range auto& container);
 
-    [[nodiscard]] constexpr auto as_bytes(meta::IsPointer auto ptr, RangeExtent size = 1);
+    [[nodiscard]]
+    constexpr auto as_bytes(meta::IsPointer auto ptr, RangeExtent size = 1);
 
     template<class T>
         requires(not std::ranges::range<T> and not meta::IsPointer<T>)
-    [[nodiscard]] constexpr auto as_bytes(T& value);
+    [[nodiscard]]
+    constexpr auto as_bytes(T& value);
 
     template<typename... Bytes>
-    [[nodiscard]] constexpr auto into_bytes(Bytes... bytes) noexcept -> ByteArray<sizeof...(Bytes)>;
+    [[nodiscard]]
+    constexpr auto into_bytes(Bytes... bytes) noexcept -> ByteArray<sizeof...(Bytes)>;
 
     template<meta::IsByteSized... Bytes>
-    [[nodiscard]] constexpr auto into_bytes(Bytes... bytes) noexcept -> ByteArray<sizeof...(Bytes)>;
+    [[nodiscard]]
+    constexpr auto into_bytes(Bytes... bytes) noexcept -> ByteArray<sizeof...(Bytes)>;
 
     namespace literals {
-        [[nodiscard]] constexpr auto operator""_b(unsigned long long int value) noexcept;
+        [[nodiscard]]
+        constexpr auto operator""_b(unsigned long long int value) noexcept;
 
-        [[nodiscard]] constexpr auto operator""_kb(unsigned long long x) noexcept -> core::UInt64;
+        [[nodiscard]]
+        constexpr auto operator""_kb(unsigned long long x) noexcept -> core::UInt64;
 
-        [[nodiscard]] constexpr auto operator""_mb(unsigned long long x) noexcept -> core::UInt64;
+        [[nodiscard]]
+        constexpr auto operator""_mb(unsigned long long x) noexcept -> core::UInt64;
 
-        [[nodiscard]] constexpr auto operator""_gb(unsigned long long x) noexcept -> core::UInt64;
+        [[nodiscard]]
+        constexpr auto operator""_gb(unsigned long long x) noexcept -> core::UInt64;
 
-        [[nodiscard]] constexpr auto operator""_kib(unsigned long long x) noexcept -> core::UInt64;
+        [[nodiscard]]
+        constexpr auto operator""_kib(unsigned long long x) noexcept -> core::UInt64;
 
-        [[nodiscard]] constexpr auto operator""_mib(unsigned long long x) noexcept -> core::UInt64;
+        [[nodiscard]]
+        constexpr auto operator""_mib(unsigned long long x) noexcept -> core::UInt64;
 
-        [[nodiscard]] constexpr auto operator""_gib(unsigned long long x) noexcept -> core::UInt64;
+        [[nodiscard]]
+        constexpr auto operator""_gib(unsigned long long x) noexcept -> core::UInt64;
 
     } // namespace literals
 }} // namespace stormkit::core

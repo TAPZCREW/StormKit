@@ -10,15 +10,18 @@ import stormkit.core;
 import stormkit.Image;
 
 export namespace stormkit::image::details {
-    [[nodiscard]] auto loadPPM(std::span<const Byte> data) noexcept
+    [[nodiscard]]
+    auto loadPPM(std::span<const Byte> data) noexcept
         -> std::expected<image::Image, image::Image::Error>;
 
-    [[nodiscard]] auto savePPM(const image::Image&          image,
-                               image::Image::CodecArgs      args,
-                               const std::filesystem::path& filepath) noexcept
+    [[nodiscard]]
+    auto savePPM(const image::Image&          image,
+                 image::Image::CodecArgs      args,
+                 const std::filesystem::path& filepath) noexcept
         -> std::expected<void, image::Image::Error>;
 
-    [[nodiscard]] auto savePPM(const image::Image& image, image::Image::CodecArgs args) noexcept
+    [[nodiscard]]
+    auto savePPM(const image::Image& image, image::Image::CodecArgs args) noexcept
         -> std::expected<std::vector<Byte>, image::Image::Error>;
 } // namespace stormkit::image::details
 
@@ -33,7 +36,7 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto loadPPM([[maybe_unused]] std::span<const Byte> data) noexcept
+    auto loadPPM(std::span<const Byte>) noexcept
         -> std::expected<image::Image, image::Image::Error> {
         return std::unexpected(
             Error { .reason = Reason::Not_Implemented, .str_error = "loader from memory" });
@@ -75,7 +78,10 @@ namespace stormkit::image::details {
             for (auto [i, j] : multi_range(extent.height, extent.width)) {
                 const auto pixel = output_image.pixel(i * output_image.extent().width + j);
 
-                result += std::format("{} {} {}\n"sv, as<UInt16>(pixel[0]), as<UInt16>(pixel[1]), as<UInt16>(pixel[2]));
+                result += std::format("{} {} {}\n"sv,
+                                      as<UInt16>(pixel[0]),
+                                      as<UInt16>(pixel[1]),
+                                      as<UInt16>(pixel[2]));
 
                 if (j == extent.width) result += '\n';
             }

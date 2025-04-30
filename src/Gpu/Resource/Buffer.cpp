@@ -23,7 +23,7 @@ namespace stormkit::gpu {
             .createBuffer({ .size        = m_size,
                             .usage       = narrow<vk::BufferUsageFlagBits>(m_usages),
                             .sharingMode = vk::SharingMode::eExclusive })
-            .transform(core:.monadic::set(m_vk_buffer))
+            .transform(core :.monadic::set(m_vk_buffer))
             .transform([this, &info, &device]() noexcept -> VulkanExpected<void> {
                 const auto requirements = m_vk_buffer->getMemoryRequirements();
 
@@ -43,22 +43,20 @@ namespace stormkit::gpu {
                 if (error != vk::Result::eSuccess)
                     return std::unexpected { narrow<vk::Result>(error) };
 
-                if (m_is_persistently_mapped) [[maybe_unused]]
-                    auto _ = map(device, 0u);
+                if (m_is_persistently_mapped) auto _ = map(device, 0u);
 
                 return {};
             })
-            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
-                                                core:.monadic::throw_as_exception()));
+            .transform_error(core :.monadic::map(core :.monadic::narrow<Result>(),
+                                                 core :.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Buffer::findMemoryType(UInt                                           type_filter,
-                                vk::MemoryPropertyFlags                        properties,
-                                const vk::PhysicalDeviceMemoryProperties&      mem_properties,
-                                [[maybe_unused]] const vk::MemoryRequirements& mem_requirements)
-        -> UInt {
+    auto Buffer::findMemoryType(UInt                                      type_filter,
+                                vk::MemoryPropertyFlags                   properties,
+                                const vk::PhysicalDeviceMemoryProperties& mem_properties,
+                                const vk::MemoryRequirements&) -> UInt {
         for (auto i : range(mem_properties.memoryTypeCount)) {
             if ((type_filter & (1 << i))
                 and (checkFlag(mem_properties.memoryTypes[i].propertyFlags, properties)))

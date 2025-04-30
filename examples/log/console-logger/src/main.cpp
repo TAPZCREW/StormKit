@@ -41,7 +41,7 @@ struct std::formatter<Foo, CharT>: std::formatter<std::basic_string<CharT>, Char
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-auto main([[maybe_unused]] std::span<const std::string_view> args) -> int {
+auto main(std::span<const std::string_view>) -> int {
     using log::operator""_module;
 
     auto logger = log::Logger::create_logger_instance<log::ConsoleLogger>();
@@ -60,6 +60,6 @@ auto main([[maybe_unused]] std::span<const std::string_view> args) -> int {
 
     const auto foo = Foo {};
     log::Logger::ilog("you can format complexes structures\n{}", foo);
-    
+
     return 0;
 }

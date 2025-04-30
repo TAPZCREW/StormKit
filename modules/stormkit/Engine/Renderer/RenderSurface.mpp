@@ -52,13 +52,16 @@ export namespace stormkit::engine {
                                        const wsi::Window&   window) noexcept
             -> gpu::Expected<std::unique_ptr<RenderSurface>>;
 
-        [[nodiscard]] auto beginFrame(const gpu::Device& device) -> gpu::Expected<Frame>;
-        [[nodiscard]] auto presentFrame(const gpu::Queue& queue, const Frame& frame)
-            -> gpu::Expected<void>;
+        [[nodiscard]]
+        auto beginFrame(const gpu::Device& device) -> gpu::Expected<Frame>;
+        [[nodiscard]]
+        auto presentFrame(const gpu::Queue& queue, const Frame& frame) -> gpu::Expected<void>;
 
-        [[nodiscard]] auto bufferingCount() const noexcept -> UInt32;
+        [[nodiscard]]
+        auto bufferingCount() const noexcept -> UInt32;
 
-        [[nodiscard]] auto images() const noexcept -> const std::vector<gpu::SwapchainImage>&;
+        [[nodiscard]]
+        auto images() const noexcept -> const std::vector<gpu::SwapchainImage>&;
 
       private:
         DeferInit<gpu::Surface>       m_surface;
@@ -116,8 +119,7 @@ namespace stormkit::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    auto RenderSurface::bufferingCount() const noexcept -> UInt32 {
+    STORMKIT_FORCE_INLINE auto RenderSurface::bufferingCount() const noexcept -> UInt32 {
         return as<UInt32>(std::size(images()));
     }
 

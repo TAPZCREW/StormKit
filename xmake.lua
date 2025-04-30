@@ -28,9 +28,7 @@ modules = {
                 if not has_stacktrace then
                     print("No std C++23 stacktrace, falling back to cpptrace")
                     target:add("packages", "cpptrace")
-                    if not target:is_plat("windows") then
-                        target:add("packages", "libdwarf")
-                    end
+                    if not target:is_plat("windows") then target:add("packages", "libdwarf") end
                 end
             end)
             on_config(function(target)
@@ -329,9 +327,7 @@ add_requireconfs("libxkbcommon", { configs = { ["x11"] = true, wayland = true } 
 add_requireconfs("frozen", { system = false })
 
 add_requires("cpptrace")
-if not is_plat("windows") then
-    add_requires("libdwarf")
-end
+if not is_plat("windows") then add_requires("libdwarf") end
 
 ---------------------------- targets ----------------------------
 for name, module in pairs(modules) do
@@ -466,7 +462,7 @@ for name, module in pairs(modules) do
             end
 
             if module.frameworks then add_frameworks(module.frameworks, { public = is_kind("static") }) end
-            
+
             set_fpmodels("fast")
             add_vectorexts("fma")
             add_vectorexts("neon")
@@ -486,7 +482,7 @@ for name, module in pairs(modules) do
                 add_cxflags("-fno-omit-frame-pointer", { tools = { "clang", "gcc" } })
                 add_mxflags("-ggdb3", { tools = { "clang", "gcc" } })
             end
-            
+
             add_options("sanitizers")
         end)
     end

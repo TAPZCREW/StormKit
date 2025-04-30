@@ -95,7 +95,7 @@ namespace stormkit::gpu {
 
         return device.vkHandle()
             .createRenderPass(create_info)
-            .transform(core:.monadic::set(m_vk_render_pass));
+            .transform(core :.monadic::set(m_vk_render_pass));
     }
 
     /////////////////////////////////////

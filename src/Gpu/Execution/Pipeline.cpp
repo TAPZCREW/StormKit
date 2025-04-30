@@ -167,9 +167,9 @@ namespace stormkit::gpu {
 
         const auto vk_pipeline_cache
             = core::either(pipeline_cache,
-                           core:.monadic::map(monadic::toRaiiVkHandle(),
-                                              core:.monadic::init<PipelineCacheOpt>()),
-                           core:.monadic::init<PipelineCacheOpt>(nullptr));
+                           core :.monadic::map(monadic::toRaiiVkHandle(),
+                                               core :.monadic::init<PipelineCacheOpt>()),
+                           core :.monadic::init<PipelineCacheOpt>(nullptr));
 
         return toRaiiVkHandle(device)
             .createGraphicsPipelines(vk_pipeline_cache, create_info)

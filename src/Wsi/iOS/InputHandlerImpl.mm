@@ -60,6 +60,6 @@ core::math::Vector2U InputHandlerImpl::getMousePosition(const Window &relative_t
 
 /////////////////////////////////////
 /////////////////////////////////////
-void InputHandlerImpl::setVirtualKeyboardVisible([[maybe_unused]] bool visible) {
+void InputHandlerImpl::setVirtualKeyboardVisible(bool) {
     // not supported
 }

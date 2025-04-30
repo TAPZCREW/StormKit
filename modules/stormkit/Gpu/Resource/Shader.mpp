@@ -35,34 +35,43 @@ export namespace stormkit::gpu {
         Shader(Shader&&) noexcept;
         auto operator=(Shader&&) noexcept -> Shader&;
 
-        [[nodiscard]] static auto loadFromFile(const Device&                device,
-                                               const std::filesystem::path& filepath,
-                                               ShaderStageFlag type) noexcept -> Expected<Shader>;
-        [[nodiscard]] static auto fromBytes(const Device&         device,
-                                            std::span<const Byte> data,
-                                            ShaderStageFlag type) noexcept -> Expected<Shader>;
-        [[nodiscard]] static auto fromSpirv(const Device&            device,
-                                            std::span<const SpirvID> data,
-                                            ShaderStageFlag type) noexcept -> Expected<Shader>;
+        [[nodiscard]]
+        static auto loadFromFile(const Device&                device,
+                                 const std::filesystem::path& filepath,
+                                 ShaderStageFlag              type) noexcept -> Expected<Shader>;
+        [[nodiscard]]
+        static auto fromBytes(const Device&         device,
+                              std::span<const Byte> data,
+                              ShaderStageFlag       type) noexcept -> Expected<Shader>;
+        [[nodiscard]]
+        static auto fromSpirv(const Device&            device,
+                              std::span<const SpirvID> data,
+                              ShaderStageFlag          type) noexcept -> Expected<Shader>;
 
-        [[nodiscard]] static auto allocate_and_loadFromFile(const Device&                device,
-                                                          const std::filesystem::path& filepath,
-                                                          ShaderStageFlag type) noexcept
+        [[nodiscard]]
+        static auto allocate_and_loadFromFile(const Device&                device,
+                                              const std::filesystem::path& filepath,
+                                              ShaderStageFlag              type) noexcept
             -> Expected<std::unique_ptr<Shader>>;
-        [[nodiscard]] static auto allocateFromBytes(const Device&         device,
-                                                    std::span<const Byte> data,
-                                                    ShaderStageFlag       type) noexcept
+        [[nodiscard]]
+        static auto allocateFromBytes(const Device&         device,
+                                      std::span<const Byte> data,
+                                      ShaderStageFlag       type) noexcept
             -> Expected<std::unique_ptr<Shader>>;
-        [[nodiscard]] static auto allocateFromSpirv(const Device&            device,
-                                                    std::span<const SpirvID> data,
-                                                    ShaderStageFlag          type) noexcept
+        [[nodiscard]]
+        static auto allocateFromSpirv(const Device&            device,
+                                      std::span<const SpirvID> data,
+                                      ShaderStageFlag          type) noexcept
             -> Expected<std::unique_ptr<Shader>>;
 
-        [[nodiscard]] auto type() const noexcept -> ShaderStageFlag;
-        [[nodiscard]] auto source() const noexcept -> const std::vector<SpirvID>&;
+        [[nodiscard]]
+        auto type() const noexcept -> ShaderStageFlag;
+        [[nodiscard]]
+        auto source() const noexcept -> const std::vector<SpirvID>&;
         // const DescriptorSetLayout &descriptorSetLayout() const noexcept;
 
-        [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::ShaderModule&;
+        [[nodiscard]]
+        auto vkHandle() const noexcept -> const vk::raii::ShaderModule&;
 
       private:
         auto compile(const Device& device) -> void;
@@ -82,11 +91,10 @@ export namespace stormkit::gpu {
 namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    Shader::Shader(const Device&                device,
-                   const std::filesystem::path& filepath,
-                   ShaderStageFlag              type,
-                   Tag)
+    STORMKIT_FORCE_INLINE Shader::Shader(const Device&                device,
+                                         const std::filesystem::path& filepath,
+                                         ShaderStageFlag              type,
+                                         Tag)
         : m_type { type } {
         auto       stream = std::ifstream { filepath.string(), std::ios::binary | std::ios::ate };
         const auto size   = stream.tellg();
@@ -152,8 +160,8 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto
         Shader::allocate_and_loadFromFile(const Device&                device,
-                                        const std::filesystem::path& filepath,
-                                        ShaderStageFlag              type) noexcept
+                                          const std::filesystem::path& filepath,
+                                          ShaderStageFlag              type) noexcept
         -> Expected<std::unique_ptr<Shader>> try {
         return std::make_unique<Shader>(device, filepath, type, Tag {});
     } catch (const Result& result) { return std::unexpected(result); }
@@ -183,9 +191,9 @@ namespace stormkit::gpu {
 
         device.vkHandle()
             .createShaderModule(create_info)
-            .transform(core:.monadic::set(m_vk_shader_module))
-            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
-                                                core:.monadic::throw_as_exception()));
+            .transform(core :.monadic::set(m_vk_shader_module))
+            .transform_error(core :.monadic::map(core :.monadic::narrow<Result>(),
+                                                 core :.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////

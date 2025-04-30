@@ -7,7 +7,8 @@ export module stormkit.core:coroutines;
 
 export import std;
 
-#if not defined(__cpp_lib_generator) or (defined(__cpp_lib_generator) and (__cpp_lib_generator < 202207L))
+#if not defined(__cpp_lib_generator) \
+    or (defined(__cpp_lib_generator) and (__cpp_lib_generator < 202207L))
 export namespace std {
     struct use_allocator_arg {};
 
@@ -18,7 +19,7 @@ export namespace std {
 
     namespace ranges {
         template<class _T, typename _U, typename _Alloc>
-        constexpr inline bool enable_view<generator<_T, _U, _Alloc>> = true;
+        inline constexpr bool enable_view<generator<_T, _U, _Alloc>> = true;
     } // namespace ranges
 } // namespace std
 
@@ -112,8 +113,9 @@ namespace std {
             constexpr _Allocator get_allocator() const noexcept { return __alloc; }
 
           private:
-            [[no_unique_address]] _Allocator __alloc; // \expos
-            _Rng&&                           __range; // \expos
+            [[no_unique_address]]
+            _Allocator __alloc; // \expos
+            _Rng&&     __range; // \expos
         };
 
         template<class _Rng>
@@ -322,8 +324,9 @@ namespace std {
         __yield_sequence_awaiter<generator<_Ref, std::remove_cvref_t<_Ref>, _Allocator>>
             yield_value(std::ranges::elements_of<_Rng, _Allocator>&& __x) {
             return [](allocator_arg_t,
-                      [[maybe_unused]] _Allocator alloc,
-                      auto&& __rng) -> generator<_Ref, std::remove_cvref_t<_Ref>, _Allocator> {
+                      [[maybe_unused]]
+                      _Allocator alloc,
+                      auto&&     __rng) -> generator<_Ref, std::remove_cvref_t<_Ref>, _Allocator> {
                 for (auto&& e : __rng) co_yield static_cast<decltype(e)>(e);
             }(std::allocator_arg, __x.get_allocator(), std::forward<_Rng>(__x.get()));
         }

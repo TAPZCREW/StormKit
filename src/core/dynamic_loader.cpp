@@ -21,7 +21,7 @@ namespace stormkit {
     /////////////////////////////////////
     /////////////////////////////////////
     DynamicLoader::~DynamicLoader() {
-        if(m_library_handle != nullptr) [[likely]] {
+        if (m_library_handle != nullptr) [[likely]] {
 #ifdef STORMKIT_OS_WINDOWS
             FreeLibrary(std::bit_cast<HMODULE>(m_library_handle));
 #else

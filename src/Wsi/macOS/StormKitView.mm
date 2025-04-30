@@ -209,8 +209,10 @@ using namespace stormkit::wsi::macos;
         tracking_area = nil;
     }
 
-    NSUInteger opts = (NSTrackingMouseEnteredAndExited | NSTrackingActiveAlways
-                       | NSTrackingMouseMoved | NSTrackingEnabledDuringMouseDrag);
+    NSUInteger opts = (NSTrackingMouseEnteredAndExited
+                       | NSTrackingActiveAlways
+                       | NSTrackingMouseMoved
+                       | NSTrackingEnabledDuringMouseDrag);
     tracking_area =
         [[NSTrackingArea alloc] initWithRect:[self bounds] options:opts owner:self userInfo:nil];
     [self addTrackingArea:tracking_area];
@@ -253,7 +255,7 @@ using namespace stormkit::wsi::macos;
 /////////////////////////////////////
 /////////////////////////////////////
 - (void)setNativeEventRetriever:(void *)native_event {
-    //native_event = native_event;
+    // native_event = native_event;
 }
 
 @end

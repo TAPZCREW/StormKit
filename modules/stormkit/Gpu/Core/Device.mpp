@@ -52,43 +52,53 @@ export namespace stormkit::gpu {
         Device(Device&&) noexcept;
         auto operator=(Device&&) noexcept -> Device&;
 
-        [[nodiscard]] static auto create(const PhysicalDevice& physical_device,
-                                         const Instance&       instance,
-                                         const Info&           info = { true, false }) noexcept
-            -> Expected<Device>;
-        [[nodiscard]] static auto allocate(const PhysicalDevice& physical_device,
-                                           const Instance&       instance,
-                                           const Info&           info = { true, false }) noexcept
+        [[nodiscard]]
+        static auto create(const PhysicalDevice& physical_device,
+                           const Instance&       instance,
+                           const Info& info = { true, false }) noexcept -> Expected<Device>;
+        [[nodiscard]]
+        static auto allocate(const PhysicalDevice& physical_device,
+                             const Instance&       instance,
+                             const Info&           info = { true, false }) noexcept
             -> Expected<std::unique_ptr<Device>>;
 
         auto waitIdle() const noexcept -> void;
 
-        [[nodiscard]] auto waitForFences(std::span<const Ref<const Fence>> fences,
-                                         bool                              wait_all = true,
-                                         const std::chrono::milliseconds&  timeout
-                                         = std::chrono::milliseconds::max()) const noexcept
-            -> Expected<Result>;
-        [[nodiscard]] auto waitForFence(const Fence&                     fence,
-                                        const std::chrono::milliseconds& timeout
-                                        = std::chrono::milliseconds::max()) const noexcept
-            -> Expected<Result>;
+        [[nodiscard]]
+        auto waitForFences(std::span<const Ref<const Fence>> fences,
+                           bool                              wait_all = true,
+                           const std::chrono::milliseconds&  timeout
+                           = std::chrono::milliseconds::max()) const noexcept -> Expected<Result>;
+        [[nodiscard]]
+        auto waitForFence(const Fence&                     fence,
+                          const std::chrono::milliseconds& timeout
+                          = std::chrono::milliseconds::max()) const noexcept -> Expected<Result>;
 
         auto resetFences(std::span<const Ref<const Fence>> fences) const noexcept -> void;
         auto resetFence(const Fence& fence) const noexcept -> void;
 
-        [[nodiscard]] auto rasterQueueEntry() const noexcept -> const QueueEntry&;
-        [[nodiscard]] auto asyncTransferQueueEntry() const noexcept -> const QueueEntry&;
-        [[nodiscard]] auto asyncComputeQueueEntry() const noexcept -> const QueueEntry&;
+        [[nodiscard]]
+        auto rasterQueueEntry() const noexcept -> const QueueEntry&;
+        [[nodiscard]]
+        auto asyncTransferQueueEntry() const noexcept -> const QueueEntry&;
+        [[nodiscard]]
+        auto asyncComputeQueueEntry() const noexcept -> const QueueEntry&;
 
-        [[nodiscard]] auto hasAsyncTransferQueue() const noexcept -> bool;
-        [[nodiscard]] auto hasAsyncComputeQueue() const noexcept -> bool;
+        [[nodiscard]]
+        auto hasAsyncTransferQueue() const noexcept -> bool;
+        [[nodiscard]]
+        auto hasAsyncComputeQueue() const noexcept -> bool;
 
-        [[nodiscard]] auto physicalDevice() const noexcept -> const PhysicalDevice&;
+        [[nodiscard]]
+        auto physicalDevice() const noexcept -> const PhysicalDevice&;
 
-        [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::Device&;
+        [[nodiscard]]
+        auto vkHandle() const noexcept -> const vk::raii::Device&;
 
-        [[nodiscard]] auto vmaAllocator() const noexcept -> const vma::Allocator&;
-        [[nodiscard]] auto vmaFunctionTable() const noexcept -> const vma::VulkanFunctions&;
+        [[nodiscard]]
+        auto vmaAllocator() const noexcept -> const vma::Allocator&;
+        [[nodiscard]]
+        auto vmaFunctionTable() const noexcept -> const vma::VulkanFunctions&;
 
         template<class T>
         auto setObjectName(const T& object, std::string_view name) const -> void;

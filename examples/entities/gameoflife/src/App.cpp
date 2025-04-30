@@ -39,9 +39,8 @@ auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char** arg
 
     auto event_handler = wsi::EventHandler { *m_window };
     event_handler.addCallback(wsi::EventType::Closed,
-                              [this]([[maybe_unused]] const wsi::Event& event) {
-                                  m_window->close();
-                              });
+                              [this]([[maybe_unused]]
+                                     const wsi::Event& event) { m_window->close(); });
     event_handler.addCallback(wsi::EventType::KeyReleased, [this](const wsi::Event& event) {
         const auto& event_data = as<wsi::KeyReleasedEventData>(event.data);
 
@@ -95,10 +94,12 @@ auto App::handleKeyboard(const stormkit::wsi::KeyReleasedEventData& event) -> vo
     const auto size = wsi::Window::getPrimaryMonitorSettings().sizes.back();
 
     switch (event.key) {
-        [[unlikely]] case wsi::Key::Escape:
+        [[unlikely]]
+        case wsi::Key::Escape:
             m_window->close();
             break;
-        [[unlikely]] case wsi::Key::F11:
+        [[unlikely]]
+        case wsi::Key::F11:
             if (m_fullscreen_enabled) {
                 m_fullscreen_enabled = false;
                 m_window->setFullscreenEnabled(false);

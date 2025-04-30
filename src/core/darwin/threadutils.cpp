@@ -19,16 +19,14 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto set_thread_name([[maybe_unused]] std::thread&     thread,
-                         [[maybe_unused]] std::string_view name) noexcept -> void {
+    auto set_thread_name(std::thread&, std::string_view) noexcept -> void {
         // auto id = thread.native_handle();
         // details::set_thread_name(id, name);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto set_thread_name([[maybe_unused]] std::jthread&    thread,
-                         [[maybe_unused]] std::string_view name) noexcept -> void {
+    auto set_thread_name(std::jthread&, std::string_view) noexcept -> void {
         // auto id = thread.native_handle();
         // details::set_thread_name(id, name);
     }
@@ -41,13 +39,13 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto get_thread_name(std::thread& _) noexcept -> std::string {
+    auto get_thread_name(std::thread&) noexcept -> std::string {
         return {};
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto get_thread_name(std::jthread& _) noexcept -> std::string {
+    auto get_thread_name(std::jthread&) noexcept -> std::string {
         return {};
     }
 }} // namespace stormkit::core

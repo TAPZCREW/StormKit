@@ -38,43 +38,53 @@ export namespace stormkit::gpu {
         Buffer(Buffer&&) noexcept;
         auto operator=(Buffer&&) noexcept -> Buffer&;
 
-        [[nodiscard]] static auto create(const Device&     device,
-                                         const CreateInfo& info,
-                                         bool              persistently_mapped = false) noexcept
-            -> Expected<Buffer>;
-        [[nodiscard]] static auto allocate(const Device&     device,
-                                           const CreateInfo& info,
-                                           bool              persistently_mapped = false) noexcept
+        [[nodiscard]]
+        static auto create(const Device&     device,
+                           const CreateInfo& info,
+                           bool persistently_mapped = false) noexcept -> Expected<Buffer>;
+        [[nodiscard]]
+        static auto allocate(const Device&     device,
+                             const CreateInfo& info,
+                             bool              persistently_mapped = false) noexcept
             -> Expected<std::unique_ptr<Buffer>>;
 
-        [[nodiscard]] auto usages() const noexcept -> BufferUsageFlag;
-        [[nodiscard]] auto size() const noexcept -> RangeExtent;
+        [[nodiscard]]
+        auto usages() const noexcept -> BufferUsageFlag;
+        [[nodiscard]]
+        auto size() const noexcept -> RangeExtent;
 
-        [[nodiscard]] auto map(const Device& device, RangeOffset offset) noexcept -> decltype(auto);
-        [[nodiscard]] auto map(const Device& device, RangeOffset offset, RangeExtent size) noexcept
+        [[nodiscard]]
+        auto map(const Device& device, RangeOffset offset) noexcept -> decltype(auto);
+        [[nodiscard]]
+        auto map(const Device& device, RangeOffset offset, RangeExtent size) noexcept
             -> decltype(auto);
 
         template<class T>
-        [[nodiscard]] auto mapAs(const Device& device, RangeOffset offset) noexcept
-            -> decltype(auto);
+        [[nodiscard]]
+        auto mapAs(const Device& device, RangeOffset offset) noexcept -> decltype(auto);
 
-        [[nodiscard]] auto data(this auto& self) noexcept -> decltype(auto);
-        [[nodiscard]] auto data(this auto& self, RangeExtent size) noexcept -> decltype(auto);
+        [[nodiscard]]
+        auto data(this auto& self) noexcept -> decltype(auto);
+        [[nodiscard]]
+        auto data(this auto& self, RangeExtent size) noexcept -> decltype(auto);
 
         template<class T>
-        [[nodiscard]] auto dataAs(this auto& self) noexcept -> decltype(auto);
+        [[nodiscard]]
+        auto dataAs(this auto& self) noexcept -> decltype(auto);
 
         auto flush(const Device& device, RangeOffset offset, RangeExtent size) -> void;
         auto unmap(const Device& device) -> void;
 
-        [[nodiscard]] auto isPersistentlyMapped() const noexcept -> bool;
+        [[nodiscard]]
+        auto isPersistentlyMapped() const noexcept -> bool;
 
         auto upload(const Device& device, std::span<const Byte> data, RangeOffset offset = 0)
             -> void;
         template<meta::IsNot<std::span<const Byte>> T>
         auto upload(const Device& device, const T& data, RangeOffset offset = 0) -> void;
 
-        [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::Buffer&;
+        [[nodiscard]]
+        auto vkHandle() const noexcept -> const vk::raii::Buffer&;
 
       private:
         static auto findMemoryType(UInt                                      type_filter,

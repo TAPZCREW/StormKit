@@ -11,17 +11,19 @@ import :meta;
 export namespace stormkit { inline namespace core {
     template<std::ranges::input_range                                             Range,
              meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type> Predicate>
-    [[nodiscard]] constexpr auto copy_if(Range&& input, Predicate&& predicate) noexcept;
+    [[nodiscard]]
+    constexpr auto copy_if(Range&& input, Predicate&& predicate) noexcept;
 
     template<std::ranges::input_range                                               Range,
              std::invocable<const typename std::remove_cvref_t<Range>::value_type&> Lambda>
-    [[nodiscard]] constexpr auto transform(Range&& input, Lambda&& lambda) noexcept;
+    [[nodiscard]]
+    constexpr auto transform(Range&& input, Lambda&& lambda) noexcept;
 
     template<std::ranges::input_range                                               Range,
              meta::IsUnaryPredicate<class std::remove_cvref_t<Range>::value_type>   Predicate,
              std::invocable<const typename std::remove_cvref_t<Range>::value_type&> Lambda>
-    [[nodiscard]] constexpr auto
-        transform_if(Range&& input, Predicate&& predicate, Lambda&& lambda) noexcept;
+    [[nodiscard]]
+    constexpr auto transform_if(Range&& input, Predicate&& predicate, Lambda&& lambda) noexcept;
 
     template<
         std::ranges::input_range                                               Range,

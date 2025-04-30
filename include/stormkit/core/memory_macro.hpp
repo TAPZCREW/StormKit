@@ -13,12 +13,13 @@
 
 #define SINGLE_ARG(...) __VA_ARGS__
 
-#define ALLOCATE_HELPERS(T)                                     \
-    template<class... Args>                                     \
-    [[nodiscard]] static inline auto allocate(Args&&... args) { \
-        return allocate<T>(std::forward<Args>(args)...)       \
-            .transform_error(stormkit::core:.monadic::assert()) \
-            .value();                                           \
+#define ALLOCATE_HELPERS(T)                                      \
+    template<class... Args>                                      \
+    [[nodiscard]]                                                \
+    static inline auto allocate(Args&&... args) {                \
+        return allocate<T>(std::forward<Args>(args)...)          \
+            .transform_error(stormkit::core :.monadic::assert()) \
+            .value();                                            \
     }
 
 /// \exclude
@@ -126,7 +127,7 @@
     };                                                   \
     using name##Scoped = std::unique_ptr<x, name##Deleter>;
 
-#define STORMKIT_FORWARD(x) static_cast<decltype(x) &&>(x);
+#define STORMKIT_FORWARD(x) static_cast<decltype(x)&&>(x);
 #define STORMKIT_RETURNS(expr)                 \
     noexcept(noexcept(expr))->decltype(expr) { \
         return expr;                           \

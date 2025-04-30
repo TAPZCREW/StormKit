@@ -57,14 +57,18 @@ export namespace stormkit::gpu {
         Sampler(Sampler&&) noexcept;
         auto operator=(Sampler&&) noexcept -> Sampler&;
 
-        [[nodiscard]] static auto create(const Device& device, const Settings& settings) noexcept
+        [[nodiscard]]
+        static auto create(const Device& device, const Settings& settings) noexcept
             -> Expected<Sampler>;
-        [[nodiscard]] static auto allocate(const Device& device, const Settings& settings) noexcept
+        [[nodiscard]]
+        static auto allocate(const Device& device, const Settings& settings) noexcept
             -> Expected<std::unique_ptr<Sampler>>;
 
-        [[nodiscard]] auto settings() const noexcept -> const Settings&;
+        [[nodiscard]]
+        auto settings() const noexcept -> const Settings&;
 
-        [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::Sampler&;
+        [[nodiscard]]
+        auto vkHandle() const noexcept -> const vk::raii::Sampler&;
 
       private:
         Settings m_settings = {};
@@ -93,21 +97,26 @@ export namespace stormkit::gpu {
         ImageView(ImageView&&) noexcept;
         auto operator=(ImageView&&) noexcept -> ImageView&;
 
-        [[nodiscard]] static auto create(const Device&                device,
-                                         const Image&                 image,
-                                         ImageViewType                type = ImageViewType::T2D,
-                                         const ImageSubresourceRange& subresource_range
-                                         = {}) noexcept -> Expected<ImageView>;
-        [[nodiscard]] static auto allocate(const Device&                device,
-                                           const Image&                 image,
-                                           ImageViewType                type = ImageViewType::T2D,
-                                           const ImageSubresourceRange& subresource_range
-                                           = {}) noexcept -> Expected<std::unique_ptr<ImageView>>;
+        [[nodiscard]]
+        static auto create(const Device&                device,
+                           const Image&                 image,
+                           ImageViewType                type              = ImageViewType::T2D,
+                           const ImageSubresourceRange& subresource_range = {}) noexcept
+            -> Expected<ImageView>;
+        [[nodiscard]]
+        static auto allocate(const Device&                device,
+                             const Image&                 image,
+                             ImageViewType                type              = ImageViewType::T2D,
+                             const ImageSubresourceRange& subresource_range = {}) noexcept
+            -> Expected<std::unique_ptr<ImageView>>;
 
-        [[nodiscard]] auto type() const noexcept -> ImageViewType;
-        [[nodiscard]] auto subresourceRange() const noexcept -> const ImageSubresourceRange&;
+        [[nodiscard]]
+        auto type() const noexcept -> ImageViewType;
+        [[nodiscard]]
+        auto subresourceRange() const noexcept -> const ImageSubresourceRange&;
 
-        [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::ImageView&;
+        [[nodiscard]]
+        auto vkHandle() const noexcept -> const vk::raii::ImageView&;
 
       private:
         ImageViewType         m_type              = {};
@@ -146,22 +155,32 @@ export namespace stormkit::gpu {
         Image(Image&&) noexcept;
         auto operator=(Image&&) noexcept -> Image&;
 
-        [[nodiscard]] static auto create(const Device& device, const CreateInfo& info) noexcept
+        [[nodiscard]]
+        static auto create(const Device& device, const CreateInfo& info) noexcept
             -> Expected<Image>;
-        [[nodiscard]] static auto allocate(const Device&     device,
-                                           const CreateInfo& create_info) noexcept
+        [[nodiscard]]
+        static auto allocate(const Device& device, const CreateInfo& create_info) noexcept
             -> Expected<std::unique_ptr<Image>>;
 
-        [[nodiscard]] auto extent() const noexcept -> const math::ExtentU&;
-        [[nodiscard]] auto format() const noexcept -> PixelFormat;
-        [[nodiscard]] auto type() const noexcept -> ImageType;
-        [[nodiscard]] auto samples() const noexcept -> SampleCountFlag;
-        [[nodiscard]] auto layers() const noexcept -> UInt32;
-        [[nodiscard]] auto faces() const noexcept -> UInt32;
-        [[nodiscard]] auto mipLevels() const noexcept -> UInt32;
-        [[nodiscard]] auto usages() const noexcept -> ImageUsageFlag;
+        [[nodiscard]]
+        auto extent() const noexcept -> const math::ExtentU&;
+        [[nodiscard]]
+        auto format() const noexcept -> PixelFormat;
+        [[nodiscard]]
+        auto type() const noexcept -> ImageType;
+        [[nodiscard]]
+        auto samples() const noexcept -> SampleCountFlag;
+        [[nodiscard]]
+        auto layers() const noexcept -> UInt32;
+        [[nodiscard]]
+        auto faces() const noexcept -> UInt32;
+        [[nodiscard]]
+        auto mipLevels() const noexcept -> UInt32;
+        [[nodiscard]]
+        auto usages() const noexcept -> ImageUsageFlag;
 
-        [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::Image&;
+        [[nodiscard]]
+        auto vkHandle() const noexcept -> const vk::raii::Image&;
 
       private:
         math::ExtentU   m_extent     = { 0, 0, 0 };
@@ -219,8 +238,8 @@ namespace stormkit::gpu {
                   .maxLod           = m_settings.max_lod,
                   .borderColor      = narrow<vk::BorderColor>(m_settings.border_color),
                   .unnormalizedCoordinates = m_settings.unnormalized_coordinates })
-            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
-                                                core:.monadic::throw_as_exception()));
+            .transform_error(core :.monadic::map(core :.monadic::narrow<Result>(),
+                                                 core :.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////
@@ -290,9 +309,9 @@ namespace stormkit::gpu {
                                      .a = vk::ComponentSwizzle::eA },
                 .subresourceRange = vk_subresource_range,
         })
-            .transform(core:.monadic::set(m_vk_image_view))
-            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
-                                                core:.monadic::throw_as_exception()));
+            .transform(core :.monadic::set(m_vk_image_view))
+            .transform_error(core :.monadic::map(core :.monadic::narrow<Result>(),
+                                                 core :.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////
@@ -371,7 +390,7 @@ namespace stormkit::gpu {
 
         device.vkHandle()
             .createImage(create_info)
-            .transform(core:.monadic::set(m_vk_image))
+            .transform(core :.monadic::set(m_vk_image))
             .transform([this, &info, &device] noexcept -> VulkanExpected<void> {
                 const auto requirements = m_vk_image->getMemoryRequirements();
 
@@ -395,8 +414,8 @@ namespace stormkit::gpu {
 
                 return {};
             })
-            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
-                                                core:.monadic::throw_as_exception()));
+            .transform_error(core :.monadic::map(core :.monadic::narrow<Result>(),
+                                                 core :.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////

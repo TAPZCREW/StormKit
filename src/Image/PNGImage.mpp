@@ -17,14 +17,16 @@ import stormkit.core;
 import stormkit.Image;
 
 export namespace stormkit::image::details {
-    [[nodiscard]] auto loadPNG(std::span<const Byte> data) noexcept
+    [[nodiscard]]
+    auto loadPNG(std::span<const Byte> data) noexcept
         -> std::expected<image::Image, image::Image::Error>;
 
-    [[nodiscard]] auto savePNG(const image::Image&          image,
-                               const std::filesystem::path& filepath) noexcept
+    [[nodiscard]]
+    auto savePNG(const image::Image& image, const std::filesystem::path& filepath) noexcept
         -> std::expected<void, image::Image::Error>;
 
-    [[nodiscard]] auto savePNG(const image::Image& image) noexcept
+    [[nodiscard]]
+    auto savePNG(const image::Image& image) noexcept
         -> std::expected<std::vector<Byte>, image::Image::Error>;
 } // namespace stormkit::image::details
 

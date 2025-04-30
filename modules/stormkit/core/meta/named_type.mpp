@@ -49,9 +49,11 @@ export {
                 operator=(NamedType&&) noexcept(std::is_nothrow_move_assignable_v<ElementType>)
                     -> NamedType&;
 
-            [[nodiscard]] constexpr auto get(this auto&& self) noexcept -> decltype(auto);
+            [[nodiscard]]
+            constexpr auto get(this auto&& self) noexcept -> decltype(auto);
 
-            [[nodiscard]] constexpr operator RefType() noexcept;
+            [[nodiscard]]
+            constexpr operator RefType() noexcept;
 
           private:
             ElementType m_value;
@@ -140,4 +142,4 @@ namespace stormkit { inline namespace core { namespace meta {
     constexpr auto makeNamed(Args&&... args) noexcept -> decltype(auto) {
         return T { std::forward<Args>(args)... };
     }
-}}}
+}}} // namespace stormkit::core::meta

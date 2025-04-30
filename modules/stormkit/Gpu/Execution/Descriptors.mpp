@@ -52,9 +52,11 @@ export {
 
             auto update(std::span<const Descriptor> descriptors) -> void;
 
-            [[nodiscard]] auto types() const noexcept -> const std::vector<DescriptorType>&;
+            [[nodiscard]]
+            auto types() const noexcept -> const std::vector<DescriptorType>&;
 
-            [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::DescriptorSet&;
+            [[nodiscard]]
+            auto vkHandle() const noexcept -> const vk::raii::DescriptorSet&;
 
           private:
             using Deleter = std::function<void(vk::raii::DescriptorSet&)>;
@@ -98,13 +100,16 @@ export {
             DescriptorSetLayout(DescriptorSetLayout&&) noexcept;
             auto operator=(DescriptorSetLayout&&) noexcept -> DescriptorSetLayout&;
 
-            [[nodiscard]] auto hash() const noexcept -> Hash64;
-            [[nodiscard]] auto bindings() const noexcept
-                -> const std::vector<DescriptorSetLayoutBinding>&;
+            [[nodiscard]]
+            auto hash() const noexcept -> Hash64;
+            [[nodiscard]]
+            auto bindings() const noexcept -> const std::vector<DescriptorSetLayoutBinding>&;
 
-            [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::DescriptorSetLayout&;
+            [[nodiscard]]
+            auto vkHandle() const noexcept -> const vk::raii::DescriptorSetLayout&;
 
-            [[nodiscard]] auto operator==(const DescriptorSetLayout& second) const noexcept -> bool;
+            [[nodiscard]]
+            auto operator==(const DescriptorSetLayout& second) const noexcept -> bool;
 
           private:
             explicit DescriptorSetLayout(const Device& device);
@@ -135,16 +140,19 @@ export {
             DescriptorPool(DescriptorPool&&) noexcept;
             auto operator=(DescriptorPool&&) noexcept -> DescriptorPool&;
 
-            [[nodiscard]] static auto create(const Device&         device,
-                                             std::span<const Size> sizes,
-                                             UInt32 max_sets) noexcept -> Expected<DescriptorPool>;
+            [[nodiscard]]
+            static auto create(const Device&         device,
+                               std::span<const Size> sizes,
+                               UInt32                max_sets) noexcept -> Expected<DescriptorPool>;
 
-            [[nodiscard]] static auto allocate(const Device&         device,
-                                               std::span<const Size> sizes,
-                                               UInt32                max_sets) noexcept
+            [[nodiscard]]
+            static auto allocate(const Device&         device,
+                                 std::span<const Size> sizes,
+                                 UInt32                max_sets) noexcept
                 -> Expected<std::unique_ptr<DescriptorPool>>;
 
-            [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::DescriptorPool&;
+            [[nodiscard]]
+            auto vkHandle() const noexcept -> const vk::raii::DescriptorPool&;
 
           private:
             auto createDescriptorSets(RangeExtent count, const DescriptorSetLayout& layout) const
@@ -157,8 +165,8 @@ export {
 
     template<>
     struct STORMKIT_API std::hash<stormkit::gpu::DescriptorSetLayout> {
-        [[nodiscard]] auto
-            operator()(const stormkit::gpu::DescriptorSetLayout& value) const noexcept
+        [[nodiscard]]
+        auto operator()(const stormkit::gpu::DescriptorSetLayout& value) const noexcept
             -> stormkit::Hash64 {
             return value.hash();
         }
@@ -184,8 +192,8 @@ export {
 
     template<>
     struct STORMKIT_API std::hash<stormkit::gpu::Descriptor> {
-        [[nodiscard]] auto operator()(const stormkit::gpu::Descriptor& value) const noexcept
-            -> stormkit::Hash64 {
+        [[nodiscard]]
+        auto operator()(const stormkit::gpu::Descriptor& value) const noexcept -> stormkit::Hash64 {
             auto hash = stormkit::Hash64 { 0 };
 
             std::visit([&hash](auto& descriptor) { stormkit::hash_combine(hash, descriptor); },
@@ -228,7 +236,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto DescriptorSet::update(std::span<const Descriptor> descriptors) -> void {
+    inline auto DescriptorSet::update(std::span<const Descriptor> descriptors) -> void {
         const auto [buffers, images] = [&descriptors]() -> decltype(auto) {
             auto buffers = std::vector<vk::DescriptorBufferInfo> {};
             auto images  = std::vector<vk::DescriptorImageInfo> {};
@@ -237,7 +245,7 @@ namespace stormkit::gpu {
 
             std::ranges::for_each(
                 descriptors,
-                core:.monadic::either(
+                core :.monadic::either(
                     [&buffers](const BufferDescriptor& descriptor) noexcept -> decltype(auto) {
                         buffers.emplace_back(vk::DescriptorBufferInfo {}
                                                  .setBuffer(toVkHandle(descriptor.buffer))
@@ -288,9 +296,9 @@ namespace stormkit::gpu {
 
         device.vkHandle()
             .createDescriptorSetLayout(create_info)
-            .transform(core:.monadic::set(m_vk_descriptor_set_layout))
-            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
-                                                core:.monadic::throw_as_exception()));
+            .transform(core :.monadic::set(m_vk_descriptor_set_layout))
+            .transform_error(core :.monadic::map(core :.monadic::narrow<Result>(),
+                                                 core :.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////
@@ -321,7 +329,8 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    DescriptorSetLayout::DescriptorSetLayout(DescriptorSetLayout&& other) noexcept = default;
+    DescriptorSetLayout::DescriptorSetLayout(DescriptorSetLayout&& other) noexcept
+        = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -376,9 +385,9 @@ namespace stormkit::gpu {
 
         device.vkHandle()
             .createDescriptorPool(create_info)
-            .transform(core:.monadic::set(m_vk_descriptor_pool))
-            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
-                                                core:.monadic::throw_as_exception()));
+            .transform(core :.monadic::set(m_vk_descriptor_pool))
+            .transform_error(core :.monadic::map(core :.monadic::narrow<Result>(),
+                                                 core :.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////

@@ -17,10 +17,12 @@ export namespace stormkit { inline namespace core {
     auto seed(Int seed) noexcept -> void;
 
     template<std::floating_point T>
-    [[nodiscard]] auto rand(T min, T max) noexcept -> T;
+    [[nodiscard]]
+    auto rand(T min, T max) noexcept -> T;
 
     template<std::integral T>
-    [[nodiscard]] auto rand(T min, T max) noexcept -> T;
+    [[nodiscard]]
+    auto rand(T min, T max) noexcept -> T;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////

@@ -43,7 +43,7 @@ namespace stormkit::gpu {
         /////////////////////////////////////
         auto chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities,
                               const math::ExtentU&              extent) noexcept -> vk::Extent2D {
-            constexpr static auto int_max = std::numeric_limits<UInt32>::max();
+            static constexpr auto int_max = std::numeric_limits<UInt32>::max();
 
             if (capabilities.currentExtent.width != int_max
                 && capabilities.currentExtent.height != int_max)
@@ -113,9 +113,9 @@ namespace stormkit::gpu {
 
         device.vkHandle()
             .createSwapchainKHR(create_info)
-            .transform(core:.monadic::set(m_vk_swapchain))
-            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
-                                                core:.monadic::throw_as_exception()));
+            .transform(core :.monadic::set(m_vk_swapchain))
+            .transform_error(core :.monadic::map(core :.monadic::narrow<Result>(),
+                                                 core :.monadic::throw_as_exception()));
 
         m_extent       = as<math::ExtentU>(swapchain_extent);
         m_image_count  = as<UInt32>(std::size(m_images));
@@ -140,7 +140,7 @@ namespace stormkit::gpu {
                                                    vk::Result::eErrorOutOfDateKHR,
                                                    vk::Result::eSuboptimalKHR };
 
-        if (not std::ranges::any_of(possible_results, core:.monadic::is(result))) [[likely]]
+        if (not std::ranges::any_of(possible_results, core :.monadic::is(result))) [[likely]]
             return std::unexpected { narrow<gpu::Result>(result) };
 
         return std::make_pair(narrow<gpu::Result>(result), index);

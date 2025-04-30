@@ -20,7 +20,7 @@ namespace {
 
                                                          auto node = TreeNode {};
                                                          expects(node.name() == ""s);
-                                                         node.set_name(std::string{name});
+                                                         node.set_name(std::string { name });
                                                          expects(node.name() == name);
                                                      } } } };
 } // namespace

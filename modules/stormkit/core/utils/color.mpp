@@ -103,12 +103,14 @@ export {
                                                        max_color_component_value<T>() };
 
             template<meta::IsColorComponent T>
-            inline constexpr auto SILVER = RGBColor<T> {
-                (max_color_component_value<T>() / T { 2 }) + (max_color_component_value<T>() / T { 4 }),
-                (max_color_component_value<T>() / T { 2 }) + (max_color_component_value<T>() / T { 4 }),
-                (max_color_component_value<T>() / T { 2 }) + (max_color_component_value<T>() / T { 4 }),
-                max_color_component_value<T>()
-            };
+            inline constexpr auto SILVER
+                = RGBColor<T> { (max_color_component_value<T>() / T { 2 })
+                                    + (max_color_component_value<T>() / T { 4 }),
+                                (max_color_component_value<T>() / T { 2 })
+                                    + (max_color_component_value<T>() / T { 4 }),
+                                (max_color_component_value<T>() / T { 2 })
+                                    + (max_color_component_value<T>() / T { 4 }),
+                                max_color_component_value<T>() };
 
             template<meta::IsColorComponent T>
             inline constexpr auto WHITE = RGBColor<T> { max_color_component_value<T>(),

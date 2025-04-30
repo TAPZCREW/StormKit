@@ -188,7 +188,7 @@ namespace stormkit::gpu {
 
         m_physical_device->vkHandle()
             .createDevice(create_info)
-            .transform(core:.monadic::set(m_vk_device))
+            .transform(core :.monadic::set(m_vk_device))
             .transform([this, &instance] noexcept -> VulkanExpected<void> {
                 VULKAN_HPP_DEFAULT_DISPATCHER.init(*vkHandle());
 
@@ -210,8 +210,8 @@ namespace stormkit::gpu {
 
                 return {};
             })
-            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
-                                                core:.monadic::throw_as_exception()));
+            .transform_error(core :.monadic::map(core :.monadic::narrow<Result>(),
+                                                 core :.monadic::throw_as_exception()));
 
         if (raster_queue.id)
             m_raster_queue = QueueEntry { .id    = *raster_queue.id,
@@ -240,8 +240,8 @@ namespace stormkit::gpu {
                       vk_fences,
                       wait_all,
                       std::chrono::duration_cast<std::chrono::nanoseconds>(timeout).count())
-            .transform(core:.monadic::narrow<Result>())
-            .transform_error(core:.monadic::narrow<Result>());
+            .transform(core :.monadic::narrow<Result>())
+            .transform_error(core :.monadic::narrow<Result>());
     }
 
     /////////////////////////////////////

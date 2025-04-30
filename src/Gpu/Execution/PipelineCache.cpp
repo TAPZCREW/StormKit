@@ -36,7 +36,7 @@ namespace stormkit::gpu {
 
         return device.vkHandle()
             .createPipelineCache({})
-            .transform(core:.monadic::set(m_vk_pipeline_cache))
+            .transform(core :.monadic::set(m_vk_pipeline_cache))
             .transform([this] noexcept -> void {
                 ilog("Created new pipeline cache at {}", m_path.string());
             });
@@ -98,7 +98,7 @@ namespace stormkit::gpu {
 
         return device.vkHandle()
             .createPipelineCache(create_info)
-            .transform(core:.monadic::set(m_vk_pipeline_cache))
+            .transform(core :.monadic::set(m_vk_pipeline_cache))
             .transform([this]() noexcept -> void {
                 ilog("Loading pipeline cache {}", m_path.string());
                 return;

@@ -39,8 +39,7 @@ namespace storm::window {
         void close() noexcept override;
 
         bool pollEvent(storm::window::Event& event, void* native_event) noexcept override;
-        bool waitEvent(storm::window::Event&  event,
-                       [[maybe_unused]] void* native_event) noexcept override;
+        bool waitEvent(storm::window::Event& event, void* native_event) noexcept override;
 
         void setTitle(const std::string& title) noexcept override;
         void setVideoSettings(const storm::window::VideoSettings& settings) noexcept override;

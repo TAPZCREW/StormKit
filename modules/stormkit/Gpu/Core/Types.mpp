@@ -971,20 +971,28 @@ export {
         template<class T>
         using Expected = std::expected<T, Result>;
 
-        [[nodiscard]] constexpr auto isDepthOnlyFormat(PixelFormat format) noexcept -> bool;
-        [[nodiscard]] constexpr auto isDepthStencilFormat(PixelFormat format) noexcept -> bool;
-        [[nodiscard]] constexpr auto isDepthFormat(PixelFormat format) noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto isDepthOnlyFormat(PixelFormat format) noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto isDepthStencilFormat(PixelFormat format) noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto isDepthFormat(PixelFormat format) noexcept -> bool;
 
-        [[nodiscard]] constexpr auto getChannelCountFor(PixelFormat format) noexcept -> UInt8;
-        [[nodiscard]] constexpr auto getArraySizeByChannelFor(PixelFormat format) noexcept -> UInt8;
+        [[nodiscard]]
+        constexpr auto getChannelCountFor(PixelFormat format) noexcept -> UInt8;
+        [[nodiscard]]
+        constexpr auto getArraySizeByChannelFor(PixelFormat format) noexcept -> UInt8;
 
-        [[nodiscard]] auto computeMipLevel(const math::ExtentU& extent) noexcept -> UInt32;
-        [[nodiscard]] constexpr auto
+        [[nodiscard]]
+        auto computeMipLevel(const math::ExtentU& extent) noexcept -> UInt32;
+        [[nodiscard]]
+        constexpr auto
             computeUniformBufferOffsetAlignement(RangeExtent               size,
                                                  const RenderCapabilities& capabilities) noexcept
             -> RangeExtent;
 
-        [[nodiscard]] auto to_string(const PhysicalDeviceInfo& data) noexcept;
+        [[nodiscard]]
+        auto to_string(const PhysicalDeviceInfo& data) noexcept;
 
     } // namespace stormkit::gpu
 

@@ -49,7 +49,7 @@ static const auto LOG_DIR = std::filesystem::path { "log/" };
 
 ////////////////////////////////////////
 ////////////////////////////////////////
-auto main([[maybe_unused]] std::span<const std::string_view> args) -> int {
+auto main(std::span<const std::string_view> _) -> int {
     using namespace stormkit;
     using log::operator""_module;
 

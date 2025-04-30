@@ -166,8 +166,8 @@ export {
 
             void* handle = nullptr;
 
-            [[nodiscard]] constexpr auto operator<=>(const Monitor& other) const noexcept
-                -> std::strong_ordering;
+            [[nodiscard]]
+            constexpr auto operator<=>(const Monitor& other) const noexcept -> std::strong_ordering;
         };
 
         enum class WindowStyle : UInt8 {
@@ -294,8 +294,10 @@ export {
                 -> void;
             auto close() noexcept -> void;
 
-            [[nodiscard]] auto pollEvent(Event& event) noexcept -> bool;
-            [[nodiscard]] auto waitEvent(Event& event) noexcept -> bool;
+            [[nodiscard]]
+            auto pollEvent(Event& event) noexcept -> bool;
+            [[nodiscard]]
+            auto waitEvent(Event& event) noexcept -> bool;
 
             auto setTitle(std::string title) noexcept -> void;
 
@@ -308,32 +310,44 @@ export {
             auto hideMouse() noexcept -> void;
 
 #ifdef STORMKIT_OS_MACOS
-            [[nodiscard]] auto extent() const noexcept -> math::ExtentU;
+            [[nodiscard]]
+            auto extent() const noexcept -> math::ExtentU;
 #else
-            [[nodiscard]] auto extent() const noexcept -> const math::ExtentU&;
+            [[nodiscard]]
+            auto extent() const noexcept -> const math::ExtentU&;
 #endif
-            [[nodiscard]] auto title() const noexcept -> const std::string&;
+            [[nodiscard]]
+            auto title() const noexcept -> const std::string&;
 
-            [[nodiscard]] auto isOpen() const noexcept -> bool;
-            [[nodiscard]] auto visible() const noexcept -> bool;
+            [[nodiscard]]
+            auto isOpen() const noexcept -> bool;
+            [[nodiscard]]
+            auto visible() const noexcept -> bool;
 
-            [[nodiscard]] auto nativeHandle() const noexcept -> NativeHandle;
+            [[nodiscard]]
+            auto nativeHandle() const noexcept -> NativeHandle;
 
-            [[nodiscard]] auto mouseLocked() const noexcept -> bool;
-            [[nodiscard]] auto fullscreen() const noexcept -> bool;
+            [[nodiscard]]
+            auto mouseLocked() const noexcept -> bool;
+            [[nodiscard]]
+            auto fullscreen() const noexcept -> bool;
 
-            auto               setKeyRepeatEnabled(bool enabled) noexcept -> void;
-            [[nodiscard]] auto keyRepeatEnabled() const noexcept -> bool;
+            auto setKeyRepeatEnabled(bool enabled) noexcept -> void;
+            [[nodiscard]]
+            auto keyRepeatEnabled() const noexcept -> bool;
 
             auto setVirtualKeyboardVisible(bool visible) noexcept -> void;
 
             auto        setMousePosition(const math::Vector2I& position) noexcept -> void;
             static auto setMousePositionOnDesktop(const math::Vector2U& position) noexcept -> void;
 
-            [[nodiscard]] static auto getMonitorSettings() -> std::vector<Monitor>;
-            [[nodiscard]] static auto getPrimaryMonitorSettings() -> Monitor;
+            [[nodiscard]]
+            static auto getMonitorSettings() -> std::vector<Monitor>;
+            [[nodiscard]]
+            static auto getPrimaryMonitorSettings() -> Monitor;
 
-            [[nodiscard]] static auto wm() noexcept -> WM;
+            [[nodiscard]]
+            static auto wm() noexcept -> WM;
 
           private:
             using WindowImplPimpl = Pimpl<WindowImpl>;
@@ -394,7 +408,7 @@ ASCASTER_STRICT_DEFINE(std::string, stormkit::wsi::Monitor) {
 namespace stormkit { namespace wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE constexpr auto Monitor::operator<=>(const Monitor& other) const noexcept
+    inline constexpr auto Monitor::operator<=>(const Monitor& other) const noexcept
         -> std::strong_ordering {
         if (auto ret = flags <=> other.flags; ret != 0) return ret;
 
@@ -420,7 +434,7 @@ namespace stormkit { namespace wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto EventHandler::update(Window& window) -> void {
+    inline auto EventHandler::update(Window& window) -> void {
         auto event = Event {};
 
         while (window.pollEvent(event)) {

@@ -15,15 +15,17 @@ import std;
 import stormkit.core;
 
 export namespace stormkit::entities {
-    using Entity                                  = UInt32;
-    STORMKIT_INLINE constexpr auto INVALID_ENTITY = Entity { 0 };
+    using Entity                         = UInt32;
+    inline constexpr auto INVALID_ENTITY = Entity { 0 };
     class System;
 
     struct EntityHashFunc {
 #ifdef STORMKIT_COMPILER_MSVC
-        [[nodiscard]] auto operator()(Entity k) const noexcept -> Hash64;
+        [[nodiscard]]
+        auto operator()(Entity k) const noexcept -> Hash64;
 #else
-        [[nodiscard]] static auto operator()(Entity k) noexcept -> Hash64;
+        [[nodiscard]]
+        static auto operator()(Entity k) noexcept -> Hash64;
 #endif
     };
 
@@ -71,11 +73,13 @@ export namespace stormkit::entities {
         MessageBus(MessageBus&&);
         auto operator=(MessageBus&&) -> MessageBus&;
 
-        auto               push(Message&& message) -> void;
-        [[nodiscard]] auto top() const -> const Message&;
-        auto               pop() -> void;
+        auto push(Message&& message) -> void;
+        [[nodiscard]]
+        auto top() const -> const Message&;
+        auto pop() -> void;
 
-        [[nodiscard]] auto empty() const noexcept -> bool;
+        [[nodiscard]]
+        auto empty() const noexcept -> bool;
 
       private:
         std::queue<Message> m_messages;
@@ -101,19 +105,23 @@ export namespace stormkit::entities {
         virtual auto update(Secondf delta) -> void = 0;
         virtual auto post_update() -> void;
 
-        [[nodiscard]] auto priority() const noexcept -> UInt32;
-        [[nodiscard]] auto components_used() const noexcept -> const ComponentTypes&;
+        [[nodiscard]]
+        auto priority() const noexcept -> UInt32;
+        [[nodiscard]]
+        auto components_used() const noexcept -> const ComponentTypes&;
 
         auto add_entity(Entity e) -> void;
         auto remove_entity(Entity e) -> void;
 
         struct Predicate {
 #ifdef STORMKIT_COMPILER_MSVC
-            [[nodiscard]] auto operator()(const std::unique_ptr<System>& s1,
-                                          const std::unique_ptr<System>& s2) const noexcept
+            [[nodiscard]]
+            auto operator()(const std::unique_ptr<System>& s1,
+                            const std::unique_ptr<System>& s2) const noexcept
 #else
-            [[nodiscard]] static auto operator()(const std::unique_ptr<System>& s1,
-                                          const std::unique_ptr<System>& s2) noexcept
+            [[nodiscard]]
+            static auto operator()(const std::unique_ptr<System>& s1,
+                                   const std::unique_ptr<System>& s2) noexcept
 #endif
                 -> bool {
                 return s1->priority() < s2->priority();
@@ -124,7 +132,7 @@ export namespace stormkit::entities {
         virtual auto on_message_received(const Message& message) -> void = 0;
 
         Ref<const EntityManager> m_manager;
-        HashSet<Entity>    m_entities;
+        HashSet<Entity>          m_entities;
 
         friend class EntityManager;
 
@@ -232,9 +240,9 @@ namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
 #ifdef STORMKIT_COMPILER_MSVC
-    STORMKIT_INLINE auto EntityHashFunc::operator()(Entity k) const noexcept -> Hash64 {
+    inline auto EntityHashFunc::operator()(Entity k) const noexcept -> Hash64 {
 #else
-    STORMKIT_INLINE auto EntityHashFunc::operator()(Entity k) noexcept -> Hash64 {
+    inline auto EntityHashFunc::operator()(Entity k) noexcept -> Hash64 {
 #endif
         return as<Hash64>(k);
     }
@@ -243,10 +251,10 @@ namespace stormkit::entities {
     /////////////////////////////////////
     template<class Result>
     constexpr auto component_hash(std::string_view str) noexcept -> Result {
-        return std::empty(str)
-                   ? 0xcbf29ce484222325UL
-                   : (as<Hash64>(str[0]) ^ component_hash<Result>(str.substr(1, std::size(str) - 1)))
-                         * 0x100000001b3UL;
+        return std::empty(str) ? 0xcbf29ce484222325UL
+                               : (as<Hash64>(str[0])
+                                  ^ component_hash<Result>(str.substr(1, std::size(str) - 1)))
+                                     * 0x100000001b3UL;
     }
 
     /////////////////////////////////////
@@ -275,19 +283,19 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto MessageBus::empty() const noexcept -> bool {
+    inline auto MessageBus::empty() const noexcept -> bool {
         return std::empty(m_messages);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto System::priority() const noexcept -> UInt32 {
+    inline auto System::priority() const noexcept -> UInt32 {
         return m_priority;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto System::components_used() const noexcept -> const ComponentTypes& {
+    inline auto System::components_used() const noexcept -> const ComponentTypes& {
         return m_types;
     }
 
@@ -303,7 +311,7 @@ namespace stormkit::entities {
 
         auto component = std::make_unique<T>(std::forward<Args>(args)...);
 
-        auto type                                   = T::TYPE;
+        auto type                                     = T::TYPE;
         m_components[component_key_for(entity, type)] = std::move(component);
         m_registered_components_for_entities.at(entity).emplace_back(type);
 
@@ -341,7 +349,7 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto EntityManager::entities() const noexcept -> const std::vector<Entity>& {
+    inline auto EntityManager::entities() const noexcept -> const std::vector<Entity>& {
         if (m_cached_entities_dirty) {
             m_cached_entities       = m_entities | std::ranges::to<std::vector>();
             m_cached_entities_dirty = false;
@@ -443,7 +451,8 @@ namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsSystem T, class Self>
-    auto EntityManager::get_system(this Self& self) noexcept -> core::meta::ConstnessLike<Self, T&> {
+    auto EntityManager::get_system(this Self& self) noexcept
+        -> core::meta::ConstnessLike<Self, T&> {
         expects(self.template has_system<T>());
 
         auto it = std::ranges::find_if(self.m_systems, monadic::is<T>());
@@ -453,7 +462,7 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto EntityManager::entity_count() const noexcept -> RangeExtent {
+    inline auto EntityManager::entity_count() const noexcept -> RangeExtent {
         return std::size(m_entities);
     }
 

@@ -58,7 +58,7 @@ export namespace stormkit { inline namespace core {
         constexpr auto operator*(this auto&& self) noexcept -> decltype(auto);
 
         constexpr operator T&() noexcept;
-        constexpr operator const T &() const noexcept;
+        constexpr operator const T&() const noexcept;
 
         constexpr explicit operator bool() const noexcept;
         constexpr auto     initialized() const noexcept -> bool;
@@ -216,7 +216,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, typename Storage>
-    STORMKIT_FORCE_INLINE constexpr DeferInit<T, Storage>::operator const T &() const noexcept {
+    STORMKIT_FORCE_INLINE constexpr DeferInit<T, Storage>::operator const T&() const noexcept {
         return get();
     }
 }} // namespace stormkit::core

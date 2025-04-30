@@ -29,20 +29,23 @@ export namespace stormkit { inline namespace core {
         DynamicLoader(DynamicLoader&&) noexcept;
         auto operator=(DynamicLoader&&) noexcept -> DynamicLoader&;
 
-        [[nodiscard]] static auto load(std::filesystem::path filepath) noexcept
-            -> Expected<DynamicLoader>;
+        [[nodiscard]]
+        static auto load(std::filesystem::path filepath) noexcept -> Expected<DynamicLoader>;
 
-        [[nodiscard]] static auto allocate_and_load(std::filesystem::path filepath) noexcept
+        [[nodiscard]]
+        static auto allocate_and_load(std::filesystem::path filepath) noexcept
             -> Expected<std::unique_ptr<DynamicLoader>>;
 
         template<class Signature>
-        [[nodiscard]] auto func(std::string_view name) const noexcept
-            -> Expected<std::function<Signature>>;
+        [[nodiscard]]
+        auto func(std::string_view name) const noexcept -> Expected<std::function<Signature>>;
 
         template<class Signature>
-        [[nodiscard]] auto c_func(std::string_view name) const noexcept -> Expected<Signature*>;
+        [[nodiscard]]
+        auto c_func(std::string_view name) const noexcept -> Expected<Signature*>;
 
-        [[nodiscard]] auto filepath() const noexcept -> const std::filesystem::path&;
+        [[nodiscard]]
+        auto filepath() const noexcept -> const std::filesystem::path&;
 
       private:
         DynamicLoader() noexcept;
@@ -51,7 +54,7 @@ export namespace stormkit { inline namespace core {
         auto do_get_func(std::string_view name) const -> Expected<void*>;
 
         std::filesystem::path m_filepath;
-        void* m_library_handle = nullptr;
+        void*                 m_library_handle = nullptr;
     };
 }} // namespace stormkit::core
 
@@ -68,15 +71,17 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE DynamicLoader::DynamicLoader(DynamicLoader&& other) noexcept
         : m_filepath { std::move(other.m_filepath) },
-          m_library_handle{ std::exchange(other.m_library_handle, nullptr) } {}
+          m_library_handle { std::exchange(other.m_library_handle, nullptr) } {
+    }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto DynamicLoader::operator=(DynamicLoader&& other) noexcept -> DynamicLoader& {
+    STORMKIT_FORCE_INLINE auto DynamicLoader::operator=(DynamicLoader&& other) noexcept
+        -> DynamicLoader& {
         if (&other == this) [[unlikely]]
             return *this;
 
-        m_filepath = std::move(other.m_filepath);
+        m_filepath       = std::move(other.m_filepath);
         m_library_handle = std::exchange(other.m_library_handle, nullptr);
 
         return *this;
@@ -84,7 +89,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto DynamicLoader::load(std::filesystem::path filepath) noexcept
+    inline auto DynamicLoader::load(std::filesystem::path filepath) noexcept
         -> Expected<DynamicLoader> {
         auto loader = DynamicLoader {};
 
@@ -93,7 +98,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto DynamicLoader::allocate_and_load(std::filesystem::path filepath) noexcept
+    inline auto DynamicLoader::allocate_and_load(std::filesystem::path filepath) noexcept
         -> Expected<std::unique_ptr<DynamicLoader>> {
         return load(std::move(filepath)).transform([](auto&& loader) {
             return std::make_unique<DynamicLoader>(std::move(loader));
@@ -105,8 +110,9 @@ namespace stormkit { inline namespace core {
     template<class Signature>
     auto DynamicLoader::func(std::string_view name) const noexcept
         -> Expected<std::function<Signature>> {
-        return c_func<Signature>(name).transform(
-            []<typename T>(T&& value) { return std::function<Signature> { std::forward<T>(value) }; });
+        return c_func<Signature>(name).transform([]<typename T>(T&& value) {
+            return std::function<Signature> { std::forward<T>(value) };
+        });
     }
 
     /////////////////////////////////////
@@ -115,13 +121,14 @@ namespace stormkit { inline namespace core {
     auto DynamicLoader::c_func(std::string_view name) const noexcept -> Expected<Signature*> {
         expects(not std::empty(name));
 
-        return do_get_func(name).transform(
-            []<typename T>(T&& value) { return std::bit_cast<Signature*>(std::forward<T>(value)); });
+        return do_get_func(name).transform([]<typename T>(T&& value) {
+            return std::bit_cast<Signature*>(std::forward<T>(value));
+        });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto DynamicLoader::filepath() const noexcept -> const std::filesystem::path& {
+    inline auto DynamicLoader::filepath() const noexcept -> const std::filesystem::path& {
         return m_filepath;
     }
 }} // namespace stormkit::core

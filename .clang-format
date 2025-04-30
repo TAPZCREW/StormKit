@@ -30,8 +30,6 @@ InsertBraces: 'false'
 InsertTrailingCommas: Wrapped
 LambdaBodyIndentation: Signature
 PPIndentWidth: 4
-QualifierAlignment: Left
-# QualifierOrder: [static, volatile, restrict, inline, consteval, constexpr, const, type]
 ReferenceAlignment: Left
 # RemoveBracesLLVM: 'true'
 RequiresClausePosition: OwnLine
@@ -42,6 +40,11 @@ SpaceBeforeCaseColon: 'false'
 AlwaysBreakAfterDefinitionReturnType: None
 SpaceBeforeSquareBrackets: 'false'
 SpaceInEmptyBlock: 'false'
+AttributeMacros: [STORMKIT_FORCE_INLINE, STORMKIT_API, STORMKIT_PRIVATE, STORMKIT_PUBLIC]
+IfMacros: [CASE_DO, CASE_DO_RETURN, CASE, CASE_ARGS_DO]
+BreakAfterAttributes: Always
+QualifierAlignment: Custom
+QualifierOrder: [static, inline, volatile, restrict, constexpr, const, type]
 
 SpacesInLineCommentPrefix:
   Minimum: '1'
@@ -151,3 +154,8 @@ TabWidth: '4'
 UseTab: Never
 PenaltyBreakBeforeFirstCallParameter: '120'
 PenaltyIndentedWhitespace: '1'
+QualifierAlignment: Custom
+QualifierOrder: [static, inline, volatile, restrict, constexpr, const, type]
+AttributeMacros: [STORMKIT_FORCE_INLINE, STORMKIT_API, STORMKIT_PRIVATE, STORMKIT_PUBLIC]
+IfMacros: [CASE_DO, CASE_DO_RETURN, CASE, CASE_ARGS_DO]
+BreakAfterAttributes: Always

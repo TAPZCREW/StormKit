@@ -56,10 +56,11 @@ export {
 
         struct ConsoleStyle {
             template<typename T>
-            [[nodiscard]] constexpr auto operator|(T&& value) const noexcept -> Stylized<T>;
-            std::optional<ConsoleColor>  fg;
-            std::optional<ConsoleColor>  bg;
-            StyleModifier                modifiers = StyleModifier::NONE;
+            [[nodiscard]]
+            constexpr auto              operator|(T&& value) const noexcept -> Stylized<T>;
+            std::optional<ConsoleColor> fg;
+            std::optional<ConsoleColor> bg;
+            StyleModifier               modifiers = StyleModifier::NONE;
         };
 
         inline constexpr auto RED_TEXT_STYLE     = ConsoleStyle { .fg = ConsoleColor::RED };

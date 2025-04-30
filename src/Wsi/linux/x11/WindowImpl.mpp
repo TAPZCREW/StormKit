@@ -69,8 +69,10 @@ export namespace stormkit::wsi::linux::x11 {
         auto create(std::string title, const math::ExtentU& size, WindowStyle style) -> void;
         auto close() noexcept -> void;
 
-        [[nodiscard]] auto pollEvent(Event& event) noexcept -> bool;
-        [[nodiscard]] auto waitEvent(Event& event) noexcept -> bool;
+        [[nodiscard]]
+        auto pollEvent(Event& event) noexcept -> bool;
+        [[nodiscard]]
+        auto waitEvent(Event& event) noexcept -> bool;
 
         auto setTitle(std::string title) noexcept -> void;
         auto setExtent(const math::ExtentU& size) noexcept -> void;
@@ -82,28 +84,39 @@ export namespace stormkit::wsi::linux::x11 {
         auto hideMouse() noexcept -> void;
         auto unhideMouse() noexcept -> void;
 
-        [[nodiscard]] auto extent() const noexcept -> const math::ExtentU&;
-        [[nodiscard]] auto title() const noexcept -> const std::string&;
+        [[nodiscard]]
+        auto extent() const noexcept -> const math::ExtentU&;
+        [[nodiscard]]
+        auto title() const noexcept -> const std::string&;
 
-        [[nodiscard]] auto isOpen() const noexcept -> bool;
-        [[nodiscard]] auto visible() const noexcept -> bool;
+        [[nodiscard]]
+        auto isOpen() const noexcept -> bool;
+        [[nodiscard]]
+        auto visible() const noexcept -> bool;
 
-        [[nodiscard]] auto nativeHandle() const noexcept -> NativeHandle;
-        [[nodiscard]] auto xcbHandles() const noexcept -> const Handles&;
+        [[nodiscard]]
+        auto nativeHandle() const noexcept -> NativeHandle;
+        [[nodiscard]]
+        auto xcbHandles() const noexcept -> const Handles&;
 
-        [[nodiscard]] auto mouseLocked() const noexcept -> bool;
-        [[nodiscard]] auto mouseHidden() const noexcept -> bool;
-        [[nodiscard]] auto fullscreen() const noexcept -> bool;
+        [[nodiscard]]
+        auto mouseLocked() const noexcept -> bool;
+        [[nodiscard]]
+        auto mouseHidden() const noexcept -> bool;
+        [[nodiscard]]
+        auto fullscreen() const noexcept -> bool;
 
-        auto               setKeyRepeatEnabled(bool enabled) noexcept -> void;
-        [[nodiscard]] auto keyRepeatEnabled() const noexcept -> bool;
+        auto setKeyRepeatEnabled(bool enabled) noexcept -> void;
+        [[nodiscard]]
+        auto keyRepeatEnabled() const noexcept -> bool;
 
         auto setVirtualKeyboardVisible(bool visible) noexcept -> void;
 
         auto        setMousePosition(const math::Vector2I& position) noexcept -> void;
         static auto setMousePositionOnDesktop(const math::Vector2U& position) noexcept -> void;
 
-        [[nodiscard]] static auto getMonitorSettings() -> std::vector<Monitor>;
+        [[nodiscard]]
+        static auto getMonitorSettings() -> std::vector<Monitor>;
 
       private:
         auto processEvents(xcb_generic_event_t* xevent) -> void;
@@ -157,76 +170,80 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto WindowImpl::setExtent(const math::ExtentU& extent) noexcept -> void {
+    inline auto WindowImpl::setExtent(const math::ExtentU& extent) noexcept -> void {
         m_extent = extent;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto WindowImpl::title() const noexcept -> const std::string& {
+    inline auto WindowImpl::title() const noexcept -> const std::string& {
         return m_title;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto WindowImpl::mouseLocked() const noexcept -> bool {
+    inline auto WindowImpl::mouseLocked() const noexcept -> bool {
         return m_mouse_locked;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto WindowImpl::mouseHidden() const noexcept -> bool {
+    inline auto WindowImpl::mouseHidden() const noexcept -> bool {
         return m_mouse_hided;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto WindowImpl::fullscreen() const noexcept -> bool {
+    inline auto WindowImpl::fullscreen() const noexcept -> bool {
         return m_fullscreen;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto WindowImpl::isOpen() const noexcept -> bool {
+    inline auto WindowImpl::isOpen() const noexcept -> bool {
         return m_open;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto WindowImpl::visible() const noexcept -> bool {
+    inline auto WindowImpl::visible() const noexcept -> bool {
         return m_visible;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto WindowImpl::xcbHandles() const noexcept -> const Handles& {
+    inline auto WindowImpl::xcbHandles() const noexcept -> const Handles& {
         return m_handles;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto WindowImpl::extent() const noexcept -> const math::ExtentU& {
+    inline auto WindowImpl::extent() const noexcept -> const math::ExtentU& {
         return m_extent;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto WindowImpl::keyRepeatEnabled() const noexcept -> bool {
+    inline auto WindowImpl::keyRepeatEnabled() const noexcept -> bool {
         return m_key_repeat_enabled;
     }
 } // namespace stormkit::wsi::linux::x11
 
 namespace stormkit::wsi::linux::x11 {
     namespace {
-        [[maybe_unused]] constexpr auto WM_HINTS_STR     = std::string_view("_MOTIF_WM_HINTS");
-        constexpr auto                  WM_PROTOCOLS     = std::string_view("WM_PROTOCOLS");
-        constexpr auto                  WM_DELETE_WINDOW = std::string_view("WM_DELETE_WINDOW");
-        constexpr auto                  WM_STATE_STR     = std::string_view("_NET_WM_STATE");
+        [[maybe_unused]]
+        constexpr auto WM_HINTS_STR
+            = std::string_view("_MOTIF_WM_HINTS");
+        constexpr auto WM_PROTOCOLS            = std::string_view("WM_PROTOCOLS");
+        constexpr auto WM_DELETE_WINDOW        = std::string_view("WM_DELETE_WINDOW");
+        constexpr auto WM_STATE_STR            = std::string_view("_NET_WM_STATE");
         constexpr auto WM_STATE_FULLSCREEN_STR = std::string_view("_NET_WM_STATE_FULLSCREEN");
 
-        constexpr auto                  _NET_WM_STATE_REMOVE = 0; // remove/unset property
-        constexpr auto                  _NET_WM_STATE_ADD    = 1; // add/set property
-        [[maybe_unused]] constexpr auto _NET_WM_STATE_TOGGLE = 2; // toggle property
+        constexpr auto _NET_WM_STATE_REMOVE = 0; // remove/unset property
+        constexpr auto _NET_WM_STATE_ADD    = 1; // add/set property
+        [[maybe_unused]]
+        constexpr auto _NET_WM_STATE_TOGGLE
+            = 2; // toggle property
 
         constexpr auto MOUSE_RAW_EVENTS    = UInt32 { XCB_INPUT_XI_EVENT_MASK_RAW_BUTTON_PRESS
                                                    | XCB_INPUT_XI_EVENT_MASK_RAW_BUTTON_RELEASE

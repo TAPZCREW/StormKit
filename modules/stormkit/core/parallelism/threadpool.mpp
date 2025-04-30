@@ -54,7 +54,7 @@ export namespace stormkit { inline namespace core {
 
             Task() = default;
 
-            STORMKIT_INLINE Task(Type _type, std::function<void()> _work)
+            inline Task(Type _type, std::function<void()> _work)
                 : type { _type }, work { std::move(_work) } {}
 
             Task(Task&&) noexcept                    = default;
@@ -129,7 +129,9 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE auto ThreadPool::set_name(std::string_view name) noexcept -> void {
         // for (auto&& [i, worker] : m_workers | std::views::enumerate) {
         auto i = 0;
-        for (auto&& worker : m_workers) { set_thread_name(worker, std::format("{}:{}", name, i++)); }
+        for (auto&& worker : m_workers) {
+            set_thread_name(worker, std::format("{}:{}", name, i++));
+        }
     }
 
     ////////////////////////////////////////
@@ -258,10 +260,11 @@ namespace stormkit { inline namespace core {
                  f         = std::forward<F>(f),
                  predicate = std::forward<Predicate>(predicate),
                  &pool]() {
-                    auto tasks
-                        = core::transform_if(range, predicate, [f = std::forward<F>(f)](auto& elem) {
-                              return f(elem);
-                          });
+                    auto tasks = core::transform_if(range,
+                                                    predicate,
+                                                    [f = std::forward<F>(f)](auto& elem) {
+                                                        return f(elem);
+                                                    });
 
                     auto futures = core::transform(tasks, [&pool](auto& l) {
                         return pool.post_task<OutputType>(std::move(l));
@@ -275,10 +278,11 @@ namespace stormkit { inline namespace core {
                  f         = std::forward<F>(f),
                  predicate = std::forward<Predicate>(predicate),
                  &pool]() {
-                    auto tasks
-                        = core::transform_if(range, predicate, [f = std::forward<F>(f)](auto& elem) {
-                              return f(elem);
-                          });
+                    auto tasks = core::transform_if(range,
+                                                    predicate,
+                                                    [f = std::forward<F>(f)](auto& elem) {
+                                                        return f(elem);
+                                                    });
 
                     auto futures = core::transform(tasks, [&pool](auto& l) {
                         return pool.post_task<OutputType>(std::move(l));

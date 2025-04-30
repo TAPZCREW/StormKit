@@ -37,24 +37,34 @@ export namespace stormkit::gpu {
         SwapchainImage(SwapchainImage&&) noexcept;
         auto operator=(SwapchainImage&&) noexcept -> SwapchainImage&;
 
-        [[nodiscard]] static auto create(const math::ExtentU& extent,
-                                         PixelFormat          format,
-                                         const vk::Image&     image) noexcept -> SwapchainImage;
-        [[nodiscard]] static auto allocate(const math::ExtentU& extent,
-                                           PixelFormat          format,
-                                           const vk::Image&     image) noexcept
-            -> std::unique_ptr<SwapchainImage>;
+        [[nodiscard]]
+        static auto create(const math::ExtentU& extent,
+                           PixelFormat          format,
+                           const vk::Image&     image) noexcept -> SwapchainImage;
+        [[nodiscard]]
+        static auto allocate(const math::ExtentU& extent,
+                             PixelFormat          format,
+                             const vk::Image& image) noexcept -> std::unique_ptr<SwapchainImage>;
 
-        [[nodiscard]] auto extent() const noexcept -> const math::ExtentU&;
-        [[nodiscard]] auto format() const noexcept -> PixelFormat;
-        [[nodiscard]] auto type() const noexcept -> ImageType;
-        [[nodiscard]] auto samples() const noexcept -> SampleCountFlag;
-        [[nodiscard]] auto layers() const noexcept -> UInt32;
-        [[nodiscard]] auto faces() const noexcept -> UInt32;
-        [[nodiscard]] auto mipLevels() const noexcept -> UInt32;
-        [[nodiscard]] auto usages() const noexcept -> ImageUsageFlag;
+        [[nodiscard]]
+        auto extent() const noexcept -> const math::ExtentU&;
+        [[nodiscard]]
+        auto format() const noexcept -> PixelFormat;
+        [[nodiscard]]
+        auto type() const noexcept -> ImageType;
+        [[nodiscard]]
+        auto samples() const noexcept -> SampleCountFlag;
+        [[nodiscard]]
+        auto layers() const noexcept -> UInt32;
+        [[nodiscard]]
+        auto faces() const noexcept -> UInt32;
+        [[nodiscard]]
+        auto mipLevels() const noexcept -> UInt32;
+        [[nodiscard]]
+        auto usages() const noexcept -> ImageUsageFlag;
 
-        [[nodiscard]] auto vkHandle() const noexcept -> const vk::Image&;
+        [[nodiscard]]
+        auto vkHandle() const noexcept -> const vk::Image&;
 
       private:
         math::ExtentU   m_extent     = { 0, 0, 0 };
@@ -88,24 +98,28 @@ export namespace stormkit::gpu {
         Swapchain(Swapchain&&) noexcept;
         auto operator=(Swapchain&&) noexcept -> Swapchain&;
 
-        [[nodiscard]] static auto create(const Device&                         device,
-                                         const Surface&                        surface,
-                                         const math::ExtentU&                  extent,
-                                         std::optional<vk::raii::SwapchainKHR> old_swapchain
-                                         = std::nullopt) noexcept -> Expected<Swapchain>;
-        [[nodiscard]] static auto allocate(const Device&                         device,
-                                           const Surface&                        surface,
-                                           const math::ExtentU&                  extent,
-                                           std::optional<vk::raii::SwapchainKHR> old_swapchain
-                                           = std::nullopt) noexcept
-            -> Expected<std::unique_ptr<Swapchain>>;
+        [[nodiscard]]
+        static auto create(const Device&                         device,
+                           const Surface&                        surface,
+                           const math::ExtentU&                  extent,
+                           std::optional<vk::raii::SwapchainKHR> old_swapchain
+                           = std::nullopt) noexcept -> Expected<Swapchain>;
+        [[nodiscard]]
+        static auto allocate(const Device&                         device,
+                             const Surface&                        surface,
+                             const math::ExtentU&                  extent,
+                             std::optional<vk::raii::SwapchainKHR> old_swapchain
+                             = std::nullopt) noexcept -> Expected<std::unique_ptr<Swapchain>>;
 
-        [[nodiscard]] auto images() const noexcept -> const std::vector<SwapchainImage>&;
-        [[nodiscard]] auto acquireNextImage(std::chrono::nanoseconds wait,
-                                            const Semaphore&         image_available) const noexcept
+        [[nodiscard]]
+        auto images() const noexcept -> const std::vector<SwapchainImage>&;
+        [[nodiscard]]
+        auto acquireNextImage(std::chrono::nanoseconds wait,
+                              const Semaphore&         image_available) const noexcept
             -> Expected<std::pair<gpu::Result, UInt32>>;
 
-        [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::SwapchainKHR&;
+        [[nodiscard]]
+        auto vkHandle() const noexcept -> const vk::raii::SwapchainKHR&;
 
       private:
         DeferInit<vk::raii::SwapchainKHR> m_vk_swapchain;

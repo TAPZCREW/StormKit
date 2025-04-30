@@ -75,20 +75,29 @@ namespace stormkit::wsi::macos {
         auto hideMouse() noexcept -> void;
         auto unhideMouse() noexcept -> void;
 
-        [[nodiscard]] auto width() const noexcept -> std::uint32_t;
-        [[nodiscard]] auto height() const noexcept -> std::uint32_t;
-        [[nodiscard]] auto title() const noexcept -> const std::string&;
+        [[nodiscard]]
+        auto width() const noexcept -> std::uint32_t;
+        [[nodiscard]]
+        auto height() const noexcept -> std::uint32_t;
+        [[nodiscard]]
+        auto title() const noexcept -> const std::string&;
 
-        [[nodiscard]] auto visible() const noexcept -> bool;
+        [[nodiscard]]
+        auto visible() const noexcept -> bool;
 
-        [[nodiscard]] auto macOSHandles() const noexcept -> const Handles&;
+        [[nodiscard]]
+        auto macOSHandles() const noexcept -> const Handles&;
 
-        [[nodiscard]] auto mouseLocked() const noexcept -> bool;
-        [[nodiscard]] auto mouseHided() const noexcept -> bool;
-        [[nodiscard]] auto fullscreen() const noexcept -> bool;
+        [[nodiscard]]
+        auto mouseLocked() const noexcept -> bool;
+        [[nodiscard]]
+        auto mouseHided() const noexcept -> bool;
+        [[nodiscard]]
+        auto fullscreen() const noexcept -> bool;
 
-        auto               setKeyRepeatEnabled(bool enabled) noexcept -> void;
-        [[nodiscard]] auto keyRepeatEnabled() const noexcept -> bool;
+        auto setKeyRepeatEnabled(bool enabled) noexcept -> void;
+        [[nodiscard]]
+        auto keyRepeatEnabled() const noexcept -> bool;
 
         auto setVirtualKeyboardVisible(bool visible) noexcept -> void;
 
@@ -96,7 +105,8 @@ namespace stormkit::wsi::macos {
         static auto setMousePositionOnDesktop(std::uint32_t width, std::uint32_t height) noexcept
             -> void;
 
-        [[nodiscard]] static auto getMonitorSettings() -> std::vector<Monitor>;
+        [[nodiscard]]
+        static auto getMonitorSettings() -> std::vector<Monitor>;
 
         std::function<void(int, std::int32_t, std::int32_t)> mouseDownEvent;
         std::function<void(int, std::int32_t, std::int32_t)> mouseUpEvent;
