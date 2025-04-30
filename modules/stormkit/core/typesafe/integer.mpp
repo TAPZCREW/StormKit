@@ -7,7 +7,7 @@ module;
 #include <stormkit/core/platform_macro.hpp>
 
 #ifdef STORMKIT_COMPILER_MSVC
-#include <__msvc_int128.hpp>
+    #include <__msvc_int128.hpp>
 #endif
 
 export module stormkit.core:typesafe.integer;
@@ -43,7 +43,7 @@ export {
 #elif defined(STORMKIT_COMPILER_MSVC)
         using UInt128 = std::_Unsigned128;
 #endif
-        using UInt   = std::uint_fast32_t;
+        using UInt = std::uint_fast32_t;
 
         using Int8  = std::int8_t;
         using Int16 = std::int16_t;
@@ -55,7 +55,7 @@ export {
         using Int128 = std::_Signed128;
 #else
 #endif
-        using Int   = std::int_fast32_t;
+        using Int = std::int_fast32_t;
 
         using RangeExtent = std::size_t;
         using RangeOffset = std::ptrdiff_t;

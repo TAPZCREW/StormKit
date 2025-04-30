@@ -51,7 +51,7 @@ namespace stormkit::gpu {
             // TODO handle error here
             std::ranges::move(device.vkHandle()
                                   .allocateCommandBuffers(allocate_info)
-                                  .transform_error(core:.monadic::assert(
+                                  .transform_error(core :.monadic::assert(
                                       std::format("Failed to allocate {} command buffers",
                                                   create_count)))
                                   .value(),

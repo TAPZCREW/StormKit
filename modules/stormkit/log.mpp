@@ -25,8 +25,10 @@ export {
             DEBUG
         };
 
-        [[nodiscard]] constexpr auto as_string(Severity severity) noexcept -> std::string_view;
-        [[nodiscard]] constexpr auto to_string(Severity severity) -> std::string;
+        [[nodiscard]]
+        constexpr auto as_string(Severity severity) noexcept -> std::string_view;
+        [[nodiscard]]
+        constexpr auto to_string(Severity severity) -> std::string;
 
         class STORMKIT_API Logger {
           public:
@@ -42,15 +44,18 @@ export {
 
             auto set_log_level(Severity log_level) noexcept -> void;
 
-            [[nodiscard]] auto start_time() const noexcept -> const LogClock::time_point&;
-            [[nodiscard]] auto log_level() const noexcept -> const Severity&;
+            [[nodiscard]]
+            auto start_time() const noexcept -> const LogClock::time_point&;
+            [[nodiscard]]
+            auto log_level() const noexcept -> const Severity&;
 
             template<class T, typename... Args>
-            [[nodiscard]] static auto create_logger_instance(Args&&... param_args) -> T;
+            [[nodiscard]]
+            static auto create_logger_instance(Args&&... param_args) -> T;
 
             template<class T, typename... Args>
-            [[nodiscard]] static auto allocate_logger_instance(Args&&... param_args)
-                -> std::unique_ptr<T>;
+            [[nodiscard]]
+            static auto allocate_logger_instance(Args&&... param_args) -> std::unique_ptr<T>;
 
             template<class... Args>
             static auto log(Severity         severity,
@@ -77,8 +82,10 @@ export {
             template<class... Args>
             static auto flog(Args&&... param_args) -> void;
 
-            [[nodiscard]] static auto has_logger() noexcept -> bool;
-            [[nodiscard]] static auto instance() noexcept -> Logger&;
+            [[nodiscard]]
+            static auto has_logger() noexcept -> bool;
+            [[nodiscard]]
+            static auto instance() noexcept -> Logger&;
 
           protected:
             LogClock::time_point m_start_time;
@@ -107,7 +114,8 @@ export {
         };
 
         template<ConstexprString str>
-        [[nodiscard]] constexpr auto operator""_module() -> stormkit::log::Module;
+        [[nodiscard]]
+        constexpr auto operator""_module() -> stormkit::log::Module;
 
         class STORMKIT_API FileLogger final: public Logger {
           public:
@@ -138,10 +146,10 @@ export {
 
             ConsoleLogger(const ConsoleLogger&);
             auto operator=(const ConsoleLogger&) -> ConsoleLogger&;
-            
+
             ConsoleLogger(ConsoleLogger&&);
             auto operator=(ConsoleLogger&&) -> ConsoleLogger&;
-            
+
             ~ConsoleLogger() override;
 
             auto write(Severity severity, const Module& module, const char* string)
@@ -158,9 +166,9 @@ export {
         struct formatter<T, CharT>: formatter<basic_string_view<CharT>, CharT> {
             template<class FormatContext>
             auto format(T data, FormatContext& ctx) const -> decltype(ctx.out()) {
-                return formatter<basic_string_view<CharT>, CharT>::format(
-                    stormkit::log::as_string(data),
-                    ctx);
+                return formatter<basic_string_view<CharT>, CharT>::format(stormkit::log::as_string(
+                                                                              data),
+                                                                          ctx);
             }
         };
     } // namespace std
@@ -187,8 +195,7 @@ namespace stormkit::log {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE constexpr auto as_string(Severity severity) noexcept
-        -> std::string_view {
+    STORMKIT_FORCE_INLINE constexpr auto as_string(Severity severity) noexcept -> std::string_view {
         const auto it = details::SEVERITY_TO_STRING.find(severity);
         expects(it != std::ranges::cend(details::SEVERITY_TO_STRING));
 
@@ -278,7 +285,7 @@ namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
     inline auto ConsoleLogger::operator=(ConsoleLogger&&) -> ConsoleLogger& = default;
-    
+
     ////////////////////////////////////////
     ////////////////////////////////////////
     inline ConsoleLogger::~ConsoleLogger() = default;

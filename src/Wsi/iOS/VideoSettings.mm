@@ -11,7 +11,7 @@ std::vector<VideoSettings> VideoSettings::getDesktopModes() {
 
     const auto video_setting = VideoSettings {
         .size = { .width  = static_cast<core::UInt16>(screen_rect.size.width * scale_factor),
-                  .height = static_cast<core::UInt16>(screen_rect.size.height * scale_factor) }
+                 .height = static_cast<core::UInt16>(screen_rect.size.height * scale_factor) }
     };
 
     return { std::move(video_setting) };

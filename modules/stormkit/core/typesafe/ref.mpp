@@ -38,14 +38,16 @@ export {
             constexpr auto operator=(const Ref&) noexcept -> Ref& = delete;
             constexpr auto operator=(Ref&&) noexcept -> Ref&;
 
-            [[nodiscard]] constexpr auto get() const noexcept STORMKIT_LIFETIMEBOUND -> PointerType;
-            [[nodiscard]] constexpr auto
-                operator->() const noexcept STORMKIT_LIFETIMEBOUND->PointerType;
-            [[nodiscard]] constexpr auto
-                operator*() const noexcept STORMKIT_LIFETIMEBOUND->ReferenceType;
+            [[nodiscard]]
+            constexpr auto get() const noexcept STORMKIT_LIFETIMEBOUND -> PointerType;
+            [[nodiscard]]
+            constexpr auto operator->() const noexcept STORMKIT_LIFETIMEBOUND->PointerType;
+            [[nodiscard]]
+            constexpr auto operator*() const noexcept STORMKIT_LIFETIMEBOUND->ReferenceType;
 
-            constexpr explicit           operator bool() const noexcept;
-            [[nodiscard]] constexpr auto has_value() const noexcept -> Boolean;
+            constexpr explicit operator bool() const noexcept;
+            [[nodiscard]]
+            constexpr auto has_value() const noexcept -> Boolean;
 
             // template<typename Self>
             // constexpr operator std::conditional_t<std::is_const_v<Self>, const T&, T&>(
@@ -55,36 +57,51 @@ export {
             // constexpr operator std::enable_if<not std::is_const_v<T>, Ref<const T>>(
             //     this Self&& self) noexcept;
 
-            [[nodiscard]] constexpr operator ReferenceType() const noexcept STORMKIT_LIFETIMEBOUND;
-            [[nodiscard]] constexpr operator PointerType() const noexcept STORMKIT_LIFETIMEBOUND;
+            [[nodiscard]]
+            constexpr operator ReferenceType() const noexcept STORMKIT_LIFETIMEBOUND;
+            [[nodiscard]]
+            constexpr operator PointerType() const noexcept STORMKIT_LIFETIMEBOUND;
 
-            [[nodiscard]] constexpr auto operator==(std::nullptr_t) const noexcept;
-            [[nodiscard]] constexpr auto operator<(std::nullptr_t) const noexcept;
-            [[nodiscard]] constexpr auto operator<=(std::nullptr_t) const noexcept;
-            [[nodiscard]] constexpr auto operator>(std::nullptr_t) const noexcept;
-            [[nodiscard]] constexpr auto operator>=(std::nullptr_t) const noexcept;
-            [[nodiscard]] constexpr auto operator<=>(std::nullptr_t) const noexcept
+            [[nodiscard]]
+            constexpr auto operator==(std::nullptr_t) const noexcept;
+            [[nodiscard]]
+            constexpr auto operator<(std::nullptr_t) const noexcept;
+            [[nodiscard]]
+            constexpr auto operator<=(std::nullptr_t) const noexcept;
+            [[nodiscard]]
+            constexpr auto operator>(std::nullptr_t) const noexcept;
+            [[nodiscard]]
+            constexpr auto operator>=(std::nullptr_t) const noexcept;
+            [[nodiscard]]
+            constexpr auto operator<=>(std::nullptr_t) const noexcept
                 -> std::compare_three_way_result_t<typename Ref<T>::PointerType,
                                                    typename Ref<T>::PointerType>
                 requires std::three_way_comparable<typename Ref<T>::PointerType,
                                                    typename Ref<T>::PointerType>;
 
             template<typename U>
-            [[nodiscard]] constexpr auto operator==(const Ref<U>&) const noexcept;
+            [[nodiscard]]
+            constexpr auto operator==(const Ref<U>&) const noexcept;
             template<typename U>
-            [[nodiscard]] constexpr auto operator!=(const Ref<U>&) const noexcept;
+            [[nodiscard]]
+            constexpr auto operator!=(const Ref<U>&) const noexcept;
             template<typename U>
-            [[nodiscard]] constexpr auto operator<(const Ref<U>&) const noexcept;
+            [[nodiscard]]
+            constexpr auto operator<(const Ref<U>&) const noexcept;
             template<typename U>
-            [[nodiscard]] constexpr auto operator<=(const Ref<U>&) const noexcept;
+            [[nodiscard]]
+            constexpr auto operator<=(const Ref<U>&) const noexcept;
             template<typename U>
-            [[nodiscard]] constexpr auto operator>(const Ref<U>&) const noexcept;
+            [[nodiscard]]
+            constexpr auto operator>(const Ref<U>&) const noexcept;
             template<typename U>
-            [[nodiscard]] constexpr auto operator>=(const Ref<U>&) const noexcept;
+            [[nodiscard]]
+            constexpr auto operator>=(const Ref<U>&) const noexcept;
             template<typename U>
                 requires std::three_way_comparable<typename Ref<T>::PointerType,
                                                    typename Ref<U>::PointerType>
-            [[nodiscard]] constexpr auto operator<=>(const Ref<U>& other) const noexcept
+            [[nodiscard]]
+            constexpr auto operator<=>(const Ref<U>& other) const noexcept
                 -> std::compare_three_way_result_t<typename Ref<T>::PointerType,
                                                    typename Ref<U>::PointerType>;
 
@@ -111,42 +128,48 @@ export {
         using OptionalRef = std::optional<Ref<T>>;
 
         template<meta::IsRawPointerOrLValueReference T>
-        [[nodiscard]] constexpr auto as_ref(T&& value STORMKIT_LIFETIMEBOUND) noexcept
-            -> decltype(auto);
+        [[nodiscard]]
+        constexpr auto as_ref(T&& value STORMKIT_LIFETIMEBOUND) noexcept -> decltype(auto);
 
         // template<typename T>
         template<meta::IsRawPointerOrLValueReference T>
-        [[nodiscard]] constexpr auto as_ref_mut(T&& value STORMKIT_LIFETIMEBOUND) noexcept
-            -> decltype(auto);
+        [[nodiscard]]
+        constexpr auto as_ref_mut(T&& value STORMKIT_LIFETIMEBOUND) noexcept -> decltype(auto);
 
         // template<typename T>
         template<meta::IsRawPointerOrLValueReference T>
-        [[nodiscard]] constexpr auto as_ref_like(T&& value STORMKIT_LIFETIMEBOUND) noexcept
-            -> decltype(auto);
+        [[nodiscard]]
+        constexpr auto as_ref_like(T&& value STORMKIT_LIFETIMEBOUND) noexcept -> decltype(auto);
 
         template<template<typename, std::size_t> typename Out = std::array, typename... Args>
             requires(not std::ranges::range<Args> and ...)
-        [[nodiscard]] constexpr auto as_refs(Args&&... args) noexcept -> decltype(auto);
+        [[nodiscard]]
+        constexpr auto as_refs(Args&&... args) noexcept -> decltype(auto);
 
         template<template<typename...> typename Out, typename... Args>
             requires(not std::ranges::range<Args> and ...)
-        [[nodiscard]] constexpr auto to_refs(Args&&... args) noexcept -> decltype(auto);
+        [[nodiscard]]
+        constexpr auto to_refs(Args&&... args) noexcept -> decltype(auto);
 
         template<template<typename, std::size_t> typename Out = std::array, typename... Args>
             requires(not std::ranges::range<Args> and ...)
-        [[nodiscard]] constexpr auto as_ref_muts(Args&&... args) noexcept -> decltype(auto);
+        [[nodiscard]]
+        constexpr auto as_ref_muts(Args&&... args) noexcept -> decltype(auto);
 
         template<template<typename...> typename Out, typename... Args>
             requires(not std::ranges::range<Args> and ...)
-        [[nodiscard]] constexpr auto to_ref_muts(Args&&... args) noexcept -> decltype(auto);
+        [[nodiscard]]
+        constexpr auto to_ref_muts(Args&&... args) noexcept -> decltype(auto);
 
         template<template<typename...> class Out = std::vector, std::ranges::range T>
             requires(std::ranges::range<Out<typename T::value_type>>)
-        [[nodiscard]] constexpr auto to_refs(const T& range) noexcept -> decltype(auto);
+        [[nodiscard]]
+        constexpr auto to_refs(const T& range) noexcept -> decltype(auto);
 
         template<template<typename...> class Out = std::vector, std::ranges::range T>
             requires(std::ranges::range<Out<typename T::value_type>>)
-        [[nodiscard]] constexpr auto to_mut_refs(T& range) noexcept -> decltype(auto);
+        [[nodiscard]]
+        constexpr auto to_mut_refs(T& range) noexcept -> decltype(auto);
     }} // namespace stormkit::core
 
     namespace std {

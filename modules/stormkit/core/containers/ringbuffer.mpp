@@ -37,10 +37,14 @@ export namespace stormkit { inline namespace core {
 
         auto clear() noexcept -> void;
 
-        [[nodiscard]] auto empty() const noexcept -> bool;
-        [[nodiscard]] auto full() const noexcept -> bool;
-        [[nodiscard]] auto size() const noexcept -> ExtentType;
-        [[nodiscard]] auto capacity() const noexcept -> ExtentType;
+        [[nodiscard]]
+        auto empty() const noexcept -> bool;
+        [[nodiscard]]
+        auto full() const noexcept -> bool;
+        [[nodiscard]]
+        auto size() const noexcept -> ExtentType;
+        [[nodiscard]]
+        auto capacity() const noexcept -> ExtentType;
 
         template<typename U>
             requires meta::Is<T, meta::CanonicalType<U>>
@@ -55,13 +59,16 @@ export namespace stormkit { inline namespace core {
         auto pop() noexcept -> void;
 
         template<class Self>
-        [[nodiscard]] auto get(this Self& self) noexcept -> decltype(auto);
+        [[nodiscard]]
+        auto get(this Self& self) noexcept -> decltype(auto);
 
-        [[nodiscard]] auto data() const noexcept -> std::span<const ValueType>;
+        [[nodiscard]]
+        auto data() const noexcept -> std::span<const ValueType>;
 
       private:
         template<class Self>
-        [[nodiscard]] auto get_ptr(this Self& self, ExtentType pos) noexcept -> decltype(auto);
+        [[nodiscard]]
+        auto get_ptr(this Self& self, ExtentType pos) noexcept -> decltype(auto);
 
         ExtentType m_capacity = 0;
         ExtentType m_count    = 0;

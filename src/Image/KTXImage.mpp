@@ -17,14 +17,16 @@ import stormkit.core;
 import stormkit.Image;
 
 export namespace stormkit::image::details {
-    [[nodiscard]] auto loadKTX(std::span<const Byte> data) noexcept
+    [[nodiscard]]
+    auto loadKTX(std::span<const Byte> data) noexcept
         -> std::expected<image::Image, image::Image::Error>;
 
-    [[nodiscard]] auto saveKTX(const image::Image&          image,
-                               const std::filesystem::path& filepath) noexcept
+    [[nodiscard]]
+    auto saveKTX(const image::Image& image, const std::filesystem::path& filepath) noexcept
         -> std::expected<void, image::Image::Error>;
 
-    [[nodiscard]] auto saveKTX(const image::Image& image) noexcept
+    [[nodiscard]]
+    auto saveKTX(const image::Image& image) noexcept
         -> std::expected<std::vector<Byte>, image::Image::Error>;
 } // namespace stormkit::image::details
 
@@ -158,7 +160,7 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto saveKTX([[maybe_unused]] const image::Image& image) noexcept
+    auto saveKTX(const image::Image&) noexcept
         -> std::expected<std::vector<Byte>, image::Image::Error> {
         return std::unexpected(
             Error { .reason = Reason::Not_Implemented, .str_error = "save to memory" });

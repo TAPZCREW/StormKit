@@ -176,13 +176,13 @@ namespace stormkit::image {
     /////////////////////////////////////
     /////////////////////////////////////
     Image::Image(const std::filesystem::path& filepath, Image::Codec codec) noexcept : Image {} {
-        [[maybe_unused]] const auto _ = loadFromFile(filepath, codec);
+        const auto _ = loadFromFile(filepath, codec);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     Image::Image(std::span<const Byte> data, Image::Codec codec) noexcept : Image {} {
-        [[maybe_unused]] const auto _ = loadFromMemory(data, codec);
+        const auto _ = loadFromMemory(data, codec);
     }
 
     ////////////////////////////////////////
@@ -245,13 +245,20 @@ namespace stormkit::image {
 
         if (codec == Image::Codec::Autodetect) codec = details::filenameToCodec(filepath);
         switch (codec) {
-            CASE_DO(JPEG, loadJPG)
-            CASE_DO(PNG, loadPNG)
-            CASE_DO(TARGA, loadTGA)
-            CASE_DO(PPM, loadPPM)
-            CASE_DO(HDR, loadHDR)
-            CASE_DO(KTX, loadKTX)
-            CASE_DO(QOI, loadQOI)
+            CASE_DO (JPEG, loadJPG)
+                ;
+            CASE_DO (PNG, loadPNG)
+                ;
+            CASE_DO (TARGA, loadTGA)
+                ;
+            CASE_DO (PPM, loadPPM)
+                ;
+            CASE_DO (HDR, loadHDR)
+                ;
+            CASE_DO (KTX, loadKTX)
+                ;
+            CASE_DO (QOI, loadQOI)
+                ;
             default: break;
         }
 
@@ -286,13 +293,20 @@ namespace stormkit::image {
 
         if (codec == Image::Codec::Autodetect) codec = details::headerToCodec(data);
         switch (codec) {
-            CASE_DO(JPEG, loadJPG, "JPEG")
-            CASE_DO(PNG, loadPNG, "PNG")
-            CASE_DO(TARGA, loadTGA, "TARGA")
-            CASE_DO(PPM, loadPPM, "PPM")
-            CASE_DO(HDR, loadHDR, "HDR")
-            CASE_DO(KTX, loadKTX, "KTX")
-            CASE_DO(QOI, loadQOI, "QOI")
+            CASE_DO (JPEG, loadJPG, "JPEG")
+                ;
+            CASE_DO (PNG, loadPNG, "PNG")
+                ;
+            CASE_DO (TARGA, loadTGA, "TARGA")
+                ;
+            CASE_DO (PPM, loadPPM, "PPM")
+                ;
+            CASE_DO (HDR, loadHDR, "HDR")
+                ;
+            CASE_DO (KTX, loadKTX, "KTX")
+                ;
+            CASE_DO (QOI, loadQOI, "QOI")
+                ;
             default: break;
         }
 
@@ -341,13 +355,20 @@ namespace stormkit::image {
         expects(std::filesystem::exists(filepath.root_directory()));
 
         switch (codec) {
-            CASE_DO(JPEG, saveJPG)
-            CASE_DO(PNG, savePNG)
-            CASE_DO(TARGA, saveTGA)
-            CASE_ARGS_DO(PPM, savePPM)
-            CASE_DO(HDR, saveHDR)
-            CASE_DO(KTX, saveKTX)
-            CASE_DO(QOI, saveQOI)
+            CASE_DO (JPEG, saveJPG)
+                ;
+            CASE_DO (PNG, savePNG)
+                ;
+            CASE_DO (TARGA, saveTGA)
+                ;
+            CASE_ARGS_DO (PPM, savePPM)
+                ;
+            CASE_DO (HDR, saveHDR)
+                ;
+            CASE_DO (KTX, saveKTX)
+                ;
+            CASE_DO (QOI, saveQOI)
+                ;
             default: break;
         }
 
@@ -396,13 +417,20 @@ namespace stormkit::image {
         auto output = std::vector<Byte> {};
 
         switch (codec) {
-            CASE_DO(JPEG, saveJPG, "JPEG")
-            CASE_DO(PNG, savePNG, "PNG")
-            CASE_DO(TARGA, saveTGA, "TARGA")
-            CASE_ARGS_DO(PPM, savePPM, "PPM")
-            CASE_DO(HDR, saveHDR, "HDR")
-            CASE_DO(KTX, saveKTX, "KTX")
-            CASE_DO(QOI, saveQOI, "QOI")
+            CASE_DO (JPEG, saveJPG, "JPEG")
+                ;
+            CASE_DO (PNG, savePNG, "PNG")
+                ;
+            CASE_DO (TARGA, saveTGA, "TARGA")
+                ;
+            CASE_ARGS_DO (PPM, savePPM, "PPM")
+                ;
+            CASE_DO (HDR, saveHDR, "HDR")
+                ;
+            CASE_DO (KTX, saveKTX, "KTX")
+                ;
+            CASE_DO (QOI, saveQOI, "QOI")
+                ;
             default: break;
         }
 
@@ -487,7 +515,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::scale([[maybe_unused]] const math::ExtentU&) const noexcept -> Image {
+    auto Image::scale(const math::ExtentU&) const noexcept -> Image {
         return *this;
     }
 
@@ -507,11 +535,11 @@ namespace stormkit::image {
         auto image = Image { std::move(image_data) };
 
         for (auto [layer, face, mip, x, y, z] : multi_range(m_data.layers,
-                                                           m_data.faces,
-                                                           m_data.mip_levels,
-                                                           m_data.extent.width,
-                                                           m_data.extent.height,
-                                                           m_data.extent.depth)) {
+                                                            m_data.faces,
+                                                            m_data.mip_levels,
+                                                            m_data.extent.width,
+                                                            m_data.extent.height,
+                                                            m_data.extent.depth)) {
             const auto inv_x  = m_data.extent.width - x - 1u;
             auto       output = image.pixel({ inv_x, y, z }, layer, face, mip);
             // const auto data  = pixel({ x, y, z }, layer, face, mip);
@@ -538,11 +566,11 @@ namespace stormkit::image {
         auto image = Image { std::move(image_data) };
 
         for (auto [layer, face, mip, x, y, z] : multi_range(m_data.layers,
-                                                           m_data.faces,
-                                                           m_data.mip_levels,
-                                                           m_data.extent.width,
-                                                           m_data.extent.height,
-                                                           m_data.extent.depth)) {
+                                                            m_data.faces,
+                                                            m_data.mip_levels,
+                                                            m_data.extent.width,
+                                                            m_data.extent.height,
+                                                            m_data.extent.depth)) {
             const auto inv_y  = m_data.extent.height - 1u - y;
             auto       output = image.pixel({ x, inv_y, z }, layer, face, mip);
 
@@ -567,11 +595,11 @@ namespace stormkit::image {
         auto image = Image { std::move(image_data) };
 
         for (auto [layer, face, mip, x, y, z] : multi_range(m_data.layers,
-                                                           m_data.faces,
-                                                           m_data.mip_levels,
-                                                           m_data.extent.width,
-                                                           m_data.extent.height,
-                                                           m_data.extent.depth)) {
+                                                            m_data.faces,
+                                                            m_data.mip_levels,
+                                                            m_data.extent.width,
+                                                            m_data.extent.height,
+                                                            m_data.extent.depth)) {
             const auto inv_z  = m_data.extent.depth - 1u - z;
             auto       output = image.pixel({ x, z, inv_z }, layer, face, mip);
 

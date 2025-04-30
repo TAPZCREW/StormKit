@@ -235,9 +235,9 @@ namespace stormkit { inline namespace core {
     template<template<class> class Lock, LockAccessMode Mode>
     template<typename... LockArgs>
     STORMKIT_FORCE_INLINE
-        Locked<T, Mutex>::Access<Lock, Mode>::Access(ReferenceType value,
-                                                     MutexType&    mutex,
-                                                     LockArgs&&... lock_args) noexcept
+    Locked<T, Mutex>::Access<Lock, Mode>::Access(ReferenceType value,
+                                                 MutexType&    mutex,
+                                                 LockArgs&&... lock_args) noexcept
         : lock { mutex, std::forward<LockArgs>(lock_args)... }, m_value { as_ref_like(value) } {
     }
 
@@ -247,8 +247,8 @@ namespace stormkit { inline namespace core {
     template<template<class> class Lock, LockAccessMode Mode>
     template<typename... LockArgs>
     STORMKIT_FORCE_INLINE
-        Locked<T, Mutex>::Access<Lock, Mode>::Access(const Locked& locked,
-                                                     LockArgs&&... lock_args) noexcept
+    Locked<T, Mutex>::Access<Lock, Mode>::Access(const Locked& locked,
+                                                 LockArgs&&... lock_args) noexcept
         : Access { locked.m_value, locked.m_mutex, std::forward<LockArgs>(lock_args)... } {
     }
 
@@ -258,8 +258,7 @@ namespace stormkit { inline namespace core {
     template<template<class> class Lock, LockAccessMode Mode>
     template<typename... LockArgs>
     STORMKIT_FORCE_INLINE
-        Locked<T, Mutex>::Access<Lock, Mode>::Access(Locked& locked,
-                                                     LockArgs&&... lock_args) noexcept
+    Locked<T, Mutex>::Access<Lock, Mode>::Access(Locked& locked, LockArgs&&... lock_args) noexcept
         : Access { locked.m_value, locked.m_mutex, std::forward<LockArgs>(lock_args)... } {
     }
 

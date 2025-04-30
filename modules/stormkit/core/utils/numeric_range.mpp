@@ -41,20 +41,24 @@ export namespace stormkit { inline namespace core {
     } // namespace meta
 
     template<meta::IsArithmetic T>
-    [[nodiscard]] constexpr auto range(const T& end) noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto range(const T& end) noexcept -> decltype(auto);
 
     template<meta::IsArithmetic T, meta::IsArithmetic U, meta::IsArithmetic V = U>
-    [[nodiscard]] constexpr auto
-        range(const T& begin, const U& end, const V& step = V { 1 }) noexcept -> decltype(auto);
-
-    [[nodiscard]] constexpr auto range(meta::IsNumericsRangePure auto&& range) noexcept
+    [[nodiscard]]
+    constexpr auto range(const T& begin, const U& end, const V& step = V { 1 }) noexcept
         -> decltype(auto);
 
+    [[nodiscard]]
+    constexpr auto range(meta::IsNumericsRangePure auto&& range) noexcept -> decltype(auto);
+
     template<meta::IsArithmetic... Args>
-    [[nodiscard]] constexpr auto multi_range(const Args&... args) noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto multi_range(const Args&... args) noexcept -> decltype(auto);
 
     template<meta::IsNumericsRangePure... Args>
-    [[nodiscard]] constexpr auto multi_range(Args&&... args) noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto multi_range(Args&&... args) noexcept -> decltype(auto);
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -211,9 +215,13 @@ namespace stormkit { inline namespace core {
                 return old;
             }
 
-            constexpr auto operator==(const Iterator& other) const noexcept { return m_val == other.m_val; }
+            constexpr auto operator==(const Iterator& other) const noexcept {
+                return m_val == other.m_val;
+            }
 
-            constexpr auto operator!=(const Iterator& other) const noexcept { return m_val != other.m_val; }
+            constexpr auto operator!=(const Iterator& other) const noexcept {
+                return m_val != other.m_val;
+            }
 
             template<typename Self>
             constexpr auto operator*(this Self&& self) noexcept -> decltype(auto) {

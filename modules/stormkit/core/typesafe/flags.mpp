@@ -35,24 +35,30 @@ export {
         /// macro
         /// \returns true if the flag big is set and false if not
         template<FlagsType T>
-        [[nodiscard]] constexpr auto checkFlag(const T& value, const T& flag) noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto checkFlag(const T& value, const T& flag) noexcept -> bool;
 
         /// \exclude
         template<FlagsType T>
-        [[nodiscard]] constexpr auto next_value(const T& value) noexcept -> T;
+        [[nodiscard]]
+        constexpr auto next_value(const T& value) noexcept -> T;
     }} // namespace stormkit::core
 
     template<stormkit::core::FlagsType T>
-    [[nodiscard]] constexpr auto operator|(const T& lhs, const T& rhs) noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto operator|(const T& lhs, const T& rhs) noexcept -> decltype(auto);
 
     template<stormkit::core::FlagsType T>
-    [[nodiscard]] constexpr auto operator&(const T& lhs, const T& rhs) noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto operator&(const T& lhs, const T& rhs) noexcept -> decltype(auto);
 
     template<stormkit::core::FlagsType T>
-    [[nodiscard]] constexpr auto operator^(const T& lhs, const T& rhs) noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto operator^(const T& lhs, const T& rhs) noexcept -> decltype(auto);
 
     template<stormkit::core::FlagsType T>
-    [[nodiscard]] constexpr auto operator~(const T& lhs) noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto operator~(const T& lhs) noexcept -> decltype(auto);
 
     template<stormkit::core::FlagsType T>
     constexpr auto operator|=(T& lhs, const T& rhs) noexcept -> decltype(auto);

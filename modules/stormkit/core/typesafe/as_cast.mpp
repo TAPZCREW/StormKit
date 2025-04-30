@@ -93,32 +93,40 @@ export namespace stormkit { inline namespace core {
         namespace core {
             // Templates
             template<template<typename...> class T1, class T2>
-            [[nodiscard]] constexpr auto is(T2&&) noexcept -> decltype(auto);
+            [[nodiscard]]
+            constexpr auto is(T2&&) noexcept -> decltype(auto);
 
             template<template<typename, auto...> class T1, class T2>
-            [[nodiscard]] constexpr auto is(T2&&) noexcept -> decltype(auto);
+            [[nodiscard]]
+            constexpr auto is(T2&&) noexcept -> decltype(auto);
 
             // Types
             template<typename To, typename From>
-            [[nodiscard]] constexpr auto is(const From& from) noexcept -> decltype(auto);
+            [[nodiscard]]
+            constexpr auto is(const From& from) noexcept -> decltype(auto);
 
             // values
             template<typename T1, typename T2>
-            [[nodiscard]] constexpr auto is(const T1& first, T2&& second) noexcept -> Boolean;
+            [[nodiscard]]
+            constexpr auto is(const T1& first, T2&& second) noexcept -> Boolean;
 
             template<typename T1, meta::IsUnaryPredicate<T1> T2>
-            [[nodiscard]] constexpr auto is(const T1& first, T2&& second) noexcept -> Boolean;
+            [[nodiscard]]
+            constexpr auto is(const T1& first, T2&& second) noexcept -> Boolean;
 
             template<meta::IsArrayType T1, meta::IsArrayType T2>
-            [[nodiscard]] constexpr auto is(const T1& first, T2&& second) noexcept -> Boolean;
+            [[nodiscard]]
+            constexpr auto is(const T1& first, T2&& second) noexcept -> Boolean;
 
             template<typename T1, meta::HasEqualityOperator<T1> T2>
-            [[nodiscard]] constexpr auto is(const T1& first, T2&& second) noexcept -> Boolean;
+            [[nodiscard]]
+            constexpr auto is(const T1& first, T2&& second) noexcept -> Boolean;
 
             template<meta::IsArithmetic To, auto From>
                 requires(meta::IsArithmetic<decltype(From)> and meta::IsSafeNarrowing<To, From>)
-            [[nodiscard]] constexpr auto as(const std::source_location& location
-                                            = std::source_location::current()) noexcept -> To;
+            [[nodiscard]]
+            constexpr auto as(const std::source_location& location
+                              = std::source_location::current()) noexcept -> To;
 
             template<typename To, typename From>
             constexpr auto as(From&&                      value,
@@ -137,104 +145,120 @@ export namespace stormkit { inline namespace core {
             // exact same type
             template<typename To, typename From>
                 requires(meta::IsStrict<To, meta::CanonicalType<From>>)
-            [[nodiscard]] constexpr auto as(From&&                      value,
-                                            const std::source_location& location
-                                            = std::source_location::current()) noexcept
+            [[nodiscard]]
+            constexpr auto as(From&&                      value,
+                              const std::source_location& location
+                              = std::source_location::current()) noexcept
                 -> meta::ForwardLike<From, To>;
 
             // safe narrowing
             template<meta::IsFloatingPoint T1, meta::IsFloatingPoint T2>
                 requires(meta::IsFloatingPoint<meta::CanonicalType<T2>>)
-            [[nodiscard]] constexpr auto is(const T1& first, const T2& second) noexcept -> Boolean;
+            [[nodiscard]]
+            constexpr auto is(const T1& first, const T2& second) noexcept -> Boolean;
 
             template<typename To, typename From>
                 requires((meta::IsArithmetic<To> or meta::IsByte<To>)
                          and (meta::IsArithmetic<meta::CanonicalType<From>>
                               or meta::IsByte<meta::CanonicalType<From>>)
                          and not meta::IsStrict<To, meta::CanonicalType<From>>)
-            [[nodiscard]] constexpr auto as(From&&                      value,
-                                            const std::source_location& location
-                                            = std::source_location::current()) noexcept -> To;
+            [[nodiscard]]
+            constexpr auto as(From&&                      value,
+                              const std::source_location& location
+                              = std::source_location::current()) noexcept -> To;
 
             // enumerations
             template<meta::IsStrict<Underlying> To, typename From>
                 requires(meta::IsEnumeration<meta::CanonicalType<From>>)
-            [[nodiscard]] constexpr auto as(From&&                      value,
-                                            const std::source_location& location
-                                            = std::source_location::current()) noexcept
+            [[nodiscard]]
+            constexpr auto as(From&&                      value,
+                              const std::source_location& location
+                              = std::source_location::current()) noexcept
                 -> meta::UnderlyingType<meta::CanonicalType<From>>;
 
             template<meta::IsIntegral To, typename From>
                 requires(meta::IsEnumeration<meta::CanonicalType<From>>)
-            [[nodiscard]] constexpr auto as(From&&                      value,
-                                            const std::source_location& location
-                                            = std::source_location::current()) noexcept -> To;
+            [[nodiscard]]
+            constexpr auto as(From&&                      value,
+                              const std::source_location& location
+                              = std::source_location::current()) noexcept -> To;
 
             template<meta::IsEnumeration To, typename From>
                 requires(meta::IsIntegral<meta::CanonicalType<From>>)
-            [[nodiscard]] constexpr auto as(From&&                      value,
-                                            const std::source_location& location
-                                            = std::source_location::current()) noexcept -> To;
+            [[nodiscard]]
+            constexpr auto as(From&&                      value,
+                              const std::source_location& location
+                              = std::source_location::current()) noexcept -> To;
 
             // polymorphism
             template<meta::IsPolymorphicIndirection To, meta::IsRawPointerOrLValueReference From>
                 requires(meta::IsPolymorphicPointer<meta::CanonicalType<From>>)
-            [[nodiscard]] constexpr auto as(From&&                      value,
-                                            const std::source_location& location
-                                            = std::source_location::current()) noexcept
-                -> decltype(auto);
+            [[nodiscard]]
+            constexpr auto as(From&&                      value,
+                              const std::source_location& location
+                              = std::source_location::current()) noexcept -> decltype(auto);
 
             template<meta::IsPolymorphicIndirection To, meta::IsRawPointerOrLValueReference From>
                 requires(meta::IsPolymorphic<meta::CanonicalType<From>>)
-            [[nodiscard]] constexpr auto as(From&&                      value,
-                                            const std::source_location& location
-                                            = std::source_location::current()) noexcept
-                -> decltype(auto);
+            [[nodiscard]]
+            constexpr auto as(From&&                      value,
+                              const std::source_location& location
+                              = std::source_location::current()) noexcept -> decltype(auto);
 
             // predicate
             template<typename T>
-            [[nodiscard]] constexpr auto is(const T&              value,
-                                            FunctionRef<const T&> predicate) noexcept -> Boolean;
+            [[nodiscard]]
+            constexpr auto is(const T& value, FunctionRef<const T&> predicate) noexcept -> Boolean;
 
             // std::variant
             template<typename T1, meta::IsVariantType T2>
-            [[nodiscard]] constexpr auto is(const T2& variant) noexcept -> Boolean;
+            [[nodiscard]]
+            constexpr auto is(const T2& variant) noexcept -> Boolean;
 
             template<typename T1, meta::IsVariantType T2>
-            [[nodiscard]] constexpr auto is(const T2& variant, T1&& value) noexcept -> Boolean;
+            [[nodiscard]]
+            constexpr auto is(const T2& variant, T1&& value) noexcept -> Boolean;
 
             template<typename To, meta::IsVariantType From>
-            [[nodiscard]] constexpr auto as(From&&                      variant,
-                                            const std::source_location& location
-                                            = std::source_location::current()) noexcept
+            [[nodiscard]]
+            constexpr auto as(From&&                      variant,
+                              const std::source_location& location
+                              = std::source_location::current()) noexcept
                 -> meta::ForwardLike<From, To>;
 
             // std::optional
             template<typename T1, meta::IsOptionalType T2>
-            [[nodiscard]] constexpr auto is(const T2& optional) noexcept -> Boolean;
+            [[nodiscard]]
+            constexpr auto is(const T2& optional) noexcept -> Boolean;
 
             template<typename T1, meta::IsOptionalType T2>
-            [[nodiscard]] constexpr auto is(const T2& optional, T1&& value) noexcept -> Boolean;
+            [[nodiscard]]
+            constexpr auto is(const T2& optional, T1&& value) noexcept -> Boolean;
 
             template<typename To, meta::IsOptionalType From>
-            [[nodiscard]] constexpr auto as(From&&                      optional,
-                                            const std::source_location& location
-                                            = std::source_location::current()) noexcept
+            [[nodiscard]]
+            constexpr auto as(From&&                      optional,
+                              const std::source_location& location
+                              = std::source_location::current()) noexcept
                 -> meta::ForwardLike<From, To>;
 
             // std::string
             template<meta::IsStrictOneOf<std::string, std::string_view> To,
                      meta::IsEnumeration                                From>
-            [[nodiscard]] constexpr auto as(const From& value) -> To;
+            [[nodiscard]]
+            constexpr auto as(const From& value) -> To;
 
             template<meta::IsStrictOneOf<std::string, std::string_view> To, meta::IsArithmetic From>
-            [[nodiscard]] constexpr auto as(const From& value) -> To;
+            [[nodiscard]]
+            constexpr auto as(const From& value) -> To;
 
             template<meta::IsArithmetic To, meta::Is<std::string_view> From>
-            [[nodiscard]] constexpr auto as(const From& value) noexcept -> To;
+            [[nodiscard]]
+            constexpr auto as(const From& value) noexcept -> To;
 
             template<typename To, typename From>
-            [[nodiscard]] constexpr auto narrow(From&& value) noexcept -> To;
+            [[nodiscard]]
+            constexpr auto narrow(From&& value) noexcept -> To;
         } // namespace core
 
         template<typename T, typename U>
@@ -688,7 +712,8 @@ namespace stormkit { inline namespace core {
         /////////////////////////////////////
         /////////////////////////////////////
         template<meta::IsStrict<std::string> To, meta::IsEnumeration From>
-        [[nodiscard]] constexpr auto as(const From& value) -> To {
+        [[nodiscard]]
+        constexpr auto as(const From& value) -> To {
             return magic_enum::enum_name(value);
         }
 

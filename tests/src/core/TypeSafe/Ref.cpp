@@ -105,9 +105,9 @@ namespace {
               } },
           { "Ref.to_refs.std_set",
               [] static noexcept {
-                  auto vec = std::vector { 1, 3, 5, 6, 9 };
+                  auto vec  = std::vector { 1, 3, 5, 6, 9 };
                   auto refs = to_refs<std::set>(vec);
-                  
+
                   auto i = 0;
                   for (auto&& ref : refs) expects(*ref == vec[i++]);
               } },

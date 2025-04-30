@@ -33,8 +33,10 @@ export namespace stormkit::wsi::macos {
         auto create(std::string title, const math::ExtentU& size, WindowStyle style) -> void;
         auto close() noexcept -> void;
 
-        [[nodiscard]] auto pollEvent(Event& event) noexcept -> bool;
-        [[nodiscard]] auto waitEvent(Event& event) noexcept -> bool;
+        [[nodiscard]]
+        auto pollEvent(Event& event) noexcept -> bool;
+        [[nodiscard]]
+        auto waitEvent(Event& event) noexcept -> bool;
 
         auto setTitle(std::string title) noexcept -> void;
 
@@ -48,20 +50,29 @@ export namespace stormkit::wsi::macos {
         auto hideMouse() noexcept -> void;
         auto unhideMouse() noexcept -> void;
 
-        [[nodiscard]] auto extent() const noexcept -> math::ExtentU;
-        [[nodiscard]] auto title() const noexcept -> const std::string&;
+        [[nodiscard]]
+        auto extent() const noexcept -> math::ExtentU;
+        [[nodiscard]]
+        auto title() const noexcept -> const std::string&;
 
-        [[nodiscard]] auto isOpen() const noexcept -> bool;
-        [[nodiscard]] auto visible() const noexcept -> bool;
+        [[nodiscard]]
+        auto isOpen() const noexcept -> bool;
+        [[nodiscard]]
+        auto visible() const noexcept -> bool;
 
-        [[nodiscard]] auto nativeHandle() const noexcept -> NativeHandle;
+        [[nodiscard]]
+        auto nativeHandle() const noexcept -> NativeHandle;
 
-        [[nodiscard]] auto mouseLocked() const noexcept -> bool;
-        [[nodiscard]] auto mouseHided() const noexcept -> bool;
-        [[nodiscard]] auto fullscreen() const noexcept -> bool;
+        [[nodiscard]]
+        auto mouseLocked() const noexcept -> bool;
+        [[nodiscard]]
+        auto mouseHided() const noexcept -> bool;
+        [[nodiscard]]
+        auto fullscreen() const noexcept -> bool;
 
-        auto               setKeyRepeatEnabled(bool enabled) noexcept -> void;
-        [[nodiscard]] auto keyRepeatEnabled() const noexcept -> bool;
+        auto setKeyRepeatEnabled(bool enabled) noexcept -> void;
+        [[nodiscard]]
+        auto keyRepeatEnabled() const noexcept -> bool;
 
         auto setVirtualKeyboardVisible(bool visible) noexcept -> void;
 
@@ -69,7 +80,8 @@ export namespace stormkit::wsi::macos {
         static auto setMousePositionOnDesktop(WM wm, const math::Vector2U& position) noexcept
             -> void;
 
-        [[nodiscard]] static auto getMonitorSettings(WM wm) -> std::vector<Monitor>;
+        [[nodiscard]]
+        static auto getMonitorSettings(WM wm) -> std::vector<Monitor>;
 
       private:
         std::unique_ptr<macOSWindow> m_window;
@@ -83,14 +95,12 @@ export namespace stormkit::wsi::macos {
 namespace stormkit::wsi::macos {
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE WindowImpl::WindowImpl([[maybe_unused]] WM wm) noexcept {};
+    STORMKIT_FORCE_INLINE WindowImpl::WindowImpl(WM _) noexcept {};
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE WindowImpl::WindowImpl(WM                   wm,
-                                                 std::string          title,
-                                                 const math::ExtentU& size,
-                                                 WindowStyle          style)
+    STORMKIT_FORCE_INLINE
+    WindowImpl::WindowImpl(WM wm, std::string title, const math::ExtentU& size, WindowStyle style)
         : WindowImpl { wm } {
         create(std::move(title), size, style);
     }
@@ -114,9 +124,9 @@ namespace stormkit::wsi::macos {
                                                   const math::ExtentU& size,
                                                   WindowStyle          style) -> void {
         m_window = allocate<macOSWindow>(std::move(title),
-                                           size.width,
-                                           size.height,
-                                           as<int>(as<Underlying>(style)))
+                                         size.width,
+                                         size.height,
+                                         as<int>(as<Underlying>(style)))
                        .transform_error(monadic::assert())
                        .value();
 
@@ -246,15 +256,14 @@ namespace stormkit::wsi::macos {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto
-        WindowImpl::setMousePositionOnDesktop([[maybe_unused]] WM   wm,
-                                              const math::Vector2U& position) noexcept -> void {
+        WindowImpl::setMousePositionOnDesktop(WM _, const math::Vector2U& position) noexcept
+        -> void {
         macOSWindow::setMousePositionOnDesktop(position.x, position.y);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::getMonitorSettings([[maybe_unused]] WM wm)
-        -> std::vector<Monitor> {
+    STORMKIT_FORCE_INLINE auto WindowImpl::getMonitorSettings(WM _) -> std::vector<Monitor> {
         return macOSWindow::getMonitorSettings()
                | std::views::transform([](auto&& monitor) noexcept {
                      return Monitor {

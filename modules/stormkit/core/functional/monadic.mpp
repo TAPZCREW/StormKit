@@ -27,60 +27,83 @@ export namespace stormkit { inline namespace core { namespace monadic {
     };
 
     template<typename T>
-    [[nodiscard]] constexpr auto value() noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto value() noexcept -> decltype(auto);
     template<typename T>
-    [[nodiscard]] constexpr auto as(const std::source_location& location
-                                    = std::source_location::current()) noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto as(const std::source_location& location
+                      = std::source_location::current()) noexcept -> decltype(auto);
     template<typename T>
-    [[nodiscard]] constexpr auto narrow() noexcept -> decltype(auto);
-    [[nodiscard]] constexpr auto discard() noexcept -> decltype(auto);
-    [[nodiscard]] constexpr auto set(auto& output) noexcept -> decltype(auto);
-    [[nodiscard]] constexpr auto emplace_to(std::ranges::range auto& container) noexcept
-        -> decltype(auto);
-    [[nodiscard]] constexpr auto is(auto&& value) noexcept;
-    [[nodiscard]] constexpr auto append_to(std::ranges::range auto& range) noexcept;
-    [[nodiscard]] constexpr auto wrap(auto&& func) noexcept;
+    [[nodiscard]]
+    constexpr auto narrow() noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto discard() noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto set(auto& output) noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto emplace_to(std::ranges::range auto& container) noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto is(auto&& value) noexcept;
+    [[nodiscard]]
+    constexpr auto append_to(std::ranges::range auto& range) noexcept;
+    [[nodiscard]]
+    constexpr auto wrap(auto&& func) noexcept;
     template<auto Func>
-    [[nodiscard]] constexpr auto wrap() noexcept;
-    [[nodiscard]] constexpr auto as_byte() noexcept;
+    [[nodiscard]]
+    constexpr auto wrap() noexcept;
+    [[nodiscard]]
+    constexpr auto as_byte() noexcept;
 
     template<typename T,
              std::invocable<T>                              First,
              std::invocable<std::invoke_result_t<First, T>> Second>
-    [[nodiscard]] constexpr auto map(First&& first, Second&& second) noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto map(First&& first, Second&& second) noexcept -> decltype(auto);
 
-    [[nodiscard]] constexpr auto map(auto&& first, auto&& second) noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto map(auto&& first, auto&& second) noexcept -> decltype(auto);
 
-    [[nodiscard]] constexpr auto
-        either(std::regular_invocable<Anything> auto&&... visitors) noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto either(std::regular_invocable<Anything> auto&&... visitors) noexcept
+        -> decltype(auto);
 
     template<typename T>
-    [[nodiscard]] constexpr auto either(meta::IsUnaryPredicate<T> auto&& predicate,
-                                        std::invocable<T> auto&&         true_,
-                                        std::invocable<T> auto&& false_) noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto either(meta::IsUnaryPredicate<T> auto&& predicate,
+                          std::invocable<T> auto&&         true_,
+                          std::invocable<T> auto&&         false_) noexcept -> decltype(auto);
 
     template<auto Index>
-    [[nodiscard]] constexpr auto get() noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto get() noexcept -> decltype(auto);
 
-    [[nodiscard]] constexpr auto is() noexcept -> decltype(auto);
-
-    template<typename T>
-    [[nodiscard]] constexpr auto is() noexcept -> decltype(auto);
-
-    [[nodiscard]] constexpr auto clone() noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto is() noexcept -> decltype(auto);
 
     template<typename T>
-    [[nodiscard]] constexpr auto init() noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto is() noexcept -> decltype(auto);
+
+    [[nodiscard]]
+    constexpr auto clone() noexcept -> decltype(auto);
+
+    template<typename T>
+    [[nodiscard]]
+    constexpr auto init() noexcept -> decltype(auto);
 
     template<typename T, typename... Args>
-    [[nodiscard]] constexpr auto init(Args&&... args) noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto init(Args&&... args) noexcept -> decltype(auto);
 
-    [[nodiscard]] constexpr auto as_ref() noexcept -> decltype(auto);
-    [[nodiscard]] constexpr auto as_ref_mut() noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto as_ref() noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto as_ref_mut() noexcept -> decltype(auto);
 
     template<typename T>
-    [[nodiscard]] constexpr auto forward_like() noexcept -> decltype(auto);
-}}} // namespace stormkit::core:.monadic
+    [[nodiscard]]
+    constexpr auto forward_like() noexcept -> decltype(auto);
+}}} // namespace stormkit::core::monadic
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
@@ -157,7 +180,7 @@ namespace stormkit { inline namespace core { namespace monadic {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE constexpr auto discard() noexcept -> decltype(auto) {
-        return []([[maybe_unused]] auto&& value) static noexcept -> void {};
+        return [](auto&&) static noexcept -> void {};
     }
 
     /////////////////////////////////////
@@ -311,4 +334,4 @@ namespace stormkit { inline namespace core { namespace monadic {
             return std::forward_like<T>(value);
         };
     }
-}}} // namespace stormkit::core:.monadic
+}}} // namespace stormkit::core::monadic

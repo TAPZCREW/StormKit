@@ -52,9 +52,12 @@ static io_service_t IOServicePortFromCGDisplayID(CGDirectDisplayID displayID) {
         // then we are not looking at the correct monitor.
         // NOTE: The serial number is important in cases where two monitors
         //       are the exact same.
-        if (CGDisplayVendorNumber(displayID) != vendorID
-            || CGDisplayModelNumber(displayID) != productID
-            || CGDisplaySerialNumber(displayID) != serialNumber) {
+        if (CGDisplayVendorNumber(displayID)
+            != vendorID
+            || CGDisplayModelNumber(displayID)
+            != productID
+            || CGDisplaySerialNumber(displayID)
+            != serialNumber) {
             CFRelease(info);
             continue;
         }
@@ -185,24 +188,22 @@ namespace stormkit::wsi::macos {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto macOSWindow::setKeyRepeatEnabled([[maybe_unused]] bool enabled) noexcept -> void {
+    auto macOSWindow::setKeyRepeatEnabled(bool) noexcept -> void {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto macOSWindow::setVirtualKeyboardVisible([[maybe_unused]] bool visible) noexcept -> void {
+    auto macOSWindow::setVirtualKeyboardVisible(bool) noexcept -> void {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto macOSWindow::setMousePosition([[maybe_unused]] std::int32_t x,
-                                       [[maybe_unused]] std::int32_t y) noexcept -> void {
+    auto macOSWindow::setMousePosition(std::int32_t, std::int32_t) noexcept -> void {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto macOSWindow::setMousePositionOnDesktop([[maybe_unused]] std::uint32_t x,
-                                                [[maybe_unused]] std::uint32_t y) noexcept -> void {
+    auto macOSWindow::setMousePositionOnDesktop(std::uint32_t, std::uint32_t) noexcept -> void {
     }
 
     /////////////////////////////////////

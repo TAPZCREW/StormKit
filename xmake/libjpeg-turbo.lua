@@ -22,15 +22,12 @@ if is_plat("windows") then
     add_versions("3.0.1", "5b9bbca2b2a87c6632c821799438d358e27004ab528abf798533c15d50b39f82")
     add_versions("3.0.3", "a649205a90e39a548863a3614a9576a3fb4465f8e8e66d54999f127957c25b21")
 
-    add_configs(
-        "jpeg",
-        {
-            description = "libjpeg API/ABI emulation target version.",
-            default = "6",
-            type = "string",
-            values = { "6", "7", "8" },
-        }
-    )
+    add_configs("jpeg", {
+        description = "libjpeg API/ABI emulation target version.",
+        default = "6",
+        type = "string",
+        values = { "6", "7", "8" },
+    })
 
     if is_plat("android") then add_deps("make") end
 

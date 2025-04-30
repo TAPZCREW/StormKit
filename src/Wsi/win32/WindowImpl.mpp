@@ -34,8 +34,10 @@ export namespace stormkit::wsi::win32 {
         auto create(std::string title, const math::ExtentU& size, WindowStyle style) -> void;
         auto close() noexcept -> void;
 
-        [[nodiscard]] auto pollEvent(Event& event) noexcept -> bool;
-        [[nodiscard]] auto waitEvent(Event& event) noexcept -> bool;
+        [[nodiscard]]
+        auto pollEvent(Event& event) noexcept -> bool;
+        [[nodiscard]]
+        auto waitEvent(Event& event) noexcept -> bool;
 
         auto setTitle(std::string title) noexcept -> void;
 
@@ -49,21 +51,31 @@ export namespace stormkit::wsi::win32 {
         auto hideMouse() noexcept -> void;
         auto unhideMouse() noexcept -> void;
 
-        [[nodiscard]] auto extent() const noexcept -> const math::ExtentU&;
-        [[nodiscard]] auto title() const noexcept -> const std::string&;
+        [[nodiscard]]
+        auto extent() const noexcept -> const math::ExtentU&;
+        [[nodiscard]]
+        auto title() const noexcept -> const std::string&;
 
-        [[nodiscard]] auto isOpen() const noexcept -> bool;
-        [[nodiscard]] auto visible() const noexcept -> bool;
+        [[nodiscard]]
+        auto isOpen() const noexcept -> bool;
+        [[nodiscard]]
+        auto visible() const noexcept -> bool;
 
-        [[nodiscard]] auto nativeHandle() const noexcept -> NativeHandle;
-        [[nodiscard]] auto win32Handles() const noexcept -> HWND;
+        [[nodiscard]]
+        auto nativeHandle() const noexcept -> NativeHandle;
+        [[nodiscard]]
+        auto win32Handles() const noexcept -> HWND;
 
-        [[nodiscard]] auto mouseLocked() const noexcept -> bool;
-        [[nodiscard]] auto mouseHided() const noexcept -> bool;
-        [[nodiscard]] auto fullscreen() const noexcept -> bool;
+        [[nodiscard]]
+        auto mouseLocked() const noexcept -> bool;
+        [[nodiscard]]
+        auto mouseHided() const noexcept -> bool;
+        [[nodiscard]]
+        auto fullscreen() const noexcept -> bool;
 
-        auto               setKeyRepeatEnabled(bool enabled) noexcept -> void;
-        [[nodiscard]] auto keyRepeatEnabled() const noexcept -> bool;
+        auto setKeyRepeatEnabled(bool enabled) noexcept -> void;
+        [[nodiscard]]
+        auto keyRepeatEnabled() const noexcept -> bool;
 
         auto setVirtualKeyboardVisible(bool visible) noexcept -> void;
 
@@ -71,7 +83,8 @@ export namespace stormkit::wsi::win32 {
         static auto setMousePositionOnDesktop(WM wm, const math::Vector2U& position) noexcept
             -> void;
 
-        [[nodiscard]] static auto getMonitorSettings(WM wm) -> std::vector<Monitor>;
+        [[nodiscard]]
+        static auto getMonitorSettings(WM wm) -> std::vector<Monitor>;
 
       private:
         static auto CALLBACK globalOnEvent(HWND   handle,
@@ -129,7 +142,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    WindowImpl::WindowImpl([[maybe_unused]] WM wm) {
+    WindowImpl::WindowImpl(WM) {
     }
 
     /////////////////////////////////////
@@ -411,12 +424,12 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::setKeyRepeatEnabled([[maybe_unused]] bool enabled) noexcept -> void {
+    auto WindowImpl::setKeyRepeatEnabled(bool) noexcept -> void {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::setVirtualKeyboardVisible([[maybe_unused]] bool visible) noexcept -> void {
+    auto WindowImpl::setVirtualKeyboardVisible(bool) noexcept -> void {
     }
 
     /////////////////////////////////////
@@ -429,17 +442,14 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::setMousePositionOnDesktop([[maybe_unused]] WM   wm,
-                                               const math::Vector2U& position) noexcept -> void {
+    auto WindowImpl::setMousePositionOnDesktop(WM, const math::Vector2U& position) noexcept
+        -> void {
         SetCursorPos(position.x, position.y);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto loadMonitor(HMONITOR                _monitor,
-                     [[maybe_unused]] HDC    hdc,
-                     [[maybe_unused]] LPRECT rect,
-                     LPARAM                  data) -> BOOL {
+    auto loadMonitor(HMONITOR _monitor, HDC, LPRECT, LPARAM data) -> BOOL {
         if (_monitor == nullptr) return TRUE;
 
         auto& monitors = *reinterpret_cast<std::vector<Monitor>*>(data);
@@ -473,7 +483,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::getMonitorSettings([[maybe_unused]] WM wm) -> std::vector<Monitor> {
+    auto WindowImpl::getMonitorSettings(WM) -> std::vector<Monitor> {
         auto monitors = std::vector<Monitor> {};
 
         EnumDisplayMonitors(nullptr, nullptr, loadMonitor, reinterpret_cast<LPARAM>(&monitors));

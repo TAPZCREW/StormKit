@@ -51,9 +51,7 @@ namespace stormkit::log {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto FileLogger::write([[maybe_unused]] Severity      severity,
-                           [[maybe_unused]] const Module& m,
-                           [[maybe_unused]] const char*   string) -> void {
+    auto FileLogger::write(Severity severity, const Module& m, const char* string) -> void {
         const auto now = LogClock::now();
         const auto time
             = std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time).count();

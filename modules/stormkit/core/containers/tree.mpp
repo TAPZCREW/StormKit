@@ -22,11 +22,13 @@ export namespace stormkit { inline namespace core {
 
         static constexpr auto INVALID_INDEX = IndexType { IndexType::INVALID_HANDLE_VALUE };
 
-        [[nodiscard]] auto name() const noexcept -> const std::string&;
-        auto               set_name(std::string name) noexcept -> void;
+        [[nodiscard]]
+        auto name() const noexcept -> const std::string&;
+        auto set_name(std::string name) noexcept -> void;
 
-        [[nodiscard]] auto parent() const noexcept -> IndexType;
-        auto               set_parent(IndexType index) noexcept -> void;
+        [[nodiscard]]
+        auto parent() const noexcept -> IndexType;
+        auto set_parent(IndexType index) noexcept -> void;
 
         auto next_sibling() const noexcept -> IndexType;
         auto set_next_sibling(IndexType index) noexcept -> void;
@@ -78,18 +80,26 @@ export namespace stormkit { inline namespace core {
         auto operator[](TreeNodeIndexType index) noexcept -> TreeNodeType&;
         auto operator[](TreeNodeIndexType index) const noexcept -> const TreeNodeType&;
 
-        [[nodiscard]] auto size() const noexcept -> RangeExtent;
+        [[nodiscard]]
+        auto size() const noexcept -> RangeExtent;
 
-        [[nodiscard]] auto begin() noexcept;
-        [[nodiscard]] auto begin() const noexcept;
-        [[nodiscard]] auto cbegin() const noexcept;
+        [[nodiscard]]
+        auto begin() noexcept;
+        [[nodiscard]]
+        auto begin() const noexcept;
+        [[nodiscard]]
+        auto cbegin() const noexcept;
 
-        [[nodiscard]] auto end() noexcept;
-        [[nodiscard]] auto end() const noexcept;
-        [[nodiscard]] auto cend() const noexcept;
+        [[nodiscard]]
+        auto end() noexcept;
+        [[nodiscard]]
+        auto end() const noexcept;
+        [[nodiscard]]
+        auto cend() const noexcept;
 
-        auto               clearDirties() noexcept -> void;
-        [[nodiscard]] auto dirties() const noexcept -> std::span<const TreeNodeIndexType>;
+        auto clearDirties() noexcept -> void;
+        [[nodiscard]]
+        auto dirties() const noexcept -> std::span<const TreeNodeIndexType>;
 
         auto genDotFile(std::filesystem::path                             filepath,
                         std::function<std::string_view(std::string_view)> colorize_node) const
@@ -114,67 +124,67 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto TreeNode::name() const noexcept -> const std::string& {
+    inline auto TreeNode::name() const noexcept -> const std::string& {
         return m_name;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto TreeNode::set_name(std::string name) noexcept -> void {
+    inline auto TreeNode::set_name(std::string name) noexcept -> void {
         m_name = std::move(name);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto TreeNode::parent() const noexcept -> TreeNode::IndexType {
+    inline auto TreeNode::parent() const noexcept -> TreeNode::IndexType {
         return m_parent;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto TreeNode::set_parent(IndexType index) noexcept -> void {
+    inline auto TreeNode::set_parent(IndexType index) noexcept -> void {
         m_parent = index;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto TreeNode::next_sibling() const noexcept -> TreeNode::IndexType {
+    inline auto TreeNode::next_sibling() const noexcept -> TreeNode::IndexType {
         return m_next_sibling;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto TreeNode::set_next_sibling(IndexType index) noexcept -> void {
+    inline auto TreeNode::set_next_sibling(IndexType index) noexcept -> void {
         m_next_sibling = index;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto TreeNode::first_child() const noexcept -> TreeNode::IndexType {
+    inline auto TreeNode::first_child() const noexcept -> TreeNode::IndexType {
         return m_first_child;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto TreeNode::set_first_child(IndexType index) noexcept -> void {
+    inline auto TreeNode::set_first_child(IndexType index) noexcept -> void {
         m_first_child = index;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto TreeNode::dirty_bits() const noexcept -> const TreeNode::DirtyBitType& {
+    inline auto TreeNode::dirty_bits() const noexcept -> const TreeNode::DirtyBitType& {
         return m_dirty_bits;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_INLINE auto TreeNode::set_dirty_bits(DirtyBitType bits) noexcept -> void {
+    inline auto TreeNode::set_dirty_bits(DirtyBitType bits) noexcept -> void {
         m_dirty_bits = bits;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto TreeNode::invalidate() noexcept -> void {
+    inline auto TreeNode::invalidate() noexcept -> void {
         m_parent       = { INVALID_INDEX };
         m_next_sibling = { INVALID_INDEX };
         m_first_child  = { INVALID_INDEX };

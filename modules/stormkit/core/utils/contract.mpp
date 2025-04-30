@@ -27,10 +27,10 @@ export namespace stormkit { inline namespace core {
     };
 
     auto assert_base(bool                        cond,
-                    AssertType                  type,
-                    std::string_view            message,
-                    const std::source_location& location = std::source_location::current()) noexcept
-        -> void;
+                     AssertType                  type,
+                     std::string_view            message,
+                     const std::source_location& location
+                     = std::source_location::current()) noexcept -> void;
 
     consteval auto consteval_assert_base(bool             cond,
                                          AssertType       type,
@@ -65,7 +65,8 @@ export namespace stormkit { inline namespace core {
 
     namespace casts::core {
         template<meta::IsStrictOneOf<std::string, std::string_view> To>
-        [[nodiscard]] constexpr auto as(AssertType t) noexcept -> To;
+        [[nodiscard]]
+        constexpr auto as(AssertType t) noexcept -> To;
     }
 }} // namespace stormkit::core
 
@@ -122,10 +123,10 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_INLINE auto assert_base(bool                        cond,
-                                    AssertType                  type,
-                                    std::string_view            message,
-                                    const std::source_location& location) noexcept -> void {
+    inline auto assert_base(bool                        cond,
+                            AssertType                  type,
+                            std::string_view            message,
+                            const std::source_location& location) noexcept -> void {
         if constexpr (STORMKIT_ASSERT == 1) {
             if (not cond) [[unlikely]] {
                 auto lock = std::unique_lock { mutex };

@@ -2,10 +2,12 @@
 
 #include <cstdlib>
 
-[[gnu::weak]] int iosMain(int argc, char** argv) {
+[[gnu::weak]]
+int iosMain(int argc, char** argv) {
     return iosMain();
 }
 
-[[gnu::weak]] int iosMain() {
+[[gnu::weak]]
+int iosMain() {
     return EXIT_SUCCESS;
 }

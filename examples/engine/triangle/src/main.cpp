@@ -33,9 +33,7 @@ auto main(std::span<const std::string_view> args) -> int {
     try {
         auto app = TriangleApp {};
         return app.run(args);
-    } catch (const std::exception& e) {
-        logger.flog("{}", e.what());
-    } catch (...) {
+    } catch (const std::exception& e) { logger.flog("{}", e.what()); } catch (...) {
         logger.flog("Uncaught exception occured !");
     }
     return -1;

@@ -45,11 +45,11 @@ export namespace stormkit::engine {
         SpriteRenderer(SpriteRenderer&&) noexcept;
         auto operator=(SpriteRenderer&&) noexcept -> SpriteRenderer&;
 
-        [[nodiscard]] static auto create(const Renderer&      renderer,
-                                         const math::ExtentF& viewport) noexcept
+        [[nodiscard]]
+        static auto create(const Renderer& renderer, const math::ExtentF& viewport) noexcept
             -> gpu::Expected<SpriteRenderer>;
-        [[nodiscard]] static auto allocate(const Renderer&      renderer,
-                                           const math::ExtentF& viewport) noexcept
+        [[nodiscard]]
+        static auto allocate(const Renderer& renderer, const math::ExtentF& viewport) noexcept
             -> gpu::Expected<std::unique_ptr<SpriteRenderer>>;
 
         auto addSprite(Sprite sprite) noexcept -> UInt32;

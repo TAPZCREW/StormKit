@@ -13,8 +13,10 @@ export module stormkit.core:console.io;
 import std;
 
 export namespace stormkit { inline namespace core {
-    [[nodiscard]] auto get_stderr() noexcept -> std::FILE*;
-    [[nodiscard]] auto get_stdout() noexcept -> std::FILE*;
+    [[nodiscard]]
+    auto get_stderr() noexcept -> std::FILE*;
+    [[nodiscard]]
+    auto get_stdout() noexcept -> std::FILE*;
 }} // namespace stormkit::core
 
 namespace stormkit { inline namespace core {

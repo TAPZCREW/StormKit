@@ -67,9 +67,9 @@ export namespace stormkit::engine {
 namespace stormkit::engine {
     //////////////////////////////////////
     //////////////////////////////////////
-    STORMKIT_INLINE auto makeSprite(entities::EntityManager& world,
-                                    const gpu::ImageView&    texture,
-                                    const math::Vector2F&    size) noexcept -> entities::Entity {
+    inline auto makeSprite(entities::EntityManager& world,
+                           const gpu::ImageView&    texture,
+                           const math::Vector2F&    size) noexcept -> entities::Entity {
         const auto e = world.make_entity();
 
         auto& sprite_component          = world.add_component<SpriteComponent>(e);
@@ -84,42 +84,40 @@ namespace stormkit::engine {
 
     //////////////////////////////////////
     //////////////////////////////////////
-    STORMKIT_INLINE SpriteRenderSystem::SpriteRenderSystem(const Renderer&          renderer,
-                                                           const math::ExtentF&     viewport,
-                                                           entities::EntityManager& manager)
+    inline SpriteRenderSystem::SpriteRenderSystem(const Renderer&          renderer,
+                                                  const math::ExtentF&     viewport,
+                                                  entities::EntityManager& manager)
         : System { manager, 0, { SpriteComponent::TYPE } },
           m_renderer { SpriteRenderer::create(renderer, viewport).value() } { // TODO handle error
     }
 
     //////////////////////////////////////
     //////////////////////////////////////
-    STORMKIT_INLINE SpriteRenderSystem::~SpriteRenderSystem() = default;
+    inline SpriteRenderSystem::~SpriteRenderSystem() = default;
 
     //////////////////////////////////////
     //////////////////////////////////////
-    STORMKIT_INLINE SpriteRenderSystem::SpriteRenderSystem(SpriteRenderSystem&&) noexcept = default;
+    inline SpriteRenderSystem::SpriteRenderSystem(SpriteRenderSystem&&) noexcept = default;
 
     //////////////////////////////////////
     //////////////////////////////////////
-    STORMKIT_INLINE auto SpriteRenderSystem::operator=(SpriteRenderSystem&&) noexcept
+    inline auto SpriteRenderSystem::operator=(SpriteRenderSystem&&) noexcept
         -> SpriteRenderSystem& = default;
 
     //////////////////////////////////////
     //////////////////////////////////////
-    STORMKIT_INLINE auto SpriteRenderSystem::update(Secondf _) -> void {
+    inline auto SpriteRenderSystem::update(Secondf _) -> void {
     }
 
     //////////////////////////////////////
     //////////////////////////////////////
-    STORMKIT_INLINE auto SpriteRenderSystem::updateFrameGraph(FrameGraphBuilder& graph) noexcept
-        -> void {
+    inline auto SpriteRenderSystem::updateFrameGraph(FrameGraphBuilder& graph) noexcept -> void {
         m_renderer.updateFrameGraph(graph);
     }
 
     //////////////////////////////////////
     //////////////////////////////////////
-    STORMKIT_INLINE auto SpriteRenderSystem::on_message_received(const entities::Message& message)
-        -> void {
+    inline auto SpriteRenderSystem::on_message_received(const entities::Message& message) -> void {
         if (message.id == entities::EntityManager::ADDED_ENTITY_MESSAGE_ID) {
             for (auto&& e : message.entities) {
                 if (not m_manager->has_component<SpriteComponent>(e)) continue;

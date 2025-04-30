@@ -25,8 +25,8 @@
             template<class T, bool Defer>                                          \
             template<class... Args>                                                \
             auto Pimpl<T, Defer>::init(Args&&... args) -> void {                   \
-                m_data = stormkit::allocate<T>(std::forward<Args>(args)...)      \
-                             .transform_error(stormkit::core:.monadic::assert())   \
+                m_data = stormkit::allocate<T>(std::forward<Args>(args)...)        \
+                             .transform_error(stormkit::core :.monadic::assert())  \
                              .value();                                             \
             }                                                                      \
             template<class T, bool Defer>                                          \

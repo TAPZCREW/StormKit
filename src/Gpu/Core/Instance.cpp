@@ -6,8 +6,8 @@ module;
 
 #include <vulkan/vulkan_hpp_macros.hpp>
 
-#include <stormkit/core/platform_macro.hpp>
 #include <stormkit/Log/LogMacro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 module stormkit.Gpu;
 
@@ -29,7 +29,8 @@ namespace stormkit::gpu {
 #endif
         };
 
-        [[maybe_unused]] constexpr auto VALIDATION_FEATURES
+        [[maybe_unused]]
+        constexpr auto VALIDATION_FEATURES
             = std::array { vk::ValidationFeatureEnableEXT::eBestPractices,
                            vk::ValidationFeatureEnableEXT::eGpuAssisted };
 
@@ -61,7 +62,7 @@ namespace stormkit::gpu {
         auto debugCallback(vk::DebugUtilsMessageSeverityFlagsEXT         severity,
                            vk::DebugUtilsMessageTypeFlagsEXT             _,
                            const vk::DebugUtilsMessengerCallbackDataEXT& callback_data,
-                           [[maybe_unused]] void*                        user_data) -> bool {
+                           void*) -> bool {
             auto message = std::format("{}", callback_data.pMessage);
 
             if (checkFlag(severity, vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo))
@@ -185,7 +186,7 @@ namespace stormkit::gpu {
                                      .setPEnabledLayerNames(validation_layers);
 
         return m_vk_context->createInstance(create_info)
-            .transform(core:.monadic::set(m_vk_instance))
+            .transform(core :.monadic::set(m_vk_instance))
             .and_then(bindFront(&Instance::doInitDebugReportCallback, this))
             .transform(
                 [this]() noexcept { VULKAN_HPP_DEFAULT_DISPATCHER.init(*m_vk_instance.get()); });
@@ -212,7 +213,7 @@ namespace stormkit::gpu {
         };
 
         return m_vk_instance->createDebugUtilsMessengerEXT(create_info)
-            .transform(core:.monadic::set(m_vk_messenger))
+            .transform(core :.monadic::set(m_vk_messenger))
             .transform([] noexcept { ilog("Validation layers successfully enabled !"); });
     }
 

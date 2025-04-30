@@ -15,26 +15,30 @@ import :meta;
 namespace stormkit { inline namespace core { namespace details {
     struct EitherFunc {
 #ifdef STORMKIT_COMPILER_MSVC
-        [[nodiscard]] constexpr auto operator()(bool                  condition,
-                                                       std::invocable auto&& true_,
-                                                       std::invocable auto&& false_) const noexcept
+        [[nodiscard]]
+        constexpr auto operator()(bool                  condition,
+                                  std::invocable auto&& true_,
+                                  std::invocable auto&& false_) const noexcept
             -> decltype(false_());
 
         template<typename T>
             requires meta::IsOptionalType<meta::CanonicalType<T>>
-        [[nodiscard]] constexpr auto
+        [[nodiscard]]
+        constexpr auto
             operator()(T&&                                                                optional,
                        std::invocable<typename meta::CanonicalType<T>::value_type> auto&& true_,
                        std::invocable auto&& false_) const noexcept -> decltype(false_());
 #else
-        [[nodiscard]] static constexpr auto operator()(bool                  condition,
-                                                       std::invocable auto&& true_,
-                                                       std::invocable auto&& false_) noexcept
+        [[nodiscard]]
+        static constexpr auto operator()(bool                  condition,
+                                         std::invocable auto&& true_,
+                                         std::invocable auto&& false_) noexcept
             -> decltype(false_());
 
         template<typename T>
             requires meta::IsOptionalType<meta::CanonicalType<T>>
-        [[nodiscard]] static constexpr auto
+        [[nodiscard]]
+        static constexpr auto
             operator()(T&&                                                                optional,
                        std::invocable<typename meta::CanonicalType<T>::value_type> auto&& true_,
                        std::invocable auto&& false_) noexcept -> decltype(false_());
@@ -46,16 +50,20 @@ export namespace stormkit { inline namespace core {
     inline constexpr auto either = details::EitherFunc {};
 
     template<auto Func, typename... Args>
-    [[nodiscard]] constexpr auto bindFront(Args&&... args) noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto bindFront(Args&&... args) noexcept -> decltype(auto);
 
     template<typename Func, typename... Args>
-    [[nodiscard]] constexpr auto bindFront(Func&& func, Args&&... args) noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto bindFront(Func&& func, Args&&... args) noexcept -> decltype(auto);
 
     template<typename Func, typename... Args>
-    [[nodiscard]] constexpr auto bindBack(Func&& func, Args&&... args) noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto bindBack(Func&& func, Args&&... args) noexcept -> decltype(auto);
 
     template<auto Func, typename... Args>
-    [[nodiscard]] constexpr auto bindBack(Args&&... args) noexcept -> decltype(auto);
+    [[nodiscard]]
+    constexpr auto bindBack(Args&&... args) noexcept -> decltype(auto);
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -66,14 +74,13 @@ namespace stormkit { inline namespace core {
     namespace details {
         /////////////////////////////////////
         /////////////////////////////////////
-        STORMKIT_FORCE_INLINE constexpr auto
-            EitherFunc::operator()(bool                  condition,
-                                   std::invocable auto&& true_,
-                                   std::invocable auto&& false_)
+        STORMKIT_FORCE_INLINE constexpr auto EitherFunc::operator()(bool                  condition,
+                                                                    std::invocable auto&& true_,
+                                                                    std::invocable auto&& false_)
 #ifdef STORMKIT_COMPILER_MSVC
-const
+            const
 #endif
-noexcept -> decltype(false_()) {
+            noexcept -> decltype(false_()) {
             if (condition) return true_();
             return false_();
         }
@@ -85,11 +92,11 @@ noexcept -> decltype(false_()) {
         STORMKIT_FORCE_INLINE constexpr auto EitherFunc::operator()(
             T&&                                                                optional,
             std::invocable<typename meta::CanonicalType<T>::value_type> auto&& true_,
-            std::invocable auto&& false_)
+            std::invocable auto&&                                              false_)
 #ifdef STORMKIT_COMPILER_MSVC
-const
+            const
 #endif
-        noexcept -> decltype(false_()) {
+            noexcept -> decltype(false_()) {
             if (optional != std::nullopt) return true_(*std::forward<T>(optional));
             return false_();
         }

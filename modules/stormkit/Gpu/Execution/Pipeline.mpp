@@ -35,14 +35,15 @@ export namespace stormkit::gpu {
         PipelineCache(PipelineCache&&) noexcept;
         auto operator=(PipelineCache&&) noexcept -> PipelineCache&;
 
-        [[nodiscard]] static auto create(const Device&         device,
-                                         std::filesystem::path cache_path) noexcept
+        [[nodiscard]]
+        static auto create(const Device& device, std::filesystem::path cache_path) noexcept
             -> Expected<PipelineCache>;
-        [[nodiscard]] static auto allocate(const Device&         device,
-                                           std::filesystem::path cache_path) noexcept
+        [[nodiscard]]
+        static auto allocate(const Device& device, std::filesystem::path cache_path) noexcept
             -> Expected<std::unique_ptr<PipelineCache>>;
 
-        [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::PipelineCache&;
+        [[nodiscard]]
+        auto vkHandle() const noexcept -> const vk::raii::PipelineCache&;
 
       private:
         auto createNewPipelineCache(const Device& device) -> VulkanExpected<void>;
@@ -90,16 +91,18 @@ export namespace stormkit::gpu {
         PipelineLayout(PipelineLayout&&) noexcept;
         auto operator=(PipelineLayout&&) noexcept -> PipelineLayout&;
 
-        [[nodiscard]] static auto create(const Device&               device,
-                                         const RasterPipelineLayout& layout) noexcept
+        [[nodiscard]]
+        static auto create(const Device& device, const RasterPipelineLayout& layout) noexcept
             -> Expected<PipelineLayout>;
-        [[nodiscard]] static auto allocate(const Device&               device,
-                                           const RasterPipelineLayout& layout) noexcept
+        [[nodiscard]]
+        static auto allocate(const Device& device, const RasterPipelineLayout& layout) noexcept
             -> Expected<std::unique_ptr<PipelineLayout>>;
 
-        [[nodiscard]] auto rasterLayout() -> const RasterPipelineLayout&;
+        [[nodiscard]]
+        auto rasterLayout() -> const RasterPipelineLayout&;
 
-        [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::PipelineLayout&;
+        [[nodiscard]]
+        auto vkHandle() const noexcept -> const vk::raii::PipelineLayout&;
 
       private:
         RasterPipelineLayout                m_layout;
@@ -131,26 +134,30 @@ export namespace stormkit::gpu {
         Pipeline(Pipeline&&) noexcept;
         auto operator=(Pipeline&&) noexcept -> Pipeline&;
 
-        [[nodiscard]] static auto create(const Device&                    device,
-                                         const RasterPipelineState&       state,
-                                         const PipelineLayout&            layout,
-                                         const RenderPass&                render_pass,
-                                         OptionalRef<const PipelineCache> cache
-                                         = std::nullopt) noexcept -> Expected<Pipeline>;
-        [[nodiscard]] static auto allocate(const Device&                    device,
-                                           const RasterPipelineState&       state,
-                                           const PipelineLayout&            layout,
-                                           const RenderPass&                render_pass,
-                                           OptionalRef<const PipelineCache> cache
-                                           = std::nullopt) noexcept
+        [[nodiscard]]
+        static auto create(const Device&                    device,
+                           const RasterPipelineState&       state,
+                           const PipelineLayout&            layout,
+                           const RenderPass&                render_pass,
+                           OptionalRef<const PipelineCache> cache = std::nullopt) noexcept
+            -> Expected<Pipeline>;
+        [[nodiscard]]
+        static auto allocate(const Device&                    device,
+                             const RasterPipelineState&       state,
+                             const PipelineLayout&            layout,
+                             const RenderPass&                render_pass,
+                             OptionalRef<const PipelineCache> cache = std::nullopt) noexcept
             -> Expected<std::unique_ptr<Pipeline>>;
 
         // auto bind(CommandBuffer& commandbuffer) const noexcept -> void;
 
-        [[nodiscard]] auto type() const noexcept -> Type;
-        [[nodiscard]] auto rasterState() const noexcept -> const RasterPipelineState&;
+        [[nodiscard]]
+        auto type() const noexcept -> Type;
+        [[nodiscard]]
+        auto rasterState() const noexcept -> const RasterPipelineState&;
 
-        [[nodiscard]] auto vkHandle() const noexcept -> const vk::raii::Pipeline&;
+        [[nodiscard]]
+        auto vkHandle() const noexcept -> const vk::raii::Pipeline&;
 
       private:
         auto doInitRasterPipeline(const Device&,
@@ -180,8 +187,8 @@ namespace stormkit::gpu {
         either(std::filesystem::exists(m_path),
                bindFront(&PipelineCache::readPipelineCache, this, std::cref(device)),
                bindFront(&PipelineCache::createNewPipelineCache, this, std::cref(device)))
-            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
-                                                core:.monadic::throw_as_exception()));
+            .transform_error(core :.monadic::map(core :.monadic::narrow<Result>(),
+                                                 core :.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////
@@ -248,9 +255,9 @@ namespace stormkit::gpu {
 
         device.vkHandle()
             .createPipelineLayout(create_info)
-            .transform(core:.monadic::set(m_vk_pipeline_layout))
-            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
-                                                core:.monadic::throw_as_exception()));
+            .transform(core :.monadic::set(m_vk_pipeline_layout))
+            .transform_error(core :.monadic::map(core :.monadic::narrow<Result>(),
+                                                 core :.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////
@@ -291,17 +298,16 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    Pipeline::Pipeline(const Device&                    device,
-                       const RasterPipelineState&       state,
-                       const PipelineLayout&            layout,
-                       const RenderPass&                render_pass,
-                       OptionalRef<const PipelineCache> cache,
-                       Tag)
+    STORMKIT_FORCE_INLINE Pipeline::Pipeline(const Device&                    device,
+                                             const RasterPipelineState&       state,
+                                             const PipelineLayout&            layout,
+                                             const RenderPass&                render_pass,
+                                             OptionalRef<const PipelineCache> cache,
+                                             Tag)
         : m_type { Type::Raster }, m_state { state } {
         doInitRasterPipeline(device, layout, render_pass, std::move(cache))
-            .transform_error(core:.monadic::map(core:.monadic::narrow<Result>(),
-                                                core:.monadic::throw_as_exception()));
+            .transform_error(core :.monadic::map(core :.monadic::narrow<Result>(),
+                                                 core :.monadic::throw_as_exception()));
     }
 
     /////////////////////////////////////
