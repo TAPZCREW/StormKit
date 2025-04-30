@@ -3,6 +3,18 @@ name: macOS
 
 on:
   pull_request:
+    branches: [develop]
+    paths-ignore:
+      - .github/workflows/Linux.yml
+      - .github/workflows/Windows.yml
+      - .github/workflows/iOS.yml
+      - .github/workflows/Android.yml
+      - .github/workflows/AutoMerger.yml
+      - .gitignore
+      - LICENSE
+      - README.md
+
+  push:
     branches: [main, develop]
     paths-ignore:
       - .github/workflows/Linux.yml
