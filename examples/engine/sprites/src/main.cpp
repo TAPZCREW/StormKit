@@ -6,7 +6,7 @@ import std;
 
 import stormkit.core;
 import stormkit.Main;
-import stormkit.Log;
+import stormkit.log;
 import stormkit.Wsi;
 
 import SpritesApp;
@@ -21,7 +21,7 @@ auto main(std::span<const std::string_view> args) -> int {
 
     wsi::parseArgs(args);
 
-    auto logger = log::Logger::createLoggerInstance<log::ConsoleLogger>();
+    auto logger = log::Logger::create_logger_instance<log::ConsoleLogger>();
     logger.ilog("Using StormKit {}.{}.{}\n    branch: {}\n    commit_hash: {}\n    built with {}",
                 STORMKIT_MAJOR_VERSION,
                 STORMKIT_MINOR_VERSION,

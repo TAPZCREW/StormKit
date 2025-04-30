@@ -7,7 +7,7 @@ module stormkit.Engine;
 import std;
 
 import stormkit.core;
-import stormkit.Log;
+import stormkit.log;
 import stormkit.Wsi;
 import stormkit.Gpu;
 

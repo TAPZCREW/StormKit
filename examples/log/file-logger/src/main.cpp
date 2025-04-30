@@ -5,7 +5,7 @@
 import std;
 
 import stormkit.core;
-import stormkit.Log;
+import stormkit.log;
 
 #include <stormkit/core/platform_macro.hpp>
 
@@ -53,7 +53,7 @@ auto main([[maybe_unused]] std::span<const std::string_view> args) -> int {
     using namespace stormkit;
     using log::operator""_module;
 
-    auto logger = log::Logger::createLoggerInstance<log::FileLogger>(LOG_DIR);
+    auto logger = log::Logger::create_logger_instance<log::FileLogger>(LOG_DIR);
 
     log::Logger::ilog("This is an information");
     log::Logger::dlog("This is a debug information");

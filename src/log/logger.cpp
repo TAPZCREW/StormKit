@@ -2,7 +2,7 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-module stormkit.Log;
+module stormkit.log;
 
 import std;
 
@@ -11,13 +11,13 @@ import stormkit.core;
 namespace stormkit::log {
     namespace {
 #ifdef STORMKIT_BUILD_DEBUG
-        constexpr auto DEFAULT_SEVERITY = Severity::Info
-                                          | Severity::Debug
-                                          | Severity::Error
-                                          | Severity::Fatal
-                                          | Severity::Warning;
+        constexpr auto DEFAULT_SEVERITY = Severity::INFO
+                                          | Severity::DEBUG
+                                          | Severity::ERROR
+                                          | Severity::FATAL
+                                          | Severity::WARNING;
 #else
-        constexpr auto DEFAULT_SEVERITY = Severity::Info | Severity::Error | Severity::Fatal;
+        constexpr auto DEFAULT_SEVERITY = Severity::INFO | Severity::ERROR | Severity::FATAL;
 #endif
         Logger* logger = nullptr;
     } // namespace
@@ -45,7 +45,7 @@ namespace stormkit::log {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Logger::hasLogger() noexcept -> bool {
+    auto Logger::has_logger() noexcept -> bool {
         if (logger) [[likely]]
             return true;
         return false;

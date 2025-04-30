@@ -6,7 +6,7 @@ module;
 
 #include <cstdio>
 
-module stormkit.Log;
+module stormkit.log;
 
 import std;
 import frozen;
@@ -18,15 +18,15 @@ using namespace std::literals;
 namespace stormkit::log {
     namespace {
         constexpr auto StyleMap = frozen::make_unordered_map<Severity, ConsoleStyle>({
-            { Severity::Info,
+            { Severity::INFO,
              ConsoleStyle { .fg = ConsoleColor::GREEN, .modifiers = StyleModifier::INVERSE }   },
-            { Severity::Warning,
+            { Severity::WARNING,
              ConsoleStyle { .fg = ConsoleColor::MAGENTA, .modifiers = StyleModifier::INVERSE } },
-            { Severity::Error,
+            { Severity::ERROR,
              ConsoleStyle { .fg = ConsoleColor::YELLOW, .modifiers = StyleModifier::INVERSE }  },
-            { Severity::Fatal,
+            { Severity::FATAL,
              ConsoleStyle { .fg = ConsoleColor::RED, .modifiers = StyleModifier::INVERSE }     },
-            { Severity::Debug,
+            { Severity::DEBUG,
              ConsoleStyle { .fg = ConsoleColor::CYAN, .modifiers = StyleModifier::INVERSE }    },
         });
     }
@@ -55,7 +55,7 @@ namespace stormkit::log {
                 return std::format("[{}, {:%S}, {}]", severity, time, m.name);
         }();
 
-        const auto is_error = severity == Severity::Error or severity == Severity::Fatal;
+        const auto is_error = severity == Severity::ERROR or severity == Severity::FATAL;
         const auto output   = (is_error) ? get_stderr() : get_stdout();
 
         // not yet

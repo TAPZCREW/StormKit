@@ -984,7 +984,7 @@ export {
                                                  const RenderCapabilities& capabilities) noexcept
             -> RangeExtent;
 
-        [[nodiscard]] auto toString(const PhysicalDeviceInfo& data) noexcept;
+        [[nodiscard]] auto to_string(const PhysicalDeviceInfo& data) noexcept;
 
     } // namespace stormkit::gpu
 
@@ -1222,7 +1222,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto toString(const PhysicalDeviceInfo& data) noexcept {
+    STORMKIT_FORCE_INLINE auto to_string(const PhysicalDeviceInfo& data) noexcept {
         return std::format("[PhysicalDeviceInfo:\n"
                            "   .device_id      = {:#06x},\n"
                            "   .device_name    = {},\n"

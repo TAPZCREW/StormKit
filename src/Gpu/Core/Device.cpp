@@ -14,7 +14,7 @@ module stormkit.Gpu;
 import std;
 
 import stormkit.core;
-import stormkit.Log;
+import stormkit.log;
 
 import :Core.Device;
 import :Core.Sync;

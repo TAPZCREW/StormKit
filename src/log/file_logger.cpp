@@ -2,7 +2,7 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-module stormkit.Log;
+module stormkit.log;
 
 import std;
 
@@ -72,9 +72,9 @@ namespace stormkit::log {
 
         auto final_string = std::string {};
         if (std::empty(m.name))
-            final_string = std::format(LOG_LINE, toString(severity), time, string);
+            final_string = std::format(LOG_LINE, to_string(severity), time, string);
         else
-            final_string = std::format(LOG_LINE_MODULE, toString(severity), time, m.name, string);
+            final_string = std::format(LOG_LINE_MODULE, to_string(severity), time, m.name, string);
 
         m_streams.at(filepath.string()) << final_string << std::flush;
     }

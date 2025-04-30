@@ -11,7 +11,7 @@ export module stormkit.Wsi:Win32.Log;
 import std;
 
 import stormkit.core;
-import stormkit.Log;
+import stormkit.log;
 
 export namespace stormkit::wsi::win32 {
     IN_MODULE_LOGGER("StormKit.Wsi.Win32Backend")
