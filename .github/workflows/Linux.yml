@@ -14,18 +14,6 @@ on:
       - LICENSE
       - README.md
 
-  push:
-    branches: [develop]
-    paths-ignore:
-      - .github/workflows/Windows.yml
-      - .github/workflows/macOS.yml
-      - .github/workflows/iOS.yml
-      - .github/workflows/Android.yml
-      - .github/workflows/AutoMerger.yml
-      - .gitignore
-      - LICENSE
-      - README.md
-
 env:
   LLVM_VERSION: "-21"
 
@@ -43,6 +31,7 @@ jobs:
         mode: [release, debug]
 
     runs-on: ${{ matrix.os }}
+    if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
 
     concurrency:
       group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.kind
