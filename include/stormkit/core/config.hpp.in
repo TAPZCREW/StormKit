@@ -5,7 +5,11 @@
 #ifndef STORMKIT_CONFIG_HPP
 #define STORMKIT_CONFIG_HPP
 
-export namespace stormkit { inline namespace core {
+#ifndef _STORMKIT_EXPORT
+#define _STORMKIT_EXPORT
+#endif
+
+_STORMKIT_EXPORT namespace stormkit { inline namespace core {
     // clang-format off
     inline constexpr auto STORMKIT_MAJOR_VERSION   = ${VERSION_MAJOR};
     inline constexpr auto STORMKIT_MINOR_VERSION   = ${VERSION_MINOR};
@@ -17,5 +21,7 @@ export namespace stormkit { inline namespace core {
     inline constexpr auto STORMKIT_GIT_BRANCH      = std::string_view { "${STORMKIT_GIT_BRANCH}" };
     // clang-format on
 }} // namespace stormkit::core
+
+#undef _STORMKIT_EXPORT
 
 #endif

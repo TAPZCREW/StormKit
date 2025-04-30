@@ -38,7 +38,7 @@ static_assert(std::is_assignable_v<Integer<unsigned long long>, unsigned long lo
 namespace {
 
     auto _ = test::TestSuite {
-        "Core:typesafe",
+        "Core.typesafe",
         { { "Integer.constructor",
             [] static noexcept {
                 // auto integer_1 = Integer { 0 };

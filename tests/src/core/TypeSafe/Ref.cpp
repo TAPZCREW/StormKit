@@ -14,9 +14,9 @@ using namespace stormkit::core;
 
 namespace {
     auto _ = test::TestSuite {
-        "Core:typesafe",
+        "Core.typesafe",
         {
-          { "Ref.to_refs<std::vector>.all_ref",
+          { "Ref.to_refs.std_vector.all_ref",
               [] static noexcept {
                   auto a = 0;
                   auto b = 1;
@@ -30,7 +30,7 @@ namespace {
                   auto i = 0;
                   for (auto&& ref : refs) expects(*ref == i++);
               } },
-          { "Ref.as_refs<std::array>.all_ref",
+          { "Ref.as_refs.std_array.all_ref",
               [] static noexcept {
                   auto a = 0;
                   auto b = 1;
@@ -44,7 +44,7 @@ namespace {
                   auto i = 0;
                   for (auto&& ref : refs) expects(*ref == i++);
               } },
-          { "Ref.as_refs<default>.all_ref",
+          { "Ref.as_refs.default.all_ref",
               [] static noexcept {
                   auto a = 0;
                   auto b = 1;
@@ -58,7 +58,7 @@ namespace {
                   auto i = 0;
                   for (auto&& ref : refs) expects(*ref == i++);
               } },
-          { "Ref.to_refs<std::vector>.all_ptr",
+          { "Ref.to_refs.std_vector.all_ptr",
               [] static noexcept {
                   auto a = std::make_unique<int>(0);
                   auto b = std::make_unique<int>(1);
@@ -75,7 +75,7 @@ namespace {
                   delete d;
                   delete e;
               } },
-          { "Ref.as_refs<std::array>.all_ptr",
+          { "Ref.as_refs.std_array.all_ptr",
               [] static noexcept {
                   auto a = std::make_unique<int>(0);
                   auto b = std::make_unique<int>(1);
@@ -89,7 +89,7 @@ namespace {
                   auto i = 0;
                   for (auto&& ref : refs) expects(*ref == i++);
               } },
-          { "Ref.as_refs<default>.all_ptr",
+          { "Ref.as_refs.default.all_ptr",
               [] static noexcept {
                   auto a = std::make_unique<int>(0);
                   auto b = std::make_unique<int>(1);
@@ -103,7 +103,7 @@ namespace {
                   auto i = 0;
                   for (auto&& ref : refs) expects(*ref == i++);
               } },
-          { "Ref.to_refs<std::set>",
+          { "Ref.to_refs.std_set",
               [] static noexcept {
                   auto vec = std::vector { 1, 3, 5, 6, 9 };
                   auto refs = to_refs<std::set>(vec);
@@ -111,7 +111,7 @@ namespace {
                   auto i = 0;
                   for (auto&& ref : refs) expects(*ref == vec[i++]);
               } },
-          { "Ref.to_refs<default>",
+          { "Ref.to_refs.default",
               [] static noexcept {
                   constexpr auto vec  = std::array { 1, 3, 5, 6, 9 };
                   auto           refs = to_refs(vec);

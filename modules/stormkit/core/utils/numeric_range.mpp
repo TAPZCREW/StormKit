@@ -181,42 +181,42 @@ namespace stormkit { inline namespace core {
         using Type = typename T::RangeType;
 
         struct Iterator {
-            Iterator(Type val, Type step) noexcept : m_val { val }, m_step { step } {}
+            constexpr Iterator(Type val, Type step) noexcept : m_val { val }, m_step { step } {}
 
-            auto operator+(std::size_t index) -> decltype(auto) {
+            constexpr auto operator+(std::size_t index) noexcept -> decltype(auto) {
                 auto cpy = auto(*this);
                 for (auto i = 0u; i < index; ++i) ++cpy;
                 return cpy;
             }
 
-            auto operator++() -> decltype(auto) {
+            constexpr auto operator++() noexcept -> decltype(auto) {
                 m_val += m_step;
                 return *this;
             }
 
-            auto operator++(int) -> decltype(auto) {
+            constexpr auto operator++(int) noexcept -> decltype(auto) {
                 auto old = auto(*this);
                 m_val += m_step;
                 return old;
             }
 
-            auto operator--() -> decltype(auto) {
+            constexpr auto operator--() noexcept -> decltype(auto) {
                 m_val -= m_step;
                 return *this;
             }
 
-            auto operator--(int) -> decltype(auto) {
+            constexpr auto operator--(int) noexcept -> decltype(auto) {
                 auto old = auto(*this);
                 m_val -= m_step;
                 return old;
             }
 
-            auto operator==(const Iterator& other) const noexcept { return m_val == other.m_val; }
+            constexpr auto operator==(const Iterator& other) const noexcept { return m_val == other.m_val; }
 
-            auto operator!=(const Iterator& other) const noexcept { return m_val != other.m_val; }
+            constexpr auto operator!=(const Iterator& other) const noexcept { return m_val != other.m_val; }
 
             template<typename Self>
-            auto operator*(this Self&& self) noexcept -> decltype(auto) {
+            constexpr auto operator*(this Self&& self) noexcept -> decltype(auto) {
                 return std::forward_like<Self>(self.m_val);
             }
 

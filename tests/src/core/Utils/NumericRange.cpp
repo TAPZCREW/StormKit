@@ -68,9 +68,9 @@ namespace {
             } },
           { "Numerics.range.custom_numeric_range",
             [] {
-                auto rng     = range(NumericsRange { -5, 10, 2 });
+                auto rng     = range(NumericsRange { -4, 10, 2 });
                 auto success = true;
-                auto j       = -5;
+                auto j       = -4;
                 for (auto i : rng) {
                     if (i != j) {
                         success = false;

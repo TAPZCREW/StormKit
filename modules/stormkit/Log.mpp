@@ -136,6 +136,12 @@ export {
             explicit ConsoleLogger(LogClock::time_point start) noexcept;
             ConsoleLogger(LogClock::time_point start, Severity log_level) noexcept;
 
+            ConsoleLogger(const ConsoleLogger&);
+            auto operator=(const ConsoleLogger&) -> ConsoleLogger&;
+            
+            ConsoleLogger(ConsoleLogger&&);
+            auto operator=(ConsoleLogger&&) -> ConsoleLogger&;
+            
             ~ConsoleLogger() override;
 
             auto write(Severity severity, const Module& module, const char* string)
@@ -256,6 +262,38 @@ namespace stormkit::log {
 
         instance().write(severity, m, std::data(memory_buffer));
     }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline ConsoleLogger::ConsoleLogger(const ConsoleLogger&) = default;
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto ConsoleLogger::operator=(const ConsoleLogger&) -> ConsoleLogger& = default;
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline ConsoleLogger::ConsoleLogger(ConsoleLogger&&) = default;
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto ConsoleLogger::operator=(ConsoleLogger&&) -> ConsoleLogger& = default;
+    
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline ConsoleLogger::~ConsoleLogger() = default;
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline FileLogger::FileLogger(FileLogger&&) = default;
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto FileLogger::operator=(FileLogger&&) -> FileLogger& = default;
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline FileLogger::~FileLogger() = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////

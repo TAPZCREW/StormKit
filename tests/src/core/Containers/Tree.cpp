@@ -16,11 +16,11 @@ using namespace std::literals;
 namespace {
     auto _ = test::TestSuite { "Core.Containers", { { "Tree.Node.name", [] {
                                                          static constexpr auto name
-                                                             = "TestNodeName"s;
+                                                             = "TestNodeName"sv;
 
                                                          auto node = TreeNode {};
                                                          expects(node.name() == ""s);
-                                                         node.set_name(name);
+                                                         node.set_name(std::string{name});
                                                          expects(node.name() == name);
                                                      } } } };
 } // namespace

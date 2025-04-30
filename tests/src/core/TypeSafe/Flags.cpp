@@ -31,7 +31,7 @@ FLAG_ENUM(Flag2)
 
 namespace {
     auto _ = test::TestSuite {
-        "Core:typesafe",
+        "Core.typesafe",
         {
           {
                 "Flags.enum_class.operators",

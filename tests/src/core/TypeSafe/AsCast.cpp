@@ -58,7 +58,7 @@ namespace {
     const auto unsigned_longlongint2 = ulonglongint { 2 };
 
     auto _ = test::TestSuite {
-        "Core:typesafe",
+        "Core.typesafe",
         {
           { "AsCast.same_type",
               [] static noexcept {

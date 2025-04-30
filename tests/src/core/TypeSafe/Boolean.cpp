@@ -20,7 +20,7 @@ static_assert(std::is_assignable_v<Boolean, bool>);
 
 namespace {
     auto _ = test::TestSuite {
-        "Core:typesafe",
+        "Core.typesafe",
         { { "Boolean.constructor",
             [] static noexcept {
                 auto bool_1 = Boolean { true };
