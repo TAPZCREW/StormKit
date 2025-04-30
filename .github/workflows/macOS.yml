@@ -13,17 +13,6 @@ on:
       - .gitignore
       - LICENSE
       - README.md
-  push:
-    branches: [develop]
-    paths-ignore:
-      - .github/workflows/Windows.yml
-      - .github/workflows/Linux.yml
-      - .github/workflows/iOS.yml
-      - .github/workflows/Android.yml
-      - .github/workflows/AutoMerger.yml
-      - .gitignore
-      - LICENSE
-      - README.md
 
 jobs:
   build:
@@ -38,6 +27,7 @@ jobs:
         mode: [release, debug]
 
     runs-on: ${{ matrix.os }}${{ (matrix.arch == 'x64') && '-large' || '' }}
+    if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
 
     concurrency:
       group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.kind
@@ -76,7 +66,7 @@ jobs:
       - name: Setup XMake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: Arthapz/xmake#branch@improve-jobgraph-support
+          xmake-version: Arthapz/xmake#branch@improve-jobgraph-support2
           actions-cache-folder: .xmake-cache
 
       - name: Cache XMake
@@ -88,6 +78,18 @@ jobs:
 
       - name: Update XMake repository
         run: xmake repo --update
+
+      - name: Generate packages cachekey
+        id: packages_cachekey
+        run: echo "hash=$(xmake l utils.ci.packageskey)" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Restore cached packages
+        id: restore-packagescache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.XMAKE_PKG_INSTALLDIR }}
+          key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ steps.packages_cachekey.outputs.hash }}
 
       - name: Configure & Install dependencies
         id: configure
