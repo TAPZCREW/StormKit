@@ -317,7 +317,6 @@ if get_config("toolchain") == "llvm" then
 end
 
 add_requireconfs("*", { configs = { modules = true, std_import = true, cpp = "latest" } })
-
 add_requireconfs("libxkbcommon", { configs = { ["x11"] = true, wayland = true } })
 add_requireconfs("frozen", { system = false })
 
