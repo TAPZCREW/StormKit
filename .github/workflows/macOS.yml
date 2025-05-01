@@ -113,7 +113,6 @@ jobs:
            --examples=y \
            --tests=y \
            --gpu=n \
-           --wsi=n \
            --engine=n \
            --mold=y \
            --on_ci=y \

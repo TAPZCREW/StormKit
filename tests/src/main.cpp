@@ -11,7 +11,7 @@ import Test;
 #include <stormkit/main/main_macro.hpp>
 
 auto main(std::span<const std::string_view> args) noexcept -> int {
-    test::parseArgs(args);
+    test::parse_args(args);
 
     return test::runTests();
 }

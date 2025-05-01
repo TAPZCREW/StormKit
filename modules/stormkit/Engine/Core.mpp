@@ -12,7 +12,7 @@ import std;
 
 import stormkit.core;
 import stormkit.entities;
-import stormkit.Wsi;
+import stormkit.wsi;
 
 import :Renderer;
 

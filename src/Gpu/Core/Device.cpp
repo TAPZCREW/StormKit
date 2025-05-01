@@ -7,7 +7,7 @@ module;
 #include <vulkan/vulkan_hpp_macros.hpp>
 
 #include <stormkit/Gpu/Core/VulkanMacro.hpp>
-#include <stormkit/Log/LogMacro.hpp>
+#include <stormkit/log/log_macro.hpp>
 
 module stormkit.Gpu;
 

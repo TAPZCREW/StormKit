@@ -13,7 +13,7 @@ export module stormkit.Gpu:Core.Instance;
 import std;
 
 import stormkit.core;
-import stormkit.Wsi;
+import stormkit.wsi;
 import stormkit.Gpu.Vulkan;
 
 import :Core.Types;

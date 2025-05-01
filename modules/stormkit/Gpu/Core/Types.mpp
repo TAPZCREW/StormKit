@@ -1047,7 +1047,8 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE constexpr auto get_format_channel_count(PixelFormat format) noexcept -> UInt8 {
+    STORMKIT_FORCE_INLINE constexpr auto get_format_channel_count(PixelFormat format) noexcept
+        -> UInt8 {
         switch (format) {
             case PixelFormat::R8_SNORM:
             case PixelFormat::R8_UNORM:
@@ -1204,7 +1205,7 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE constexpr Scissor::operator vk::Rect2D() const noexcept {
         return vk::Rect2D {}
             .setOffset(as<vk::Offset2D>(offset))
-            .setExtent(as<vk::Extent2D>(extent));
+            .set_extent(as<vk::Extent2D>(extent));
     }
 
     /////////////////////////////////////

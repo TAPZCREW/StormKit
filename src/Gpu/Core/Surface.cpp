@@ -18,7 +18,7 @@ module stormkit.Gpu;
 import std;
 
 import stormkit.core;
-import stormkit.Wsi;
+import stormkit.wsi;
 
 import stormkit.Gpu.Vulkan;
 
@@ -28,17 +28,17 @@ namespace stormkit::gpu {
     Surface::Surface(const Instance& instance, const wsi::Window& window, Tag) {
 #if defined(STORMKIT_OS_WINDOWS)
         const auto create_surface = [&window, &instance] {
-            const auto create_info
-                = vk::Win32SurfaceCreateInfoKHR { .flags     = {},
-                                                  .hinstance = GetModuleHandleW(nullptr),
-                                                  .hwnd
-                                                  = reinterpret_cast<HWND>(window.nativeHandle()) };
+            const auto create_info = vk::Win32SurfaceCreateInfoKHR {
+                .flags     = {},
+                .hinstance = GetModuleHandleW(nullptr),
+                .hwnd      = reinterpret_cast<HWND>(window.native_handle())
+            };
             return instance.vkHandle().createWin32SurfaceKHR(create_info, nullptr);
         };
 #elif defined(STORMKIT_OS_MACOS)
         const auto create_surface = [&window, &instance] {
             const auto create_info
-                = vk::MacOSSurfaceCreateInfoMVK { .pView = window.nativeHandle() };
+                = vk::MacOSSurfaceCreateInfoMVK { .pView = window.native_handle() };
             return instance.vkHandle().createMacOSSurfaceMVK(create_info, nullptr);
         };
 #elif defined(STORMKIT_OS_LINUX)
@@ -46,7 +46,7 @@ namespace stormkit::gpu {
             struct Handles {
                 wl_display* display;
                 wl_surface* surface;
-            }* handles = std::bit_cast<Handles*>(window.nativeHandle());
+            }* handles = std::bit_cast<Handles*>(window.native_handle());
 
             const auto create_info
                 = vk::WaylandSurfaceCreateInfoKHR { .display = handles->display,
@@ -58,7 +58,7 @@ namespace stormkit::gpu {
             struct Handles {
                 xcb_connection_t* connection;
                 xcb_window_t      window;
-            }* handles = reinterpret_cast<Handles*>(window.nativeHandle());
+            }* handles = reinterpret_cast<Handles*>(window.native_handle());
 
             const auto create_info
                 = vk::XcbSurfaceCreateInfoKHR { .connection = handles->connection,
@@ -71,7 +71,7 @@ namespace stormkit::gpu {
             = [&window,
                &make_wayland_surface,
                &make_xcb_surface] noexcept -> FunctionRef<VulkanExpected<vk::raii::SurfaceKHR>()> {
-            const auto is_wayland = window.wm() == wsi::WM::Wayland;
+            const auto is_wayland = window.wm() == wsi::WM::WAYLAND;
 
             if (is_wayland) return make_wayland_surface;
 
@@ -83,7 +83,7 @@ namespace stormkit::gpu {
             const auto create_info
                 = VkIOSSurfaceCreateInfoMVK { .sType
                                               = VK_STRUCTURE_TYPE_IOS_SURFACE_CREATE_INFO_MVK,
-                                              .pView = m_window->nativeHandle() };
+                                              .pView = m_window->native_handle() };
             CHECK_VK_ERROR(vkCreateIOSSurfaceMVK(instance, &create_info, &m_surface));
         };
 #else

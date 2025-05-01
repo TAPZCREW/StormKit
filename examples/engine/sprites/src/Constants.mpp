@@ -4,7 +4,7 @@
 
 module;
 
-#include <stormkit/Log/LogMacro.hpp>
+#include <stormkit/log/log_macro.hpp>
 
 export module Constants;
 
