@@ -9,7 +9,7 @@ import std;
 import :Core;
 
 import stormkit.core;
-import stormkit.Wsi;
+import stormkit.wsi;
 import stormkit.entities;
 
 namespace stormkit::engine {
@@ -17,7 +17,7 @@ namespace stormkit::engine {
                              const math::ExtentU& window_extent,
                              std::string          window_title,
                              PrivateTag) {
-        m_window = wsi::Window { std::move(window_title), window_extent, wsi::WindowStyle::Close };
+        m_window = wsi::Window { std::move(window_title), window_extent, wsi::WindowStyle::CLOSE };
         m_event_handler = wsi::EventHandler {};
 
         m_renderer = Renderer::create(application_name, as_ref(m_window))
@@ -32,7 +32,7 @@ namespace stormkit::engine {
         auto rebuild_graph    = std::atomic_bool { true };
 
         m_renderer->startRendering(framegraph_mutex, rebuild_graph);
-        while (m_window->isOpen()) {
+        while (m_window->is_open()) {
             m_renderer->updateFrameGraph(framegraph_mutex, rebuild_graph, m_update_framegraph);
             m_event_handler->update(m_window);
             m_world->step(Secondf { 0 });

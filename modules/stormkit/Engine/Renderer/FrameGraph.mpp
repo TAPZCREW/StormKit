@@ -7,7 +7,7 @@ export module stormkit.Engine:Renderer.FrameGraph;
 import std;
 
 import stormkit.core;
-import stormkit.Gpu;
+import stormkit.gpu;
 
 import :Renderer.RenderSurface;
 

@@ -11,8 +11,8 @@ export module stormkit.Engine:Renderer.RenderSurface;
 import std;
 
 import stormkit.core;
-import stormkit.Wsi;
-import stormkit.Gpu;
+import stormkit.wsi;
+import stormkit.gpu;
 
 export namespace stormkit::engine {
     class STORMKIT_API RenderSurface {

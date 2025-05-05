@@ -28,6 +28,12 @@ export namespace stormkit { inline namespace core { namespace monadic {
 
     template<typename T>
     [[nodiscard]]
+    constexpr auto identity(T&& value) noexcept -> decltype(auto);
+    template<typename T>
+    [[nodiscard]]
+    constexpr auto consume(T& value) noexcept -> decltype(auto);
+    template<typename T>
+    [[nodiscard]]
     constexpr auto value() noexcept -> decltype(auto);
     template<typename T>
     [[nodiscard]]
@@ -110,6 +116,24 @@ export namespace stormkit { inline namespace core { namespace monadic {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit { inline namespace core { namespace monadic {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    [[nodiscard]]
+    STORMKIT_FORCE_INLINE constexpr auto identity(T&& value) noexcept -> decltype(auto) {
+        return [value = std::forward<T>(value)] mutable noexcept -> decltype(auto) {
+            return std::forward_like<T>(value);
+        };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    [[nodiscard]]
+    STORMKIT_FORCE_INLINE constexpr auto consume(T& value) noexcept -> decltype(auto) {
+        return [value = std::move(value)] mutable noexcept -> T { return std::move(value); };
+    }
+
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE constexpr auto value() noexcept -> decltype(auto) {

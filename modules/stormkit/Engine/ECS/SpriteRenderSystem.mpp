@@ -12,7 +12,7 @@ import std;
 
 import stormkit.core;
 import stormkit.entities;
-import stormkit.Gpu;
+import stormkit.gpu;
 
 import :Renderer;
 import :SpriteRenderer;

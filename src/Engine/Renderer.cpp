@@ -1,6 +1,6 @@
 module;
 
-#include <stormkit/Log/LogMacro.hpp>
+#include <stormkit/log/log_macro.hpp>
 
 module stormkit.Engine;
 
@@ -8,8 +8,8 @@ import std;
 
 import stormkit.core;
 import stormkit.log;
-import stormkit.Wsi;
-import stormkit.Gpu;
+import stormkit.wsi;
+import stormkit.gpu;
 
 import :Renderer;
 import :Renderer.FrameGraph;

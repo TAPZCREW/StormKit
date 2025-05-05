@@ -1,0 +1,489 @@
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+export module stormkit.wsi:linux.window_impl;
+
+import std;
+
+import stormkit.core;
+import stormkit.wsi;
+
+import :common.window_impl_base;
+import :linux.x11.window_impl;
+import :linux.wayland.window_impl;
+
+export namespace stormkit::wsi::linux {
+    class WindowImpl: public ::stormkit::wsi::common::WindowImplBase {
+      public:
+        explicit WindowImpl(WM wm);
+        WindowImpl(WM wm, std::string title, const math::ExtentU& size, WindowStyle style);
+        ~WindowImpl();
+
+        WindowImpl(const WindowImpl&) noexcept                    = delete;
+        auto operator=(const WindowImpl&) noexcept -> WindowImpl& = delete;
+
+        WindowImpl(WindowImpl&&) noexcept;
+        auto operator=(WindowImpl&&) noexcept -> WindowImpl&;
+
+        auto create(std::string title, const math::ExtentU& size, WindowStyle style) -> void;
+        auto close() noexcept -> void;
+
+        [[nodiscard]]
+        auto poll_event(Event& event) noexcept -> bool;
+        [[nodiscard]]
+        auto wait_event(Event& event) noexcept -> bool;
+
+        auto set_title(std::string title) noexcept -> void;
+        auto set_extent(const math::ExtentU& size) noexcept -> void;
+        auto toggle_fullscreen(bool enabled) noexcept -> void;
+
+        auto lock_mouse() noexcept -> void;
+        auto unlock_mouse() noexcept -> void;
+
+        auto hide_mouse() noexcept -> void;
+        auto unhide_mouse() noexcept -> void;
+
+        [[nodiscard]]
+        auto extent() const noexcept -> const math::ExtentU&;
+        [[nodiscard]]
+        auto title() const noexcept -> const std::string&;
+
+        [[nodiscard]]
+        auto is_open() const noexcept -> bool;
+        [[nodiscard]]
+        auto visible() const noexcept -> bool;
+
+        [[nodiscard]]
+        auto native_handle() const noexcept -> NativeHandle;
+
+        [[nodiscard]]
+        auto is_mouse_locked() const noexcept -> bool;
+        [[nodiscard]]
+        auto mouseHidden() const noexcept -> bool;
+        [[nodiscard]]
+        auto fullscreen() const noexcept -> bool;
+
+        auto toggle_key_repeat(bool enabled) noexcept -> void;
+        [[nodiscard]]
+        auto is_key_repeat_enabled() const noexcept -> bool;
+
+        auto toggle_virtual_keyboard_visibility(bool visible) noexcept -> void;
+
+        auto        set_mouse_position(const math::Vector2I& position) noexcept -> void;
+        static auto set_mouse_position_on_desktop(WM wm, const math::Vector2U& position) noexcept
+            -> void;
+
+        [[nodiscard]]
+        static auto get_monitor_settings(WM wm) -> std::vector<Monitor>;
+
+      private:
+        struct Sentinelle {};
+
+        using BackendWindowImpl = std::variant<x11::WindowImpl, wayland::WindowImpl>;
+
+        WM m_wm;
+
+        DeferInit<BackendWindowImpl> m_impl;
+    };
+} // namespace stormkit::wsi::linux
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+#define CASE_DO(case_, namespace_, work) \
+    case case_: as<namespace_::WindowImpl>(m_impl.get()).work; break
+#define CASE_DO_RETURN(case_, namespace_, work) \
+    case case_: return as<namespace_::WindowImpl>(m_impl.get()).work
+
+namespace stormkit::wsi::linux {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline WindowImpl::WindowImpl(WM wm) : m_wm { wm } {
+        if (m_wm == WM::X11) m_impl = x11::WindowImpl {};
+        else if (m_wm == WM::WAYLAND)
+            m_impl = wayland::WindowImpl {};
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline WindowImpl::~WindowImpl() = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline WindowImpl::WindowImpl(WM                   wm,
+                                  std::string          title,
+                                  const math::ExtentU& extent,
+                                  WindowStyle          style)
+        : m_wm { wm } {
+        if (m_wm == WM::X11) m_impl = x11::WindowImpl { std::move(title), extent, style };
+        else if (m_wm == WM::WAYLAND)
+            m_impl = wayland::WindowImpl { title, extent, style };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline WindowImpl::WindowImpl(WindowImpl&&) noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::operator=(WindowImpl&&) noexcept -> WindowImpl& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::create(std::string          title,
+                                   const math::ExtentU& extent,
+                                   WindowStyle          style) -> void {
+        switch (m_wm) {
+            CASE_DO (WM::X11, x11, create(std::move(title), extent, style))
+                ;
+            CASE_DO (WM::WAYLAND, wayland, create(std::move(title), extent, style))
+                ;
+
+            default: break;
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::close() noexcept -> void {
+        switch (m_wm) {
+            CASE_DO (WM::X11, x11, close())
+                ;
+            CASE_DO (WM::WAYLAND, wayland, close())
+                ;
+
+            default: break;
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::poll_event(Event& event) noexcept -> bool {
+        switch (m_wm) {
+            CASE_DO_RETURN (WM::X11, x11, poll_event(event))
+                ;
+            CASE_DO_RETURN (WM::WAYLAND, wayland, poll_event(event))
+                ;
+
+            default: break;
+        }
+
+        return false;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::wait_event(Event& event) noexcept -> bool {
+        switch (m_wm) {
+            CASE_DO_RETURN (WM::X11, x11, wait_event(event))
+                ;
+            CASE_DO_RETURN (WM::WAYLAND, wayland, wait_event(event))
+                ;
+
+            default: break;
+        }
+
+        return false;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::set_title(std::string title) noexcept -> void {
+        switch (m_wm) {
+            CASE_DO (WM::X11, x11, set_title(std::move(title)))
+                ;
+            CASE_DO (WM::WAYLAND, wayland, set_title(std::move(title)))
+                ;
+
+            default: break;
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::set_extent(const math::ExtentU& extent) noexcept -> void {
+        switch (m_wm) {
+            CASE_DO (WM::X11, x11, set_extent(extent))
+                ;
+            CASE_DO (WM::WAYLAND, wayland, set_extent(extent))
+                ;
+
+            default: break;
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::toggle_fullscreen(bool enabled) noexcept -> void {
+        switch (m_wm) {
+            CASE_DO (WM::X11, x11, toggle_fullscreen(enabled))
+                ;
+            CASE_DO (WM::WAYLAND, wayland, toggle_fullscreen(enabled))
+                ;
+
+            default: break;
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::lock_mouse() noexcept -> void {
+        switch (m_wm) {
+            CASE_DO (WM::X11, x11, lock_mouse())
+                ;
+            CASE_DO (WM::WAYLAND, wayland, lock_mouse())
+                ;
+
+            default: break;
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::unlock_mouse() noexcept -> void {
+        switch (m_wm) {
+            CASE_DO (WM::X11, x11, unlock_mouse())
+                ;
+            CASE_DO (WM::WAYLAND, wayland, unlock_mouse())
+                ;
+
+            default: break;
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::hide_mouse() noexcept -> void {
+        switch (m_wm) {
+            CASE_DO (WM::X11, x11, hide_mouse())
+                ;
+            CASE_DO (WM::WAYLAND, wayland, hide_mouse())
+                ;
+
+            default: break;
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::unhide_mouse() noexcept -> void {
+        switch (m_wm) {
+            CASE_DO (WM::X11, x11, unhide_mouse())
+                ;
+            CASE_DO (WM::WAYLAND, wayland, unhide_mouse())
+                ;
+
+            default: break;
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::extent() const noexcept -> const stormkit::math::ExtentU& {
+        switch (m_wm) {
+            CASE_DO_RETURN (WM::X11, x11, extent())
+                ;
+            CASE_DO_RETURN (WM::WAYLAND, wayland, extent())
+                ;
+
+            default: break;
+        }
+
+        constinit static const auto empty = math::ExtentU {};
+        return empty;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::title() const noexcept -> const std::string& {
+        switch (m_wm) {
+            CASE_DO_RETURN (WM::X11, x11, title())
+                ;
+            CASE_DO_RETURN (WM::WAYLAND, wayland, title())
+                ;
+
+            default: break;
+        }
+
+        static const auto empty = std::string {};
+        return empty;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::is_open() const noexcept -> bool {
+        switch (m_wm) {
+            CASE_DO_RETURN (WM::X11, x11, is_open())
+                ;
+            CASE_DO_RETURN (WM::WAYLAND, wayland, is_open())
+                ;
+
+            default: break;
+        }
+
+        return false;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::visible() const noexcept -> bool {
+        switch (m_wm) {
+            CASE_DO_RETURN (WM::X11, x11, visible())
+                ;
+            CASE_DO_RETURN (WM::WAYLAND, wayland, visible())
+                ;
+
+            default: break;
+        }
+
+        return false;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::native_handle() const noexcept -> NativeHandle {
+        switch (m_wm) {
+            CASE_DO_RETURN (WM::X11, x11, native_handle())
+                ;
+            CASE_DO_RETURN (WM::WAYLAND, wayland, native_handle())
+                ;
+
+            default: break;
+        }
+
+        return nullptr;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::is_mouse_locked() const noexcept -> bool {
+        switch (m_wm) {
+            CASE_DO_RETURN (WM::X11, x11, is_mouse_locked())
+                ;
+            CASE_DO_RETURN (WM::WAYLAND, wayland, is_mouse_locked())
+                ;
+
+            default: break;
+        }
+
+        return false;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::mouseHidden() const noexcept -> bool {
+        switch (m_wm) {
+            CASE_DO_RETURN (WM::X11, x11, mouseHidden())
+                ;
+            CASE_DO_RETURN (WM::WAYLAND, wayland, mouseHidden())
+                ;
+
+            default: break;
+        }
+
+        return false;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::fullscreen() const noexcept -> bool {
+        switch (m_wm) {
+            CASE_DO_RETURN (WM::X11, x11, fullscreen())
+                ;
+            CASE_DO_RETURN (WM::WAYLAND, wayland, fullscreen())
+                ;
+
+            default: break;
+        }
+
+        return false;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::toggle_key_repeat(bool enabled) noexcept -> void {
+        switch (m_wm) {
+            CASE_DO_RETURN (WM::X11, x11, toggle_key_repeat(enabled))
+                ;
+            CASE_DO_RETURN (WM::WAYLAND, wayland, toggle_key_repeat(enabled))
+                ;
+
+            default: break;
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::is_key_repeat_enabled() const noexcept -> bool {
+        switch (m_wm) {
+            CASE_DO_RETURN (WM::X11, x11, is_key_repeat_enabled())
+                ;
+            CASE_DO_RETURN (WM::WAYLAND, wayland, is_key_repeat_enabled())
+                ;
+
+            default: break;
+        }
+
+        return false;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::toggle_virtual_keyboard_visibility(bool visible) noexcept -> void {
+        switch (m_wm) {
+            CASE_DO (WM::X11, x11, toggle_virtual_keyboard_visibility(visible))
+                ;
+            CASE_DO (WM::WAYLAND, wayland, toggle_virtual_keyboard_visibility(visible))
+                ;
+
+            default: break;
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::set_mouse_position(const math::Vector2I& position) noexcept -> void {
+        switch (m_wm) {
+            CASE_DO (WM::X11, x11, set_mouse_position(position))
+                ;
+            CASE_DO (WM::WAYLAND, wayland, set_mouse_position(position))
+                ;
+
+            default: break;
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::set_mouse_position_on_desktop(WM                    wm,
+                                                          const math::Vector2U& position) noexcept
+        -> void {
+        switch (wm) {
+            case WM::X11: x11::WindowImpl::set_mouse_position_on_desktop(position); break;
+            case WM::WAYLAND: wayland::WindowImpl::set_mouse_position_on_desktop(position); break;
+
+            default: break;
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImpl::get_monitor_settings(WM wm) -> std::vector<Monitor> {
+        switch (wm) {
+            case WM::X11: return x11::WindowImpl::get_monitor_settings(); break;
+            case WM::WAYLAND: return wayland::WindowImpl::get_monitor_settings(); break;
+            default: break;
+        }
+
+        return {};
+    }
+} // namespace stormkit::wsi::linux
+
+#undef CASE_DO
+#undef CASE_DO_RETURN

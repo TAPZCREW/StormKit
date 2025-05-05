@@ -4,8 +4,8 @@ import std;
 
 import stormkit.core;
 import stormkit.log;
-import stormkit.Wsi;
-import stormkit.Gpu;
+import stormkit.wsi;
+import stormkit.gpu;
 
 import :Renderer;
 

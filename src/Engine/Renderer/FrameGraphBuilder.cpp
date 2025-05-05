@@ -7,7 +7,7 @@ module stormkit.Engine;
 import std;
 
 import stormkit.core;
-import stormkit.Gpu;
+import stormkit.gpu;
 
 import :Renderer.FrameGraph;
 
@@ -151,7 +151,7 @@ namespace stormkit::engine {
                      const auto& description = resource.description();
 
                      const auto usages = [&description] noexcept {
-                         if (gpu::isDepthStencilFormat(description.format))
+                         if (gpu::is_depth_stencil_format(description.format))
                              return gpu::ImageUsageFlag::Depth_Stencil_Attachment
                                     | gpu::ImageUsageFlag::Transfert_Src;
 
@@ -160,7 +160,7 @@ namespace stormkit::engine {
                      }();
 
                      const auto clear_value = [&description] noexcept -> gpu::ClearValue {
-                         if (gpu::isDepthStencilFormat(description.format))
+                         if (gpu::is_depth_stencil_format(description.format))
                              return gpu::ClearDepthStencil {};
 
                          return gpu::ClearColor {};
@@ -241,7 +241,7 @@ namespace stormkit::engine {
                         .destination_layout = gpu::ImageLayout::Color_Attachment_Optimal
                     };
 
-                    if (isDepthStencilFormat(description.format)) [[unlikely]] {
+                    if (is_depth_stencil_format(description.format)) [[unlikely]] {
                         std::swap(attachment_description.load_op,
                                   attachment_description.stencil_load_op);
                         std::swap(attachment_description.store_op,
@@ -275,7 +275,7 @@ namespace stormkit::engine {
                                       .destination_layout = layouts.at(id)
                                   };
 
-                                  if (isDepthStencilFormat(description.format)) [[unlikely]] {
+                                  if (is_depth_stencil_format(description.format)) [[unlikely]] {
                                       std::swap(attachment_description.load_op,
                                                 attachment_description.stencil_load_op);
                                       std::swap(attachment_description.store_op,
@@ -315,7 +315,7 @@ namespace stormkit::engine {
                                          = gpu::AttachmentStoreOperation::Store;
                                  }
 
-                                 if (isDepthStencilFormat(description.format)) [[unlikely]] {
+                                 if (is_depth_stencil_format(description.format)) [[unlikely]] {
                                      std::swap(attachment_description.load_op,
                                                attachment_description.stencil_load_op);
                                      std::swap(attachment_description.store_op,
@@ -339,7 +339,7 @@ namespace stormkit::engine {
 
         auto depth_attachment_ref = std::optional<gpu::Subpass::Ref> {};
         for (auto&& [i, attachment] : output.description.attachments | std::views::enumerate) {
-            if (isDepthFormat(attachment.format))
+            if (is_depth_format(attachment.format))
                 depth_attachment_ref
                     = gpu::Subpass::Ref { .attachment_id = as<UInt32>(i),
                                           .layout        = attachment.destination_layout };

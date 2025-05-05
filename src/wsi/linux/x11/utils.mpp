@@ -1,0 +1,166 @@
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <X11/keysym.h>
+
+#include <xkbcommon/xkbcommon-keysyms.h>
+
+#include <xcb/xcb_atom.h>
+#include <xcb/xcb_icccm.h>
+#include <xcb/xcb_keysyms.h>
+
+export module stormkit.wsi:linux.x11.utils;
+
+import stormkit.core;
+import stormkit.wsi;
+
+export namespace stormkit::wsi::linux::x11 {
+    auto x11_key_to_char(xcb_keysym_t key) noexcept -> char;
+    auto x11_button_to_stormkit(xcb_button_t button) noexcept -> MouseButton;
+    auto default_root_window(xcb_connection_t* connection, Int32 screen_id) noexcept
+        -> xcb_window_t;
+} // namespace stormkit::wsi::linux::x11
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit::wsi::linux::x11 {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto x11_button_to_stormkit(xcb_button_t button) noexcept -> MouseButton {
+        switch (button) {
+            case XCB_BUTTON_INDEX_1: return MouseButton::LEFT;
+            case XCB_BUTTON_INDEX_2: return MouseButton::MIDDLE;
+            case XCB_BUTTON_INDEX_3: return MouseButton::RIGHT;
+            case XCB_BUTTON_INDEX_4: return MouseButton::BUTTON_1;
+            case XCB_BUTTON_INDEX_5: return MouseButton::BUTTON_2;
+        }
+
+        return MouseButton::UNKNOWN;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto screen_of_display(xcb_connection_t* c, int screen) noexcept -> xcb_screen_t* {
+        auto iter = xcb_screen_iterator_t {};
+
+        for (iter = xcb_setup_roots_iterator(xcb_get_setup(c)); iter.rem;
+             --screen, xcb_screen_next(&iter))
+            if (screen == 0) return iter.data;
+
+        return iter.data;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto default_root_window(xcb_connection_t* connection, int32_t screen_id) noexcept
+        -> xcb_window_t {
+        auto screen = screen_of_display(connection, screen_id);
+
+        return screen->root;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto x11_key_to_char(xcb_keysym_t key) noexcept -> char {
+        switch (key) {
+            case XK_a: return u8'a';
+            case XK_b: return u8'b';
+            case XK_c: return u8'c';
+            case XK_d: return u8'd';
+            case XK_e: return u8'e';
+            case XK_f: return u8'f';
+            case XK_g: return u8'g';
+            case XK_h: return u8'h';
+            case XK_i: return u8'i';
+            case XK_j: return u8'j';
+            case XK_k: return u8'k';
+            case XK_l: return u8'l';
+            case XK_m: return u8'm';
+            case XK_n: return u8'n';
+            case XK_o: return u8'o';
+            case XK_p: return u8'p';
+            case XK_q: return u8'q';
+            case XK_r: return u8'r';
+            case XK_s: return u8's';
+            case XK_t: return u8't';
+            case XK_u: return u8'u';
+            case XK_v: return u8'v';
+            case XK_w: return u8'w';
+            case XK_x: return u8'x';
+            case XK_y: return u8'y';
+            case XK_z: return u8'z';
+            case XK_A: return u8'A';
+            case XK_B: return u8'B';
+            case XK_C: return u8'C';
+            case XK_D: return u8'D';
+            case XK_E: return u8'E';
+            case XK_F: return u8'F';
+            case XK_G: return u8'G';
+            case XK_H: return u8'H';
+            case XK_I: return u8'I';
+            case XK_J: return u8'J';
+            case XK_K: return u8'K';
+            case XK_L: return u8'L';
+            case XK_M: return u8'M';
+            case XK_N: return u8'N';
+            case XK_O: return u8'O';
+            case XK_P: return u8'P';
+            case XK_Q: return u8'Q';
+            case XK_R: return u8'R';
+            case XK_S: return u8'S';
+            case XK_T: return u8'T';
+            case XK_U: return u8'U';
+            case XK_V: return u8'V';
+            case XK_W: return u8'W';
+            case XK_X: return u8'X';
+            case XK_Y: return u8'Y';
+            case XK_Z: return u8'Z';
+            case XK_KP_0: [[fallthrough]];
+            case XK_0: return u8'0';
+            case XK_KP_1: [[fallthrough]];
+            case XK_1: return u8'1';
+            case XK_KP_2: [[fallthrough]];
+            case XK_2: return u8'2';
+            case XK_KP_3: [[fallthrough]];
+            case XK_3: return u8'3';
+            case XK_KP_4: [[fallthrough]];
+            case XK_4: return u8'4';
+            case XK_KP_5: [[fallthrough]];
+            case XK_5: return u8'5';
+            case XK_KP_6: [[fallthrough]];
+            case XK_6: return u8'6';
+            case XK_KP_7: [[fallthrough]];
+            case XK_7: return u8'7';
+            case XK_KP_8: [[fallthrough]];
+            case XK_8: return u8'8';
+            case XK_KP_9: [[fallthrough]];
+            case XK_9: return u8'9';
+            case XK_bracketleft: return u8'{';
+            case XK_bracketright: return u8'}';
+            case XK_semicolon: return u8';';
+            case XK_comma: return u8',';
+            case XK_period: return u8'.';
+            case XK_quoteright: [[fallthrough]];
+            case XK_quoteleft: return u8'"';
+            case XK_slash: return u8'/';
+            case XK_backslash: return u8'\\';
+            case XK_dead_grave: return u8'~';
+            case XK_equal: return u8'=';
+            case XK_hyphen: return u8'-';
+            case XK_space: return u8' ';
+            case XK_Return: return u8'\n';
+            case XK_Tab: return u8'\t';
+            case XK_KP_Add: return u8'+';
+            case XK_KP_Subtract: return u8'-';
+            case XK_KP_Multiply: return u8'*';
+            case XK_KP_Divide: return u8'/';
+        }
+
+        return u8'\0';
+    }
+} // namespace stormkit::wsi::linux::x11

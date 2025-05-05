@@ -73,11 +73,10 @@ modules = {
         frameworks = is_plat("macosx") and { "CoreFoundation" } or nil,
     },
     wsi = {
-        modulename = "Wsi",
+        modulename = "wsi",
         public_deps = { "stormkit-core" },
         deps = { "stormkit-log" },
         packages = is_plat("linux") and {
-            "libxkbcommon",
             "libxcb",
             "xcb-util-keysyms",
             "xcb-util",
@@ -85,6 +84,7 @@ modules = {
             "xcb-util-errors",
             "wayland",
             "wayland-protocols",
+            "libxkbcommon",
         } or nil,
         frameworks = is_plat("macosx") and { "CoreFoundation", "Foundation", "AppKit", "Metal", "IOKit", "QuartzCore" }
             or nil,
@@ -134,12 +134,12 @@ modules = {
         end,
     },
     gpu = {
-        modulename = "Gpu",
+        modulename = "gpu",
         has_headers = true,
         public_packages = {
+            "volk",
             "vulkan-headers v1.4.309",
-            "vulkan-memory-allocator 3.2.0",
-            "vulkan-memory-allocator-hpp 3.2.1",
+            "vulkan-memory-allocator v3.2.1",
         },
         public_deps = { "stormkit-core", "stormkit-log", "stormkit-wsi", "stormkit-image" },
         packages = is_plat("linux") and {
@@ -147,28 +147,10 @@ modules = {
             "wayland",
         } or nil,
         public_defines = {
-            "VK_NO_PROTOTYPES",
             "VMA_DYNAMIC_VULKAN_FUNCTIONS=1",
-            "VMA_STATIC_VULKAN_FUNCTIONS=0",
-            "VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1",
-            "VULKAN_HPP_NO_STRUCT_CONSTRUCTORS",
-            "VULKAN_HPP_NO_UNION_CONSTRUCTORS",
-            "VULKAN_HPP_NO_EXCEPTIONS",
-            "VULKAN_HPP_NO_CONSTRUCTORS",
-            -- "VULKAN_HPP_NO_SMART_HANDLE",
-            "VULKAN_HPP_STD_MODULE=std.compat",
-            "VULKAN_HPP_ENABLE_STD_MODULE",
-            "VMA_HPP_ENABLE_VULKAN_HPP_MODULE",
-            "VMA_HPP_ENABLE_STD_MODULE",
+            "VMA_STATIC_VULKAN_FUNCTIONS=0"
         },
         custom = function()
-            on_load(function(target)
-                if target:kind() == "shared" then
-                    target:add("defines", "VK_HPP_STORAGE_SHARED", { public = true })
-                else
-                    target:add("defines", "VK_HPP_STORAGE_API", { public = true })
-                end
-            end)
             if is_plat("linux") then
                 add_defines("VK_USE_PLATFORM_XCB_KHR", { public = true })
                 add_defines("VK_USE_PLATFORM_WAYLAND_KHR", { public = true })
@@ -177,6 +159,7 @@ modules = {
             elseif is_plat("windows") then
                 add_defines("VK_USE_PLATFORM_WIN32_KHR", { public = true })
             end
+            add_cxflags("clang::-Wno-missing-declarations")
         end,
     },
 }
@@ -308,7 +291,7 @@ set_policy("build.c++.modules.gcc.cxx11abi", true)
 
 if not is_plat("wasm") then
     add_requireconfs("vulkan-headers", { system = false })
-    -- add_requireconfs("vulkan-memory-allocator")
+    add_requireconfs("vulkan-memory-allocator", { system = false })
     add_requireconfs("vulkan-memory-allocator-hpp", { system = false, configs = { use_vulkanheaders = true } })
 end
 
@@ -318,13 +301,10 @@ end
 
 add_requireconfs("*", { configs = { modules = true, std_import = true, cpp = "latest" } })
 
-if get_config("lto") then
-    set_policy("build.optimization.lto", true)
-    if get_config("kind") == "static" then add_defines("STORMKIT_LTO") end
-end
-
 add_requireconfs("libxkbcommon", { configs = { ["x11"] = true, wayland = true } })
 add_requireconfs("frozen", { system = false })
+
+if get_config("on_ci") then add_requireconfs("*", { system = false }) end
 
 add_requires("cpptrace")
 if not is_plat("windows") then add_requires("libdwarf") end
@@ -340,8 +320,6 @@ for name, module in pairs(modules) do
         for _, package in ipairs(_packages) do
             table.insert(packages, package:split(" ")[1])
         end
-        add_requireconfs(_packages, { configs = { modules = true, std_import = true, cpp = "latest" } })
-        if get_config("on_ci") then add_requireconfs(_packages, { system = false }) end
         target("stormkit-" .. name, function()
             set_group("libraries")
 

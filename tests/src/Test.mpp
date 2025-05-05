@@ -41,7 +41,7 @@ export namespace test {
                  std::string_view            message,
                  const std::source_location& location = std::source_location::current()) noexcept;
 
-    auto parseArgs(std::span<const std::string_view> args) noexcept -> void;
+    auto parse_args(std::span<const std::string_view> args) noexcept -> void;
     auto runTests() noexcept -> int;
 } // namespace test
 
@@ -179,7 +179,7 @@ namespace test {
         return output;
     }
 
-    auto parseArgs(std::span<const std::string_view> args) noexcept -> void {
+    auto parse_args(std::span<const std::string_view> args) noexcept -> void {
         for (auto&& arg : args) {
             if (arg == "--verbose" or arg == "-v") state.verbose = true;
             else if (arg == "--plain" or arg == "-p")
