@@ -1,0 +1,1215 @@
+// Copyright (C) 2023 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/as_casts_macro.hpp>
+#include <stormkit/core/flags_macro.hpp>
+#include <stormkit/core/hash_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
+
+export module stormkit.gpu:core.types;
+
+import std;
+
+import stormkit.core;
+
+export {
+    namespace stormkit::gpu {
+        inline constexpr auto QUEUE_FAMILY_IGNORED = std::numeric_limits<UInt32>::max();
+
+        enum class PhysicalDeviceType : UInt8 {
+            DISCRETE_GPU,
+            VIRTUAL_GPU,
+            INTEGRATED_GPU,
+            CPU,
+            OTHER,
+        };
+
+        enum class QueueFlag : UInt8 {
+            NONE = 0,
+            GRAPHICS,
+            COMPUTE,
+            TRANSFER,
+            SPARSE_BINDING,
+        };
+
+        enum class ShaderStageFlag : UInt8 {
+            NONE = 0,
+            VERTEX,
+            FRAGMENT,
+            GEOMETRY,
+            COMPUTE,
+        };
+
+        enum class PrimitiveTopology : UInt8 {
+            POINT_LIST,
+            LINE_LIST,
+            LINE_STRIP,
+            TRIANGLE_LIST,
+            TRIANGLE_STRIP,
+            TRIANGLE_FAN,
+        };
+
+        enum class PolygonMode : UInt8 {
+            FILL,
+            LINE,
+            POINT,
+        };
+
+        enum class CullModeFlag : UInt8 {
+            NONE = 0,
+            FRONT,
+            BACK,
+            FRONT_BACK = FRONT | BACK,
+        };
+
+        enum class FrontFace : UInt8 {
+            CLOCKWISE,
+            COUNTER_CLOCKWISE,
+        };
+
+        enum class SampleCountFlag : UInt8 {
+            NONE = 0,
+            C1,
+            C2,
+            C4,
+            C8,
+            C16,
+            C32,
+            C64,
+        };
+
+        enum class ColorComponentFlag : UInt8 {
+            NONE = 0,
+            R,
+            G,
+            B,
+            A,
+            RG   = R | G,
+            RGB  = RG | B,
+            RGBA = RGB | A,
+        };
+
+        enum class BlendFactor : UInt8 {
+            ONE,
+            ZERO,
+            SRC_COLOR,
+            ONE_MINUS_SRC_COLOR,
+            DST_COLOR,
+            ONE_MINUS_DST_COLOR,
+            SRC_ALPHA,
+            ONE_MINUS_SRC_ALPHA,
+            DST_ALPHA,
+            ONE_MINUS_DST_ALPHA,
+            CONSTANT_COLOR,
+            ONE_MINUS_CONSTANT_COLOR,
+            CONSTANT_ALPHA,
+            ONE_MINUS_CONSTANT_ALPHA,
+            SRC_ALPHA_SATURATE,
+            SRC1_COLOR,
+            ONE_MINUS_SRC1_COLOR,
+            SRC1_ALPHA,
+            ONE_MINUS_SRC1_ALPHA,
+        };
+
+        enum class BlendOperation : UInt8 {
+            ADD,
+            SUBSTRACT,
+            REVERSE_SUBSTRACT,
+            MIN,
+            MAX,
+        };
+
+        enum class LogicOperation : UInt8 {
+            CLEAR,
+            AND,
+            AND_REVERSE,
+            COPY,
+            AND_INVERTED,
+            NO_OPERATION,
+            XOR,
+            OR,
+            NOR,
+            EQUIVALENT,
+            INVERT,
+            OR_REVERSE,
+            COPY_INVERTED,
+            OR_INVERTED,
+            NAND,
+            SET,
+        };
+
+        enum class PixelFormat : UInt8 {
+            R8_SNORM,
+            RG8_SNORM,
+            RGB8_SNORM,
+            RGBA8_SNORM,
+
+            R8_UNORM,
+            RG8_UNORM,
+            RGB8_UNORM,
+            RGBA8_UNORM,
+
+            R16_SNORM,
+            RG16_SNORM,
+            RGB16_SNORM,
+            RGBA16_SNORM,
+
+            R16_UNORM,
+            RG16_UNORM,
+            RGB16_UNORM,
+            RGBA16_UNORM,
+
+            A2_RGB10_UNORM,
+
+            RGBA4_UNORM_PACK16,
+
+            A1_RGB5_UNORM_PACK16,
+
+            R5_G6_B5_UNORM_PACK16,
+
+            BGR8_UNORM,
+            BGRA8_UNORM,
+
+            R8I,
+            RG8I,
+            RGB8I,
+            RGBA8I,
+
+            R8U,
+            RG8U,
+            RGB8U,
+            RGBA8U,
+
+            R16I,
+            RG16I,
+            RGB16I,
+            RGBA16I,
+
+            R16U,
+            RG16U,
+            RGB16U,
+            RGBA16U,
+
+            R32I,
+            RG32I,
+            RGB32I,
+            RGBA32I,
+
+            R32U,
+            RG32U,
+            RGB32U,
+            RGBA32U,
+
+            A2_RGB10U_PACK32,
+
+            R16F,
+            RG16F,
+            RGB16F,
+            RGBA16F,
+
+            R32F,
+            RG32F,
+            RGB32F,
+            RGBA32F,
+
+            BG11_R10F_PACK32,
+
+            SRGB8,
+            SRGBA8,
+            SBGR8,
+            SBGRA8,
+
+            DEPTH16,
+            DEPTH24,
+            DEPTH32F,
+
+            DEPTH16_STENCIL8,
+            DEPTH24_STENCIL8,
+            DEPTH32F_STENCIL8,
+
+            UNDEFINED,
+        };
+
+        enum class AttachmentLoadOperation : UInt8 {
+            CLEAR,
+            LOAD,
+            DONT_CARE,
+        };
+
+        enum class AttachmentStoreOperation : UInt8 {
+            STORE,
+            DONT_CARE,
+        };
+
+        enum class PipelineBindPoint : UInt8 {
+            GRAPHICS,
+            COMPUTE,
+        };
+
+        enum class ImageLayout : UInt32 {
+            GENERAL,
+            COLOR_ATTACHMENT_OPTIMAL,
+            DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            DEPTH_STENCIL_READ_ONLY_OPTIMAL,
+            SHADER_READ_ONLY_OPTIMAL,
+            TRANSFER_SRC_OPTIMAL,
+            TRANSFER_DST_OPTIMAL,
+            PREINITIALIZED,
+            DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL,
+            DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL,
+            PRESENT_SRC,
+            SHARED_PRESENT,
+            UNDEFINED,
+        };
+
+        enum class ImageAspectMaskFlag : UInt8 {
+            NONE = 0,
+            COLOR,
+            DEPTH,
+            STENCIL,
+        };
+
+        enum class VertexInputRate : UInt8 {
+            VERTEX,
+            INSTANCE,
+        };
+
+        enum class ImageCreateFlag : UInt16 {
+            NONE = 0,
+            SPARSE_BINDING,
+            SPARSE_RESIDENCY,
+            SPARSE_ALIASED,
+            MUTABLE_FORMAT,
+            CUBE_COMPATIBLE,
+            ALIAS,
+            SPLIT_INSTANCE_BIND_REGIONS,
+            ARRAY_2D_COMPATIBLE,
+            BLOCK_TEXEL_VIEW_COMPATIBLE,
+            EXTENDED_USAGE,
+            PROTECTED,
+            DISJOINT,
+        };
+
+        enum class Format : UInt8 {
+            BYTE,
+            BYTE2,
+            BYTE3,
+            BYTE4,
+
+            BYTE_NORM,
+            BYTE2_NORM,
+            BYTE3_NORM,
+            BYTE4_NORM,
+
+            BYTE_SCALED,
+            BYTE2_SCALED,
+            BYTE3_SCALED,
+            BYTE4_SCALED,
+
+            UBYTE,
+            UBYTE2,
+            UBYTE3,
+            UBYTE4,
+
+            UBYTE_NORM,
+            UBYTE2_NORM,
+            UBYTE3_NORM,
+            UBYTE4_NORM,
+
+            UBYTE_UCALED,
+            UBYTE2_UCALED,
+            UBYTE3_UCALED,
+            UBYTE4_UCALED,
+
+            SHORT,
+            SHORT2,
+            SHORT3,
+            SHORT4,
+
+            SHORT_NORM,
+            SHORT2_NORM,
+            SHORT3_NORM,
+            SHORT4_NORM,
+
+            SHORT_SCALED,
+            SHORT2_SCALED,
+            SHORT3_SCALED,
+            SHORT4_SCALED,
+
+            USHORT,
+            USHORT2,
+            USHORT3,
+            USHORT4,
+
+            USHORT_NORM,
+            USHORT2_NORM,
+            USHORT3_NORM,
+            USHORT4_NORM,
+
+            USHORT_UCALED,
+            USHORT2_UCALED,
+            USHORT3_UCALED,
+            USHORT4_UCALED,
+
+            INT,
+            INT2,
+            INT3,
+            INT4,
+
+            UINT,
+            UINT2,
+            UINT3,
+            UINT4,
+
+            LONG,
+            LONG2,
+            LONG3,
+            LONG4,
+
+            ULONG,
+            ULONG2,
+            ULONG3,
+            ULONG4,
+
+            FLOAT,
+            FLOAT2,
+            FLOAT3,
+            FLOAT4,
+
+            DOUBLE,
+            DOUBLE2,
+            DOUBLE3,
+            DOUBLE4,
+
+            UNDEFINED,
+        };
+
+        enum class BufferUsageFlag : UInt16 {
+            VERTEX,
+            INDEX,
+            TRANSFER_SRC,
+            TRANSFER_DST,
+            UNIFORM,
+            STORAGE,
+            UNIFORM_TEXEL,
+            STORAGE_TEXEL,
+            INDIRECT,
+        };
+
+        enum class ImageUsageFlag : UInt16 {
+            TRANSFER_SRC,
+            TRANSFER_DST,
+            SAMPLED,
+            STORAGE,
+            COLOR_ATTACHMENT,
+            DEPTH_STENCIL_ATTACHMENT,
+            TRANSIENT_ATTACHMENT,
+            INPUT_ATTACHMENT,
+        };
+
+        enum class MemoryPropertyFlag : UInt8 {
+            DEVICE_LOCAL,
+            HOST_VISIBLE,
+            HOST_COHERENT,
+            HOST_CACHED,
+        };
+
+        enum class CommandBufferLevel : UInt8 {
+            PRIMARY,
+            SECONDARY,
+        };
+
+        enum class DescriptorType : UInt8 {
+            SAMPLER,
+            COMBINED_IMAGE_SAMPLER,
+            SAMPLED_IMAGE,
+            STORAGE_IMAGE,
+            UNIFORM_TEXEL_BUFFER,
+            STORAGE_TEXEL_BUFFER,
+            UNIFORM_BUFFER,
+            STORAGE_BUFFER,
+            UNIFORM_BUFFER_DYNAMIC,
+            STORAGE_BUFFER_DYNAMIC,
+            INPUT_ATTACHMENT,
+        };
+
+        enum class CompareOperation : UInt8 {
+            NEVER,
+            LESS,
+            EQUAL,
+            LESS_OR_EQUAL,
+            GREATER,
+            NOT_EQUAL,
+            GREATER_OR_EQUAL,
+            ALWAYS,
+        };
+
+        enum class Filter : UInt32 {
+            NEAREST,
+            LINEAR,
+            CUBIC_IMG,
+        };
+
+        enum class SamplerAddressMode : UInt8 {
+            REPEAT,
+            MIRRORED_REPEAT,
+            CLAMP_TO_EDGE,
+            CLAMP_TO_BORDER,
+            MIRROR_CLAMP_TO_EDGE,
+        };
+
+        enum class BorderColor : UInt8 {
+            FLOAT_TRANSPARENT_BLACK,
+            INT_TRANSPARENT_BLACK,
+            FLOAT_OPAQUE_BLACK,
+            INT_OPAQUE_BLACK,
+            FLOAT_OPAQUE_WHITE,
+            INT_OPAQUE_WHITE,
+        };
+
+        enum class SamplerMipmapMode : UInt8 {
+            NEAREST,
+            LINEAR,
+        };
+
+        enum class Result : Int32 {
+            SUCCESS,
+            NOT_READY,
+            TIMEOUT,
+            EVENT_SET,
+            EVENT_RESET,
+            INCOMPLETE,
+            ERROR_OUT_OF_HOST_MEMORY,
+            ERROR_OUT_OF_DEVICE_MEMORY,
+            ERROR_INITIALIZATION_FAILED,
+            ERROR_DEVICE_LOST,
+            ERROR_MEMORY_MAP_FAILED,
+            ERROR_LAYER_NOT_PRESENT,
+            ERROR_EXTENSION_NOT_PRESENT,
+            ERROR_FEATURE_NOT_PRESENT,
+            ERROR_INCOMPATIBLE_DRIVER,
+            ERROR_TOO_MANY_OBJECTS,
+            ERROR_FORMAT_NOT_SUPPORTED,
+            ERROR_FRAGMENTED_POOL,
+            ERROR_UNKNOWN,
+            ERROR_OUT_OF_POOL_MEMORY,
+            ERROR_INVALID_EXTERNAL_HANDLE,
+            ERROR_FRAGMENTATION,
+            ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS,
+            ERROR_SURFACE_LOST,
+            ERROR_NATIVE_WINDOW_IN_USE,
+            SUBOPTIMAL,
+            ERROR_OUT_OF_DATA,
+            ERROR_INCOMPATIBLE_DISPLAY,
+            ERROR_VALIDATION_FAILED,
+            ERROR_NOT_PERMITTED,
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+            ERROR_FULLSCREEN_EXCLUSIVE_MODE_LOST,
+#endif
+            THREAD_IDLE,
+            THREAD_DONE,
+            OPERATION_DEFERRED,
+            OPERATION_NOT_DEFERRED,
+            PIPELINE_COMPILE_REQUIRED,
+        };
+
+        enum class ImageType : UInt8 {
+            T1D,
+            T2D,
+            T3D,
+        };
+
+        enum class ImageViewType : UInt8 {
+            T1D,
+            T2D,
+            T3D,
+            CUBE,
+            T1D_ARRAY,
+            T2D_ARRAY,
+            CUBE_ARRAY,
+        };
+
+        enum class DebugObjectType : UInt32 {
+            UNKNOWN,
+            INSTANCE,
+            PHYSICAL_DEVICE,
+            DEVICE,
+            QUEUE,
+            SEMAPHORE,
+            COMMAND_BUFFER,
+            FENCE,
+            DEVICE_MEMORY,
+            BUFFER,
+            IMAGE,
+            EVENT,
+            QUERY_POOL,
+            BUFFER_VIEW,
+            IMAGE_VIEW,
+            SHADER_MODULE,
+            PIPELINE_CACHE,
+            PIPELINE_LAYOUT,
+            RENDER_PASS,
+            PIPELINE,
+            PIPELINELAYOUT,
+            DESCRIPTOR_SET_LAYOUT,
+            SAMPLER,
+            DESCRIPTOR_POOL,
+            DESCRIPTOR_SET,
+            FRAMEBUFFER,
+            COMMAND_POOL,
+            SURFACE,
+            SWAPCHAIN,
+            DEBUG_REPORT_CALLBACK,
+            DISPLAY_KHR,
+        };
+
+        enum class AccessFlag : UInt32 {
+            NONE = 0,
+            INDIRECT_COMMAND_READ,
+            VERTEX_ATTRIBUTE_READ,
+            UNIFORM_READ,
+            INPUT_ATTACHMENT_READ,
+            SHADER_READ,
+            SHADER_WRITE,
+            COLOR_ATTACHMENT_READ,
+            COLOR_ATTACHMENT_WRITE,
+            DEPTH_STENCIL_ATTACHMENT_READ,
+            DEPTH_STENCIL_ATTACHMENT_WRITE,
+            TRANSFER_READ,
+            TRANSFER_WRITE,
+            HOST_READ,
+            HOST_WRITE,
+            MEMORY_READ,
+            MEMORY_WRITE,
+        };
+
+        enum class PipelineStageFlag : UInt32 {
+            NONE = 0,
+            TOP_OF_PIPE,
+            DRAW_INDIRECT,
+            VERTEX_INPUT,
+            VERTEX_SHADER,
+            TESSELLATION_CONTROL_SHADER,
+            TESSELLATION_EVALUATION_SHADER,
+            GEOMETRY_SHADER,
+            FRAGMENT_SHADER,
+            EARLY_FRAGMENT_TESTS,
+            LATE_FRAGMENT_TESTS,
+            COLOR_ATTACHMENT_OUTPUT,
+            COMPUTE_SHADER,
+            TRANSFER,
+            BOTTOM_OF_PIPE,
+            HOST,
+            ALL_GRAPHICS,
+            ALL_COMMANDS,
+        };
+
+        enum class DependencyFlag : UInt8 {
+            NONE = 0,
+            BY_REGION,
+            DEVICE_GROUP,
+            VIEW_LOCAL,
+        };
+
+        enum class DynamicState : UInt8 {
+            VIEWPORT,
+            SCISSOR,
+            LINE_WIDTH,
+            DEPTH_BIAS,
+            BLEND_CONSTANTS,
+            DEPTH_BOUNDS,
+            STENCIL_COMPARE_MASK,
+            STENCIL_WRITE_MASK,
+            STENCIL_REFERENCE,
+        };
+
+        enum class ImageTiling : UInt32 {
+            OPTIMAL,
+            LINEAR,
+            DRM_EXT,
+        };
+
+        enum class StencilFaceFlag : UInt8 {
+            FRONT,
+            BACK,
+            FRONT_AND_BACK = FRONT | BACK
+        };
+
+        enum class GeometryType : UInt8 {
+            TRIANGLES,
+            AABBS,
+            INSTANCES,
+        };
+
+        enum class GeometryFlag : UInt8 {
+            OPAQUE,
+            NO_DUPLICATE_ANY_HIT_INVOCATION
+        };
+
+        enum class ColorSpace : UInt32 {
+            NO_DUPLICATE_ANY_HIT_INVOCATION,
+            DISPLAY_P3_NONLINEAR,
+            // COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT    = 1000104002,
+            // COLOR_SPACE_DISPLAY_P3_LINEAR_EXT       = 1000104003,
+            // COLOR_SPACE_DCI_P3_NONLINEAR_EXT        = 1000104004,
+            // COLOR_SPACE_BT709_LINEAR_EXT            = 1000104005,
+            // COLOR_SPACE_BT709_NONLINEAR_EXT         = 1000104006,
+            // COLOR_SPACE_BT2020_LINEAR_EXT           = 1000104007,
+            // COLOR_SPACE_HDR10_ST2084_EXT            = 1000104008,
+            // COLOR_SPACE_DOLBYVISION_EXT             = 1000104009,
+            // COLOR_SPACE_HDR10_HLG_EXT               = 1000104010,
+            // COLOR_SPACE_ADOBERGB_LINEAR_EXT         = 1000104011,
+            // COLOR_SPACE_ADOBERGB_NONLINEAR_EXT      = 1000104012,
+            // COLOR_SPACE_PASS_THROUGH_EXT            = 1000104013,
+            // COLOR_SPACE_EXTENDED_SRGB_NONLINEAR_EXT = 1000104014,
+            // COLOR_SPACE_DISPLAY_NATIVE_AMD          = 1000213000,
+            // COLORSPACE_SRGB_NONLINEAR_KHR           = COLOR_SPACE_SRGB_NONLINEAR_KHR,
+            // COLOR_SPACE_DCI_P3_LINEAR_EXT           = COLOR_SPACE_DISPLAY_P3_LINEAR_EXT,
+        };
+
+        enum class PresentMode : UInt32 {
+            IMMEDIATE,
+            MAILBOX,
+            FIFO,
+            FIFO_RELAXED,
+            SHARED_DEMAND_REFRESH,
+            SHARED_CONTINUOUS_REFRESH,
+        };
+
+        struct SurfaceFormat {
+            PixelFormat format;
+            ColorSpace  color_space;
+        };
+
+        struct MemoryBarrier {
+            AccessFlag src;
+            AccessFlag dst;
+        };
+
+        struct RenderCapabilities {
+            struct {
+                bool robust_buffer_access;
+                bool full_draw_index_uint32;
+                bool image_cube_array;
+                bool independent_blend;
+                bool geometry_shader;
+                bool tessellation_shader;
+                bool sampler_rate_shading;
+                bool dual_src_blend;
+                bool logic_op;
+                bool multi_draw_indirect;
+                bool draw_indirect_first_instance;
+                bool depth_clamp;
+                bool depth_bias_clamp;
+                bool fill_Mode_non_solid;
+                bool depth_bounds;
+                bool wide_lines;
+                bool large_points;
+                bool alpha_to_one;
+                bool multi_viewport;
+                bool sampler_anisotropy;
+                bool texture_compression_etc2;
+                bool texture_compression_astc_ldr;
+                bool texture_compression_bc;
+                bool occlusion_query_precise;
+                bool pipeline_statistics_query;
+                bool vertex_pipeline_stores_and_atomics;
+                bool fragment_stores_and_atomics;
+                bool shader_tessellation_and_geometry_point_size;
+                bool shader_image_gather_extended;
+                bool shader_storage_image_extended_formats;
+                bool shader_storage_image_multisample;
+                bool shader_storage_image_read_without_format;
+                bool shader_storage_image_write_without_format;
+                bool shader_uniform_buffer_array_dynamic_indexing;
+                bool shader_sampled_image_array_dynamic_indexing;
+                bool shader_storage_buffer_array_dynamic_indexing;
+                bool shader_storage_image_array_dynamic_indexing;
+                bool shader_clip_distance;
+                bool shader_cull_distance;
+                bool shader_float_64;
+                bool shader_int_64;
+                bool shader_int_16;
+                bool shader_resource_residency;
+                bool shader_resource_min_lod;
+                bool sparse_binding;
+                bool sparse_residency_buffer;
+                bool sparse_residency_image_2D;
+                bool sparse_residency_image_3D;
+                bool sparse_residency_2_samples;
+                bool sparse_residency_4_samples;
+                bool sparse_residency_6_samples;
+                bool sparse_residency_8_samples;
+                bool sparse_residency_16_samples;
+                bool sparse_residency_aliased;
+                bool variable_multisample_rate;
+                bool inherited_queries;
+            } features;
+
+            struct {
+                UInt32                     max_image_dimension_1D;
+                UInt32                     max_image_dimension_2D;
+                UInt32                     max_image_dimension_3D;
+                UInt32                     max_image_dimension_cube;
+                UInt32                     max_image_array_layers;
+                UInt32                     max_texel_buffer_elements;
+                UInt32                     max_uniform_buffer_range;
+                std::optional<UInt32>      max_storage_buffer_range;
+                UInt32                     max_push_constants_size;
+                std::optional<UInt32>      max_memory_allocation_count;
+                std::optional<UInt32>      max_sampler_allocation_count;
+                std::optional<UInt64>      buffer_image_granularity;
+                std::optional<UInt64>      sparse_address_space_size;
+                std::optional<UInt32>      max_bound_descriptor_sets;
+                UInt32                     max_per_stage_descriptor_samplers;
+                UInt32                     max_per_stage_descriptor_uniform_buffers;
+                UInt32                     max_per_stage_descriptor_storage_buffers;
+                UInt32                     max_per_stage_descriptor_sampled_images;
+                UInt32                     max_per_stage_descriptor_storage_images;
+                std::optional<UInt32>      max_per_stage_descriptor_input_attachments;
+                std::optional<UInt32>      max_per_stage_resources;
+                UInt32                     max_descriptor_set_samplers;
+                UInt32                     max_descriptor_set_uniform_buffers;
+                UInt32                     max_descriptor_set_uniform_buffers_dynamic;
+                UInt32                     max_descriptor_set_storage_buffers;
+                UInt32                     max_descriptor_set_storage_buffers_dynamic;
+                UInt32                     max_descriptor_set_sampled_images;
+                UInt32                     max_descriptor_set_storage_images;
+                std::optional<UInt32>      max_descriptor_set_input_attachments;
+                UInt32                     max_vertex_input_attributes;
+                UInt32                     max_vertex_input_bindings;
+                UInt32                     max_vertex_input_attribute_offset;
+                std::optional<UInt32>      max_vertex_input_binding_stride;
+                UInt32                     max_vertex_output_components;
+                UInt32                     max_tessellation_generation_level;
+                UInt32                     max_tessellation_patch_size;
+                UInt32                     max_tessellation_control_per_vertex_input_components;
+                UInt32                     max_tessellation_control_per_vertex_output_components;
+                UInt32                     max_tessellation_control_per_patch_output_components;
+                UInt32                     max_tessellation_control_total_output_components;
+                UInt32                     max_tessellation_evaluation_input_components;
+                UInt32                     max_tessellation_evaluation_output_components;
+                UInt32                     max_geometry_shader_invocations;
+                UInt32                     max_geometry_input_components;
+                UInt32                     max_geometry_output_components;
+                UInt32                     max_geometry_output_vertices;
+                UInt32                     max_geometry_total_output_components;
+                UInt32                     max_fragment_input_components;
+                UInt32                     max_fragment_output_attachments;
+                UInt32                     max_fragment_dual_src_attachments;
+                UInt32                     max_fragment_combined_output_resources;
+                UInt32                     max_compute_shared_memory_size;
+                std::array<UInt32, 3>      max_compute_work_group_count;
+                UInt32                     max_compute_work_group_invocations;
+                std::array<UInt32, 3>      max_compute_work_group_size;
+                std::optional<UInt32>      sub_pixel_precision_bits;
+                std::optional<UInt32>      sub_texel_precision_bits;
+                std::optional<UInt32>      mipmap_precision_bits;
+                UInt32                     max_draw_indexed_index_value;
+                std::optional<UInt32>      max_draw_indirect_count;
+                float                      max_sampler_lod_bias;
+                float                      max_sampler_anisotropy;
+                UInt32                     max_viewports;
+                std::array<UInt32, 2>      max_viewport_dimensions;
+                std::array<float, 2>       viewport_bounds_range;
+                std::optional<UInt32>      viewport_sub_pixel_bits;
+                std::optional<RangeExtent> min_memory_map_alignment;
+                std::optional<UInt64>      min_texel_buffer_offset_alignment;
+                UInt64                     min_uniform_buffer_offset_alignment;
+                UInt64                     min_storage_buffer_offset_alignment;
+                Int32                      min_texel_offset;
+                UInt32                     max_texel_offset;
+                Int32                      min_texel_gather_offset;
+                UInt32                     max_texel_gather_offset;
+                float                      min_interpolation_offset;
+                float                      max_interpolation_offset;
+                std::optional<UInt32>      sub_pixel_interpolation_offset_bits;
+                UInt32                     max_framebuffer_width;
+                UInt32                     max_framebuffer_height;
+                UInt32                     max_framebuffer_layers;
+                SampleCountFlag            framebuffer_color_sample_counts;
+                SampleCountFlag            framebuffer_depth_sample_counts;
+                SampleCountFlag            framebuffer_stencil_sample_counts;
+                SampleCountFlag            framebuffer_no_attachments_sample_counts;
+                UInt32                     max_color_attachments;
+                SampleCountFlag            sampled_image_color_sample_counts;
+                SampleCountFlag            sampled_image_integer_sample_counts;
+                SampleCountFlag            sampled_image_depth_sample_counts;
+                SampleCountFlag            sampled_image_stencil_sample_counts;
+                SampleCountFlag            storage_image_sample_counts;
+                UInt32                     max_sample_mask_words;
+                bool                       timestamp_compute_and_engine;
+                float                      timestamp_period;
+                UInt32                     max_clip_distances;
+                UInt32                     max_cull_distances;
+                UInt32                     max_combined_clip_and_cull_distances;
+                UInt32                     discrete_queue_priorities;
+                std::array<float, 2>       point_size_range;
+                std::array<float, 2>       line_width_range;
+                float                      point_size_granularity;
+                float                      line_width_granularity;
+                bool                       strict_lines;
+                bool                       standard_sample_locations;
+                std::optional<UInt64>      optimal_buffer_copy_offset_alignment;
+                std::optional<UInt64>      optimal_buffer_copy_row_pitch_alignment;
+                UInt64                     non_coherent_atom_size;
+            } limits;
+        };
+
+        struct ImageSubresourceRange {
+            ImageAspectMaskFlag aspect_mask = ImageAspectMaskFlag::COLOR;
+
+            UInt32 base_mip_level   = 0u;
+            UInt32 level_count      = 1u;
+            UInt32 base_array_layer = 0u;
+            UInt32 layer_count      = 1u;
+        };
+
+        struct ImageSubresourceLayers {
+            ImageAspectMaskFlag aspect_mask = ImageAspectMaskFlag::COLOR;
+
+            UInt32 mip_level        = 0u;
+            UInt32 base_array_layer = 0u;
+            UInt32 layer_count      = 1u;
+        };
+
+        struct Viewport {
+            math::Vector2F position;
+            math::ExtentF  extent;
+            math::Vector2F depth;
+        };
+
+        struct Scissor {
+            math::Vector2I offset;
+            math::ExtentU  extent;
+        };
+
+        struct ClearColor {
+            RGBColorF color = stormkit::RGBColorDef::SILVER<float>;
+        };
+
+        struct ClearDepthStencil {
+            float  depth   = 1.f;
+            UInt32 stencil = 0;
+        };
+
+        using ClearValue = std::variant<ClearColor, ClearDepthStencil>;
+
+        struct BufferImageCopy {
+            UInt32 buffer_offset;
+            UInt32 buffer_row_length;
+            UInt32 buffer_image_height;
+
+            ImageSubresourceLayers subresource_layers;
+
+            math::Vector3I offset;
+            math::ExtentU  extent;
+        };
+
+        struct BlitRegion {
+            ImageSubresourceLayers src;
+            ImageSubresourceLayers dst;
+
+            std::array<math::Vector3F, 2> src_offset;
+            std::array<math::Vector3F, 2> dst_offset;
+        };
+
+        struct PushConstantRange {
+            ShaderStageFlag stages;
+            UInt32          offset;
+            RangeExtent     size;
+        };
+
+        struct PhysicalDeviceInfo {
+            UInt64      device_id;
+            std::string device_name;
+            UInt64      vendor_id;
+            std::string vendor_name;
+
+            UInt32 api_major_version;
+            UInt32 api_minor_version;
+            UInt32 api_patch_version;
+
+            UInt32 driver_major_version;
+            UInt32 driver_minor_version;
+            UInt32 driver_patch_version;
+
+            std::array<UInt8, 16> pipeline_cache_uuid;
+
+            PhysicalDeviceType type;
+        };
+
+        struct QueueFamily {
+            QueueFlag flags;
+            UInt32    count;
+        };
+
+        using ClearValue = std::variant<ClearColor, ClearDepthStencil>;
+        using SpirvID    = UInt32;
+
+        template<class T>
+        using Expected = std::expected<T, Result>;
+
+        [[nodiscard]]
+        constexpr auto is_depth_only_format(PixelFormat format) noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto is_depth_stencil_format(PixelFormat format) noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto is_depth_format(PixelFormat format) noexcept -> bool;
+
+        [[nodiscard]]
+        constexpr auto get_format_channel_count(PixelFormat format) noexcept -> UInt8;
+        [[nodiscard]]
+        constexpr auto get_format_element_count(PixelFormat format) noexcept -> UInt8;
+
+        [[nodiscard]]
+        auto compute_mip_level(const math::ExtentU& extent) noexcept -> UInt32;
+        [[nodiscard]]
+        constexpr auto
+            compute_uniform_buffer_offset_align(RangeExtent               size,
+                                                const RenderCapabilities& capabilities) noexcept
+            -> RangeExtent;
+
+        [[nodiscard]]
+        auto to_string(const PhysicalDeviceInfo& data) noexcept;
+
+    } // namespace stormkit::gpu
+
+    FLAG_ENUM(stormkit::gpu::QueueFlag)
+    FLAG_ENUM(stormkit::gpu::ShaderStageFlag)
+    FLAG_ENUM(stormkit::gpu::SampleCountFlag)
+    FLAG_ENUM(stormkit::gpu::ColorComponentFlag)
+    FLAG_ENUM(stormkit::gpu::ImageAspectMaskFlag)
+    FLAG_ENUM(stormkit::gpu::ImageCreateFlag)
+    FLAG_ENUM(stormkit::gpu::CullModeFlag)
+    FLAG_ENUM(stormkit::gpu::BufferUsageFlag)
+    FLAG_ENUM(stormkit::gpu::ImageUsageFlag)
+    FLAG_ENUM(stormkit::gpu::MemoryPropertyFlag)
+    FLAG_ENUM(stormkit::gpu::AccessFlag)
+    FLAG_ENUM(stormkit::gpu::PipelineStageFlag)
+    FLAG_ENUM(stormkit::gpu::DependencyFlag)
+    FLAG_ENUM(stormkit::gpu::StencilFaceFlag)
+    FLAG_ENUM(stormkit::gpu::GeometryFlag)
+    HASH_FUNC(stormkit::gpu::Viewport, value.position, value.extent, value.depth)
+    HASH_FUNC(stormkit::gpu::Scissor, value.offset, value.extent)
+}
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit::gpu {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto is_depth_only_format(PixelFormat format) noexcept -> bool {
+        return format == PixelFormat::DEPTH16
+               or format == PixelFormat::DEPTH24
+               or format == PixelFormat::DEPTH32F;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto is_depth_stencil_format(PixelFormat format) noexcept
+        -> bool {
+        return format == PixelFormat::DEPTH16_STENCIL8
+               or format == PixelFormat::DEPTH24_STENCIL8
+               or format == PixelFormat::DEPTH32F_STENCIL8;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto is_depth_format(PixelFormat format) noexcept -> bool {
+        return is_depth_only_format(format) or is_depth_stencil_format(format);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto get_format_channel_count(PixelFormat format) noexcept
+        -> UInt8 {
+        switch (format) {
+            case PixelFormat::R8_SNORM:
+            case PixelFormat::R8_UNORM:
+            case PixelFormat::R16_SNORM:
+            case PixelFormat::R16_UNORM:
+            case PixelFormat::R8I:
+            case PixelFormat::R8U:
+            case PixelFormat::R16I:
+            case PixelFormat::R16U:
+            case PixelFormat::R32I:
+            case PixelFormat::R32U:
+            case PixelFormat::R16F:
+            case PixelFormat::R32F:
+            case PixelFormat::DEPTH16:
+            case PixelFormat::DEPTH24:
+            case PixelFormat::DEPTH32F: return 1;
+
+            case PixelFormat::RG8_SNORM:
+            case PixelFormat::RG8_UNORM:
+            case PixelFormat::RG16_SNORM:
+            case PixelFormat::RG16_UNORM:
+            case PixelFormat::RG8I:
+            case PixelFormat::RG8U:
+            case PixelFormat::RG16I:
+            case PixelFormat::RG16U:
+            case PixelFormat::RG32I:
+            case PixelFormat::RG32U:
+            case PixelFormat::RG16F:
+            case PixelFormat::RG32F:
+            case PixelFormat::DEPTH16_STENCIL8:
+            case PixelFormat::DEPTH24_STENCIL8:
+            case PixelFormat::DEPTH32F_STENCIL8: return 2;
+
+            case PixelFormat::RGB8_SNORM:
+            case PixelFormat::RGB8_UNORM:
+            case PixelFormat::RGB16_SNORM:
+            case PixelFormat::RGB16_UNORM:
+            case PixelFormat::BGR8_UNORM:
+            case PixelFormat::RGB8I:
+            case PixelFormat::RGB8U:
+            case PixelFormat::RGB16I:
+            case PixelFormat::RGB16U:
+            case PixelFormat::RGB32I:
+            case PixelFormat::RGB32U:
+            case PixelFormat::RGB16F:
+            case PixelFormat::RGB32F:
+            case PixelFormat::SRGB8:
+            case PixelFormat::SBGR8:
+            case PixelFormat::R5_G6_B5_UNORM_PACK16:
+            case PixelFormat::BG11_R10F_PACK32: return 3;
+
+            case PixelFormat::RGBA8_SNORM:
+            case PixelFormat::RGBA8_UNORM:
+            case PixelFormat::RGBA16_SNORM:
+            case PixelFormat::RGBA16_UNORM:
+            case PixelFormat::BGRA8_UNORM:
+            case PixelFormat::RGBA8I:
+            case PixelFormat::RGBA8U:
+            case PixelFormat::RGBA16I:
+            case PixelFormat::RGBA16U:
+            case PixelFormat::RGBA32I:
+            case PixelFormat::RGBA32U:
+            case PixelFormat::RGBA16F:
+            case PixelFormat::RGBA32F:
+            case PixelFormat::SRGBA8:
+            case PixelFormat::SBGRA8: return 4;
+
+            default: break;
+        }
+
+        return 0u;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto get_format_element_count(PixelFormat format) noexcept
+        -> UInt8 {
+        switch (format) {
+            case PixelFormat::R8_SNORM:
+            case PixelFormat::R8_UNORM:
+            case PixelFormat::RG8_SNORM:
+            case PixelFormat::RG8_UNORM:
+            case PixelFormat::R8I:
+            case PixelFormat::R8U:
+            case PixelFormat::RG8I:
+            case PixelFormat::RG8U:
+            case PixelFormat::RGB8_SNORM:
+            case PixelFormat::RGB8_UNORM:
+            case PixelFormat::BGR8_UNORM:
+            case PixelFormat::RGB8I:
+            case PixelFormat::RGB8U:
+            case PixelFormat::RGBA8_SNORM:
+            case PixelFormat::RGBA8_UNORM:
+            case PixelFormat::RGBA16_SNORM:
+            case PixelFormat::BGRA8_UNORM:
+            case PixelFormat::SRGB8:
+            case PixelFormat::SBGR8:
+            case PixelFormat::SRGBA8:
+            case PixelFormat::SBGRA8: return 1u;
+
+            case PixelFormat::R16_SNORM:
+            case PixelFormat::R16_UNORM:
+            case PixelFormat::R16I:
+            case PixelFormat::R16U:
+            case PixelFormat::RG16_SNORM:
+            case PixelFormat::RG16_UNORM:
+            case PixelFormat::RG16I:
+            case PixelFormat::RG16U:
+            case PixelFormat::RG16F:
+            case PixelFormat::RGB16I:
+            case PixelFormat::RGB16U:
+            case PixelFormat::RGB16F:
+            case PixelFormat::RGBA16I:
+            case PixelFormat::RGBA16U:
+            case PixelFormat::RGBA16F:
+            case PixelFormat::R16F: return 2u;
+
+            case PixelFormat::R32I:
+            case PixelFormat::R32U:
+            case PixelFormat::R32F:
+            case PixelFormat::RG32I:
+            case PixelFormat::RG32U:
+            case PixelFormat::RG32F:
+            case PixelFormat::RGB16_SNORM:
+            case PixelFormat::RGB32I:
+            case PixelFormat::RGB32U:
+            case PixelFormat::RGB32F:
+            case PixelFormat::RGBA8I:
+            case PixelFormat::RGBA8U:
+            case PixelFormat::RGBA32I:
+            case PixelFormat::RGBA32U:
+            case PixelFormat::RGBA32F: return 4u;
+
+            default: break;
+        }
+
+        return 0u;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto compute_mip_level(const math::ExtentU& extent) noexcept -> UInt32 {
+        const auto as_float = math::ExtentF { extent };
+
+        return as<UInt32>(math::floor(math::log2(math::max(as_float.width, as_float.height)))) + 1;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto
+        compute_uniform_buffer_offset_align(RangeExtent               size,
+                                            const RenderCapabilities& capabilities) noexcept
+        -> RangeExtent {
+        const auto min_ubo_align = capabilities.limits.min_uniform_buffer_offset_alignment;
+
+        if (min_ubo_align > 0) size = (size + min_ubo_align - 1) & ~(min_ubo_align - 1);
+
+        return size;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto to_string(const PhysicalDeviceInfo& data) noexcept {
+        return std::format("[PhysicalDeviceInfo:\n"
+                           "   .device_id      = {:#06x},\n"
+                           "   .device_name    = {},\n"
+                           "   .vendor_id      = {:#06x},\n"
+                           "   .vendor_name    = {},\n"
+                           "   .api_version    = {}.{}.{},\n"
+                           "   .driver_version = {}.{}.{},\n"
+                           "   .type           = {}]",
+                           data.device_id,
+                           data.device_name,
+                           data.vendor_id,
+                           data.vendor_name,
+                           data.api_major_version,
+                           data.api_minor_version,
+                           data.api_patch_version,
+                           data.driver_major_version,
+                           data.driver_minor_version,
+                           data.driver_patch_version,
+                           data.type);
+    }
+} // namespace stormkit::gpu

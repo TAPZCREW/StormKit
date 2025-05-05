@@ -1,7 +1,7 @@
 #ifdef STORMKIT_BUILD_MODULES
 module App;
 
-import stormkit.Gpu;
+import stormkit.gpu;
 
 import Components;
 import Systems;

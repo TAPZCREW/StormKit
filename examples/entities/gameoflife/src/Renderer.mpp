@@ -7,7 +7,7 @@ import std;
 
 import stormkit.core;
 import stormkit.wsi;
-import stormkit.Gpu;
+import stormkit.gpu;
 
 export {
 #else

@@ -9,7 +9,7 @@ import std;
 
 import stormkit.core;
 import stormkit.log;
-import stormkit.Gpu;
+import stormkit.gpu;
 
 export {
 #else

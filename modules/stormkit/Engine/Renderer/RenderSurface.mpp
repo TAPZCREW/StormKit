@@ -12,7 +12,7 @@ import std;
 
 import stormkit.core;
 import stormkit.wsi;
-import stormkit.Gpu;
+import stormkit.gpu;
 
 export namespace stormkit::engine {
     class STORMKIT_API RenderSurface {
