@@ -37,8 +37,8 @@ export namespace stormkit::gpu {
 
         [[nodiscard]]
         static auto load_from_file(const Device&                device,
-                                 const std::filesystem::path& filepath,
-                                 ShaderStageFlag              type) noexcept -> Expected<Shader>;
+                                   const std::filesystem::path& filepath,
+                                   ShaderStageFlag              type) noexcept -> Expected<Shader>;
         [[nodiscard]]
         static auto fromBytes(const Device&         device,
                               std::span<const Byte> data,
@@ -50,8 +50,8 @@ export namespace stormkit::gpu {
 
         [[nodiscard]]
         static auto allocate_and_load_from_file(const Device&                device,
-                                              const std::filesystem::path& filepath,
-                                              ShaderStageFlag              type) noexcept
+                                                const std::filesystem::path& filepath,
+                                                ShaderStageFlag              type) noexcept
             -> Expected<std::unique_ptr<Shader>>;
         [[nodiscard]]
         static auto allocateFromBytes(const Device&         device,
@@ -132,8 +132,8 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto Shader::load_from_file(const Device&                device,
-                                                    const std::filesystem::path& filepath,
-                                                    ShaderStageFlag              type) noexcept
+                                                      const std::filesystem::path& filepath,
+                                                      ShaderStageFlag              type) noexcept
         -> Expected<Shader> try {
         return Shader { device, std::move(filepath), type, Tag {} };
     } catch (const Result& result) { return std::unexpected(result); }
@@ -160,8 +160,8 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto
         Shader::allocate_and_load_from_file(const Device&                device,
-                                          const std::filesystem::path& filepath,
-                                          ShaderStageFlag              type) noexcept
+                                            const std::filesystem::path& filepath,
+                                            ShaderStageFlag              type) noexcept
         -> Expected<std::unique_ptr<Shader>> try {
         return std::make_unique<Shader>(device, filepath, type, Tag {});
     } catch (const Result& result) { return std::unexpected(result); }

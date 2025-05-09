@@ -4,6 +4,9 @@ rule("stormkit.flags", function()
             target:set("policy", "build.sanitizer.address", true)
             target:set("policy", "build.sanitizer.undefined", true)
         end
+        if get_config("lto") then
+            target:set("policy", "build.optimization.lto", true)
+        end
     end)
     on_load("windows", function(target)
         if get_config("sanitizers") then

@@ -375,18 +375,19 @@ namespace stormkit::gpu {
           m_faces { 1 }, m_mip_levels { info.mip_levels }, m_type { info.type },
           m_flags { info.flags }, m_samples { info.samples }, m_usages { info.usages } {
         if (core::checkFlag(m_flags, gpu::ImageCreateFlag::Cube_Compatible)) m_faces = 6u;
-        const auto create_info = vk::ImageCreateInfo {}
-                                     .setFlags(narrow<vk::ImageCreateFlagBits>(m_flags))
-                                     .setImageType(narrow<vk::ImageType>(m_type))
-                                     .setFormat(narrow<vk::format>(m_format))
-                                     .setExtent({ m_extent.width, m_extent.height, m_extent.depth })
-                                     .setMipLevels(m_mip_levels)
-                                     .setArrayLayers(m_layers * m_faces)
-                                     .setSamples(narrow<vk::SampleCountFlagBits>(m_samples))
-                                     .setTiling(narrow<vk::ImageTiling>(info.tiling))
-                                     .setUsage(narrow<vk::ImageUsageFlagBits>(m_usages))
-                                     .setSharingMode(vk::SharingMode::eExclusive)
-                                     .setInitialLayout(vk::ImageLayout::eUndefined);
+        const auto create_info
+            = vk::ImageCreateInfo {}
+                  .setFlags(narrow<vk::ImageCreateFlagBits>(m_flags))
+                  .setImageType(narrow<vk::ImageType>(m_type))
+                  .setFormat(narrow<vk::format>(m_format))
+                  .set_extent({ m_extent.width, m_extent.height, m_extent.depth })
+                  .setMipLevels(m_mip_levels)
+                  .setArrayLayers(m_layers * m_faces)
+                  .setSamples(narrow<vk::SampleCountFlagBits>(m_samples))
+                  .setTiling(narrow<vk::ImageTiling>(info.tiling))
+                  .setUsage(narrow<vk::ImageUsageFlagBits>(m_usages))
+                  .setSharingMode(vk::SharingMode::eExclusive)
+                  .setInitialLayout(vk::ImageLayout::eUndefined);
 
         device.vkHandle()
             .createImage(create_info)

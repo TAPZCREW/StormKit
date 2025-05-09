@@ -6,12 +6,12 @@ import std;
 
 import stormkit.core;
 import stormkit.log;
-import stormkit.Wsi;
+import stormkit.wsi;
 
-#include <stormkit/Log/LogMacro.hpp>
+#include <stormkit/log/log_macro.hpp>
 #include <stormkit/main/main_macro.hpp>
 
-NAMED_LOGGER(polling_logger, "StormKit.Examples.Log.Polling");
+LOGGER("StormKit.Examples.Log.Polling");
 
 ////////////////////////////////////////
 ////////////////////////////////////////
@@ -19,96 +19,95 @@ auto main(std::span<const std::string_view> args) -> int {
     using namespace stormkit;
     using namespace std::literals;
 
-    wsi::parseArgs(args);
+    wsi::parse_args(args);
 
     auto logger = log::Logger::create_logger_instance<log::ConsoleLogger>();
 
-    const auto monitors = wsi::Window::getMonitorSettings();
-    polling_logger.ilog("--- Monitors ---");
-    polling_logger.ilog("{}", monitors);
+    const auto monitors = wsi::Window::get_monitor_settings();
+    ilog("--- Monitors ---");
+    ilog("{}", monitors);
 
     auto window = wsi::Window {
         "Hello world",
         { 800u, 600u },
-        wsi::WindowStyle::All
+        wsi::WindowStyle::ALL
     };
 
     auto fullscreen        = false;
     auto toggle_fullscreen = false;
-    while (window.isOpen()) {
+    while (window.is_open()) {
         auto event = wsi::Event {};
-        while (window.pollEvent(event)) {
+        while (window.poll_event(event)) {
             switch (event.type) {
-                case wsi::EventType::Closed: window.close(); break;
-                case wsi::EventType::Resized: {
+                case wsi::EventType::CLOSED: window.close(); break;
+                case wsi::EventType::RESIZED: {
                     const auto& event_data = as<wsi::ResizedEventData>(event.data);
-                    polling_logger.ilog("Resize event: {}", event_data.extent);
+                    ilog("Resize event: {}", event_data.extent);
                     break;
                 }
-                case wsi::EventType::MouseMoved: {
+                case wsi::EventType::MOUSE_MOVED: {
                     const auto& event_data = as<wsi::MouseMovedEventData>(event.data);
-                    polling_logger.ilog("Mouse move event: {}", event_data.position);
+                    ilog("Mouse move event: {}", event_data.position);
                     break;
                 }
-                case wsi::EventType::MouseButtonPushed: {
+                case wsi::EventType::MOUSE_BUTTON_PUSHED: {
                     const auto& event_data = as<wsi::MouseButtonPushedEventData>(event.data);
-                    polling_logger.ilog("Mouse button push event: {} {}",
-                                        event_data.button,
-                                        event_data.position);
+                    ilog("Mouse button push event: {} {}", event_data.button, event_data.position);
                     break;
                 }
-                case wsi::EventType::MouseButtonReleased: {
+                case wsi::EventType::MOUSE_BUTTON_RELEASED: {
                     const auto& event_data = as<wsi::MouseButtonReleasedEventData>(event.data);
-                    polling_logger.ilog("Mouse button release event: {} {}",
-                                        event_data.button,
-                                        event_data.position);
+                    ilog("Mouse button release event: {} {}",
+                         event_data.button,
+                         event_data.position);
                     break;
                 }
-                case wsi::EventType::MouseEntered: {
-                    polling_logger.ilog("Mouse Entered event");
+                case wsi::EventType::MOUSE_ENTERED: {
+                    ilog("Mouse Entered event");
                     break;
                 }
-                case wsi::EventType::MouseExited: {
-                    polling_logger.ilog("Mouse Exited event");
+                case wsi::EventType::MOUSE_EXITED: {
+                    ilog("Mouse Exited event");
                     break;
                 }
-                case wsi::EventType::LostFocus: {
-                    polling_logger.ilog("Lost focus event");
+                case wsi::EventType::LOST_FOCUS: {
+                    ilog("Lost focus event");
                     break;
                 }
-                case wsi::EventType::GainedFocus: {
-                    polling_logger.ilog("Gained focus event");
+                case wsi::EventType::GAINED_FOCUS: {
+                    ilog("Gained focus event");
                     break;
                 }
-                case wsi::EventType::KeyPressed: {
+                case wsi::EventType::KEY_PRESSED: {
                     const auto& event_data = as<wsi::KeyPressedEventData>(event.data);
 
-                    if (event_data.key == wsi::Key::Escape) {
+                    if (event_data.key == wsi::Key::ESCAPE) {
                         window.close();
-                        polling_logger.ilog("Closing window");
+                        ilog("Closing window");
                     } else if (event_data.key == wsi::Key::F11)
                         toggle_fullscreen = true;
 
-                    polling_logger.ilog("Key pressed: {}", event_data.key);
+                    ilog("Key pressed: {}", event_data.key);
                     break;
                 }
-                case wsi::EventType::KeyReleased: {
+                case wsi::EventType::KEY_RELEASED: {
                     const auto& event_data = as<wsi::KeyReleasedEventData>(event.data);
 
-                    polling_logger.ilog("Key release: {}", event_data.key);
+                    ilog("Key release: {}", event_data.key);
                     break;
                 }
                 default: break;
             }
         }
-        polling_logger.flush();
+
+        LOG_MODULE.flush();
 
         if (toggle_fullscreen) {
             fullscreen = !fullscreen;
-            window.setFullscreenEnabled(fullscreen);
+            window.toggle_fullscreen(fullscreen);
 
             toggle_fullscreen = false;
-            polling_logger.ilog("Toggle fullscreen to: {}", fullscreen);
+            ilog("Toggle fullscreen to: {}", fullscreen);
         }
     }
 

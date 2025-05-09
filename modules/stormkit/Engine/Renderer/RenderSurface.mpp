@@ -11,7 +11,7 @@ export module stormkit.Engine:Renderer.RenderSurface;
 import std;
 
 import stormkit.core;
-import stormkit.Wsi;
+import stormkit.wsi;
 import stormkit.Gpu;
 
 export namespace stormkit::engine {

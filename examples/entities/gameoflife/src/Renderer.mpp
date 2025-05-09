@@ -6,7 +6,7 @@ export module Renderer;
 import std;
 
 import stormkit.core;
-import stormkit.Wsi;
+import stormkit.wsi;
 import stormkit.Gpu;
 
 export {
