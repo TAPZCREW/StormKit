@@ -6,15 +6,17 @@ module;
 
 #include <version>
 
-#if defined(__cpp_lib_stacktrace) and __cpp_lib_stacktrace >= 202011L
+#include <stormkit/core/platform_macro.hpp>
+
+#if defined(__cpp_lib_stacktrace)       \
+    and __cpp_lib_stacktrace >= 202011L \
+    and not defined(STORMKIT_COMPILER_LIBCPP)
     #define STD_STACKTRACE_SUPPORTED
 #endif
 
 #if not defined(STD_STACKTRACE_SUPPORTED)
     #include <cpptrace/cpptrace.hpp>
 #endif
-
-#include <stormkit/core/platform_macro.hpp>
 
 module stormkit.core;
 
@@ -49,13 +51,15 @@ namespace stormkit { inline namespace core {
             auto       splitted = split(frame.description(), '+');
             const auto address  = *from_string<UInt>(splitted[1].substr(2), 16);
             splitted            = split(splitted[0], '!');
-            const auto module   = (std::size(splitted) >= 1) ? splitted[0] : "";
-            auto       symbol   = (std::size(splitted) >= 2) ? splitted[1] : "";
+            const auto module   = (std::size(splitted) >= 1) ? splitted[0] : ""s;
+            auto       symbol   = (std::size(splitted) >= 2) ? splitted[1] : ""s;
     #else
 
     #endif
     #ifdef STORMKIT_COMPILER_LIBCPP
-            symbol = replace(symbol, "::__1::", "::");
+            const auto address = 1;
+            const auto module  = "aaa"sv;
+            auto       symbol  = "aaa"sv;
     #endif
             const auto object_address
                 = (address == 0 ? "inlined" : std::format("{:#010x}", address));

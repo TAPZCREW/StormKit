@@ -73,11 +73,10 @@ modules = {
         frameworks = is_plat("macosx") and { "CoreFoundation" } or nil,
     },
     wsi = {
-        modulename = "Wsi",
+        modulename = "wsi",
         public_deps = { "stormkit-core" },
         deps = { "stormkit-log" },
         packages = is_plat("linux") and {
-            "libxkbcommon",
             "libxcb",
             "xcb-util-keysyms",
             "xcb-util",
@@ -85,6 +84,7 @@ modules = {
             "xcb-util-errors",
             "wayland",
             "wayland-protocols",
+            "libxkbcommon",
         } or nil,
         frameworks = is_plat("macosx") and { "CoreFoundation", "Foundation", "AppKit", "Metal", "IOKit", "QuartzCore" }
             or nil,
@@ -318,13 +318,10 @@ end
 
 add_requireconfs("*", { configs = { modules = true, std_import = true, cpp = "latest" } })
 
-if get_config("lto") then
-    set_policy("build.optimization.lto", true)
-    if get_config("kind") == "static" then add_defines("STORMKIT_LTO") end
-end
-
 add_requireconfs("libxkbcommon", { configs = { ["x11"] = true, wayland = true } })
 add_requireconfs("frozen", { system = false })
+
+if get_config("on_ci") then add_requireconfs("*", { system = false }) end
 
 add_requires("cpptrace")
 if not is_plat("windows") then add_requires("libdwarf") end
@@ -340,8 +337,6 @@ for name, module in pairs(modules) do
         for _, package in ipairs(_packages) do
             table.insert(packages, package:split(" ")[1])
         end
-        add_requireconfs(_packages, { configs = { modules = true, std_import = true, cpp = "latest" } })
-        if get_config("on_ci") then add_requireconfs(_packages, { system = false }) end
         target("stormkit-" .. name, function()
             set_group("libraries")
 

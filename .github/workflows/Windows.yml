@@ -143,7 +143,6 @@ jobs:
                --examples=y `
                --tests=y `
                --gpu=n `
-               --wsi=n `
                --engine=n `
                --on_ci=y `
                --toolchain=llvm `
@@ -163,7 +162,6 @@ jobs:
                --examples=y `
                --tests=y `
                --gpu=n `
-               --wsi=n `
                --engine=n `
                --on_ci=y `
                --toolchain=llvm `
@@ -183,7 +181,6 @@ jobs:
                --examples=y `
                --tests=y `
                --gpu=n `
-               --wsi=n `
                --engine=n `
                --sanitizers=yes `
                --on_ci=y `

@@ -9,6 +9,7 @@ package("libktx", function()
         "https://github.com/KhronosGroup/KTX-Software.git"
     )
     add_versions("v4.3.2", "74a114f465442832152e955a2094274b446c7b2427c77b1964c85c173a52ea1f")
+    add_versions("v4.4.0", "3585d76edcdcbe3a671479686f8c81c1c10339f419e4b02a9a6f19cc6e4e0612")
 
     add_deps("cmake")
 

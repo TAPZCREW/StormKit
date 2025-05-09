@@ -1,0 +1,229 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+export module stormkit.wsi:common.window_impl_base;
+
+import std;
+
+import stormkit.core;
+import stormkit.wsi;
+
+export namespace stormkit::wsi::common {
+    class WindowImplBase {
+      public:
+        [[nodiscard]]
+        auto poll_event(Event& event) noexcept -> bool;
+        [[nodiscard]]
+        auto wait_event(Event& event) noexcept -> bool;
+
+        auto mouse_down_event(MouseButton button, Int32 x, Int32 y) noexcept -> void;
+        auto mouse_up_event(MouseButton button, Int32 x, Int32 y) noexcept -> void;
+
+        auto mouse_move_event(Int32 x, Int32 y) noexcept -> void;
+
+        auto mouse_entered_event() noexcept -> void;
+        auto mouse_exited_event() noexcept -> void;
+
+        auto key_down_event(Key key, char character) noexcept -> void;
+        auto key_up_event(Key key, char character) noexcept -> void;
+
+        auto close_event() noexcept -> void;
+
+        auto resize_event(UInt32 width, UInt32 height) noexcept -> void;
+        auto minimize_event() noexcept -> void;
+        auto maximize_event() noexcept -> void;
+
+        auto lost_focus_event() noexcept -> void;
+        auto gained_focus_event() noexcept -> void;
+
+      protected:
+        auto pushEvent(const Event& event) noexcept -> void;
+
+        std::queue<Event> m_events;
+    };
+} // namespace stormkit::wsi::common
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit::wsi::common {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImplBase::poll_event(Event& event) noexcept -> bool {
+        auto has_event = not m_events.empty();
+
+        if (has_event) {
+            event = m_events.front();
+            m_events.pop();
+        }
+
+        return has_event;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImplBase::wait_event(Event& event) noexcept -> bool {
+        auto has_event = not m_events.empty();
+
+        if (has_event) {
+            event = m_events.front();
+            m_events.pop();
+        }
+
+        return has_event;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImplBase::mouse_down_event(MouseButton button, Int32 x, Int32 y) noexcept
+        -> void {
+        auto event = Event {};
+        event.type = EventType::MOUSE_BUTTON_PUSHED;
+        event.data = MouseButtonPushedEventData {
+            .position = { x, y },
+            .button   = button
+        };
+
+        pushEvent(event);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImplBase::mouse_up_event(MouseButton button, Int32 x, Int32 y) noexcept
+        -> void {
+        auto event = Event {};
+        event.type = EventType::MOUSE_BUTTON_RELEASED;
+        event.data = MouseButtonReleasedEventData {
+            .position = { x, y },
+            .button   = button
+        };
+
+        pushEvent(event);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImplBase::mouse_move_event(Int32 x, Int32 y) noexcept -> void {
+        auto event = Event {};
+        event.type = EventType::MOUSE_MOVED;
+        event.data = MouseMovedEventData {
+            .position = { x, y }
+        };
+
+        pushEvent(event);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImplBase::mouse_entered_event() noexcept -> void {
+        auto event = Event {};
+        event.type = EventType::MOUSE_ENTERED;
+        event.data = MouseEnteredEventData {};
+
+        pushEvent(event);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImplBase::mouse_exited_event() noexcept -> void {
+        auto event = Event {};
+        event.type = EventType::MOUSE_EXITED;
+        event.data = MouseExitedEventData {};
+
+        pushEvent(event);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImplBase::key_down_event(Key key, char character) noexcept -> void {
+        auto event = Event {};
+        event.type = EventType::KEY_PRESSED;
+        event.data = KeyPressedEventData { .key = key, .character = character };
+
+        pushEvent(event);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImplBase::key_up_event(Key key, char character) noexcept -> void {
+        auto event = Event {};
+        event.type = EventType::KEY_RELEASED;
+        event.data = KeyReleasedEventData { .key = key, .character = character };
+
+        pushEvent(event);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImplBase::close_event() noexcept -> void {
+        auto event = Event {};
+        event.type = EventType::CLOSED;
+        event.data = ClosedEventData {};
+
+        pushEvent(event);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImplBase::resize_event(UInt32 width, UInt32 height) noexcept -> void {
+        auto event = Event {};
+        event.type = EventType::RESIZED;
+        event.data = ResizedEventData {
+            .extent { width, height }
+        };
+
+        pushEvent(event);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImplBase::minimize_event() noexcept -> void {
+        auto event = Event {};
+        event.type = EventType::MINIMIZED;
+        event.data = MinimizedEventData {};
+
+        pushEvent(event);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImplBase::maximize_event() noexcept -> void {
+        auto event = Event {};
+        event.type = EventType::MAXIMIZED;
+        event.data = MaximizedEventData {};
+
+        pushEvent(event);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImplBase::lost_focus_event() noexcept -> void {
+        auto event = Event {};
+        event.type = EventType::LOST_FOCUS;
+        event.data = LostFocusEventData {};
+
+        pushEvent(event);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImplBase::gained_focus_event() noexcept -> void {
+        auto event = Event {};
+        event.type = EventType::GAINED_FOCUS;
+        event.data = GainedFocusEventData {};
+
+        pushEvent(event);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto WindowImplBase::pushEvent(const Event& event) noexcept -> void {
+        m_events.emplace(event);
+    }
+} // namespace stormkit::wsi::common
