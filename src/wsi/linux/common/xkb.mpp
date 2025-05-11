@@ -1,0 +1,354 @@
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <xkbcommon/xkbcommon.h>
+
+#include <stormkit/log/log_macro.hpp>
+
+#include <stormkit/core/memory_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
+
+export module stormkit.wsi:linux.common.xkb;
+
+import std;
+
+import stormkit.core;
+import stormkit.log;
+import stormkit.wsi;
+
+#define STORMKIT_XKB_SCOPED(name, type)                                \
+    struct name##Scoped {                                              \
+        name##Scoped() noexcept = default;                             \
+        name##Scoped(type* handle) noexcept;                           \
+        ~name##Scoped() noexcept;                                      \
+                                                                       \
+        name##Scoped(const name##Scoped&)                    = delete; \
+        auto operator=(const name##Scoped&) -> name##Scoped& = delete; \
+                                                                       \
+        name##Scoped(name##Scoped&&) noexcept;                         \
+        auto operator=(name##Scoped&&) noexcept -> name##Scoped&;      \
+                                                                       \
+        operator type*() const noexcept {                              \
+            return m_handle;                                           \
+        }                                                              \
+                                                                       \
+      private:                                                         \
+        type* m_handle = nullptr;                                      \
+    }
+
+export namespace stormkit::wsi::linux::common {
+    STORMKIT_RAII_CAPSULE(XKBKeymap, xkb_keymap, xkb_keymap_unref)
+    STORMKIT_RAII_CAPSULE(XKBState, xkb_state, xkb_state_unref)
+
+    STORMKIT_XKB_SCOPED(XKBContext, xkb_context);
+
+    struct XKBMods {
+        xkb_mod_index_t shift;
+        xkb_mod_index_t lock;
+        xkb_mod_index_t control;
+        xkb_mod_index_t mod1;
+        xkb_mod_index_t mod2;
+        xkb_mod_index_t mod3;
+        xkb_mod_index_t mod4;
+        xkb_mod_index_t mod5;
+    };
+
+    auto get_xkb_context() noexcept -> XKBContextScoped;
+
+    auto stormkit_key_to_xkb(Key key) noexcept -> xkb_keysym_t;
+    auto xkb_key_to_stormkit(xkb_keysym_t key) noexcept -> Key;
+} // namespace stormkit::wsi::linux::common
+
+#undef STORMKIT_XKB_SCOPED
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+#define STORMKIT_XKB_SCOPED(name, type, var, global, deleter)                             \
+    inline name##Scoped::name##Scoped(type* handle) noexcept : m_handle { handle } {      \
+        if (m_handle != nullptr) var++;                                                   \
+    }                                                                                     \
+                                                                                          \
+    inline name##Scoped::~name##Scoped() noexcept {                                       \
+        if (m_handle != nullptr) {                                                        \
+            var--;                                                                        \
+                                                                                          \
+            if (var == 0) {                                                               \
+                deleter(m_handle);                                                        \
+                m_handle = nullptr;                                                       \
+                global   = nullptr;                                                       \
+            }                                                                             \
+        }                                                                                 \
+    }                                                                                     \
+                                                                                          \
+    inline name##Scoped::name##Scoped(name##Scoped&& other) noexcept                      \
+        : m_handle { std::exchange(other.m_handle, nullptr) } {                           \
+    }                                                                                     \
+                                                                                          \
+    inline auto name##Scoped::operator=(name##Scoped&& other) noexcept -> name##Scoped& { \
+        if (this == &other) return *this;                                                 \
+                                                                                          \
+        m_handle = std::exchange(other.m_handle, nullptr);                                \
+                                                                                          \
+        return *this;                                                                     \
+    }
+
+namespace stormkit::wsi::linux::common {
+    using XKBContextPtr = xkb_context*;
+
+    IN_MODULE_LOGGER("StormKit.Wsi.Linux.XKB")
+
+    namespace {
+        inline auto xkb_context_instance        = XKBContextPtr { nullptr };
+        inline auto xkb_context_reference_count = 0u;
+    } // namespace
+
+    STORMKIT_XKB_SCOPED(XKBContext,
+                        xkb_context,
+                        xkb_context_reference_count,
+                        xkb_context_instance,
+                        xkb_context_unref)
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto get_xkb_context() noexcept -> XKBContextScoped {
+        if (!xkb_context_instance) [[unlikely]] {
+            xkb_context_instance = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+            dlog("New xkb context {}", std::bit_cast<void*>(xkb_context_instance));
+        }
+
+        ensures(xkb_context_instance);
+        return xkb_context_instance;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto xkb_key_to_stormkit(xkb_keysym_t key) noexcept -> Key {
+        switch (key) {
+            case XKB_KEY_a: return Key::A;
+            case XKB_KEY_b: return Key::B;
+            case XKB_KEY_c: return Key::C;
+            case XKB_KEY_d: return Key::D;
+            case XKB_KEY_e: return Key::E;
+            case XKB_KEY_f: return Key::F;
+            case XKB_KEY_g: return Key::G;
+            case XKB_KEY_h: return Key::H;
+            case XKB_KEY_i: return Key::I;
+            case XKB_KEY_j: return Key::J;
+            case XKB_KEY_k: return Key::K;
+            case XKB_KEY_l: return Key::L;
+            case XKB_KEY_m: return Key::M;
+            case XKB_KEY_n: return Key::N;
+            case XKB_KEY_o: return Key::O;
+            case XKB_KEY_p: return Key::P;
+            case XKB_KEY_q: return Key::Q;
+            case XKB_KEY_r: return Key::R;
+            case XKB_KEY_s: return Key::S;
+            case XKB_KEY_t: return Key::T;
+            case XKB_KEY_u: return Key::U;
+            case XKB_KEY_v: return Key::V;
+            case XKB_KEY_w: return Key::W;
+            case XKB_KEY_x: return Key::X;
+            case XKB_KEY_y: return Key::Y;
+            case XKB_KEY_z: return Key::Z;
+            case XKB_KEY_0: return Key::NUM_0;
+            case XKB_KEY_1: return Key::NUM_1;
+            case XKB_KEY_2: return Key::NUM_2;
+            case XKB_KEY_3: return Key::NUM_3;
+            case XKB_KEY_4: return Key::NUM_4;
+            case XKB_KEY_5: return Key::NUM_5;
+            case XKB_KEY_6: return Key::NUM_6;
+            case XKB_KEY_7: return Key::NUM_7;
+            case XKB_KEY_8: return Key::NUM_8;
+            case XKB_KEY_9: return Key::NUM_9;
+            case XKB_KEY_Escape: return Key::ESCAPE;
+            case XKB_KEY_Control_L: return Key::L_CONTROL;
+            case XKB_KEY_Shift_L: return Key::L_SHIFT;
+            case XKB_KEY_Alt_L: return Key::L_ALT;
+            case XKB_KEY_Super_L: return Key::L_SYSTEM;
+            case XKB_KEY_Control_R: return Key::R_CONTROL;
+            case XKB_KEY_Shift_R: return Key::R_SHIFT;
+            case XKB_KEY_Alt_R: return Key::R_ALT;
+            case XKB_KEY_Super_R: return Key::R_SYSTEM;
+            case XKB_KEY_Menu: return Key::MENU;
+            case XKB_KEY_bracketleft: return Key::L_BRACKET;
+            case XKB_KEY_bracketright: return Key::R_BRACKET;
+            case XKB_KEY_semicolon: return Key::SEMI_COLON;
+            case XKB_KEY_comma: return Key::COMMA;
+            case XKB_KEY_period: return Key::PERIOD;
+            case XKB_KEY_quoteright: [[fallthrough]];
+            case XKB_KEY_quoteleft: return Key::QUOTE;
+            case XKB_KEY_slash: return Key::SLASH;
+            case XKB_KEY_backslash: return Key::BACK_SLASH;
+            case XKB_KEY_dead_grave: return Key::TILDE;
+            case XKB_KEY_equal: return Key::EQUAL;
+            case XKB_KEY_hyphen: return Key::HYPHEN;
+            case XKB_KEY_space: return Key::SPACE;
+            case XKB_KEY_Return: return Key::ENTER;
+            case XKB_KEY_BackSpace: return Key::BACK_SPACE;
+            case XKB_KEY_Tab: return Key::TAB;
+            case XKB_KEY_Page_Up: return Key::PAGE_UP;
+            case XKB_KEY_Page_Down: return Key::PAGE_DOWN;
+            case XKB_KEY_Begin: return Key::BEGIN;
+            case XKB_KEY_End: return Key::END;
+            case XKB_KEY_Home: return Key::HOME;
+            case XKB_KEY_Insert: return Key::INSERT;
+            case XKB_KEY_Delete: return Key::DELETE;
+            case XKB_KEY_KP_Add: return Key::ADD;
+            case XKB_KEY_KP_Subtract: return Key::SUBSTRACT;
+            case XKB_KEY_KP_Multiply: return Key::MULTIPLY;
+            case XKB_KEY_KP_Divide: return Key::DIVIDE;
+            case XKB_KEY_Left: return Key::LEFT;
+            case XKB_KEY_Right: return Key::RIGHT;
+            case XKB_KEY_Up: return Key::UP;
+            case XKB_KEY_Down: return Key::DOWN;
+            case XKB_KEY_KP_0: return Key::NUMPAD_0;
+            case XKB_KEY_KP_1: return Key::NUMPAD_1;
+            case XKB_KEY_KP_2: return Key::NUMPAD_2;
+            case XKB_KEY_KP_3: return Key::NUMPAD_3;
+            case XKB_KEY_KP_4: return Key::NUMPAD_4;
+            case XKB_KEY_KP_5: return Key::NUMPAD_5;
+            case XKB_KEY_KP_6: return Key::NUMPAD_6;
+            case XKB_KEY_KP_7: return Key::NUMPAD_7;
+            case XKB_KEY_KP_8: return Key::NUMPAD_8;
+            case XKB_KEY_KP_9: return Key::NUMPAD_9;
+            case XKB_KEY_F1: return Key::F1;
+            case XKB_KEY_F2: return Key::F2;
+            case XKB_KEY_F3: return Key::F3;
+            case XKB_KEY_F4: return Key::F4;
+            case XKB_KEY_F5: return Key::F5;
+            case XKB_KEY_F6: return Key::F6;
+            case XKB_KEY_F7: return Key::F7;
+            case XKB_KEY_F8: return Key::F8;
+            case XKB_KEY_F9: return Key::F9;
+            case XKB_KEY_F10: return Key::F10;
+            case XKB_KEY_F11: return Key::F11;
+            case XKB_KEY_F12: return Key::F12;
+            case XKB_KEY_F13: return Key::F13;
+            case XKB_KEY_F14: return Key::F14;
+            case XKB_KEY_F15: return Key::F15;
+            case XKB_KEY_Pause: return Key::PAUSE;
+        }
+
+        return Key::UNKNOWN;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto stormkit_key_to_xkb(Key key) noexcept -> xkb_keysym_t {
+        switch (key) {
+            case Key::A: return XKB_KEY_a;
+            case Key::B: return XKB_KEY_b;
+            case Key::C: return XKB_KEY_c;
+            case Key::D: return XKB_KEY_d;
+            case Key::E: return XKB_KEY_e;
+            case Key::F: return XKB_KEY_f;
+            case Key::G: return XKB_KEY_g;
+            case Key::H: return XKB_KEY_h;
+            case Key::I: return XKB_KEY_i;
+            case Key::J: return XKB_KEY_j;
+            case Key::K: return XKB_KEY_k;
+            case Key::L: return XKB_KEY_l;
+            case Key::M: return XKB_KEY_m;
+            case Key::N: return XKB_KEY_n;
+            case Key::O: return XKB_KEY_o;
+            case Key::P: return XKB_KEY_p;
+            case Key::Q: return XKB_KEY_q;
+            case Key::R: return XKB_KEY_r;
+            case Key::S: return XKB_KEY_s;
+            case Key::T: return XKB_KEY_t;
+            case Key::U: return XKB_KEY_u;
+            case Key::V: return XKB_KEY_v;
+            case Key::W: return XKB_KEY_w;
+            case Key::X: return XKB_KEY_x;
+            case Key::Y: return XKB_KEY_y;
+            case Key::Z: return XKB_KEY_z;
+            case Key::NUM_0: return XKB_KEY_0;
+            case Key::NUM_1: return XKB_KEY_1;
+            case Key::NUM_2: return XKB_KEY_2;
+            case Key::NUM_3: return XKB_KEY_3;
+            case Key::NUM_4: return XKB_KEY_4;
+            case Key::NUM_5: return XKB_KEY_5;
+            case Key::NUM_6: return XKB_KEY_6;
+            case Key::NUM_7: return XKB_KEY_7;
+            case Key::NUM_8: return XKB_KEY_8;
+            case Key::NUM_9: return XKB_KEY_9;
+            case Key::ESCAPE: return XKB_KEY_Escape;
+            case Key::L_CONTROL: return XKB_KEY_Control_L;
+            case Key::L_SHIFT: return XKB_KEY_Shift_L;
+            case Key::L_ALT: return XKB_KEY_Alt_L;
+            case Key::L_SYSTEM: return XKB_KEY_Super_L;
+            case Key::R_CONTROL: return XKB_KEY_Control_R;
+            case Key::R_SHIFT: return XKB_KEY_Shift_R;
+            case Key::R_ALT: return XKB_KEY_Alt_R;
+            case Key::R_SYSTEM: return XKB_KEY_Super_R;
+            case Key::MENU: return XKB_KEY_Menu;
+            case Key::L_BRACKET: return XKB_KEY_bracketleft;
+            case Key::R_BRACKET: return XKB_KEY_bracketright;
+            case Key::SEMI_COLON: return XKB_KEY_semicolon;
+            case Key::COMMA: return XKB_KEY_comma;
+            case Key::PERIOD: return XKB_KEY_period;
+            case Key::QUOTE: return XKB_KEY_quoteleft;
+            case Key::SLASH: return XKB_KEY_slash;
+            case Key::BACK_SLASH: return XKB_KEY_backslash;
+            case Key::TILDE: return XKB_KEY_dead_grave;
+            case Key::EQUAL: return XKB_KEY_equal;
+            case Key::HYPHEN: return XKB_KEY_hyphen;
+            case Key::SPACE: return XKB_KEY_space;
+            case Key::ENTER: return XKB_KEY_Return;
+            case Key::BACK_SPACE: return XKB_KEY_BackSpace;
+            case Key::TAB: return XKB_KEY_Tab;
+            case Key::PAGE_UP: return XKB_KEY_Page_Up;
+            case Key::PAGE_DOWN: return XKB_KEY_Page_Down;
+            case Key::BEGIN: return XKB_KEY_Begin;
+            case Key::END: return XKB_KEY_End;
+            case Key::HOME: return XKB_KEY_Home;
+            case Key::INSERT: return XKB_KEY_Insert;
+            case Key::DELETE: return XKB_KEY_Delete;
+            case Key::ADD: return XKB_KEY_KP_Add;
+            case Key::SUBSTRACT: return XKB_KEY_KP_Subtract;
+            case Key::MULTIPLY: return XKB_KEY_KP_Multiply;
+            case Key::DIVIDE: return XKB_KEY_KP_Divide;
+            case Key::LEFT: return XKB_KEY_Left;
+            case Key::RIGHT: return XKB_KEY_Right;
+            case Key::UP: return XKB_KEY_Up;
+            case Key::DOWN: return XKB_KEY_Down;
+            case Key::NUMPAD_0: return XKB_KEY_KP_0;
+            case Key::NUMPAD_1: return XKB_KEY_KP_1;
+            case Key::NUMPAD_2: return XKB_KEY_KP_2;
+            case Key::NUMPAD_3: return XKB_KEY_KP_3;
+            case Key::NUMPAD_4: return XKB_KEY_KP_4;
+            case Key::NUMPAD_5: return XKB_KEY_KP_5;
+            case Key::NUMPAD_6: return XKB_KEY_KP_6;
+            case Key::NUMPAD_7: return XKB_KEY_KP_7;
+            case Key::NUMPAD_8: return XKB_KEY_KP_8;
+            case Key::NUMPAD_9: return XKB_KEY_KP_9;
+            case Key::F1: return XKB_KEY_F1;
+            case Key::F2: return XKB_KEY_F2;
+            case Key::F3: return XKB_KEY_F3;
+            case Key::F4: return XKB_KEY_F4;
+            case Key::F5: return XKB_KEY_F5;
+            case Key::F6: return XKB_KEY_F6;
+            case Key::F7: return XKB_KEY_F7;
+            case Key::F8: return XKB_KEY_F8;
+            case Key::F9: return XKB_KEY_F9;
+            case Key::F10: return XKB_KEY_F10;
+            case Key::F11: return XKB_KEY_F11;
+            case Key::F12: return XKB_KEY_F12;
+            case Key::F13: return XKB_KEY_F13;
+            case Key::F14: return XKB_KEY_F14;
+            case Key::F15: return XKB_KEY_F15;
+            case Key::PAUSE: return XKB_KEY_Pause;
+            case Key::UNKNOWN:
+            default: return {};
+        }
+
+        return {};
+    }
+} // namespace stormkit::wsi::linux::common
+
+#undef STORMKIT_XKB_SCOPED

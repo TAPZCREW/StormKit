@@ -16,8 +16,8 @@ export namespace stormkit::image::details {
 
     [[nodiscard]]
     auto save_ppm(const image::Image&          image,
-                 image::Image::CodecArgs      args,
-                 const std::filesystem::path& filepath) noexcept
+                  image::Image::CodecArgs      args,
+                  const std::filesystem::path& filepath) noexcept
         -> std::expected<void, image::Image::Error>;
 
     [[nodiscard]]
@@ -45,8 +45,8 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     /////////////////////////////////////
     auto save_ppm(const image::Image&          image,
-                 image::Image::CodecArgs      args,
-                 const std::filesystem::path& filepath) noexcept
+                  image::Image::CodecArgs      args,
+                  const std::filesystem::path& filepath) noexcept
         -> std::expected<void, image::Image::Error> {
         auto result = save_ppm(image, args);
 

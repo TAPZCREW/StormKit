@@ -9,7 +9,7 @@ import std;
 import stormkit.core;
 import stormkit.Gpu;
 import stormkit.Engine;
-import stormkit.Wsi;
+import stormkit.wsi;
 
 import Constants;
 import ShaderData;
@@ -54,17 +54,17 @@ auto SpritesApp::run(std::span<const std::string_view> _) -> Int {
 
     engine::makeSprite(world, { 32.f, 32.f });
 
-    event_handler.setCallbacks({
-        { wsi::EventType::Closed, [&window](const wsi::Event& _) noexcept { window.close(); } },
-        { wsi::EventType::KeyReleased, [this, &window](const wsi::Event& event) noexcept {
+    event_handler.set_callbacks({
+        { wsi::EventType::CLOSED, [&window](const wsi::Event& _) noexcept { window.close(); } },
+        { wsi::EventType::KEY_RELEASED, [this, &window](const wsi::Event& event) noexcept {
              const auto& event_data = as<wsi::KeyReleasedEventData>(event.data);
 
-             if (event_data.key == wsi::Key::Escape) [[unlikely]]
+             if (event_data.key == wsi::Key::ESCAPE) [[unlikely]]
                  window.close();
 
              if (event_data.key == wsi::Key::F11) [[unlikely]] {
                  m_fullscreen_enabled = not m_fullscreen_enabled;
-                 window.setFullscreenEnabled(m_fullscreen_enabled);
+                 window.toggle_fullscreen(m_fullscreen_enabled);
              }
          } }
     });

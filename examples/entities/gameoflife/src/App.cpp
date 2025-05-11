@@ -38,15 +38,15 @@ auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char** arg
     };
 
     auto event_handler = wsi::EventHandler { *m_window };
-    event_handler.addCallback(wsi::EventType::Closed,
+    event_handler.addCallback(wsi::EventType::CLOSED,
                               [this]([[maybe_unused]]
                                      const wsi::Event& event) { m_window->close(); });
-    event_handler.addCallback(wsi::EventType::KeyReleased, [this](const wsi::Event& event) {
+    event_handler.addCallback(wsi::EventType::KEY_RELEASED, [this](const wsi::Event& event) {
         const auto& event_data = as<wsi::KeyReleasedEventData>(event.data);
 
         handleKeyboard(event_data);
     });
-    event_handler.addCallback(wsi::EventType::MouseButtonPushed, [this](const wsi::Event& event) {
+    event_handler.addCallback(wsi::EventType::MOUSE_BUTTON_PUSHED, [this](const wsi::Event& event) {
         const auto& event_data = as<wsi::MouseButtonPushedEventData>(event.data);
 
         handleMouse(event_data);
@@ -65,7 +65,7 @@ auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char** arg
     m_renderer->updateBoard(m_board);
 
     auto last_tp = Clock::now();
-    while (m_window->isOpen()) {
+    while (m_window->is_open()) {
         const auto now   = Clock::now();
         const auto delta = now - last_tp;
         last_tp          = now;
@@ -81,7 +81,7 @@ auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char** arg
 }
 
 auto App::doInitWindow() -> void {
-    const auto window_style = wsi::WindowStyle::All;
+    const auto window_style = wsi::WindowStyle::ALL;
 
     m_window = allocate<wsi::Window>(WINDOW_TITLE, math::ExtentU { 800u, 600u }, window_style);
 
@@ -91,22 +91,22 @@ auto App::doInitWindow() -> void {
 auto App::handleKeyboard(const stormkit::wsi::KeyReleasedEventData& event) -> void {
     using namespace stormkit::literals;
 
-    const auto size = wsi::Window::getPrimaryMonitorSettings().sizes.back();
+    const auto size = wsi::Window::get_primary_monitor_settings().sizes.back();
 
     switch (event.key) {
         [[unlikely]]
-        case wsi::Key::Escape:
+        case wsi::Key::ESCAPE:
             m_window->close();
             break;
         [[unlikely]]
         case wsi::Key::F11:
             if (m_fullscreen_enabled) {
                 m_fullscreen_enabled = false;
-                m_window->setFullscreenEnabled(false);
+                m_window->toggle_fullscreen(false);
             } else {
                 m_fullscreen_enabled = true;
                 m_window->setSize(size);
-                m_window->setFullscreenEnabled(true);
+                m_window->toggle_fullscreen(true);
             }
             break;
         case wsi::Key::R:
@@ -120,12 +120,12 @@ auto App::handleKeyboard(const stormkit::wsi::KeyReleasedEventData& event) -> vo
 
             m_entities.destroy_all_entities();
             break;
-        case wsi::Key::Space:
+        case wsi::Key::SPACE:
             m_is_on_edit_mode = !m_is_on_edit_mode;
             m_update_system->setEditModeEnabled(m_is_on_edit_mode);
             break;
-        case wsi::Key::Add: m_update_system->incrementDelta(Secondf { 0.01f }); break;
-        case wsi::Key::Substract: m_update_system->incrementDelta(Secondf { -0.01f }); break;
+        case wsi::Key::ADD: m_update_system->incrementDelta(Secondf { 0.01f }); break;
+        case wsi::Key::SUBSTRACT: m_update_system->incrementDelta(Secondf { -0.01f }); break;
         default: break;
     }
 }
@@ -133,7 +133,7 @@ auto App::handleKeyboard(const stormkit::wsi::KeyReleasedEventData& event) -> vo
 auto App::handleMouse(const stormkit::wsi::MouseButtonPushedEventData& event) -> void {
     if (!m_is_on_edit_mode) [[likely]]
         return;
-    if (event.button != wsi::MouseButton::Left) return;
+    if (event.button != wsi::MouseButton::LEFT) return;
 
     const auto cell_width  = as<float>(m_window->size().width) / as<float>(BOARD_SIZE);
     const auto cell_height = as<float>(m_window->size().height) / as<float>(BOARD_SIZE);

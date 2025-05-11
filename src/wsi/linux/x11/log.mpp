@@ -1,0 +1,18 @@
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/log/log_macro.hpp>
+
+export module stormkit.wsi:linux.x11.log;
+
+import std;
+
+import stormkit.core;
+import stormkit.log;
+
+export namespace stormkit::wsi::linux::x11 {
+    IN_MODULE_LOGGER("StormKit.Wsi.Linux.X11")
+} // namespace stormkit::wsi::linux::x11

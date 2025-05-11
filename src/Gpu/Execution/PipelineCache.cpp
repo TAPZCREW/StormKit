@@ -9,7 +9,7 @@ import std;
 import stormkit.core;
 import stormkit.log;
 
-#include <stormkit/Log/LogMacro.hpp>
+#include <stormkit/log/log_macro.hpp>
 
 import stormkit.Gpu.Vulkan;
 import :Core;
