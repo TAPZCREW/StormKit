@@ -58,8 +58,8 @@ export {
             template<typename T>
             [[nodiscard]]
             constexpr auto              operator|(T&& value) const noexcept -> Stylized<T>;
-            std::optional<ConsoleColor> fg;
-            std::optional<ConsoleColor> bg;
+            std::optional<ConsoleColor> fg        = std::nullopt;
+            std::optional<ConsoleColor> bg        = std::nullopt;
             StyleModifier               modifiers = StyleModifier::NONE;
         };
 

@@ -61,13 +61,13 @@ rule("stormkit.flags", function()
                     "-fstrict-aliasing",
                     "-fexperimental-library",
                     "-Wstrict-aliasing",
-                    "-Wno-missing-field-initializers",
+                    -- "-Wno-missing-field-initializers",
                     "-Wno-unknown-attributes",
                     "-Wno-deprecated-declarations",
                     "-Wno-ignored-attributes",
                 },
                 mx = {
-                    "-Wno-missing-field-initializers",
+                    -- "-Wno-missing-field-initializers",
                 },
                 ld = {
                     "-fexperimental-library",
