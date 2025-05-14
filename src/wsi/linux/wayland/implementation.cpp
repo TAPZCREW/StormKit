@@ -181,36 +181,47 @@ namespace stormkit::wsi::linux::wayland {
     namespace {
         auto globals = Globals {};
 
-        constinit const auto stormkit_registry_listener
-            = wl_registry_listener { .global        = registry_handler,
-                                     .global_remove = registry_remover_handler };
+        constinit const auto stormkit_registry_listener = wl_registry_listener {
+            .global        = registry_handler,
+            .global_remove = registry_remover_handler,
+        };
 
-        constinit const auto stormkit_surface_listener
-            = wl_surface_listener { .enter = surface_enter_handler,
-                                    .leave = surface_leave_handler };
+        constinit const auto stormkit_surface_listener = wl_surface_listener {
+            .enter                      = surface_enter_handler,
+            .leave                      = surface_leave_handler,
+            .preferred_buffer_scale     = nullptr,
+            .preferred_buffer_transform = nullptr,
+        };
 
-        constinit const auto stormkit_xdg_surface_listener
-            = xdg_surface_listener { .configure = surface_configure_handler };
+        constinit const auto stormkit_xdg_surface_listener = xdg_surface_listener {
+            .configure = surface_configure_handler,
+        };
 
-        constinit const auto stormkit_xdg_toplevel_listener
-            = xdg_toplevel_listener { .configure = top_level_configure_handler,
-                                      .close     = top_level_close_handler };
+        constinit const auto stormkit_xdg_toplevel_listener = xdg_toplevel_listener {
+            .configure        = top_level_configure_handler,
+            .close            = top_level_close_handler,
+            .configure_bounds = nullptr,
+            .wm_capabilities  = nullptr,
+        };
 
-        constinit const auto stormkit_shell_listener
-            = xdg_wm_base_listener { .ping = shell_ping_handler };
+        constinit const auto stormkit_shell_listener = xdg_wm_base_listener {
+            .ping = shell_ping_handler,
+        };
 
-        constinit const auto stormkit_shell_surface_listener
-            = wl_shell_surface_listener { .ping       = shell_ping_handler,
-                                          .configure  = shell_surface_configure_handler,
-                                          .popup_done = nullptr };
+        constinit const auto stormkit_shell_surface_listener = wl_shell_surface_listener {
+            .ping       = shell_ping_handler,
+            .configure  = shell_surface_configure_handler,
+            .popup_done = nullptr,
+        };
 
-        constinit const auto stormkit_relative_pointer_listener
-            = zwp_relative_pointer_v1_listener { .relative_motion
-                                                 = relative_pointer_relative_motion_handler };
+        constinit const auto stormkit_relative_pointer_listener = zwp_relative_pointer_v1_listener {
+            .relative_motion = relative_pointer_relative_motion_handler,
+        };
 
-        constinit const auto stormkit_locked_pointer_listener
-            = zwp_locked_pointer_v1_listener { .locked   = locker_pointer_locker_handler,
-                                               .unlocked = locker_pointer_unlocker_handler };
+        constinit const auto stormkit_locked_pointer_listener = zwp_locked_pointer_v1_listener {
+            .locked   = locker_pointer_locker_handler,
+            .unlocked = locker_pointer_unlocker_handler,
+        };
     } // namespace
 
     void init() {
@@ -1048,34 +1059,42 @@ namespace stormkit::wsi::linux::wayland {
     }
 
     namespace {
-        constinit const auto stormkit_output_listener
-            = wl_output_listener { .geometry = output_geometry_handler,
-                                   .mode     = output_mode_handler,
-                                   .done     = output_done_handler,
-                                   .scale    = output_scale_handler };
+        constinit const auto stormkit_output_listener = wl_output_listener {
+            .geometry    = output_geometry_handler,
+            .mode        = output_mode_handler,
+            .done        = output_done_handler,
+            .scale       = output_scale_handler,
+            .name        = nullptr,
+            .description = nullptr,
+        };
 
-        constinit const auto stormkit_seat_listener
-            = wl_seat_listener { .capabilities = seat_capabilities_handler,
-                                 .name         = seat_name_handler };
+        constinit const auto stormkit_seat_listener = wl_seat_listener {
+            .capabilities = seat_capabilities_handler,
+            .name         = seat_name_handler,
+        };
 
-        constinit const auto stormkit_pointer_listener
-            = wl_pointer_listener { .enter         = pointer_enter_handler,
-                                    .leave         = pointer_leave_handler,
-                                    .motion        = pointer_motion_handler,
-                                    .button        = pointer_button_handler,
-                                    .axis          = pointer_axis_handler,
-                                    .frame         = pointer_frame_handler,
-                                    .axis_source   = pointer_axis_source_handler,
-                                    .axis_stop     = pointer_axis_stop_handler,
-                                    .axis_discrete = pointer_axis_discrete_handler };
+        constinit const auto stormkit_pointer_listener = wl_pointer_listener {
+            .enter                   = pointer_enter_handler,
+            .leave                   = pointer_leave_handler,
+            .motion                  = pointer_motion_handler,
+            .button                  = pointer_button_handler,
+            .axis                    = pointer_axis_handler,
+            .frame                   = pointer_frame_handler,
+            .axis_source             = pointer_axis_source_handler,
+            .axis_stop               = pointer_axis_stop_handler,
+            .axis_discrete           = pointer_axis_discrete_handler,
+            .axis_value120           = nullptr,
+            .axis_relative_direction = nullptr,
+        };
 
-        constinit const auto stormkit_keyboard_listener
-            = wl_keyboard_listener { .keymap      = keyboard_keymap_handler,
-                                     .enter       = keyboard_enter_handler,
-                                     .leave       = keyboard_leave_handler,
-                                     .key         = keyboard_key_handler,
-                                     .modifiers   = keyboard_modifiers_handler,
-                                     .repeat_info = keyboard_repeat_info_handler };
+        constinit const auto stormkit_keyboard_listener = wl_keyboard_listener {
+            .keymap      = keyboard_keymap_handler,
+            .enter       = keyboard_enter_handler,
+            .leave       = keyboard_leave_handler,
+            .key         = keyboard_key_handler,
+            .modifiers   = keyboard_modifiers_handler,
+            .repeat_info = keyboard_repeat_info_handler,
+        };
 
         // TODO support touchscreens
         [[maybe_unused]]
