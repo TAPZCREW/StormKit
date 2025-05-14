@@ -1,0 +1,207 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+export module stormkit.gpu.vulkan:utils;
+
+import std;
+
+import stormkit.core;
+import stormkit.log;
+
+import vulkan_hpp;
+
+export namespace stormkit::gpu {
+    template<std::integral T>
+    constexpr auto vk_make_version(T major, T minor, T patch) noexcept -> UInt32;
+    constexpr auto vk_version_major(std::integral auto version) noexcept -> UInt32;
+    constexpr auto vk_version_minor(std::integral auto version) noexcept -> UInt32;
+    constexpr auto vk_version_patch(std::integral auto version) noexcept -> UInt32;
+
+    namespace meta {
+        using namespace stormkit::meta;
+
+        template<class T>
+        concept IsStormKitVulkanType = requires(T&& t) { t.native_handle(); };
+
+        template<class T>
+        concept IsStormKitVulkanWrappedType
+            = (IsViewPointer<T> and IsStormKitVulkanType<ElementType<CanonicalType<T>>>)
+              or IsStormKitVulkanType<RemoveIndirectionsType<T>>;
+
+        template<class T>
+        concept IsVulkanFlagsType = vk::FlagTraits<T>::isBitmask;
+    } // namespace meta
+
+    template<meta::IsVulkanFlagsType T>
+    constexpr auto check_flag_bit(vk::Flags<T> value, T flag) noexcept -> bool;
+
+    template<meta::IsVulkanFlagsType T>
+    constexpr auto check_flag_bit(vk::Flags<T> value, vk::Flags<T> flag) noexcept -> bool;
+
+    template<typename T>
+    using VulkanExpected = std::expected<T, vk::Result>;
+
+    template<typename T, typename Func, typename... Args>
+        requires(meta::Is<std::invoke_result_t<Func, T*, Args...>, vk::Result>)
+    auto vk_call(const T& object, Func&& func, Args&&... args) noexcept
+        -> VulkanExpected<vk::Result>;
+
+    template<typename T, typename Func, typename... Args>
+        requires(meta::Is<std::invoke_result_t<Func, T*, Args...>, vk::Result>)
+    auto vk_call(const T&                    object,
+                Func&&                      func,
+                std::span<const vk::Result> possible_results,
+                Args&&... args) noexcept -> VulkanExpected<vk::Result>;
+
+    template<meta::IsStormKitVulkanWrappedType T>
+    auto toRaiiVkHandle(T&& value) noexcept -> decltype(auto);
+
+    template<meta::IsStormKitVulkanWrappedType T>
+    auto to_vkhandle(T&& value) noexcept -> decltype(auto);
+
+    template<typename T, typename Flag>
+    auto to_vkflags(Flag&& flag) noexcept -> vk::Flags<T>;
+
+    namespace monadic {
+        auto toRaiiVkHandle() noexcept -> decltype(auto);
+        auto to_vkhandle() noexcept -> decltype(auto);
+        template<typename T>
+        auto to_vkflags() noexcept -> decltype(auto);
+    } // namespace monadic
+} // namespace stormkit::gpu
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit::gpu {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<std::integral T>
+    STORMKIT_FORCE_INLINE constexpr auto vk_make_version(T major, T minor, T patch) noexcept
+        -> UInt32 {
+        return vk_version_major(major) | vk_version_minor(minor) | vk_version_patch(patch);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto vk_version_major(std::integral auto version) noexcept
+        -> UInt32 {
+        return as<UInt32>(version >> 22u);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto vk_version_minor(std::integral auto version) noexcept
+        -> UInt32 {
+        return as<UInt32>((version >> 12u) & 0x3ffu);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE constexpr auto vk_version_patch(std::integral auto version) noexcept
+        -> UInt32 {
+        return as<UInt32>(version & 0xfffu);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsVulkanFlagsType T>
+    STORMKIT_FORCE_INLINE constexpr auto check_flag_bit(vk::Flags<T> value, T flag) noexcept -> bool {
+        return (value & flag) == flag;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsVulkanFlagsType T>
+    STORMKIT_FORCE_INLINE constexpr auto check_flag_bit(vk::Flags<T> value, vk::Flags<T> flag) noexcept
+        -> bool {
+        return (value & flag) == flag;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, typename Func, typename... Args>
+        requires(meta::Is<std::invoke_result_t<Func, T*, Args...>, vk::Result>)
+    STORMKIT_FORCE_INLINE auto vk_call(const T& value, Func&& func_ref, Args&&... args) noexcept
+        -> VulkanExpected<vk::Result> {
+        return vk_call<T, Func, Args...>(value,
+                                        std::forward<Func>(func_ref),
+                                        { vk::Result::eSuccess },
+                                        std::forward<Args>(args)...);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, typename Func, typename... Args>
+        requires(meta::Is<std::invoke_result_t<Func, T*, Args...>, vk::Result>)
+    STORMKIT_FORCE_INLINE auto vk_call(const T&                    value,
+                                      Func&&                      func_ref,
+                                      std::span<const vk::Result> possible_results,
+                                      Args&&... args) noexcept -> VulkanExpected<vk::Result> {
+        auto func = std::mem_fn(std::forward<Func>(func_ref));
+
+        const auto result = std::invoke(func, value, std::forward<Args>(args)...);
+        if (std::ranges::any_of(possible_results, core::monadic::is(result))) [[likely]]
+            return result;
+
+        return std::unexpected { result };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsStormKitVulkanWrappedType T>
+    STORMKIT_FORCE_INLINE auto toRaiiVkHandle(T&& value) noexcept -> decltype(auto) {
+        if constexpr (meta::IsPointer<meta::CanonicalType<T>>)
+            return std::forward<T>(value)->native_handle();
+        else
+            return std::forward<T>(value).native_handle();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsStormKitVulkanWrappedType T>
+    STORMKIT_FORCE_INLINE auto to_vkhandle(T&& value) noexcept -> decltype(auto) {
+        return *toRaiiVkHandle(std::forward<T>(value));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, typename Flag>
+    STORMKIT_FORCE_INLINE auto to_vkflags(Flag&& flag) noexcept -> vk::Flags<T> {
+        return vk::Flags<T> { narrow<T>(std::forward<Flag>(flag)) };
+    }
+
+    namespace monadic {
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE auto toRaiiVkHandle() noexcept -> decltype(auto) {
+            return []<typename T>(T&& value) static noexcept -> decltype(auto) {
+                return gpu::toRaiiVkHandle(std::forward<T>(value));
+            };
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE auto to_vkhandle() noexcept -> decltype(auto) {
+            return []<typename T>(T&& value) static noexcept -> decltype(auto) {
+                return gpu::to_vkhandle(std::forward<T>(value));
+            };
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<typename T>
+        STORMKIT_FORCE_INLINE auto to_vkflags() noexcept -> decltype(auto) {
+            return []<typename Flag>(Flag&& flag) static noexcept -> decltype(auto) {
+                return gpu::to_vkflags<T>(std::forward<Flag>(flag));
+            };
+        }
+
+    } // namespace monadic
+} // namespace stormkit::gpu

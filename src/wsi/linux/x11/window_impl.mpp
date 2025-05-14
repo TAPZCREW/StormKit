@@ -456,22 +456,22 @@ namespace stormkit::wsi::linux::x11 {
 
         m_window_hints.flags = MWM_HINTS_FUNCTIONS | MWM_HINTS_DECORATIONS;
 
-        if (checkFlag(style, WindowStyle::TITLE_BAR)) {
+        if (check_flag_bit(style, WindowStyle::TITLE_BAR)) {
             m_window_hints.decorations |= MWM_DECOR_BORDER | MWM_DECOR_TITLE | MWM_DECOR_MENU;
             m_window_hints.functions |= MWM_FUNC_MOVE;
         }
 
-        if (checkFlag(style, WindowStyle::CLOSE)) {
+        if (check_flag_bit(style, WindowStyle::CLOSE)) {
             m_window_hints.decorations |= 0;
             m_window_hints.functions |= MWM_FUNC_CLOSE;
         }
 
-        if (checkFlag(style, WindowStyle::MINIMIZABLE)) {
+        if (check_flag_bit(style, WindowStyle::MINIMIZABLE)) {
             m_window_hints.decorations |= MWM_DECOR_MINIMIZE;
             m_window_hints.functions |= MWM_FUNC_MINIMIZE;
         }
 
-        if (checkFlag(style, WindowStyle::RESIZEABLE)) {
+        if (check_flag_bit(style, WindowStyle::RESIZEABLE)) {
             m_window_hints.decorations |= MWM_DECOR_RESIZE | MWM_DECOR_MAXIMIZE;
             m_window_hints.functions |= MWM_FUNC_RESIZE | MWM_FUNC_MAXIMIZE;
         } else {

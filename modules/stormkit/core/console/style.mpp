@@ -165,11 +165,11 @@ namespace std {
             out.reserve(14);
             if (stylized.fg) out += std::string_view { ecma48::FOREGROUND.at(*stylized.fg) };
             if (stylized.bg) out += std::string_view { ecma48::BACKGROUND.at(*stylized.bg) };
-            if (checkFlag(stylized.modifiers, StyleModifier::BOLD)) out += ecma48::BOLD;
-            if (checkFlag(stylized.modifiers, StyleModifier::FAINT)) out += ecma48::FAINT;
-            if (checkFlag(stylized.modifiers, StyleModifier::ITALIC)) out += ecma48::ITALIC;
-            if (checkFlag(stylized.modifiers, StyleModifier::INVERSE)) out += ecma48::INVERSE;
-            if (checkFlag(stylized.modifiers, StyleModifier::UNDERLINE)) out += ecma48::UNDERLINE;
+            if (check_flag_bit(stylized.modifiers, StyleModifier::BOLD)) out += ecma48::BOLD;
+            if (check_flag_bit(stylized.modifiers, StyleModifier::FAINT)) out += ecma48::FAINT;
+            if (check_flag_bit(stylized.modifiers, StyleModifier::ITALIC)) out += ecma48::ITALIC;
+            if (check_flag_bit(stylized.modifiers, StyleModifier::INVERSE)) out += ecma48::INVERSE;
+            if (check_flag_bit(stylized.modifiers, StyleModifier::UNDERLINE)) out += ecma48::UNDERLINE;
             return out;
         }();
 

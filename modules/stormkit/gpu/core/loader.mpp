@@ -1,0 +1,11 @@
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+export module stormkit.gpu:core.loader;
+
+import :core.types;
+
+export namespace stormkit::gpu {
+    STORMKIT_API auto initialize_backend() -> Expected<void>;
+}

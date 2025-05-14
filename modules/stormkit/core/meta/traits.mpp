@@ -9,6 +9,9 @@ import std;
 import :meta.concepts;
 
 export namespace stormkit { inline namespace core { namespace meta {
+    template<bool Cond, typename IfRes, typename ElseRes>
+    using If = std::conditional_t<Cond, IfRes, ElseRes>;
+
     template<class T>
     using CanonicalType = std::remove_cvref_t<T>;
 
@@ -64,9 +67,9 @@ export namespace stormkit { inline namespace core { namespace meta {
       private:
         using U1 = ConstnessLike<T, U>;
         using U2 = std::
-            conditional_t<std::is_lvalue_reference_v<T>, std::add_lvalue_reference_t<U1>, U1>;
+          conditional_t<std::is_lvalue_reference_v<T>, std::add_lvalue_reference_t<U1>, U1>;
         using U3 = std::
-            conditional_t<std::is_rvalue_reference_v<T>, std::add_rvalue_reference_t<U2>, U2>;
+          conditional_t<std::is_rvalue_reference_v<T>, std::add_rvalue_reference_t<U2>, U2>;
 
       public:
         using Type = U3;

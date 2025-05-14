@@ -1,7 +1,7 @@
 #ifdef STORMKIT_BUILD_MODULES
 module App;
 
-import stormkit.Gpu;
+import stormkit.gpu;
 
 import Components;
 import Systems;
@@ -30,7 +30,7 @@ auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char** arg
 
     using namespace stormkit::literals;
 
-    doInitWindow();
+    do_initWindow();
 
     m_board = image::Image {
         { BOARD_SIZE, BOARD_SIZE },
@@ -80,7 +80,7 @@ auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char** arg
     return EXIT_SUCCESS;
 }
 
-auto App::doInitWindow() -> void {
+auto App::do_initWindow() -> void {
     const auto window_style = wsi::WindowStyle::ALL;
 
     m_window = allocate<wsi::Window>(WINDOW_TITLE, math::ExtentU { 800u, 600u }, window_style);

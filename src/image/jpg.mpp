@@ -153,7 +153,7 @@ namespace stormkit::image::details {
         info.client_data     = &error_data;
         error_mgr.error_exit = jpg::error_callback;
 
-        for (auto i : range(image_rgb.mipLevels())) {
+        for (auto i : range(image_rgb.mip_levels())) {
             if (i >= 1u) _filename += to_native_encoding(std::format("_mip{}", i));
 
             auto file = std::fopen(_filename.string().c_str(), "wb");
