@@ -55,7 +55,7 @@ namespace stormkit { inline namespace core {
         allocate(Args&&... args) noexcept(noexcept(T(std::forward<Args>(args)...)))
             -> std::expected<std::unique_ptr<T>, MemoryAllocationError> {
         auto value = std::unique_ptr<T> { new (std::nothrow) T(std::forward<Args>(args)...) };
-        if (not value) [[unexpected]]
+        if (not value) [[unlikely]]
             return std::unexpected(
                 MemoryAllocationError { .type = typeid(T).name(), .size = sizeof(T) });
         return std::expected<std::unique_ptr<T>, MemoryAllocationError> { std::in_place,
