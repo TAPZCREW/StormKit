@@ -955,7 +955,7 @@ namespace stormkit::wsi::linux::wayland {
         xdg_toplevel_set_title(m_xdg_toplevel.get(), m_title.c_str());
         xdg_toplevel_set_app_id(m_xdg_toplevel.get(), m_title.c_str());
 
-        if (!checkFlag(m_style, WindowStyle::RESIZEABLE)) {
+        if (!check_flag_bit(m_style, WindowStyle::RESIZEABLE)) {
             xdg_toplevel_set_min_size(m_xdg_toplevel.get(), m_extent.width, m_extent.height);
             xdg_toplevel_set_max_size(m_xdg_toplevel.get(), m_extent.width, m_extent.height);
         } else {

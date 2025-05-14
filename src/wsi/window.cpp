@@ -267,7 +267,7 @@ namespace stormkit::wsi {
         const auto settings = get_monitor_settings();
 
         const auto it = std::ranges::find_if(settings, [](const auto& monitor) {
-            return checkFlag(monitor.flags, Monitor::Flags::PRIMARY);
+            return check_flag_bit(monitor.flags, Monitor::Flags::PRIMARY);
         });
 
         ensures(it != std::ranges::cend(settings));

@@ -1,0 +1,14 @@
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+export module stormkit.gpu.vulkan;
+
+export import :utils;
+
+export extern "C" {
+#include <volk.h>
+
+#define VMA_CALL_PRE STORMKIT_API
+#include <vk_mem_alloc.h>
+}

@@ -8,9 +8,9 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-#if defined(__cpp_lib_stacktrace)       \
-    and __cpp_lib_stacktrace >= 202011L \
-    and not defined(STORMKIT_COMPILER_LIBCPP)
+#if defined(__cpp_lib_stacktrace)     \
+  and __cpp_lib_stacktrace >= 202011L \
+  and not defined(STORMKIT_COMPILER_LIBCPP)
     #define STD_STACKTRACE_SUPPORTED
 #endif
 
@@ -31,12 +31,12 @@ namespace stormkit { inline namespace core {
     auto print_stacktrace(int ignore_count) noexcept -> void {
         const auto thread_name = get_current_thread_name();
         if (not std::empty(thread_name))
-            std::println(std::cerr,
+            std::println(get_stderr(),
                          "================= CALLSTACK (thread name: {}, id: {}) =================",
                          thread_name,
                          std::this_thread::get_id());
         else
-            std::println(std::cerr,
+            std::println(get_stderr(),
                          "================= CALLSTACK (thread id: {}) =================",
                          std::this_thread::get_id());
 #if defined(STD_STACKTRACE_SUPPORTED)
@@ -61,15 +61,16 @@ namespace stormkit { inline namespace core {
             const auto module  = "aaa"sv;
             auto       symbol  = "aaa"sv;
     #endif
-            const auto object_address
-                = (address == 0 ? "inlined" : std::format("{:#010x}", address));
+            const auto object_address = (address == 0 ? "inlined"
+                                                      : std::format("{:#010x}", address));
 
-            const auto formatted_symbol
-                = (symbol == "") ? std::format(" on {}", module)
-                                 : std::format(" in {} on {}", YELLOW_TEXT_STYLE | symbol, module);
+            const auto formatted_symbol = (symbol == "") ? std::format(" on {}", module)
+                                                         : std::format(" in {} on {}",
+                                                                       YELLOW_TEXT_STYLE | symbol,
+                                                                       module);
 
             if (frame.source_file() != "" and frame.source_line() != 0) {
-                std::println(std::cerr,
+                std::println(get_stderr(),
                              "{}# {}{} at {}:{}",
                              (i++ - ignore_count),
                              BLUE_TEXT_STYLE | object_address,
@@ -77,7 +78,7 @@ namespace stormkit { inline namespace core {
                              BLUE_TEXT_STYLE | frame.source_file(),
                              BLUE_TEXT_STYLE | frame.source_line());
             } else {
-                std::println(std::cerr,
+                std::println(get_stderr(),
                              "{}# {}{}",
                              (i++ - ignore_count),
                              BLUE_TEXT_STYLE | object_address,
@@ -95,22 +96,26 @@ namespace stormkit { inline namespace core {
             auto symbol = frame.symbol;
     #ifdef STORMKIT_COMPILER_LIBCPP
             symbol = replace(symbol, "::__1::", "::");
+            symbol = replace(symbol, "__invoke", "invoke");
+            symbol = replace(symbol, "[abi:se210000]", "");
     #endif
-            symbol
-                = replace(symbol, "basic_string_view<char, std::char_traits<char>>", "string_view");
+            symbol = replace(symbol,
+                             "basic_string_view<char, std::char_traits<char>>",
+                             "string_view");
             symbol = replace(symbol,
                              "basic_string<char, std::char_traits<char>, std::allocator<char>>",
                              "string");
 
-            const auto object_address
-                = (frame.object_address == 0 ? "inlined"
-                                             : std::format("{:#010x}", frame.object_address));
+            const auto object_address = (frame.object_address == 0
+                                           ? "inlined"
+                                           : std::format("{:#010x}", frame.object_address));
 
-            const auto formatted_symbol
-                = (frame.symbol == "") ? "" : std::format(" in {}", YELLOW_TEXT_STYLE | symbol);
+            const auto formatted_symbol = (frame.symbol == "")
+                                            ? ""
+                                            : std::format(" in {}", YELLOW_TEXT_STYLE | symbol);
 
             if (frame.line.has_value() and frame.column.has_value()) {
-                std::println(std::cerr,
+                std::println(get_stderr(),
                              "{}# {}{} at {}:{}:{}",
                              (i++ - ignore_count),
                              BLUE_TEXT_STYLE | object_address,
@@ -119,7 +124,7 @@ namespace stormkit { inline namespace core {
                              BLUE_TEXT_STYLE | frame.line.value(),
                              BLUE_TEXT_STYLE | frame.column.value());
             } else
-                std::println(std::cerr,
+                std::println(get_stderr(),
                              "{}# {}{} at {}",
                              (i++ - ignore_count),
                              BLUE_TEXT_STYLE | object_address,
@@ -127,5 +132,7 @@ namespace stormkit { inline namespace core {
                              GREEN_TEXT_STYLE | frame.filename);
         }
 #endif
+        std::println("============================================================================="
+                     "===============");
     }
 }} // namespace stormkit::core

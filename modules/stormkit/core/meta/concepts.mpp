@@ -17,7 +17,7 @@ namespace stormkit { inline namespace core { namespace meta::details {
 
     template<template<typename, auto...> class T, typename T2, auto... Args>
     constexpr auto is_specialization_of_with_helper(const T<T2, Args...>&) noexcept
-        -> std::true_type {
+      -> std::true_type {
         return {};
     }
 }}} // namespace stormkit::core::meta::details
@@ -100,9 +100,9 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsMovedOwningPointer = IsOwningPointer<T> and IsRValueReference<T>;
 
     template<class T>
-    concept IsViewPointer
-        = (IsOwningPointer<std::remove_cvref_t<T>> and not IsMovedOwningPointer<T>)
-          or IsNonOwningPointer<std::remove_cvref_t<T>>;
+    concept IsViewPointer = (IsOwningPointer<std::remove_cvref_t<T>>
+                             and not IsMovedOwningPointer<T>)
+                            or IsNonOwningPointer<std::remove_cvref_t<T>>;
 
     template<typename T>
     concept IsRawPointerOrLValueReference = IsRawPointer<T> or IsLValueReference<T>;
@@ -117,8 +117,8 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsPolymorphic = std::is_polymorphic_v<T>;
 
     template<class T>
-    concept IsPolymorphicPointer
-        = IsPointer<T> and IsPolymorphic<typename std::pointer_traits<T>::element_type>;
+    concept IsPolymorphicPointer = IsPointer<T>
+                                   and IsPolymorphic<typename std::pointer_traits<T>::element_type>;
 
     template<class T>
     concept IsPolymorphicReference = IsReference<T> and IsPolymorphic<std::remove_reference_t<T>>;
@@ -136,15 +136,22 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsNotIndirection = not IsIndirection<T>;
 
     template<class T>
+    concept IsScopedEnumeration = std::is_scoped_enum_v<T> and IsNotByte<T>;
+
+    template<class T>
+    concept IsPlainEnumeration = not IsScopedEnumeration<T> and std::is_enum_v<T> and IsNotByte<T>;
+
+    template<class T>
     concept IsEnumeration = std::is_enum_v<T> and IsNotByte<T>;
 
     template<typename T>
-    concept IsIntegral
-        = (std::integral<T> and not IsStrict<T, bool> and not IsByte<T>)
-          or Is<T, std::ranges::range_difference_t<std::ranges::iota_view<long long, long long>>>
-          or Is<T,
-                std::ranges::range_difference_t<
-                    std::ranges::iota_view<unsigned long long, unsigned long long>>>;
+    concept IsIntegral = (std::integral<T> and not IsStrict<T, bool> and not IsByte<T>)
+                         or Is<T,
+                               std::ranges::range_difference_t<
+                                 std::ranges::iota_view<long long, long long>>>
+                         or Is<T,
+                               std::ranges::range_difference_t<
+                                 std::ranges::iota_view<unsigned long long, unsigned long long>>>;
 
     template<typename T>
     concept IsIntegralOrEnumeration = IsIntegral<T> or IsEnumeration<T>;
@@ -153,8 +160,9 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsFloatingPoint = std::floating_point<T>;
 
     template<class T>
-    concept IsArithmetic
-        = (IsIntegral<T> or IsFloatingPoint<T>) and not IsPointer<T> and not IsEnumeration<T>;
+    concept IsArithmetic = (IsIntegral<T> or IsFloatingPoint<T>)
+                           and not IsPointer<T>
+                           and not IsEnumeration<T>;
 
     template<class T>
     concept IsScalar = IsArithmetic<T> or IsPointer<T> or IsEnumeration<T>;
@@ -211,12 +219,12 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     // doesn't work atm
     template<class T, class CharT>
-    concept IsFormattable
-        = true; // requires(std::formatter<T, CharT> f, T val) { f.format("{}", val); };
+    concept IsFormattable = true; // requires(std::formatter<T, CharT> f, T val) { f.format("{}",
+                                  // val); };
 
     template<class T>
     concept IsCharacter
-        = IsOneOf<T, char, signed char, unsigned char, wchar_t, char8_t, char16_t, char32_t>;
+      = IsOneOf<T, char, signed char, unsigned char, wchar_t, char8_t, char16_t, char32_t>;
 
     template<class T>
     concept IsColorComponent = Is<T, float> or Is<T, std::uint8_t>;
@@ -250,7 +258,7 @@ export namespace stormkit { inline namespace core { namespace meta {
     };
 
     template<typename T, typename... Args>
-    concept EnableCtor
-        = sizeof...(Args) != 1
-          || (sizeof...(Args) == 1 && !Is<T, typename std::remove_cvref<Args...>::type>);
+    concept EnableCtor = sizeof...(Args) != 1
+                         || (sizeof...(Args) == 1
+                             && !Is<T, typename std::remove_cvref<Args...>::type>);
 }}} // namespace stormkit::core::meta

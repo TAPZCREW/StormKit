@@ -3,7 +3,7 @@ target("polling", function()
     set_languages("cxxlatest", "clatest")
 
     add_rules("stormkit.flags")
-    add_rules("windows.subsystem.windows")
+    add_rules("platform.windows.subsystem.windows")
 
     add_deps("stormkit-core", "stormkit-main", "stormkit-log", "stormkit-wsi")
 
@@ -17,11 +17,6 @@ target("polling", function()
 
     add_files("src/main.cpp")
     if is_plat("windows") then add_files("win32/*.manifest") end
-
-    if has_config("mold") then
-        add_ldflags("-Wl,-fuse-ld=mold")
-        add_shflags("-Wl,-fuse-ld=mold")
-    end
 
     set_group("examples/stormkit-wsi")
 end)

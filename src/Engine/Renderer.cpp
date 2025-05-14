@@ -9,7 +9,7 @@ import std;
 import stormkit.core;
 import stormkit.log;
 import stormkit.wsi;
-import stormkit.Gpu;
+import stormkit.gpu;
 
 import :Renderer;
 import :Renderer.FrameGraph;
@@ -34,7 +34,7 @@ namespace stormkit::engine {
         /////////////////////////////////////
         auto scorePhysicalDevice(const gpu::PhysicalDevice& physical_device) -> UInt64 {
             const auto support_raytracing
-                = physical_device.checkExtensionSupport(RAYTRACING_EXTENSIONS);
+                = physical_device.check_extension_support(RAYTRACING_EXTENSIONS);
 
             auto score = UInt64 { 0u };
 
@@ -68,11 +68,11 @@ namespace stormkit::engine {
             auto ranked_devices = std::multimap<UInt64, Ref<const gpu::PhysicalDevice>> {};
 
             for (const auto& physical_device : physical_devices) {
-                if (not physical_device.checkExtensionSupport(BASE_EXTENSIONS)) {
+                if (not physical_device.check_extension_support(BASE_EXTENSIONS)) {
                     dlog("Base required extensions not supported for GPU {}", physical_device);
                     continue;
                 }
-                if (not physical_device.checkExtensionSupport(SWAPCHAIN_EXTENSIONS)) {
+                if (not physical_device.check_extension_support(SWAPCHAIN_EXTENSIONS)) {
                     dlog("Swapchain required extensions not supported for GPU {}", physical_device);
                     continue;
                 }
@@ -146,25 +146,25 @@ namespace stormkit::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Renderer::doInit(std::string_view                      application_name,
+    auto Renderer::do_init(std::string_view                      application_name,
                           std::optional<Ref<const wsi::Window>> window) noexcept
         -> gpu::Expected<void> {
         ilog("Initializing Renderer");
-        return doInitInstance(application_name)
-            .and_then(bindFront(&Renderer::doInitDevice, this))
+        return do_init_instance(application_name)
+            .and_then(bind_front(&Renderer::do_initDevice, this))
             .and_then(
-                bindFront(gpu::Queue::create, std::cref(*m_device), m_device->rasterQueueEntry()))
+                bind_front(gpu::Queue::create, std::cref(*m_device), m_device->raster_queue_entry()))
             .transform(monadic::set(m_raster_queue))
-            .and_then(bindFront(gpu::CommandPool::create,
+            .and_then(bind_front(gpu::CommandPool::create,
                                 std::cref(*m_device),
                                 std::cref(*m_raster_queue)))
             .transform(monadic::set(m_main_command_pool))
-            .and_then(bindFront(&Renderer::doInitRenderSurface, this, std::move(window)));
+            .and_then(bind_front(&Renderer::do_initRenderSurface, this, std::move(window)));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Renderer::doInitInstance(std::string_view application_name) noexcept
+    auto Renderer::do_init_instance(std::string_view application_name) noexcept
         -> gpu::Expected<void> {
         return gpu::Instance::create(std::string { application_name })
             .transform(monadic::set(m_instance));
@@ -172,8 +172,8 @@ namespace stormkit::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Renderer::doInitDevice() noexcept -> gpu::Expected<void> {
-        const auto& physical_devices = m_instance->physicalDevices();
+    auto Renderer::do_initDevice() noexcept -> gpu::Expected<void> {
+        const auto& physical_devices = m_instance->physical_devices();
         auto        physical_device  = pickPhysicalDevice(physical_devices)
                                    .or_else(expectsWithMessage<Ref<const gpu::PhysicalDevice>>(
                                        "No suitable GPU found !"))
@@ -186,10 +186,10 @@ namespace stormkit::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Renderer::doInitRenderSurface(std::optional<Ref<const wsi::Window>> window) noexcept
+    auto Renderer::do_initRenderSurface(std::optional<Ref<const wsi::Window>> window) noexcept
         -> gpu::Expected<void> {
         if (window)
-            return RenderSurface::createFromWindow(*m_instance,
+            return RenderSurface::create_from_window(*m_instance,
                                                    *m_device,
                                                    *m_raster_queue,
                                                    *(window.value()))
@@ -216,11 +216,11 @@ namespace stormkit::engine {
             if (token.stop_requested()) return;
 
             m_surface->beginFrame(m_device)
-                .and_then(bindFront(&Renderer::doRender,
+                .and_then(bind_front(&Renderer::doRender,
                                     this,
                                     std::ref(framegraph_mutex),
                                     std::ref(rebuild_graph)))
-                .and_then(bindFront(&RenderSurface::presentFrame,
+                .and_then(bind_front(&RenderSurface::presentFrame,
                                     &m_surface.get(),
                                     std::cref(*m_raster_queue)))
                 .transform_error(assert("Failed to render frame"));

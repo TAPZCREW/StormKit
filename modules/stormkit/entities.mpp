@@ -406,8 +406,8 @@ namespace stormkit::entities {
         -> std::vector<Ref<core::meta::ConstnessLike<Self, T>>> {
         // clang-format off
         return self.m_entities 
-               | std::views::filter(bindFront(&EntityManager::has_component<T>, &self))
-               | std::views::transform(bindFront(&EntityManager::getComponent<T>, &self))
+               | std::views::filter(bind_front(&EntityManager::has_component<T>, &self))
+               | std::views::transform(bind_front(&EntityManager::getComponent<T>, &self))
                | std::views::transform(monadic::forward_like<Self>())
                | std::views::transform(monadic::as_ref())
                | std::ranges::to<std::vector>();

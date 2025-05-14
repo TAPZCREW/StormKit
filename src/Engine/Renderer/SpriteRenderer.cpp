@@ -7,7 +7,7 @@ module stormkit.Engine;
 import std;
 
 import stormkit.core;
-import stormkit.Gpu;
+import stormkit.gpu;
 
 import :SpriteRenderer;
 
@@ -40,11 +40,11 @@ namespace stormkit::engine {
     SpriteRenderer::SpriteRenderer(const Renderer& renderer, const math::ExtentF& viewport, Tag)
         : m_renderer { as_ref(renderer) }, m_viewport { viewport } {
         m_render_data = allocate<RenderData>();
-        gpu::Shader::fromBytes(renderer.device(), Quad_Sprite_Shader, gpu::ShaderStageFlag::Vertex)
+        gpu::Shader::load_from_bytes(renderer.device(), Quad_Sprite_Shader, gpu::ShaderStageFlag::Vertex)
             .transform(monadic::set(m_render_data->vertex_shader))
             .transform_error(monadic::throw_as_exception());
 
-        gpu::Shader::fromBytes(renderer.device(),
+        gpu::Shader::load_from_bytes(renderer.device(),
                                Quad_Sprite_Shader,
                                gpu::ShaderStageFlag::Fragment)
             .transform(monadic::set(m_render_data->fragment_shader))
