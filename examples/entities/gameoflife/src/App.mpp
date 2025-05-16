@@ -34,7 +34,7 @@ export {
         auto run(const int argc, const char** argv) -> stormkit::Int32 override;
 
       private:
-        auto doInitWindow() -> void;
+        auto do_initWindow() -> void;
 
         auto handleKeyboard(const stormkit::wsi::KeyReleasedEventData& event) -> void;
         auto handleMouse(const stormkit::wsi::MouseButtonPushedEventData& event) -> void;

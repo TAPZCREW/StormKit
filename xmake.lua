@@ -58,7 +58,7 @@ modules = {
         public_deps = { "stormkit-core" },
     },
     image = {
-        packages = { "libktx", "libpng", "libjpeg-turbo 3.1.0" },
+        packages = { "libktx", "libpng", "libjpeg-turbo" },
         modulename = "image",
         public_deps = { "stormkit-core" },
     },
@@ -134,12 +134,13 @@ modules = {
         end,
     },
     gpu = {
-        modulename = "Gpu",
+        modulename = "gpu",
         has_headers = true,
         public_packages = {
+            "frozen",
+            "volk",
             "vulkan-headers v1.4.309",
-            "vulkan-memory-allocator 3.2.0",
-            "vulkan-memory-allocator-hpp 3.2.1",
+            "vulkan-memory-allocator v3.2.1",
         },
         public_deps = { "stormkit-core", "stormkit-log", "stormkit-wsi", "stormkit-image" },
         packages = is_plat("linux") and {
@@ -147,28 +148,11 @@ modules = {
             "wayland",
         } or nil,
         public_defines = {
-            "VK_NO_PROTOTYPES",
-            "VMA_DYNAMIC_VULKAN_FUNCTIONS=1",
+            "VMA_DYNAMIC_VULKAN_FUNCTIONS=0",
             "VMA_STATIC_VULKAN_FUNCTIONS=0",
-            "VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1",
-            "VULKAN_HPP_NO_STRUCT_CONSTRUCTORS",
-            "VULKAN_HPP_NO_UNION_CONSTRUCTORS",
-            "VULKAN_HPP_NO_EXCEPTIONS",
-            "VULKAN_HPP_NO_CONSTRUCTORS",
-            -- "VULKAN_HPP_NO_SMART_HANDLE",
-            "VULKAN_HPP_STD_MODULE=std.compat",
-            "VULKAN_HPP_ENABLE_STD_MODULE",
-            "VMA_HPP_ENABLE_VULKAN_HPP_MODULE",
-            "VMA_HPP_ENABLE_STD_MODULE",
+            "STORMKIT_GPU_VULKAN"
         },
         custom = function()
-            on_load(function(target)
-                if target:kind() == "shared" then
-                    target:add("defines", "VK_HPP_STORAGE_SHARED", { public = true })
-                else
-                    target:add("defines", "VK_HPP_STORAGE_API", { public = true })
-                end
-            end)
             if is_plat("linux") then
                 add_defines("VK_USE_PLATFORM_XCB_KHR", { public = true })
                 add_defines("VK_USE_PLATFORM_WAYLAND_KHR", { public = true })
@@ -177,6 +161,7 @@ modules = {
             elseif is_plat("windows") then
                 add_defines("VK_USE_PLATFORM_WIN32_KHR", { public = true })
             end
+            add_cxflags("clang::-Wno-missing-declarations")
         end,
     },
 }
@@ -238,6 +223,14 @@ option("examples_engine", {
         if option:dep("examples"):enabled() then option:enable(true) end
     end,
 })
+option("examples_gpu", {
+    default = false,
+    category = "root menu/others",
+    deps = { "examples" },
+    after_check = function(option)
+        if option:dep("examples"):enabled() then option:enable(true) end
+    end,
+})
 option("examples_wsi", {
     default = false,
     category = "root menu/others",
@@ -278,6 +271,7 @@ option("tests_core", {
 option("sanitizers", { default = false, category = "root menu/build" })
 option("mold", { default = false, category = "root menu/build" })
 option("lto", { default = false, category = "root menu/build" })
+option("shared_deps", { default = false, category = "root menu/build" })
 option("on_ci", { default = false, category = "root menu/build" })
 
 ---------------------------- module options ----------------------------
@@ -304,11 +298,9 @@ add_defines("MAGIC_ENUM_USE_STD_MODULE")
 add_defines("MAGIC_ENUM_DEFAULT_ENABLE_ENUM_FORMAT=0")
 add_defines("FROZEN_USE_STD_MODULE")
 
-set_policy("build.c++.modules.gcc.cxx11abi", true)
-
 if not is_plat("wasm") then
     add_requireconfs("vulkan-headers", { system = false })
-    -- add_requireconfs("vulkan-memory-allocator")
+    add_requireconfs("vulkan-memory-allocator", { system = false })
     add_requireconfs("vulkan-memory-allocator-hpp", { system = false, configs = { use_vulkanheaders = true } })
 end
 
@@ -316,14 +308,15 @@ if get_config("toolchain") == "llvm" then
     add_requireconfs("libktx", { configs = { cxflags = "-Wno-overriding-option" } })
 end
 
-add_requireconfs("*", { configs = { modules = true, std_import = true, cpp = "latest" } })
-add_requireconfs("libxkbcommon", { configs = { ["x11"] = true, wayland = true } })
 add_requireconfs("frozen", { system = false })
-
-if get_config("on_ci") then add_requireconfs("*", { system = false }) end
 
 add_requires("cpptrace")
 if not is_plat("windows") then add_requires("libdwarf") end
+
+local package_configs = {configs = {shared = get_config("shared_deps"), ["x11"] = true, wayland = true, modules = true, std_import = true, cpp = "latest"}}
+if get_config("on_ci") then
+    package_configs.system = false
+end
 
 ---------------------------- targets ----------------------------
 for name, module in pairs(modules) do
@@ -331,7 +324,11 @@ for name, module in pairs(modules) do
 
     if name == "core" or name == "main" or get_config(name) then
         local packages = table.join(module.packages or {}, module.public_packages or {})
-        add_requires(packages)
+        for _, package in ipairs(packages) do
+            add_requires(package, package_configs)
+            add_requireconfs(package .. ".**", package_configs)
+        end
+
         local _packages = {}
         for _, package in ipairs(_packages) do
             table.insert(packages, package:split(" ")[1])
@@ -443,7 +440,7 @@ for name, module in pairs(modules) do
                     table.insert(packages, package:split(" ")[1])
                 end
 
-                add_packages(packages)
+                add_packages(packages, {public = is_kind("static")})
             end
 
             if module.public_packages then
@@ -451,7 +448,6 @@ for name, module in pairs(modules) do
                 for _, package in ipairs(module.public_packages) do
                     table.insert(packages, package:split(" ")[1])
                 end
-
                 add_packages(packages, { public = true })
             end
 
@@ -473,7 +469,7 @@ for name, module in pairs(modules) do
             elseif is_mode("releasedbg") then
                 set_optimize("fast")
                 set_symbols("debug", "hidden")
-                add_cxflags("-fno-omit-frame-pointer", { tools = { "clang", "gcc" } })
+                add_cxflags("-ggdb3", "-fno-omit-frame-pointer", { tools = { "clang", "gcc" } })
                 add_mxflags("-ggdb3", { tools = { "clang", "gcc" } })
             end
 
@@ -481,6 +477,17 @@ for name, module in pairs(modules) do
         end)
     end
 end
+
+if not is_host("windows") then
+    add_requireconfs("**.pkg-config", { override = true, system = true })
+end
+add_requireconfs("**.bison", { override = true, system = true })
+add_requireconfs("**.m4", { override = true, system = true })
+add_requireconfs("**.python", { override = true, system = true })
+add_requireconfs("**.meson", { override = true, system = true })
+add_requireconfs("**.autoconf", { override = true, system = true })
+add_requireconfs("**.cmake",  { override = true, system = true })
+add_requireconfs("**.nasm",  { override = true, system = true })
 
 for name, _ in pairs(modules) do
     if get_config("examples_" .. name) then

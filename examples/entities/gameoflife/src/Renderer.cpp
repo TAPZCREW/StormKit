@@ -14,12 +14,12 @@ import Constants;
 using namespace stormkit;
 
 Renderer::Renderer(const wsi::Window& window) : m_window { &window } {
-    doInitBaseRenderObjects();
-    doInitMeshRenderObjects();
+    do_initBaseRenderObjects();
+    do_initMeshRenderObjects();
 }
 
 Renderer::~Renderer() {
-    m_device->waitIdle();
+    m_device->wait_idle();
 }
 
 Renderer::Renderer(Renderer&&) noexcept = default;
@@ -32,7 +32,7 @@ auto Renderer::renderFrame() -> void {
 
     if (m_surface->needRecreate()) {
         m_surface->recreate();
-        doInitPerFrameObjects();
+        do_initPerFrameObjects();
     }
 
     const auto viewports = [&] {
@@ -65,15 +65,15 @@ auto Renderer::renderFrame() -> void {
 
     commandbuffer.reset();
     commandbuffer.begin();
-    commandbuffer.beginRenderPass(*m_render_pass, framebuffer);
+    commandbuffer.begin_render_pass(*m_render_pass, framebuffer);
     commandbuffer.bindRasterPipeline(*m_board.pipeline);
-    commandbuffer.setViewport(0, viewports);
-    commandbuffer.setScissor(0, scissors);
-    commandbuffer.bindDescriptorSets(*m_board.pipeline, sets, {});
+    commandbuffer.set_viewport(0, viewports);
+    commandbuffer.set_scissor(0, scissors);
+    commandbuffer.bind_descriptor_sets(*m_board.pipeline, sets, {});
 
     commandbuffer.draw(4);
 
-    commandbuffer.endRenderPass();
+    commandbuffer.end_render_pass();
     commandbuffer.end();
     commandbuffer.submit(wait, signal, frame.in_flight);
 
@@ -99,7 +99,7 @@ auto Renderer::updateBoard(const stormkit::image::Image& board) -> void {
     m_board.descriptor_set->update(descriptors);
 }
 
-auto Renderer::doInitBaseRenderObjects() -> void {
+auto Renderer::do_initBaseRenderObjects() -> void {
     // We create an instance and initialize device on best available GPU
     m_instance = allocate<gpu::Instance>();
     ilog("Render backend successfully initialized");
@@ -112,9 +112,9 @@ auto Renderer::doInitBaseRenderObjects() -> void {
          STORMKIT_COMPILER);
 
     ilog("--------- Physical Devices ----------");
-    for (const auto& device : m_instance->physicalDevices()) ilog("{}", device.info());
+    for (const auto& device : m_instance->physical_devices()) ilog("{}", device.info());
 
-    auto surface = m_instance->allocateWindowSurface(*m_window);
+    auto surface = m_instance->allocate_window_surface(*m_window);
 
     const auto& physical_device = m_instance->pickPhysicalDevice(*surface);
 
@@ -131,10 +131,10 @@ auto Renderer::doInitBaseRenderObjects() -> void {
     m_surface->initialize(*m_device);
 
     m_queue           = makeConstObserver(m_device->graphicsQueue());
-    m_command_buffers = m_queue->createCommandBuffers(m_surface->bufferingCount());
+    m_command_buffers = m_queue->create_command_buffers(m_surface->bufferingCount());
 }
 
-auto Renderer::doInitMeshRenderObjects() -> void {
+auto Renderer::do_initMeshRenderObjects() -> void {
     const auto& surface_extent  = m_surface->extent();
     const auto  surface_extentf = math::ExtentF { surface_extent };
 
@@ -207,10 +207,10 @@ auto Renderer::doInitMeshRenderObjects() -> void {
 
     m_board.descriptor_set = m_descriptor_pool->allocateDescriptorSet(*m_descriptor_set_layout);
 
-    doInitPerFrameObjects();
+    do_initPerFrameObjects();
 }
 
-auto Renderer::doInitPerFrameObjects() -> void {
+auto Renderer::do_initPerFrameObjects() -> void {
     const auto& surface_extent  = m_surface->extent();
     const auto  surface_extentf = math::ExtentF { surface_extent };
     const auto  buffering_count = m_surface->bufferingCount();

@@ -3,7 +3,7 @@ target("test-base", function()
     set_kind("object")
     set_languages("cxxlatest", "clatest")
     add_rules("stormkit.flags")
-    add_rules("windows.subsystem.console")
+    add_rules("platform.windows.subsystem.console")
     add_files("src/main.cpp")
     add_files("src/Test.mpp", { public = true })
     add_options("sanitizers")
@@ -49,7 +49,7 @@ for name, _ in pairs(modules) do
                 end)
 
                 add_rules("stormkit.flags")
-                add_rules("windows.subsystem.console")
+                add_rules("platform.windows.subsystem.console")
 
                 add_files(file)
 

@@ -27,7 +27,8 @@
     #define STORMKIT_IMPORT          __declspec(dllimport)
     #define STORMKIT_RESTRICT        __restrict
     #define STORMKIT_PRIVATE
-    #define STORMKIT_FORCE_INLINE_IMPL __forceinline
+    #define STORMKIT_FORCE_INLINE_IMPL [[msvc::forceinline]]
+    #define STORMKIT_INTRINSIC         [[msvc::intrinsic]]
 #elif defined(_MSC_VER) and defined(__clang__)
     #if defined(_LIBCPP_VERSION)
         #define STORMKIT_COMPILER_LIBCPP "libc++"
@@ -40,7 +41,8 @@
     #define STORMKIT_IMPORT            __declspec(dllimport)
     #define STORMKIT_PRIVATE           [[gnu::visibility("hidden")]]
     #define STORMKIT_RESTRICT          __restrict
-    #define STORMKIT_FORCE_INLINE_IMPL [[gnu::always_inline]] inline
+    #define STORMKIT_FORCE_INLINE_IMPL [[gnu::always_inline]]
+    #define STORMKIT_INTRINSIC
 #elif defined(__MINGW32__)
     #if defined(_LIBCPP_VERSION)
         #define STORMKIT_COMPILER_LIBCPP "libc++"
@@ -52,8 +54,9 @@
     #define STORMKIT_EXPORT __declspec(dllexport)
     #define STORMKIT_IMPORT __declspec(dllimport)
     #define STORMKIT_PRIVATE
-    #define STORMKIT_RESTRICT          __restrict inline
-    #define STORMKIT_FORCE_INLINE_IMPL [[gnu::always_inline]] inline
+    #define STORMKIT_RESTRICT          __restrict
+    #define STORMKIT_FORCE_INLINE_IMPL [[gnu::always_inline]]
+    #define STORMKIT_INTRINSIC
 #else
     #if defined(_LIBCPP_VERSION)
         #define STORMKIT_COMPILER_LIBCPP "libc++"
@@ -66,7 +69,8 @@
     #define STORMKIT_EXPORT            [[gnu::visibility("default")]]
     #define STORMKIT_PRIVATE           [[gnu::visibility("hidden")]]
     #define STORMKIT_RESTRICT          __restrict
-    #define STORMKIT_FORCE_INLINE_IMPL [[gnu::always_inline]] inline
+    #define STORMKIT_FORCE_INLINE_IMPL [[gnu::always_inline]]
+    #define STORMKIT_INTRINSIC
 #endif
 
 #if __has_cpp_attribute(lifetimebound)
@@ -79,6 +83,18 @@
     #define STORMKIT_LIFETIMEBOUND
 #endif
 
+#if __has_cpp_attribute(gnu::pure)
+    #define STORMKIT_PURE [[gnu::pure]]
+#else
+    #define STORMKIT_PURE
+#endif
+
+#if __has_cpp_attribute(gnu::const)
+    #define STORMKIT_CONST [[gnu::const]]
+#else
+    #define STORMKIT_CONST
+#endif
+
 #define STORMKIT_FORCE_INLINE STORMKIT_FORCE_INLINE_IMPL
 
 #if defined(__MINGW32__)
@@ -87,14 +103,14 @@
         #define STORMKIT_COMPILER_CLANG std::string { "MinGW Clang " } + __clang_version__
         #define STORMKIT_COMPILER       STORMKIT_COMPILER_CLANG
     #elif defined(__GNUC__) or defined(__GNUG__)
-        #define STORMKIT_COMPILER_GCC            \
-            "MinGW GCC "                         \
-                + std::to_string(__GNUC__)       \
-                + "."                            \
-                + std::to_string(__GNUC_MINOR__) \
-                + "."                            \
-                + "."                            \
-                + std::to_string(__GNUC_PATCHLEVEL__)
+        #define STORMKIT_COMPILER_GCC          \
+            "MinGW GCC "                       \
+              + std::to_string(__GNUC__)       \
+              + "."                            \
+              + std::to_string(__GNUC_MINOR__) \
+              + "."                            \
+              + "."                            \
+              + std::to_string(__GNUC_PATCHLEVEL__)
         #define STORMKIT_COMPILER_MINGW STORMKIT_COMPILER_GCC
     #endif
     #define STORMKIT_COMPILER_MINGW STORMKIT_COMPILER
@@ -102,14 +118,14 @@
     #define STORMKIT_COMPILER_CLANG std::string { "Clang " } + __clang_version__
     #define STORMKIT_COMPILER       STORMKIT_COMPILER_CLANG
 #elif defined(__GNUC__) or defined(__GNUG__)
-    #define STORMKIT_COMPILER_GCC            \
-        "GCC "                               \
-            + std::to_string(__GNUC__)       \
-            + "."                            \
-            + std::to_string(__GNUC_MINOR__) \
-            + "."                            \
-            + "."                            \
-            + std::to_string(__GNUC_PATCHLEVEL__)
+    #define STORMKIT_COMPILER_GCC          \
+        "GCC "                             \
+          + std::to_string(__GNUC__)       \
+          + "."                            \
+          + std::to_string(__GNUC_MINOR__) \
+          + "."                            \
+          + "."                            \
+          + std::to_string(__GNUC_PATCHLEVEL__)
     #define STORMKIT_COMPILER STORMKIT_COMPILER_GCC
 #endif
 
@@ -163,16 +179,10 @@ extern "C" {
     #error "Targeted platform not supported !"
 #endif
 
-#ifndef STORMKIT_STATIC
-    #ifdef STORMKIT_BUILD
-        #define STORMKIT_API STORMKIT_EXPORT
-    #else
-        #define STORMKIT_API STORMKIT_IMPORT
-    #endif
-// #define STORMKIT_API STORMKIT_EXPORT
+#ifdef STORMKIT_BUILD
+    #define STORMKIT_API STORMKIT_EXPORT
 #else
-    #define STORMKIT_PUBLIC
-    #define STORMKIT_API
+    #define STORMKIT_API STORMKIT_IMPORT
 #endif
 
 #ifdef _POSIX_VERSION
