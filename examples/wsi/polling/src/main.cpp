@@ -29,7 +29,7 @@ auto main(std::span<const std::string_view> args) -> int {
 
     auto window = wsi::Window {
         "Hello world",
-        { 800u, 600u },
+        { .width = 800u, .height = 600u },
         wsi::WindowStyle::ALL
     };
 

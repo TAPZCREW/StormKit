@@ -9,7 +9,10 @@ module;
 #include <stormkit/log/log_macro.hpp>
 
 #include <stormkit/core/memory_macro.hpp>
+
 #include <stormkit/core/platform_macro.hpp>
+
+#include <stormkit/core/contract_macro.hpp>
 
 export module stormkit.wsi:linux.common.xkb;
 
@@ -121,7 +124,7 @@ namespace stormkit::wsi::linux::common {
             dlog("New xkb context {}", std::bit_cast<void*>(xkb_context_instance));
         }
 
-        ensures(xkb_context_instance);
+        ENSURES(xkb_context_instance);
         return xkb_context_instance;
     }
 

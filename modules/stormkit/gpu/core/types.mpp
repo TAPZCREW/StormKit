@@ -1,0 +1,2941 @@
+// Copyright (C) 2023 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/as_casts_macro.hpp>
+#include <stormkit/core/flags_macro.hpp>
+#include <stormkit/core/hash_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
+
+#include <volk.h>
+
+export module stormkit.gpu.core:types;
+
+import std;
+import frozen;
+
+import stormkit.core;
+
+#ifdef STORMKIT_GPU_VULKAN
+import :vulkan;
+    #define PHYSICAL_DEVICE_TYPE_VALUE(X)  X = VK_PHYSICAL_DEVICE_TYPE_##X
+    #define QUEUE_FLAG_VALUE(X)            X = VK_QUEUE_##X##_BIT
+    #define SHADER_STAGE_VALUE(X)          X = VK_SHADER_STAGE_##X##_BIT
+    #define PRIMITIVE_TOPOLOGY_VALUE(X)    X = VK_PRIMITIVE_TOPOLOGY_##X
+    #define POLYGON_MODE_VALUE(X)          X = VK_POLYGON_MODE_##X
+    #define CULL_MODE_VALUE(X)             X = VK_CULL_MODE_##X##_BIT
+    #define FRONT_FACE_VALUE(X)            X = VK_FRONT_FACE_##X
+    #define SAMPLE_COUNT_VALUE(X)          C##X = VK_SAMPLE_COUNT_##X##_BIT
+    #define COLOR_COMPONENT_VALUE(X)       X
+    #define BLEND_FACTOR_VALUE(X)          X = VK_BLEND_FACTOR_##X
+    #define BLEND_OP_VALUE(X)              X = VK_BLEND_OP_##X
+    #define LOGIC_OP_VALUE(X)              X = VK_LOGIC_OP_##X
+    #define PIXEL_FORMAT_VALUE(X)          X = VK_FORMAT_##X
+    #define PIXEL_FORMAT_VALUE2(X, Y)      X = VK_FORMAT_##Y
+    #define ATTACHMENT_LOAD_OP_VALUE(X)    X = VK_ATTACHMENT_LOAD_OP_##X
+    #define ATTACHMENT_STORE_OP_VALUE(X)   X = VK_ATTACHMENT_STORE_OP_##X
+    #define PIPELINE_BIND_POINT_VALUE(X)   X = VK_PIPELINE_BIND_POINT_##X
+    #define IMAGE_LAYOUT_VALUE(X)          X = VK_IMAGE_LAYOUT_##X
+    #define IMAGE_LAYOUT_VALUE_KHR(X)      X = VK_IMAGE_LAYOUT_##X##_KHR
+    #define IMAGE_ASPECT_MASK_VALUE(X)     X = VK_IMAGE_ASPECT_##X##_BIT
+    #define VERTEX_INPUT_RATE_VALUE(X)     X = VK_VERTEX_INPUT_RATE_##X
+    #define IMAGE_CREATE_VALUE(X)          X = VK_IMAGE_CREATE_##X##_BIT
+    #define IMAGE_CREATE_VALUE_EXT(X)      X = VK_IMAGE_CREATE_##X##_BIT_EXT
+    #define BUFFER_USAGE_VALUE(X)          X = VK_BUFFER_USAGE_##X##_BUFFER_BIT
+    #define BUFFER_USAGE_VALUE2(X)         X = VK_BUFFER_USAGE_##X##_BIT
+    #define IMAGE_USAGE_VALUE(X)           X = VK_IMAGE_USAGE_##X##_BIT
+    #define MEMORY_PROPERTY_VALUE(X)       X = VK_MEMORY_PROPERTY_##X##_BIT
+    #define COMMAND_BUFFER_LEVEL_VALUE(X)  X = VK_COMMAND_BUFFER_LEVEL_##X
+    #define DESCRIPTOR_TYPE_VALUE(X)       X = VK_DESCRIPTOR_TYPE_##X
+    #define COMPARE_OP_VALUE(X)            X = VK_COMPARE_OP_##X
+    #define FILTER_VALUE(X)                X = VK_FILTER_##X
+    #define SAMPLER_ADDRESS_MODE_VALUE(X)  X = VK_SAMPLER_ADDRESS_MODE_##X
+    #define BORDER_COLOR_VALUE(X)          X = VK_BORDER_COLOR_##X
+    #define SAMPLER_MIPMAP_MODE_VALUE(X)   X = VK_SAMPLER_MIPMAP_MODE_##X
+    #define RESULT_VALUE(X)                X = VK_##X
+    #define RESULT_VALUE_KHR(X)            X = VK_##X##_KHR
+    #define RESULT_VALUE_EXT(X)            X = VK_##X##_EXT
+    #define DEBUG_OBJECT_TYPE_VALUE(X)     X = VK_OBJECT_TYPE_##X
+    #define DEBUG_OBJECT_TYPE_VALUE_KHR(X) X = VK_OBJECT_TYPE_##X##_KHR
+    #define DEBUG_OBJECT_TYPE_VALUE_EXT(X) X = VK_OBJECT_TYPE_##X##_EXT
+    #define ACCESS_FLAG_VALUE(X)           X = VK_ACCESS_##X##_BIT
+    #define PIPELINE_STAGE_VALUE(X)        X = VK_PIPELINE_STAGE_##X##_BIT
+    #define DEPENDENCY_VALUE(X)            X = VK_DEPENDENCY_##X##_BIT
+    #define DYNAMIC_STATE_VALUE(X)         X = VK_DYNAMIC_STATE_##X
+    #define IMAGE_TILING_VALUE(X)          X = VK_IMAGE_TILING_##X
+    #define STENCIL_FACE_VALUE(X)          X = VK_STENCIL_FACE_##X##_BIT
+    #define GEOMETRY_TYPE_VALUE(X)         X = VK_GEOMETRY_TYPE_##X##_KHR
+    #define GEOMETRY_VALUE(X)              X = VK_GEOMETRY_##X##_BIT_KHR
+    #define COLOR_SPACE_VALUE(X)           X = VK_COLOR_SPACE_##X
+    #define COLOR_SPACE_VALUE_EXT(X)       X = VK_COLOR_SPACE_##X##_EXT
+    #define PRESENT_MODE_VALUE(X)          X = VK_PRESENT_MODE_##X##_KHR
+#elifdef STORMKIT_GPU_WGPU
+import stormkit.gpu.wgpu;
+#else
+    #error "No GPU Backend set!"
+#endif
+
+export {
+    namespace stormkit::gpu {
+        inline constexpr auto QUEUE_FAMILY_IGNORED = std::numeric_limits<u32>::max();
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define DISCRETE_GPU   PHYSICAL_DEVICE_TYPE_VALUE(DISCRETE_GPU)
+    #define VIRTUAL_GPU    PHYSICAL_DEVICE_TYPE_VALUE(VIRTUAL_GPU)
+    #define INTEGRATED_GPU PHYSICAL_DEVICE_TYPE_VALUE(INTEGRATED_GPU)
+    #define CPU            PHYSICAL_DEVICE_TYPE_VALUE(CPU)
+    #define OTHER          PHYSICAL_DEVICE_TYPE_VALUE(OTHER)
+#elifdef STORMKIT_GPU_WGPU
+    #define DISCRETE_GPU   DISCRETE_GPU,
+    #define VIRTUAL_GPU    VIRTUAL_GPU,
+    #define INTEGRATED_GPU INTEGRATED_GPU,
+    #define CPU            CPU,
+    #define OTHER          OTHER,
+#endif
+        enum class PhysicalDeviceType : u8 {
+            DISCRETE_GPU,
+            VIRTUAL_GPU,
+            INTEGRATED_GPU,
+            CPU,
+            OTHER,
+        };
+#undef DISCRETE_GPU
+#undef VIRTUAL_GPU
+#undef INTEGRATED_GPU
+#undef CPU
+#undef OTHER
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define GRAPHICS       QUEUE_FLAG_VALUE(GRAPHICS)
+    #define COMPUTE        QUEUE_FLAG_VALUE(COMPUTE)
+    #define TRANSFER       QUEUE_FLAG_VALUE(TRANSFER)
+    #define SPARSE_BINDING QUEUE_FLAG_VALUE(SPARSE_BINDING)
+    #define PROTECTED      QUEUE_FLAG_VALUE(PROTECTED)
+#elifdef STORMKIT_GPU_WGPU
+    #define GRAPHICS
+    #define COMPUTE
+    #define TRANSFER
+    #define SPARSE_BINDING
+    #define PROTECTED
+#endif
+        enum class QueueFlag : u8 {
+            NONE = 0,
+            GRAPHICS,
+            COMPUTE,
+            TRANSFER,
+            SPARSE_BINDING,
+            PROTECTED,
+        };
+#undef GRAPHICS
+#undef COMPUTE
+#undef TRANSFER
+#undef SPARSE_BINDING
+#undef PROTECTED
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define VERTEX   SHADER_STAGE_VALUE(VERTEX)
+    #define FRAGMENT SHADER_STAGE_VALUE(FRAGMENT)
+    #define GEOMETRY SHADER_STAGE_VALUE(GEOMETRY)
+    #define COMPUTE  SHADER_STAGE_VALUE(COMPUTE)
+#elifdef STORMKIT_GPU_WGPU
+    #define VERTEX
+    #define FRAGMENT
+    #define GEOMETRY
+    #define COMPUTE
+#endif
+        enum class ShaderStageFlag : u8 {
+            NONE = 0,
+            VERTEX,
+            FRAGMENT,
+            GEOMETRY,
+            COMPUTE,
+        };
+#undef VERTEX
+#undef FRAGMENT
+#undef GEOMETRY
+#undef COMPUTE
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define POINT_LIST     PRIMITIVE_TOPOLOGY_VALUE(POINT_LIST)
+    #define LINE_LIST      PRIMITIVE_TOPOLOGY_VALUE(LINE_LIST)
+    #define LINE_STRIP     PRIMITIVE_TOPOLOGY_VALUE(LINE_STRIP)
+    #define TRIANGLE_LIST  PRIMITIVE_TOPOLOGY_VALUE(TRIANGLE_LIST)
+    #define TRIANGLE_STRIP PRIMITIVE_TOPOLOGY_VALUE(TRIANGLE_STRIP)
+    #define TRIANGLE_FAN   PRIMITIVE_TOPOLOGY_VALUE(TRIANGLE_FAN)
+#elifdef STORMKIT_GPU_WGPU
+    #define POINT_LIST
+    #define LINE_LIST
+    #define LINE_STRIP
+    #define TRIANGLE_LIST
+    #define TRIANGLE_STRIP
+    #define TRIANGLE_FAN
+#endif
+        enum class PrimitiveTopology : u8 {
+            POINT_LIST,
+            LINE_LIST,
+            LINE_STRIP,
+            TRIANGLE_LIST,
+            TRIANGLE_STRIP,
+            TRIANGLE_FAN,
+        };
+#undef POINT_LIST
+#undef LINE_LIST
+#undef LINE_STRIP
+#undef TRIANGLE_LIST
+#undef TRIANGLE_STRIP
+#undef TRIANGLE_FAN
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define FILL  POLYGON_MODE_VALUE(FILL)
+    #define LINE  POLYGON_MODE_VALUE(LINE)
+    #define POINT POLYGON_MODE_VALUE(POINT)
+#elifdef STORMKIT_GPU_WGPU
+    #define FILL
+    #define LINE
+    #define POINT
+#endif
+        enum class PolygonMode : u8 {
+            FILL,
+            LINE,
+            POINT,
+        };
+#undef FILL
+#undef LINE
+#undef POINT
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define FRONT CULL_MODE_VALUE(FRONT)
+    #define BACK  CULL_MODE_VALUE(BACK)
+#elifdef STORMKIT_GPU_WGPU
+    #define FRONT
+    #define BACK
+#endif
+        enum class CullModeFlag : u8 {
+            NONE = 0,
+            FRONT,
+            BACK,
+#undef FRONT
+#undef BACK
+            FRONT_BACK = FRONT | BACK,
+        };
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define CLOCKWISE         FRONT_FACE_VALUE(CLOCKWISE)
+    #define COUNTER_CLOCKWISE FRONT_FACE_VALUE(COUNTER_CLOCKWISE)
+#elifdef STORMKIT_GPU_WGPU
+    #define CLOCKWISE
+    #define COUNTER_CLOCKWISE
+#endif
+        enum class FrontFace : u8 {
+            CLOCKWISE,
+            COUNTER_CLOCKWISE,
+        };
+#undef CLOCKWISE
+#undef COUNTER_CLOCKWISE
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define C1  SAMPLE_COUNT_VALUE(1)
+    #define C2  SAMPLE_COUNT_VALUE(2)
+    #define C4  SAMPLE_COUNT_VALUE(4)
+    #define C8  SAMPLE_COUNT_VALUE(8)
+    #define C16 SAMPLE_COUNT_VALUE(16)
+    #define C32 SAMPLE_COUNT_VALUE(32)
+    #define C64 SAMPLE_COUNT_VALUE(64)
+#elifdef STORMKIT_GPU_WGPU
+    #define C1
+    #define C2
+    #define C4
+    #define C8
+    #define C16
+    #define C32
+    #define C64
+#endif
+        enum class SampleCountFlag : u8 {
+            NONE = 0,
+            C1,
+            C2,
+            C4,
+            C8,
+            C16,
+            C32,
+            C64,
+        };
+#undef C1
+#undef C2
+#undef C4
+#undef C8
+#undef C16
+#undef C32
+#undef C64
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define R COLOR_COMPONENT_VALUE(R)
+    #define G COLOR_COMPONENT_VALUE(G)
+    #define B COLOR_COMPONENT_VALUE(B)
+    #define A COLOR_COMPONENT_VALUE(A)
+#elifdef STORMKIT_GPU_WGPU
+    #define R
+    #define G
+    #define B
+    #define A
+#endif
+        enum class ColorComponentFlag : u8 {
+            NONE = 0,
+            R,
+            G,
+            B,
+            A,
+            RG   = R | G,
+            RGB  = RG | B,
+            RGBA = RGB | A,
+        };
+#undef R
+#undef G
+#undef B
+#undef A
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define ONE                      BLEND_FACTOR_VALUE(ONE)
+    #define ZERO                     BLEND_FACTOR_VALUE(ZERO)
+    #define SRC_COLOR                BLEND_FACTOR_VALUE(SRC_COLOR)
+    #define ONE_MINUS_SRC_COLOR      BLEND_FACTOR_VALUE(ONE_MINUS_SRC_COLOR)
+    #define DST                      BLEND_FACTOR_VALUE(DST)
+    #define ONE_MINUS_DST_COLOR      BLEND_FACTOR_VALUE(ONE_MINUS_DST_COLOR)
+    #define SRC_ALPHA                BLEND_FACTOR_VALUE(SRC_ALPHA)
+    #define ONE_MINUS_SRC_ALPHA      BLEND_FACTOR_VALUE(ONE_MINUS_SRC_ALPHA)
+    #define DST_ALPHA                BLEND_FACTOR_VALUE(DST_ALPHA)
+    #define ONE_MINUS_DST_ALPHA      BLEND_FACTOR_VALUE(ONE_MINUS_DST_ALPHA)
+    #define CONSTANCE_COLOR          BLEND_FACTOR_VALUE(CONSTANCE_COLOR)
+    #define ONE_MINUS_CONSTANT_COLOR BLEND_FACTOR_VALUE(ONE_MINUS_CONSTANT_COLOR)
+    #define CONSTANT_ALPHA           BLEND_FACTOR_VALUE(CONSTANT_ALPHA)
+    #define ONE_MINUS_CONSTANT_ALPHA BLEND_FACTOR_VALUE(ONE_MINUS_CONSTANT_ALPHA)
+    #define SRC_ALPHA_SATURATE       BLEND_FACTOR_VALUE(SRC_ALPHA_SATURATE)
+    #define SRC1_COLOR               BLEND_FACTOR_VALUE(SRC1_COLOR)
+    #define ONE_MINUS_SRC1_COLOR     BLEND_FACTOR_VALUE(ONE_MINUS_SRC1_COLOR)
+    #define SRC1_ALPHA               BLEND_FACTOR_VALUE(SRC1_ALPHA)
+    #define ONE_MINUS_SRC1_ALPHA     BLEND_FACTOR_VALUE(ONE_MINUS_SRC1_ALPHA)
+#elifdef STORMKIT_GPU_WGPU
+    #define ONE
+    #define ZERO
+    #define SRC_COLOR
+    #define ONE_MINUS_SRC_COLOR
+    #define DST
+    #define ONE_MINUS_DST_COLOR
+    #define SRC_ALPHA
+    #define ONE_MINUS_SRC_ALPHA
+    #define DST_ALPHA
+    #define ONE_MINUS_DST_ALPHA
+    #define CONSTANCE_COLOR
+    #define ONE_MINUS_CONSTANT_COLOR
+    #define CONSTANT_ALPHA
+    #define ONE_MINUS_CONSTANT_ALPHA
+    #define SRC_ALPHA_SATURATE
+    #define SRC1_COLOR
+    #define ONE_MINUS_SRC1_COLOR
+    #define SRC1_ALPHA
+    #define ONE_MINUS_SRC1_ALPHA
+#endif
+        enum class BlendFactor : u8 {
+            ONE,
+            ZERO,
+            SRC_COLOR,
+            ONE_MINUS_SRC_COLOR,
+            DST_COLOR,
+            ONE_MINUS_DST_COLOR,
+            SRC_ALPHA,
+            ONE_MINUS_SRC_ALPHA,
+            DST_ALPHA,
+            ONE_MINUS_DST_ALPHA,
+            CONSTANT_COLOR,
+            ONE_MINUS_CONSTANT_COLOR,
+            CONSTANT_ALPHA,
+            ONE_MINUS_CONSTANT_ALPHA,
+            SRC_ALPHA_SATURATE,
+            SRC1_COLOR,
+            ONE_MINUS_SRC1_COLOR,
+            SRC1_ALPHA,
+            ONE_MINUS_SRC1_ALPHA,
+        };
+#undef ONE
+#undef ZERO
+#undef SRC_COLOR
+#undef ONE_MINUS_SRC_COLOR
+#undef DST
+#undef ONE_MINUS_DST_COLOR
+#undef SRC_ALPHA
+#undef ONE_MINUS_SRC_ALPHA
+#undef DST_ALPHA
+#undef ONE_MINUS_DST_ALPHA
+#undef CONSTANCE_COLOR
+#undef ONE_MINUS_CONSTANT_COLOR
+#undef CONSTANT_ALPHA
+#undef ONE_MINUS_CONSTANT_ALPHA
+#undef SRC_ALPHA_SATURATE
+#undef SRC1_COLOR
+#undef ONE_MINUS_SRC1_COLOR
+#undef SRC1_ALPHA
+#undef ONE_MINUS_SRC1_ALPHA
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define ADD              BLEND_OP_VALUE(ADD)
+    #define SUBTRACT         BLEND_OP_VALUE(SUBTRACT)
+    #define REVERSE_SUBTRACT BLEND_OP_VALUE(REVERSE_SUBTRACT)
+    #define MIN              BLEND_OP_VALUE(MIN)
+    #define MAX              BLEND_OP_VALUE(MAX)
+#elifdef STORMKIT_GPU_WGPU
+    #define ADD
+    #define SUBTRACT
+    #define REVERSE_SUBTRACT
+    #define MIN
+    #define MAX
+#endif
+        enum class BlendOperation : u8 {
+            ADD,
+            SUBTRACT,
+            REVERSE_SUBTRACT,
+            MIN,
+            MAX,
+        };
+#undef ADD
+#undef SUBTRACT
+#undef REVERSE_SUBTRACT
+#undef MIN
+#undef MAX
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define CLEAR         LOGIC_OP_VALUE(CLEAR)
+    #define AND           LOGIC_OP_VALUE(AND)
+    #define AND_REVERSE   LOGIC_OP_VALUE(AND_REVERSE)
+    #define COPY          LOGIC_OP_VALUE(COPY)
+    #define AND_INVERTED  LOGIC_OP_VALUE(AND_INVERTED)
+    #define NO_OP         LOGIC_OP_VALUE(NO_OP)
+    #define XOR           LOGIC_OP_VALUE(XOR)
+    #define OR            LOGIC_OP_VALUE(OR)
+    #define NOR           LOGIC_OP_VALUE(NOR)
+    #define EQUIVALENT    LOGIC_OP_VALUE(EQUIVALENT)
+    #define INVERT        LOGIC_OP_VALUE(INVERT)
+    #define OR_REVERSE    LOGIC_OP_VALUE(OR_REVERSE)
+    #define COPY_INVERTED LOGIC_OP_VALUE(COPY_INVERTED)
+    #define OR_INVERTED   LOGIC_OP_VALUE(OR_INVERTED)
+    #define NAND          LOGIC_OP_VALUE(NAND)
+    #define SET           LOGIC_OP_VALUE(SET)
+#elifdef STORMKIT_GPU_WGPU
+    #define CLEAR
+    #define AND
+    #define AND_REVERSE
+    #define COPY
+    #define AND_INVERTED
+    #define NO_OP
+    #define XOR
+    #define OR
+    #define NOR
+    #define EQUIVALENT
+    #define INVERT
+    #define OR_REVERSE
+    #define COPY_INVERTED
+    #define OR_INVERTED
+    #define NAND
+    #define SET
+#endif
+        enum class LogicOperation : u8 {
+            CLEAR,
+            AND,
+            AND_REVERSE,
+            COPY,
+            AND_INVERTED,
+            NO_OP,
+            XOR,
+            OR,
+            NOR,
+            EQUIVALENT,
+            INVERT,
+            OR_REVERSE,
+            COPY_INVERTED,
+            OR_INVERTED,
+            NAND,
+            SET,
+        };
+#undef CLEAR
+#undef AND
+#undef AND_REVERSE
+#undef COPY
+#undef AND_INVERTED
+#undef NO_OP
+#undef XOR
+#undef OR
+#undef NOR
+#undef EQUIVALENT
+#undef INVERT
+#undef OR_REVERSE
+#undef COPY_INVERTED
+#undef OR_INVERTED
+#undef NAND
+#undef SET
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define UNDEFINED PIXEL_FORMAT_VALUE(UNDEFINED)
+
+    #define R8_SNORM    PIXEL_FORMAT_VALUE(R8_SNORM)
+    #define RG8_SNORM   PIXEL_FORMAT_VALUE2(RG8_SNORM, R8G8_SNORM)
+    #define RGB8_SNORM  PIXEL_FORMAT_VALUE2(RGB8_SNORM, R8G8B8_SNORM)
+    #define RGBA8_SNORM PIXEL_FORMAT_VALUE2(RGBA8_SNORM, R8G8B8A8_SNORM)
+    #define R8_UNORM    PIXEL_FORMAT_VALUE(R8_UNORM)
+    #define RG8_UNORM   PIXEL_FORMAT_VALUE2(RG8_UNORM, R8G8_UNORM)
+    #define RGB8_UNORM  PIXEL_FORMAT_VALUE2(RGB8_UNORM, R8G8B8_UNORM)
+    #define RGBA8_UNORM PIXEL_FORMAT_VALUE2(RGBA8_UNORM, R8G8B8A8_UNORM)
+
+    #define R16_SNORM    PIXEL_FORMAT_VALUE(R16_SNORM)
+    #define RG16_SNORM   PIXEL_FORMAT_VALUE2(RG16_SNORM, R16G16_SNORM)
+    #define RGB16_SNORM  PIXEL_FORMAT_VALUE2(RGB16_SNORM, R16G16B16_SNORM)
+    #define RGBA16_SNORM PIXEL_FORMAT_VALUE2(RGBA16_SNORM, R16G16B16A16_SNORM)
+    #define R16_UNORM    PIXEL_FORMAT_VALUE(R16_UNORM)
+    #define RG16_UNORM   PIXEL_FORMAT_VALUE2(RG16_UNORM, R16G16_UNORM)
+    #define RGB16_UNORM  PIXEL_FORMAT_VALUE2(RGB16_UNORM, R16G16B16_UNORM)
+    #define RGBA16_UNORM PIXEL_FORMAT_VALUE2(RGBA16_UNORM, R16G16B16A16_UNORM)
+
+    #define A2_RGB10_UNORM_PACK32 \
+        PIXEL_FORMAT_VALUE2(A2_RGB10_UNORM_PACK32, A2R10G10B10_UNORM_PACK32)
+    #define A2_RGB10_SNORM_PACK32 \
+        PIXEL_FORMAT_VALUE2(A2_RGB10_SNORM_PACK32, A2R10G10B10_SNORM_PACK32)
+
+    #define A2_RGB10U_PACK32 PIXEL_FORMAT_VALUE2(A2_RGB10U_PACK32, A2R10G10B10_UINT_PACK32)
+    #define A2_RGB10I_PACK32 PIXEL_FORMAT_VALUE2(A2_RGB10I_PACK32, A2R10G10B10_SINT_PACK32)
+
+    #define RGBA4_UNORM_PACK16 PIXEL_FORMAT_VALUE2(RGBA4_UNORM_PACK16, R4G4B4A4_UNORM_PACK16)
+
+    #define A1_RGB5_UNORM_PACK16  PIXEL_FORMAT_VALUE2(A1_RGB5_UNORM_PACK16, A1R5G5B5_UNORM_PACK16)
+    #define R5_G6_B5_UNORM_PACK16 PIXEL_FORMAT_VALUE2(R5_G6_B5_UNORM_PACK16, R5G6B5_UNORM_PACK16)
+
+    #define BGR8_UNORM  PIXEL_FORMAT_VALUE2(BGR8_UNORM, B8G8R8_UNORM)
+    #define BGRA8_UNORM PIXEL_FORMAT_VALUE2(BGRA8_UNORM, B8G8R8A8_UNORM)
+
+    #define R8I    PIXEL_FORMAT_VALUE2(R8I, R8_SINT)
+    #define RG8I   PIXEL_FORMAT_VALUE2(RG8I, R8G8_SINT)
+    #define RGB8I  PIXEL_FORMAT_VALUE2(RGB8I, R8G8B8_SINT)
+    #define RGBA8I PIXEL_FORMAT_VALUE2(RGBA8I, R8G8B8A8_SINT)
+
+    #define R8U    PIXEL_FORMAT_VALUE2(R8U, R8_UINT)
+    #define RG8U   PIXEL_FORMAT_VALUE2(RG8U, R8G8_UINT)
+    #define RGB8U  PIXEL_FORMAT_VALUE2(RGB8U, R8G8B8_UINT)
+    #define RGBA8U PIXEL_FORMAT_VALUE2(RGBA8U, R8G8B8A8_UINT)
+
+    #define R16I    PIXEL_FORMAT_VALUE2(R16I, R16_SINT)
+    #define RG16I   PIXEL_FORMAT_VALUE2(RG16I, R16G16_SINT)
+    #define RGB16I  PIXEL_FORMAT_VALUE2(RGB16I, R16G16B16_SINT)
+    #define RGBA16I PIXEL_FORMAT_VALUE2(RGBA16I, R16G16B16A16_SINT)
+
+    #define R16U    PIXEL_FORMAT_VALUE2(R16U, R16_UINT)
+    #define RG16U   PIXEL_FORMAT_VALUE2(RG16U, R16G16_UINT)
+    #define RGB16U  PIXEL_FORMAT_VALUE2(RGB16U, R16G16B16_UINT)
+    #define RGBA16U PIXEL_FORMAT_VALUE2(RGBA16U, R16G16B16A16_UINT)
+
+    #define R32I    PIXEL_FORMAT_VALUE2(R32I, R32_SINT)
+    #define RG32I   PIXEL_FORMAT_VALUE2(RG32I, R32G32_SINT)
+    #define RGB32I  PIXEL_FORMAT_VALUE2(RGB32I, R32G32B32_SINT)
+    #define RGBA32I PIXEL_FORMAT_VALUE2(RGBA32I, R32G32B32A32_SINT)
+
+    #define R32U    PIXEL_FORMAT_VALUE2(R32U, R32_UINT)
+    #define RG32U   PIXEL_FORMAT_VALUE2(RG32U, R32G32_UINT)
+    #define RGB32U  PIXEL_FORMAT_VALUE2(RGB32U, R32G32B32_UINT)
+    #define RGBA32U PIXEL_FORMAT_VALUE2(RGBA32U, R32G32B32A32_UINT)
+
+    #define R16F    PIXEL_FORMAT_VALUE2(R16F, R16_SFLOAT)
+    #define RG16F   PIXEL_FORMAT_VALUE2(RG16F, R16G16_SFLOAT)
+    #define RGB16F  PIXEL_FORMAT_VALUE2(RGB16F, R16G16B16_SFLOAT)
+    #define RGBA16F PIXEL_FORMAT_VALUE2(RGBA16F, R16G16B16A16_SFLOAT)
+
+    #define R32F    PIXEL_FORMAT_VALUE2(R32F, R32_SFLOAT)
+    #define RG32F   PIXEL_FORMAT_VALUE2(RG32F, R32G32_SFLOAT)
+    #define RGB32F  PIXEL_FORMAT_VALUE2(RGB32F, R32G32B32_SFLOAT)
+    #define RGBA32F PIXEL_FORMAT_VALUE2(RGBA32F, R32G32B32A32_SFLOAT)
+
+    #define B10_GR11UF_PACK32 PIXEL_FORMAT_VALUE2(B10_GR11UF_PACK32, B10G11R11_UFLOAT_PACK32)
+
+    #define SR8    PIXEL_FORMAT_VALUE2(SR8, R8_SRGB)
+    #define SRG8   PIXEL_FORMAT_VALUE2(SRG8, R8G8_SRGB)
+    #define SRGB8  PIXEL_FORMAT_VALUE2(SRGB8, R8G8B8_SRGB)
+    #define SRGBA8 PIXEL_FORMAT_VALUE2(SRGBA8, R8G8B8A8_SRGB)
+
+    #define SBGR8  PIXEL_FORMAT_VALUE2(SBGR8, B8G8R8_SRGB)
+    #define SBGRA8 PIXEL_FORMAT_VALUE2(SBGRA8, B8G8R8A8_SRGB)
+
+    #define DEPTH16_UNORM PIXEL_FORMAT_VALUE2(DEPTH16_UNORM, D16_UNORM)
+    #define DEPTH24_UNORM PIXEL_FORMAT_VALUE2(DEPTH24_UNORM, D24_UNORM)
+    #define DEPTH32F      PIXEL_FORMAT_VALUE2(DEPTH32F, D32_SFLOAT)
+
+    #define DEPTH16_UNORM_STENCIL8U PIXEL_FORMAT_VALUE2(DEPTH16_UNORM_STENCIL8U, D16_UNORM_S8_UINT)
+    #define DEPTH24_UNORM_STENCIL8U PIXEL_FORMAT_VALUE2(DEPTH24_UNORM_STENCIL8U, D24_UNORM_S8_UINT)
+    #define DEPTH32F_STENCIL8U      PIXEL_FORMAT_VALUE2(DEPTH32F_STENCIL8U, D32_SFLOAT_S8_UINT)
+#elifdef STORMKIT_GPU_WGPU
+    #define UNDEFINED
+
+    #define R8_SNORM
+    #define RG8_SNORM
+    #define RGB8_SNORM
+    #define RGBA8_SNORM
+    #define R8_UNORM
+    #define RG8_UNORM
+    #define RGB8_UNORM
+    #define RGBA8_UNORM
+
+    #define R16_SNORM
+    #define RG16_SNORM
+    #define RGB16_SNORM
+    #define RGBA16_SNORM
+    #define R16_UNORM
+    #define RG16_UNORM
+    #define RGB16_UNORM
+    #define RGBA16_UNORM
+
+    #define A2_RGB10_UNORM_PACK32
+
+    #define A2_RGB10_SNORM_PACK32
+
+    #define A2_RGB10U_PACK32
+    #define A2_RGB10I_PACK32
+
+    #define RGBA4_UNORM_PACK16
+
+    #define A1_RGB5_UNORM_PACK16
+    #define R5_G6_B5_UNORM_PACK16
+
+    #define BGR8_UNORM
+    #define BGRA8_UNORM
+
+    #define R8I
+    #define RG8I
+    #define RGB8I
+    #define RGBA8I
+
+    #define R8U
+    #define RG8U
+    #define RGB8U
+    #define RGBA8U
+
+    #define R16I
+    #define RG16I
+    #define RGB16I
+    #define RGBA16I
+
+    #define R16U
+    #define RG16U
+    #define RGB16U
+    #define RGBA16U
+
+    #define R32I
+    #define RG32I
+    #define RGB32I
+    #define RGBA32I
+
+    #define R32U
+    #define RG32U
+    #define RGB32U
+    #define RGBA32U
+
+    #define R16F
+    #define RG16F
+    #define RGB16F
+    #define RGBA16F
+
+    #define R32F
+    #define RG32F
+    #define RGB32F
+    #define RGBA32F
+
+    #define B10_GR11UF_PACK32
+
+    #define SR8
+    #define SRG8
+    #define SRGB8
+    #define SRGBA8
+
+    #define SBGR8
+    #define SBGRA8
+
+    #define DEPTH16_UNORM
+    #define DEPTH24_UNORM
+    #define DEPTH32F
+
+    #define DEPTH16_UNORM_STENCIL8U
+    #define DEPTH24_UNORM_STENCIL8U
+    #define DEPTH32F_STENCIL8U
+#endif
+        enum class PixelFormat : u32 {
+            UNDEFINED,
+
+            R8_SNORM,
+            RG8_SNORM,
+            RGB8_SNORM,
+            RGBA8_SNORM,
+            R8_UNORM,
+            RG8_UNORM,
+            RGB8_UNORM,
+            RGBA8_UNORM,
+
+            R16_SNORM,
+            RG16_SNORM,
+            RGB16_SNORM,
+            RGBA16_SNORM,
+            R16_UNORM,
+            RG16_UNORM,
+            RGB16_UNORM,
+            RGBA16_UNORM,
+
+            A2_RGB10_UNORM_PACK32,
+            A2_RGB10_SNORM_PACK32,
+
+            RGBA4_UNORM_PACK16,
+
+            A1_RGB5_UNORM_PACK16,
+
+            R5_G6_B5_UNORM_PACK16,
+
+            BGR8_UNORM,
+            BGRA8_UNORM,
+
+            R8I,
+            RG8I,
+            RGB8I,
+            RGBA8I,
+
+            R8U,
+            RG8U,
+            RGB8U,
+            RGBA8U,
+
+            R16I,
+            RG16I,
+            RGB16I,
+            RGBA16I,
+
+            R16U,
+            RG16U,
+            RGB16U,
+            RGBA16U,
+
+            R32I,
+            RG32I,
+            RGB32I,
+            RGBA32I,
+
+            R32U,
+            RG32U,
+            RGB32U,
+            RGBA32U,
+
+            A2_RGB10U_PACK32,
+
+            R16F,
+            RG16F,
+            RGB16F,
+            RGBA16F,
+
+            R32F,
+            RG32F,
+            RGB32F,
+            RGBA32F,
+
+            B10_GR11UF_PACK32,
+
+            SR8,
+            SRG8,
+            SRGB8,
+            SRGBA8,
+
+            SBGR8,
+            SBGRA8,
+
+            DEPTH16,
+            DEPTH24,
+            DEPTH32F,
+
+            DEPTH16_STENCIL8,
+            DEPTH24_STENCIL8,
+            DEPTH32F_STENCIL8,
+        };
+#undef UNDEFINED
+
+#undef R8_SNORM
+#undef RG8_SNORM
+#undef RGB8_SNORM
+#undef RGBA8_SNORM
+#undef R8_UNORM
+#undef RG8_UNORM
+#undef RGB8_UNORM
+#undef RGBA8_UNORM
+
+#undef R16_SNORM
+#undef RG16_SNORM
+#undef RGB16_SNORM
+#undef RGBA16_SNORM
+#undef R16_UNORM
+#undef RG16_UNORM
+#undef RGB16_UNORM
+#undef RGBA16_UNORM
+
+#undef A2_RGB10_UNORM_PACK32
+
+#undef A2_RGB10_SNORM_PACK32
+
+#undef A2_RGB10U_PACK32
+#undef A2_RGB10I_PACK32
+
+#undef RGBA4_UNORM_PACK16
+
+#undef A1_RGB5_UNORM_PACK16
+#undef R5_G6_B5_UNORM_PACK16
+
+#undef BGR8_UNORM
+#undef BGRA8_UNORM
+
+#undef R8I
+#undef RG8I
+#undef RGB8I
+#undef RGBA8I
+
+#undef R8U
+#undef RG8U
+#undef RGB8U
+#undef RGBA8U
+
+#undef R16I
+#undef RG16I
+#undef RGB16I
+#undef RGBA16I
+
+#undef R16U
+#undef RG16U
+#undef RGB16U
+#undef RGBA16U
+
+#undef R32I
+#undef RG32I
+#undef RGB32I
+#undef RGBA32I
+
+#undef R32U
+#undef RG32U
+#undef RGB32U
+#undef RGBA32U
+
+#undef R16F
+#undef RG16F
+#undef RGB16F
+#undef RGBA16F
+
+#undef R32F
+#undef RG32F
+#undef RGB32F
+#undef RGBA32F
+
+#undef B10_GR11UF_PACK32
+
+#undef SR8
+#undef SRG8
+#undef SRGB8
+#undef SRGBA8
+
+#undef SBGR8
+#undef SBGRA8
+
+#undef DEPTH16_UNORM
+#undef DEPTH24_UNORM
+#undef DEPTH32F
+
+#undef DEPTH16_UNORM_STENCIL8U
+#undef DEPTH24_UNORM_STENCIL8U
+#undef DEPTH32F_STENCIL8U
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define LOAD      ATTACHMENT_LOAD_OP_VALUE(LOAD)
+    #define CLEAR     ATTACHMENT_LOAD_OP_VALUE(CLEAR)
+    #define DONT_CARE ATTACHMENT_LOAD_OP_VALUE(DONT_CARE)
+#elifdef STORMKIT_GPU_WGPU
+    #define LOAD
+    #define CLEAR
+    #define DONT_CARE
+#endif
+        enum class AttachmentLoadOperation : u8 {
+            LOAD,
+            CLEAR,
+            DONT_CARE,
+        };
+#undef LOAD
+#undef CLEAR
+#undef DONT_CARE
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define STORE     ATTACHMENT_STORE_OP_VALUE(STORE)
+    #define DONT_CARE ATTACHMENT_STORE_OP_VALUE(DONT_CARE)
+#elifdef STORMKIT_GPU_WGPU
+    #define STORE
+    #define DONT_CARE
+#endif
+        enum class AttachmentStoreOperation : u8 {
+            STORE,
+            DONT_CARE,
+        };
+#undef STORE
+#undef DONT_CARE
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define GRAPHICS PIPELINE_BIND_POINT_VALUE(GRAPHICS)
+    #define COMPUTE  PIPELINE_BIND_POINT_VALUE(COMPUTE)
+#elifdef STORMKIT_GPU_WGPU
+    #define GRAPHICS
+    #define COMPUTE
+#endif
+        enum class PipelineBindPoint : u8 {
+            GRAPHICS,
+            COMPUTE,
+        };
+#undef GRAPHICS
+#undef COMPUTE
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define UNDEFINED                         IMAGE_LAYOUT_VALUE(UNDEFINED)
+    #define GENERAL                           IMAGE_LAYOUT_VALUE(GENERAL)
+    #define COLOR_ATTACHMENT_OPTIMAL          IMAGE_LAYOUT_VALUE(COLOR_ATTACHMENT_OPTIMAL)
+    #define DEPTH_STENCIL_ATTACHMENT_OPTIOMAL IMAGE_LAYOUT_VALUE(DEPTH_STENCIL_ATTACHMENT_OPTIOMAL)
+    #define DEPTH_STENCIL_READ_ONLY_OPTIMAL   IMAGE_LAYOUT_VALUE(DEPTH_STENCIL_READ_ONLY_OPTIMAL)
+    #define SHADER_READ_ONLY_OPTIMAL          IMAGE_LAYOUT_VALUE(SHADER_READ_ONLY_OPTIMAL)
+    #define TRANSFER_SRC_OPTIMAL              IMAGE_LAYOUT_VALUE(TRANSFER_SRC_OPTIMAL)
+    #define TRANSFER_DST_OPTIMAL              IMAGE_LAYOUT_VALUE(TRANSFER_DST_OPTIMAL)
+    #define PREINITIALIZED                    IMAGE_LAYOUT_VALUE(PREINITIALIZED)
+    #define DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL \
+        IMAGE_LAYOUT_VALUE(DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL)
+    #define DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL \
+        IMAGE_LAYOUT_VALUE(DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL)
+    #define PRESENT_SRC    IMAGE_LAYOUT_VALUE_KHR(PRESENT_SRC)
+    #define SHARED_PRESENT IMAGE_LAYOUT_VALUE_KHR(SHARED_PRESENT)
+#elifdef STORMKIT_GPU_WGPU
+    #define UNDEFINED
+    #define GENERAL
+    #define COLOR_ATTACHMENT_OPTIMAL
+    #define DEPTH_STENCIL_ATTACHMENT_OPTIOMAL
+    #define DEPTH_STENCIL_READ_ONLY_OPTIMAL
+    #define SHADER_READ_ONLY_OPTIMAL
+    #define TRANSFER_SRC_OPTIMAL
+    #define TRANSFER_DST_OPTIMAL
+    #define PREINITIALIZED
+    #define DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL
+    #define DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL
+    #define PRESENT_SRC
+    #define SHARED_PRESENT
+#endif
+        enum class ImageLayout : u32 {
+            UNDEFINED,
+            GENERAL,
+            COLOR_ATTACHMENT_OPTIMAL,
+            DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            DEPTH_STENCIL_READ_ONLY_OPTIMAL,
+            SHADER_READ_ONLY_OPTIMAL,
+            TRANSFER_SRC_OPTIMAL,
+            TRANSFER_DST_OPTIMAL,
+            PREINITIALIZED,
+            DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL,
+            DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL,
+            PRESENT_SRC,
+            SHARED_PRESENT,
+        };
+#undef UNDEFINED
+#undef GENERAL
+#undef COLOR_ATTACHMENT_OPTIMAL
+#undef DEPTH_STENCIL_ATTACHMENT_OPTIOMAL
+#undef DEPTH_STENCIL_READ_ONLY_OPTIMAL
+#undef SHADER_READ_ONLY_OPTIMAL
+#undef TRANSFER_SRC_OPTIMAL
+#undef TRANSFER_DST_OPTIMAL
+#undef PREINITIALIZED
+#undef DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL
+#undef DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL
+#undef PRESENT_SRC
+#undef SHARED_PRESENT
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define COLOR   IMAGE_ASPECT_MASK_VALUE(COLOR)
+    #define DEPTH   IMAGE_ASPECT_MASK_VALUE(DEPTH)
+    #define STENCIL IMAGE_ASPECT_MASK_VALUE(STENCIL)
+#elifdef STORMKIT_GPU_WGPU
+    #define COLOR
+    #define DEPTH
+    #define STENCIL
+#endif
+        enum class ImageAspectMaskFlag : u8 {
+            NONE = 0,
+            COLOR,
+            DEPTH,
+            STENCIL,
+        };
+#undef COLOR
+#undef DEPTH
+#undef STENCIL
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define VERTEX   VERTEX_INPUT_RATE_VALUE(VERTEX)
+    #define INSTANCE VERTEX_INPUT_RATE_VALUE(INSTANCE)
+#elifdef STORMKIT_GPU_WGPU
+    #define VERTEX
+    #define INSTANCE
+#endif
+        enum class VertexInputRate : u8 {
+            VERTEX,
+            INSTANCE,
+        };
+#undef VERTEX
+#undef INSTANCE
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define SPARSE_BINDING              IMAGE_CREATE_VALUE(SPARSE_BINDING)
+    #define SPARSE_RESIDENCY            IMAGE_CREATE_VALUE(SPARSE_RESIDENCY)
+    #define SPARSE_ALIASED              IMAGE_CREATE_VALUE(SPARSE_ALIASED)
+    #define MUTABLE_FORMAT              IMAGE_CREATE_VALUE(MUTABLE_FORMAT)
+    #define CUBE_COMPATIBLE             IMAGE_CREATE_VALUE(CUBE_COMPATIBLE)
+    #define ALIAS                       IMAGE_CREATE_VALUE(ALIAS)
+    #define SPLIT_INSTANCE_BIND_REGIONS IMAGE_CREATE_VALUE(SPLIT_INSTANCE_BIND_REGIONS)
+    #define ARRAY_2D_COMPATIBLE         ARRAY_2D_COMPATIBLE = VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT
+    #define BLOCK_TEXEL_VIEW_COMPATIBLE IMAGE_CREATE_VALUE(BLOCK_TEXEL_VIEW_COMPATIBLE)
+    #define EXTENDED_USAGE              IMAGE_CREATE_VALUE(EXTENDED_USAGE)
+    #define PRETECTED                   IMAGE_CREATE_VALUE(PRETECTED)
+    #define DISJOINT                    IMAGE_CREATE_VALUE(DISJOINT)
+#elifdef STORMKIT_GPU_WGPU
+    #define SPARSE_BINDING
+    #define SPARSE_RESIDENCY
+    #define SPARSE_ALIASED
+    #define MUTABLE_FORMAT
+    #define CUBE_COMPATIBLE
+    #define ALIAS
+    #define SPLIT_INSTANCE_BIND_REGIONS
+    #define ARRAY_2D_COMPATIBLE
+    #define BLOCK_TEXEL_VIEW_COMPATIBLE
+    #define EXTENDED_USAGE
+    #define PRETECTED
+    #define DISJOINT
+#endif
+        enum class ImageCreateFlag : u16 {
+            NONE = 0,
+            SPARSE_BINDING,
+            SPARSE_RESIDENCY,
+            SPARSE_ALIASED,
+            MUTABLE_FORMAT,
+            CUBE_COMPATIBLE,
+            ALIAS,
+            SPLIT_INSTANCE_BIND_REGIONS,
+            ARRAY_2D_COMPATIBLE,
+            BLOCK_TEXEL_VIEW_COMPATIBLE,
+            EXTENDED_USAGE,
+            PROTECTED,
+            DISJOINT,
+        };
+#undef SPARSE_BINDING
+#undef SPARSE_RESIDENCY
+#undef SPARSE_ALIASED
+#undef MUTABLE_FORMAT
+#undef CUBE_COMPATIBLE
+#undef ALIAS
+#undef SPLIT_INSTANCE_BIND_REGIONS
+#undef ARRAY_2D_COMPATIBLE
+#undef BLOCK_TEXEL_VIEW_COMPATIBLE
+#undef EXTENDED_USAGE
+#undef PRETECTED
+#undef DISJOINT
+
+        // enum class Format : u8 {
+        //     BYTE,
+        //     BYTE2,
+        //     BYTE3,
+        //     BYTE4,
+
+        //    BYTE_NORM,
+        //    BYTE2_NORM,
+        //    BYTE3_NORM,
+        //    BYTE4_NORM,
+
+        //    BYTE_SCALED,
+        //    BYTE2_SCALED,
+        //    BYTE3_SCALED,
+        //    BYTE4_SCALED,
+
+        //    UBYTE,
+        //    UBYTE2,
+        //    UBYTE3,
+        //    UBYTE4,
+
+        //    UBYTE_NORM,
+        //    UBYTE2_NORM,
+        //    UBYTE3_NORM,
+        //    UBYTE4_NORM,
+
+        //    UBYTE_UCALED,
+        //    UBYTE2_UCALED,
+        //    UBYTE3_UCALED,
+        //    UBYTE4_UCALED,
+
+        //    SHORT,
+        //    SHORT2,
+        //    SHORT3,
+        //    SHORT4,
+
+        //    SHORT_NORM,
+        //    SHORT2_NORM,
+        //    SHORT3_NORM,
+        //    SHORT4_NORM,
+
+        //    SHORT_SCALED,
+        //    SHORT2_SCALED,
+        //    SHORT3_SCALED,
+        //    SHORT4_SCALED,
+
+        //    USHORT,
+        //    USHORT2,
+        //    USHORT3,
+        //    USHORT4,
+
+        //    USHORT_NORM,
+        //    USHORT2_NORM,
+        //    USHORT3_NORM,
+        //    USHORT4_NORM,
+
+        //    USHORT_UCALED,
+        //    USHORT2_UCALED,
+        //    USHORT3_UCALED,
+        //    USHORT4_UCALED,
+
+        //    INT,
+        //    INT2,
+        //    INT3,
+        //    INT4,
+
+        //    UINT,
+        //    UINT2,
+        //    UINT3,
+        //    UINT4,
+
+        //    LONG,
+        //    LONG2,
+        //    LONG3,
+        //    LONG4,
+
+        //    ULONG,
+        //    ULONG2,
+        //    ULONG3,
+        //    ULONG4,
+
+        //    FLOAT,
+        //    FLOAT2,
+        //    FLOAT3,
+        //    FLOAT4,
+
+        //    DOUBLE,
+        //    DOUBLE2,
+        //    DOUBLE3,
+        //    DOUBLE4,
+
+        //    UNDEFINED,
+        // };
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define VERTEX        BUFFER_USAGE_VALUE(VERTEX)
+    #define INDEX         BUFFER_USAGE_VALUE(INDEX)
+    #define TRANSFER_SRC  BUFFER_USAGE_VALUE2(TRANSFER_SRC)
+    #define TRANFERT_DST  BUFFER_USAGE_VALUE2(TRANFERT_DST)
+    #define UNIFORM       BUFFER_USAGE_VALUE(UNIFORM)
+    #define STORAGE       BUFFER_USAGE_VALUE(STORAGE)
+    #define UNIFORM_TEXEL BUFFER_USAGE_VALUE(UNIFORM_TEXEL)
+    #define STORAGE_TEXEL BUFFER_USAGE_VALUE(STORAGE_TEXEL)
+    #define INDIRECT      BUFFER_USAGE_VALUE(INDIRECT)
+#elifdef STORMKIT_GPU_WGPU
+    #define VERTEX
+    #define INDEX
+    #define TRANSFER_SRC
+    #define TRANFERT_DST
+    #define UNIFORM
+    #define STORAGE
+    #define UNIFORM_TEXEL
+    #define STORAGE_TEXEL
+    #define INDIRECT
+#endif
+        enum class BufferUsageFlag : u16 {
+            VERTEX,
+            INDEX,
+            TRANSFER_SRC,
+            TRANSFER_DST,
+            UNIFORM,
+            STORAGE,
+            UNIFORM_TEXEL,
+            STORAGE_TEXEL,
+            INDIRECT,
+        };
+#undef VERTEX
+#undef INDEX
+#undef TRANSFER_SRC
+#undef TRANFERT_DST
+#undef UNIFORM
+#undef STORAGE
+#undef UNIFORM_TEXEL
+#undef STORAGE_TEXEL
+#undef INDIRECT
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define TRANSFER_SRC             IMAGE_USAGE_VALUE(TRANSFER_SRC)
+    #define TRANSFER_DST             IMAGE_USAGE_VALUE(TRANSFER_DST)
+    #define SAMPLED                  IMAGE_USAGE_VALUE(SAMPLED)
+    #define STORAGE                  IMAGE_USAGE_VALUE(STORAGE)
+    #define COLOR_ATTACHMENT         IMAGE_USAGE_VALUE(COLOR_ATTACHMENT)
+    #define DEPTH_STENCIL_ATTACHMENT IMAGE_USAGE_VALUE(DEPTH_STENCIL_ATTACHMENT)
+    #define TRANSIENT_ATTACHMENT     IMAGE_USAGE_VALUE(TRANSIENT_ATTACHMENT)
+    #define INPUT_ATTACHMENT         IMAGE_USAGE_VALUE(INPUT_ATTACHMENT)
+#elifdef STORMKIT_GPU_WGPU
+    #define TRANSFER_SRC
+    #define TRANSFER_DST
+    #define SAMPLED
+    #define STORAGE
+    #define COLOR_ATTACHMENT
+    #define DEPTH_STENCIL_ATTACHMENT
+    #define TRANSIENT_ATTACHMENT
+    #define INPUT_ATTACHMENT
+#endif
+        enum class ImageUsageFlag : u16 {
+            TRANSFER_SRC,
+            TRANSFER_DST,
+            SAMPLED,
+            STORAGE,
+            COLOR_ATTACHMENT,
+            DEPTH_STENCIL_ATTACHMENT,
+            TRANSIENT_ATTACHMENT,
+            INPUT_ATTACHMENT,
+        };
+#undef TRANSFER_SRC
+#undef TRANSFER_DST
+#undef SAMPLED
+#undef STORAGE
+#undef COLOR_ATTACHMENT
+#undef DEPTH_STENCIL_ATTACHMENT
+#undef TRANSIENT_ATTACHMENT
+#undef INPUT_ATTACHMENT
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define DEVICE_LOCAL  MEMORY_PROPERTY_VALUE(DEVICE_LOCAL)
+    #define HOST_VISIBLE  MEMORY_PROPERTY_VALUE(HOST_VISIBLE)
+    #define HOST_COHERENT MEMORY_PROPERTY_VALUE(HOST_COHERENT)
+    #define HOST_CACHED   MEMORY_PROPERTY_VALUE(HOST_CACHED)
+#elifdef STORMKIT_GPU_WGPU
+    #define DEVICE_LOCAL
+    #define HOST_VISIBLE
+    #define HOST_COHERENT
+    #define HOST_CACHED
+#endif
+        enum class MemoryPropertyFlag : u8 {
+            DEVICE_LOCAL,
+            HOST_VISIBLE,
+            HOST_COHERENT,
+            HOST_CACHED,
+        };
+#undef DEVICE_LOCAL
+#undef HOST_VISIBLE
+#undef HOST_COHERENT
+#undef HOST_CACHED
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define PRIMARY   COMMAND_BUFFER_LEVEL_VALUE(PRIMARY)
+    #define SECONDARY COMMAND_BUFFER_LEVEL_VALUE(SECONDARY)
+#elifdef STORMKIT_GPU_WGPU
+    #define PRIMARY
+    #define SECONDARY
+#endif
+        enum class CommandBufferLevel : u8 {
+            PRIMARY,
+            SECONDARY,
+        };
+#undef PRIMARY
+#undef SECONDARY
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define SAMPLER                DESCRIPTOR_TYPE_VALUE(SAMPLER)
+    #define COMBINED_IMAGE_SAMPLER DESCRIPTOR_TYPE_VALUE(COMBINED_IMAGE_SAMPLER)
+    #define SAMPLED_IMAGE          DESCRIPTOR_TYPE_VALUE(SAMPLED_IMAGE)
+    #define STORAGE_IMAGE          DESCRIPTOR_TYPE_VALUE(STORAGE_IMAGE)
+    #define UNIFORM_TEXEL_BUFFER   DESCRIPTOR_TYPE_VALUE(UNIFORM_TEXEL_BUFFER)
+    #define STORAGE_TEXEL_BUFFER   DESCRIPTOR_TYPE_VALUE(STORAGE_TEXEL_BUFFER)
+    #define UNIFORM_BUFFER         DESCRIPTOR_TYPE_VALUE(UNIFORM_BUFFER)
+    #define STORAGE_BUFFER         DESCRIPTOR_TYPE_VALUE(STORAGE_BUFFER)
+    #define UNIFORM_BUFFER_DYNAMIC DESCRIPTOR_TYPE_VALUE(UNIFORM_BUFFER_DYNAMIC)
+    #define STORAGE_BUFFER_DYNAMIC DESCRIPTOR_TYPE_VALUE(STORAGE_BUFFER_DYNAMIC)
+    #define INPUT_ATTACHMENT       DESCRIPTOR_TYPE_VALUE(INPUT_ATTACHMENT)
+#elifdef STORMKIT_GPU_WGPU
+    #define SAMPLER
+    #define COMBINED_IMAGE_SAMPLER
+    #define SAMPLED_IMAGE
+    #define STORAGE_IMAGE
+    #define UNIFORM_TEXEL_BUFFER
+    #define STORAGE_TEXEL_BUFFER
+    #define UNIFORM_BUFFER
+    #define STORAGE_BUFFER
+    #define UNIFORM_BUFFER_DYNAMIC
+    #define STORAGE_BUFFER_DYNAMIC
+    #define INPUT_ATTACHMENT
+#endif
+        enum class DescriptorType : u8 {
+            SAMPLER,
+            COMBINED_IMAGE_SAMPLER,
+            SAMPLED_IMAGE,
+            STORAGE_IMAGE,
+            UNIFORM_TEXEL_BUFFER,
+            STORAGE_TEXEL_BUFFER,
+            UNIFORM_BUFFER,
+            STORAGE_BUFFER,
+            UNIFORM_BUFFER_DYNAMIC,
+            STORAGE_BUFFER_DYNAMIC,
+            INPUT_ATTACHMENT,
+        };
+#undef SAMPLER
+#undef COMBINED_IMAGE_SAMPLER
+#undef SAMPLED_IMAGE
+#undef STORAGE_IMAGE
+#undef UNIFORM_TEXEL_BUFFER
+#undef STORAGE_TEXEL_BUFFER
+#undef UNIFORM_BUFFER
+#undef STORAGE_BUFFER
+#undef UNIFORM_BUFFER_DYNAMIC
+#undef STORAGE_BUFFER_DYNAMIC
+#undef INPUT_ATTACHMENT
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define NEVER            COMPARE_OP_VALUE(NEVER)
+    #define LESS             COMPARE_OP_VALUE(LESS)
+    #define EQUAL            COMPARE_OP_VALUE(EQUAL)
+    #define LESS_OR_EQUAL    COMPARE_OP_VALUE(LESS_OR_EQUAL)
+    #define GREATER          COMPARE_OP_VALUE(GREATER)
+    #define NOT_EQUAL        COMPARE_OP_VALUE(NOT_EQUAL)
+    #define GREATER_OR_EQUAL COMPARE_OP_VALUE(GREATER_OR_EQUAL)
+    #define ALWAYS           COMPARE_OP_VALUE(ALWAYS)
+#elifdef STORMKIT_GPU_WGPU
+    #define NEVER
+    #define LESS
+    #define EQUAL
+    #define LESS_OR_EQUAL
+    #define GREATER
+    #define NOT_EQUAL
+    #define GREATER_OR_EQUAL
+    #define ALWAYS
+
+#endif
+        enum class CompareOperation : u8 {
+            NEVER,
+            LESS,
+            EQUAL,
+            LESS_OR_EQUAL,
+            GREATER,
+            NOT_EQUAL,
+            GREATER_OR_EQUAL,
+            ALWAYS,
+        };
+#undef NEVER
+#undef LESS
+#undef EQUAL
+#undef LESS_OR_EQUAL
+#undef GREATER
+#undef NOT_EQUAL
+#undef GREATER_OR_EQUAL
+#undef ALWAYS
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define NEAREST   FILTER_VALUE(NEAREST)
+    #define LINEAR    FILTER_VALUE(LINEAR)
+    #define CUBIC_IMG FILTER_VALUE(CUBIC_IMG)
+#elifdef STORMKIT_GPU_WGPU
+    #define NEAREST
+    #define LINEAR
+    #define CUBIC_IMG
+#endif
+        enum class Filter : u32 {
+            NEAREST,
+            LINEAR,
+            CUBIC_IMG,
+        };
+#undef NEAREST
+#undef LINEAR
+#undef CUBIC_IMG
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define REPEAT               SAMPLER_ADDRESS_MODE_VALUE(REPEAT)
+    #define MIRRORED_REPEAT      SAMPLER_ADDRESS_MODE_VALUE(MIRRORED_REPEAT)
+    #define CLAMP_TO_EDGE        SAMPLER_ADDRESS_MODE_VALUE(CLAMP_TO_EDGE)
+    #define CLAMP_TO_BORDER      SAMPLER_ADDRESS_MODE_VALUE(CLAMP_TO_BORDER)
+    #define MIRROR_CLAMP_TO_EDGE SAMPLER_ADDRESS_MODE_VALUE(MIRROR_CLAMP_TO_EDGE)
+#elifdef STORMKIT_GPU_WGPU
+    #define REPEAT
+    #define MIRRORED_REPEAT
+    #define CLAMP_TO_EDGE
+    #define CLAMP_TO_BORDER
+    #define MIRROR_CLAMP_TO_EDGE
+#endif
+        enum class SamplerAddressMode : u8 {
+            REPEAT,
+            MIRRORED_REPEAT,
+            CLAMP_TO_EDGE,
+            CLAMP_TO_BORDER,
+            MIRROR_CLAMP_TO_EDGE,
+        };
+#undef REPEAT
+#undef MIRRORED_REPEAT
+#undef CLAMP_TO_EDGE
+#undef CLAMP_TO_BORDER
+#undef MIRROR_CLAMP_TO_EDGE
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define FLOAT_TRANSPARENT_BLACK BORDER_COLOR_VALUE(FLOAT_TRANSPARENT_BLACK)
+    #define INT_TRANSPARENT_BLACK   BORDER_COLOR_VALUE(INT_TRANSPARENT_BLACK)
+    #define FLOAT_OPAQUE_BLACK      BORDER_COLOR_VALUE(FLOAT_OPAQUE_BLACK)
+    #define INT_OPAQUE_BLACK        BORDER_COLOR_VALUE(INT_OPAQUE_BLACK)
+    #define FLOAT_OPAQUE_WHITE      BORDER_COLOR_VALUE(FLOAT_OPAQUE_WHITE)
+    #define INT_OPAQUE_WHITE        BORDER_COLOR_VALUE(INT_OPAQUE_WHITE)
+#elifdef STORMKIT_GPU_WGPU
+    #define FLOAT_TRANSPARENT_BLACK
+    #define INT_TRANSPARENT_BLACK
+    #define FLOAT_OPAQUE_BLACK
+    #define INT_OPAQUE_BLACK
+    #define FLOAT_OPAQUE_WHITE
+    #define INT_OPAQUE_WHITE
+#endif
+        enum class BorderColor : u8 {
+            FLOAT_TRANSPARENT_BLACK,
+            INT_TRANSPARENT_BLACK,
+            FLOAT_OPAQUE_BLACK,
+            INT_OPAQUE_BLACK,
+            FLOAT_OPAQUE_WHITE,
+            INT_OPAQUE_WHITE,
+        };
+#undef FLOAT_TRANSPARENT_BLACK
+#undef INT_TRANSPARENT_BLACK
+#undef FLOAT_OPAQUE_BLACK
+#undef INT_OPAQUE_BLACK
+#undef FLOAT_OPAQUE_WHITE
+#undef INT_OPAQUE_WHITE
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define NEAREST SAMPLER_MIPMAP_MODE_VALUE(NEAREST)
+    #define LINEAR  SAMPLER_MIPMAP_MODE_VALUE(LINEAR)
+#elifdef STORMKIT_GPU_WGPU
+    #define NEAREST
+    #define LINEAR
+#endif
+        enum class SamplerMipmapMode : u8 {
+            NEAREST,
+            LINEAR,
+        };
+#undef NEAREST
+#undef LINEAR
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define SUCCESS                              RESULT_VALUE(SUCCESS)
+    #define NOT_READY                            RESULT_VALUE(NOT_READY)
+    #define TIMEOUT                              RESULT_VALUE(TIMEOUT)
+    #define EVENT_SET                            RESULT_VALUE(EVENT_SET)
+    #define EVENT_RESET                          RESULT_VALUE(EVENT_RESET)
+    #define INCOMPLETE                           RESULT_VALUE(INCOMPLETE)
+    #define ERROR_OUT_OF_HOST_MEMORY             RESULT_VALUE(ERROR_OUT_OF_HOST_MEMORY)
+    #define ERROR_OUT_OF_DEVICE_MEMORY           RESULT_VALUE(ERROR_OUT_OF_DEVICE_MEMORY)
+    #define ERROR_INITIALIZATION_FAILED          RESULT_VALUE(ERROR_INITIALIZATION_FAILED)
+    #define ERROR_DEVICE_LOST                    RESULT_VALUE(ERROR_DEVICE_LOST)
+    #define ERROR_MEMORY_MAP_FAILED              RESULT_VALUE(ERROR_MEMORY_MAP_FAILED)
+    #define ERROR_LAYER_NOT_PRESENT              RESULT_VALUE(ERROR_LAYER_NOT_PRESENT)
+    #define ERROR_EXTENSION_NOT_PRESENT          RESULT_VALUE(ERROR_EXTENSION_NOT_PRESENT)
+    #define ERROR_FEATURE_NOT_PRESENT            RESULT_VALUE(ERROR_FEATURE_NOT_PRESENT)
+    #define ERROR_INCOMPATIBLE_DRIVER            RESULT_VALUE(ERROR_INCOMPATIBLE_DRIVER)
+    #define ERROR_TOO_MANY_OBJECTS               RESULT_VALUE(ERROR_TOO_MANY_OBJECTS)
+    #define ERROR_FORMAT_NOT_SUPPORTED           RESULT_VALUE(ERROR_FORMAT_NOT_SUPPORTED)
+    #define ERROR_FRAGMENTED_POOL                RESULT_VALUE(ERROR_FRAGMENTED_POOL)
+    #define ERROR_UNKNOWN                        RESULT_VALUE(ERROR_UNKNOWN)
+    #define ERROR_OUT_OF_POOL_MEMORY             RESULT_VALUE(ERROR_OUT_OF_POOL_MEMORY)
+    #define ERROR_INVALID_EXTERNAL_HANDLE        RESULT_VALUE(ERROR_INVALID_EXTERNAL_HANDLE)
+    #define ERROR_FRAGMENTATION                  RESULT_VALUE(ERROR_FRAGMENTATION)
+    #define ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS RESULT_VALUE(ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS)
+    #define ERROR_SURFACE_LOST                   RESULT_VALUE_KHR(ERROR_SURFACE_LOST)
+    #define ERROR_NATIVE_WINDOW_IN_USE           RESULT_VALUE_KHR(ERROR_NATIVE_WINDOW_IN_USE)
+    #define SUBOPTIMAL                           RESULT_VALUE_KHR(SUBOPTIMAL)
+    #define ERROR_OUT_OF_DATE                    RESULT_VALUE_KHR(ERROR_OUT_OF_DATE)
+    #define ERROR_INCOMPATIBLE_DISPLAY           RESULT_VALUE_KHR(ERROR_INCOMPATIBLE_DISPLAY)
+    #define ERROR_VALIDATION_FAILED              RESULT_VALUE_EXT(ERROR_VALIDATION_FAILED)
+    #define ERROR_NOT_PERMITTED                  RESULT_VALUE(ERROR_NOT_PERMITTED)
+    #define ERROR_FULLSCREEN_EXCLUSIVE_MODE_LOST \
+        ERROR_FULLSCREEN_EXCLUSIVE_MODE_LOST = VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT
+    #define THREAD_IDLE               RESULT_VALUE_KHR(THREAD_IDLE)
+    #define THREAD_DONE               RESULT_VALUE_KHR(THREAD_DONE)
+    #define OPERATION_DEFERRED        RESULT_VALUE_KHR(OPERATION_DEFERRED)
+    #define OPERATION_NOT_DEFERRED    RESULT_VALUE_KHR(OPERATION_NOT_DEFERRED)
+    #define PIPELINE_COMPILE_REQUIRED RESULT_VALUE(PIPELINE_COMPILE_REQUIRED)
+#elifdef STORMKIT_GPU_WGPU
+    #define SUCCESS
+    #define NOT_READY
+    #define TIMEOUT
+    #define EVENT_SET
+    #define EVENT_RESET
+    #define INCOMPLETE
+    #define ERROR_OUT_OF_HOST_MEMORY
+    #define ERROR_OUT_OF_DEVICE_MEMORY
+    #define ERROR_INITIALIZATION_FAILED
+    #define ERROR_DEVICE_LOST
+    #define ERROR_MEMORY_MAP_FAILED
+    #define ERROR_LAYER_NOT_PRESENT
+    #define ERROR_EXTENSION_NOT_PRESENT
+    #define ERROR_FEATURE_NOT_PRESENT
+    #define ERROR_INCOMPATIBLE_DRIVER
+    #define ERROR_TOO_MANY_OBJECTS
+    #define ERROR_FORMAT_NOT_SUPPORTED
+    #define ERROR_FRAGMENTED_POOL
+    #define ERROR_UNKNOWN
+    #define ERROR_OUT_OF_POOL_MEMORY
+    #define ERROR_INVALID_EXTERNAL_HANDLE
+    #define ERROR_FRAGMENTATION
+    #define ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS
+    #define ERROR_SURFACE_LOST
+    #define ERROR_NATIVE_WINDOW_IN_USE
+    #define SUBOPTIMAL
+    #define ERROR_OUT_OF_DATE
+    #define ERROR_INCOMPATIBLE_DISPLAY
+    #define ERROR_VALIDATION_FAILED
+    #define ERROR_NOT_PERMITTED
+    #define ERROR_FULLSCREEN_EXCLUSIVE_MODE_LOST
+    #define THREAD_IDLE
+    #define THREAD_DONE
+    #define OPERATION_DEFERRED
+    #define OPERATION_NOT_DEFERRED
+    #define PIPELINE_COMPILE_REQUIRED
+#endif
+        enum class Result : i32 {
+            SUCCESS,
+            NOT_READY,
+            TIMEOUT,
+            EVENT_SET,
+            EVENT_RESET,
+            INCOMPLETE,
+            ERROR_OUT_OF_HOST_MEMORY,
+            ERROR_OUT_OF_DEVICE_MEMORY,
+            ERROR_INITIALIZATION_FAILED,
+            ERROR_DEVICE_LOST,
+            ERROR_MEMORY_MAP_FAILED,
+            ERROR_LAYER_NOT_PRESENT,
+            ERROR_EXTENSION_NOT_PRESENT,
+            ERROR_FEATURE_NOT_PRESENT,
+            ERROR_INCOMPATIBLE_DRIVER,
+            ERROR_TOO_MANY_OBJECTS,
+            ERROR_FORMAT_NOT_SUPPORTED,
+            ERROR_FRAGMENTED_POOL,
+            ERROR_UNKNOWN,
+            ERROR_OUT_OF_POOL_MEMORY,
+            ERROR_INVALID_EXTERNAL_HANDLE,
+            ERROR_FRAGMENTATION,
+            ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS,
+            ERROR_SURFACE_LOST,
+            ERROR_NATIVE_WINDOW_IN_USE,
+            SUBOPTIMAL,
+            ERROR_OUT_OF_DATE,
+            ERROR_INCOMPATIBLE_DISPLAY,
+            ERROR_VALIDATION_FAILED,
+            ERROR_NOT_PERMITTED,
+            ERROR_FULLSCREEN_EXCLUSIVE_MODE_LOST,
+            THREAD_IDLE,
+            THREAD_DONE,
+            OPERATION_DEFERRED,
+            OPERATION_NOT_DEFERRED,
+            PIPELINE_COMPILE_REQUIRED,
+        };
+#undef SUCCESS
+#undef NOT_READY
+#undef TIMEOUT
+#undef EVENT_SET
+#undef EVENT_RESET
+#undef INCOMPLETE
+#undef ERROR_OUT_OF_HOST_MEMORY
+#undef ERROR_OUT_OF_DEVICE_MEMORY
+#undef ERROR_INITIALIZATION_FAILED
+#undef ERROR_DEVICE_LOST
+#undef ERROR_MEMORY_MAP_FAILED
+#undef ERROR_LAYER_NOT_PRESENT
+#undef ERROR_EXTENSION_NOT_PRESENT
+#undef ERROR_FEATURE_NOT_PRESENT
+#undef ERROR_INCOMPATIBLE_DRIVER
+#undef ERROR_TOO_MANY_OBJECTS
+#undef ERROR_FORMAT_NOT_SUPPORTED
+#undef ERROR_FRAGMENTED_POOL
+#undef ERROR_UNKNOWN
+#undef ERROR_OUT_OF_POOL_MEMORY
+#undef ERROR_INVALID_EXTERNAL_HANDLE
+#undef ERROR_FRAGMENTATION
+#undef ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS
+#undef ERROR_SURFACE_LOST
+#undef ERROR_NATIVE_WINDOW_IN_USE
+#undef SUBOPTIMAL
+#undef ERROR_OUT_OF_DATE
+#undef ERROR_INCOMPATIBLE_DISPLAY
+#undef ERROR_VALIDATION_FAILED
+#undef ERROR_NOT_PERMITTED
+#undef ERROR_FULLSCREEN_EXCLUSIVE_MODE_LOST
+#undef THREAD_IDLE
+#undef THREAD_DONE
+#undef OPERATION_DEFERRED
+#undef OPERATION_NOT_DEFERRED
+#undef PIPELINE_COMPILE_REQUIRED
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define T1D T1D = VK_IMAGE_TYPE_1D
+    #define T2D T2D = VK_IMAGE_TYPE_2D
+    #define T3D T3D = VK_IMAGE_TYPE_3D
+#elifdef STORMKIT_GPU_WGPU
+    #define T1D
+    #define T2D
+    #define T3D
+#endif
+        enum class ImageType : u8 {
+            T1D,
+            T2D,
+            T3D,
+        };
+#undef T1D
+#undef T2D
+#undef T3D
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define T1D        T1D = VK_IMAGE_VIEW_TYPE_1D
+    #define T2D        T2D = VK_IMAGE_VIEW_TYPE_2D
+    #define T3D        T3D = VK_IMAGE_VIEW_TYPE_3D
+    #define CUBE       CUBE = VK_IMAGE_VIEW_TYPE_CUBE
+    #define T1D_ARRAY  T1D_ARRAY = VK_IMAGE_VIEW_TYPE_1D_ARRAY
+    #define T2D_ARRAY  T2D_ARRAY = VK_IMAGE_VIEW_TYPE_2D_ARRAY
+    #define CUBE_ARRAY CUBE_ARRAY = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY
+#elifdef STORMKIT_GPU_WGPU
+    #define T1D
+    #define T2D
+    #define T3D
+    #define CUBE
+    #define T1D_ARRAY
+    #define T2D_ARRAY
+    #define CUBE_ARRAY
+#endif
+        enum class ImageViewType : u8 {
+            T1D,
+            T2D,
+            T3D,
+            CUBE,
+            T1D_ARRAY,
+            T2D_ARRAY,
+            CUBE_ARRAY,
+        };
+#undef T1D
+#undef T2D
+#undef T3D
+#undef CUBE
+#undef T1D_ARRAY
+#undef T2D_ARRAY
+#undef CUBE_ARRAY
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define UNKNOWN               DEBUG_OBJECT_TYPE_VALUE(UNKNOWN)
+    #define INSTANCE              DEBUG_OBJECT_TYPE_VALUE(INSTANCE)
+    #define PHYSICAL_DEVICE       DEBUG_OBJECT_TYPE_VALUE(PHYSICAL_DEVICE)
+    #define DEVICE                DEBUG_OBJECT_TYPE_VALUE(DEVICE)
+    #define QUEUE                 DEBUG_OBJECT_TYPE_VALUE(QUEUE)
+    #define SEMAPHORE             DEBUG_OBJECT_TYPE_VALUE(SEMAPHORE)
+    #define COMMAND_BUFFER        DEBUG_OBJECT_TYPE_VALUE(COMMAND_BUFFER)
+    #define FENCE                 DEBUG_OBJECT_TYPE_VALUE(FENCE)
+    #define DEVICE_MEMORY         DEBUG_OBJECT_TYPE_VALUE(DEVICE_MEMORY)
+    #define BUFFER                DEBUG_OBJECT_TYPE_VALUE(BUFFER)
+    #define IMAGE                 DEBUG_OBJECT_TYPE_VALUE(IMAGE)
+    #define EVENT                 DEBUG_OBJECT_TYPE_VALUE(EVENT)
+    #define QUERY_POOL            DEBUG_OBJECT_TYPE_VALUE(QUERY_POOL)
+    #define BUFFER_VIEW           DEBUG_OBJECT_TYPE_VALUE(BUFFER_VIEW)
+    #define IMAGE_VIEW            DEBUG_OBJECT_TYPE_VALUE(IMAGE_VIEW)
+    #define SHADER_MODULE         DEBUG_OBJECT_TYPE_VALUE(SHADER_MODULE)
+    #define PIPELINE_CACHE        DEBUG_OBJECT_TYPE_VALUE(PIPELINE_CACHE)
+    #define PIPELINE_LAYOUT       DEBUG_OBJECT_TYPE_VALUE(PIPELINE_LAYOUT)
+    #define RENDER_PASS           DEBUG_OBJECT_TYPE_VALUE(RENDER_PASS)
+    #define PIPELINE              DEBUG_OBJECT_TYPE_VALUE(PIPELINE)
+    #define DESCRIPTOR_SET_LAYOUT DEBUG_OBJECT_TYPE_VALUE(DESCRIPTOR_SET_LAYOUT)
+    #define SAMPLER               DEBUG_OBJECT_TYPE_VALUE(SAMPLER)
+    #define DESCRIPTOR_POOL       DEBUG_OBJECT_TYPE_VALUE(DESCRIPTOR_POOL)
+    #define DESCRIPTOR_SET        DEBUG_OBJECT_TYPE_VALUE(DESCRIPTOR_SET)
+    #define FRAMEBUFFER           DEBUG_OBJECT_TYPE_VALUE(FRAMEBUFFER)
+    #define COMMAND_POOL          DEBUG_OBJECT_TYPE_VALUE(COMMAND_POOL)
+    #define SURFACE               DEBUG_OBJECT_TYPE_VALUE_KHR(SURFACE)
+    #define SWAPCHAIN             DEBUG_OBJECT_TYPE_VALUE_KHR(SWAPCHAIN)
+    #define DEBUG_REPORT_CALLBACK DEBUG_OBJECT_TYPE_VALUE_EXT(DEBUG_REPORT_CALLBACK)
+    #define DISPLAY               DEBUG_OBJECT_TYPE_VALUE_KHR(DISPLAY)
+#elifdef STORMKIT_GPU_WGPU
+    #define UNKNOWN
+    #define INSTANCE
+    #define PHYSICAL_DEVICE
+    #define DEVICE
+    #define QUEUE
+    #define SEMAPHORE
+    #define COMMAND_BUFFER
+    #define FENCE
+    #define DEVICE_MEMORY
+    #define BUFFER
+    #define IMAGE
+    #define EVENT
+    #define QUERY_POOL
+    #define BUFFER_VIEW
+    #define IMAGE_VIEW
+    #define SHADER_MODULE
+    #define PIPELINE_CACHE
+    #define PIPELINE_LAYOUT
+    #define RENDER_PASS
+    #define PIPELINE
+    #define DESCRIPTOR_SET_LAYOUT
+    #define SAMPLER
+    #define DESCRIPTOR_POOL
+    #define DESCRIPTOR_SET
+    #define FRAMEBUFFER
+    #define COMMAND_POOL
+    #define SURFACE
+    #define SWAPCHAIN
+    #define DEBUG_REPORT_CALLBACK
+    #define DISPLAY_KHR
+#endif
+        enum class DebugObjectType : u32 {
+            UNKNOWN,
+            INSTANCE,
+            PHYSICAL_DEVICE,
+            DEVICE,
+            QUEUE,
+            SEMAPHORE,
+            COMMAND_BUFFER,
+            FENCE,
+            DEVICE_MEMORY,
+            BUFFER,
+            IMAGE,
+            EVENT,
+            QUERY_POOL,
+            BUFFER_VIEW,
+            IMAGE_VIEW,
+            SHADER_MODULE,
+            PIPELINE_CACHE,
+            PIPELINE_LAYOUT,
+            RENDER_PASS,
+            PIPELINE,
+            DESCRIPTOR_SET_LAYOUT,
+            SAMPLER,
+            DESCRIPTOR_POOL,
+            DESCRIPTOR_SET,
+            FRAMEBUFFER,
+            COMMAND_POOL,
+            SURFACE,
+            SWAPCHAIN,
+            DEBUG_REPORT_CALLBACK,
+            DISPLAY,
+        };
+#undef UNKNOWN
+#undef INSTANCE
+#undef PHYSICAL_DEVICE
+#undef DEVICE
+#undef QUEUE
+#undef SEMAPHORE
+#undef COMMAND_BUFFER
+#undef FENCE
+#undef DEVICE_MEMORY
+#undef BUFFER
+#undef IMAGE
+#undef EVENT
+#undef QUERY_POOL
+#undef BUFFER_VIEW
+#undef IMAGE_VIEW
+#undef SHADER_MODULE
+#undef PIPELINE_CACHE
+#undef PIPELINE_LAYOUT
+#undef RENDER_PASS
+#undef PIPELINE
+#undef PIPELINELAYOUT
+#undef DESCRIPTOR_SET_LAYOUT
+#undef SAMPLER
+#undef DESCRIPTOR_POOL
+#undef DESCRIPTOR_SET
+#undef FRAMEBUFFER
+#undef COMMAND_POOL
+#undef SURFACE
+#undef SWAPCHAIN
+#undef DEBUG_REPORT_CALLBACK
+#undef DISPLAY_KHR
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define INDIRECT_COMMAND_READ          ACCESS_FLAG_VALUE(INDIRECT_COMMAND_READ)
+    #define VERTEX_ATTRIBUTE_READ          ACCESS_FLAG_VALUE(VERTEX_ATTRIBUTE_READ)
+    #define UNIFORM_READ                   ACCESS_FLAG_VALUE(UNIFORM_READ)
+    #define INPUT_ATTACHMENT_READ          ACCESS_FLAG_VALUE(INPUT_ATTACHMENT_READ)
+    #define SHADER_READ                    ACCESS_FLAG_VALUE(SHADER_READ)
+    #define SHADER_WRITE                   ACCESS_FLAG_VALUE(SHADER_WRITE)
+    #define COLOR_ATTACHMENT_READ          ACCESS_FLAG_VALUE(COLOR_ATTACHMENT_READ)
+    #define COLOR_ATTACHMENT_WRITE         ACCESS_FLAG_VALUE(COLOR_ATTACHMENT_WRITE)
+    #define DEPTH_STENCIL_ATTACHMENT_READ  ACCESS_FLAG_VALUE(DEPTH_STENCIL_ATTACHMENT_READ)
+    #define DEPTH_STENCIL_ATTACHMENT_WRITE ACCESS_FLAG_VALUE(DEPTH_STENCIL_ATTACHMENT_WRITE)
+    #define TRANSFER_READ                  ACCESS_FLAG_VALUE(TRANSFER_READ)
+    #define TRANSFER_WRITE                 ACCESS_FLAG_VALUE(TRANSFER_WRITE)
+    #define HOST_READ                      ACCESS_FLAG_VALUE(HOST_READ)
+    #define HOST_WRITE                     ACCESS_FLAG_VALUE(HOST_WRITE)
+    #define MEMORY_READ                    ACCESS_FLAG_VALUE(MEMORY_READ)
+    #define MEMORY_WRITE                   ACCESS_FLAG_VALUE(MEMORY_WRITE)
+#elifdef STORMKIT_GPU_WGPU
+    #define INDIRECT_COMMAND_READ
+    #define VERTEX_ATTRIBUTE_READ
+    #define UNIFORM_READ
+    #define INPUT_ATTACHMENT_READ
+    #define SHADER_READ
+    #define SHADER_WRITE
+    #define COLOR_ATTACHMENT_READ
+    #define COLOR_ATTACHMENT_WRITE
+    #define DEPTH_STENCIL_ATTACHMENT_READ
+    #define DEPTH_STENCIL_ATTACHMENT_WRITE
+    #define TRANSFER_READ
+    #define TRANSFER_WRITE
+    #define HOST_READ
+    #define HOST_WRITE
+    #define MEMORY_READ
+    #define MEMORY_WRITE
+#endif
+        enum class AccessFlag : u32 {
+            NONE = 0,
+            INDIRECT_COMMAND_READ,
+            VERTEX_ATTRIBUTE_READ,
+            UNIFORM_READ,
+            INPUT_ATTACHMENT_READ,
+            SHADER_READ,
+            SHADER_WRITE,
+            COLOR_ATTACHMENT_READ,
+            COLOR_ATTACHMENT_WRITE,
+            DEPTH_STENCIL_ATTACHMENT_READ,
+            DEPTH_STENCIL_ATTACHMENT_WRITE,
+            TRANSFER_READ,
+            TRANSFER_WRITE,
+            HOST_READ,
+            HOST_WRITE,
+            MEMORY_READ,
+            MEMORY_WRITE,
+        };
+#undef INDIRECT_COMMAND_READ
+#undef VERTEX_ATTRIBUTE_READ
+#undef UNIFORM_READ
+#undef INPUT_ATTACHMENT_READ
+#undef SHADER_READ
+#undef SHADER_WRITE
+#undef COLOR_ATTACHMENT_READ
+#undef COLOR_ATTACHMENT_WRITE
+#undef DEPTH_STENCIL_ATTACHMENT_READ
+#undef DEPTH_STENCIL_ATTACHMENT_WRITE
+#undef TRANSFER_READ
+#undef TRANSFER_WRITE
+#undef HOST_READ
+#undef HOST_WRITE
+#undef MEMORY_READ
+#undef MEMORY_WRITE
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define TOP_OF_PIPE                    PIPELINE_STAGE_VALUE(TOP_OF_PIPE)
+    #define DRAW_INDIRECT                  PIPELINE_STAGE_VALUE(DRAW_INDIRECT)
+    #define VERTEX_INPUT                   PIPELINE_STAGE_VALUE(VERTEX_INPUT)
+    #define VERTEX_SHADER                  PIPELINE_STAGE_VALUE(VERTEX_SHADER)
+    #define TESSELLATION_CONTROL_SHADER    PIPELINE_STAGE_VALUE(TESSELLATION_CONTROL_SHADER)
+    #define TESSELLATION_EVALUATION_SHADER PIPELINE_STAGE_VALUE(TESSELLATION_EVALUATION_SHADER)
+    #define GEOMETRY_SHADER                PIPELINE_STAGE_VALUE(GEOMETRY_SHADER)
+    #define FRAGMENT_SHADER                PIPELINE_STAGE_VALUE(FRAGMENT_SHADER)
+    #define EARLY_FRAGMENT_TESTS           PIPELINE_STAGE_VALUE(EARLY_FRAGMENT_TESTS)
+    #define LATE_FRAGMENT_TESTS            PIPELINE_STAGE_VALUE(LATE_FRAGMENT_TESTS)
+    #define COLOR_ATTACHMENT_OUTPUT        PIPELINE_STAGE_VALUE(COLOR_ATTACHMENT_OUTPUT)
+    #define COMPUTE_SHADER                 PIPELINE_STAGE_VALUE(COMPUTE_SHADER)
+    #define TRANSFER                       PIPELINE_STAGE_VALUE(TRANSFER)
+    #define BOTTOM_OF_PIPE                 PIPELINE_STAGE_VALUE(BOTTOM_OF_PIPE)
+    #define HOST                           PIPELINE_STAGE_VALUE(HOST)
+    #define ALL_GRAPHICS                   PIPELINE_STAGE_VALUE(ALL_GRAPHICS)
+    #define ALL_COMMANDS                   PIPELINE_STAGE_VALUE(ALL_COMMANDS)
+#elifdef STORMKIT_GPU_WGPU
+    #define TOP_OF_PIPE
+    #define DRAW_INDIRECT
+    #define VERTEX_INPUT
+    #define VERTEX_SHADER
+    #define TESSELLATION_CONTROL_SHADER
+    #define TESSELLATION_EVALUATION_SHADER
+    #define GEOMETRY_SHADER
+    #define FRAGMENT_SHADER
+    #define EARLY_FRAGMENT_TESTS
+    #define LATE_FRAGMENT_TESTS
+    #define COLOR_ATTACHMENT_OUTPUT
+    #define COMPUTE_SHADER
+    #define TRANSFER
+    #define BOTTOM_OF_PIPE
+    #define HOST
+    #define ALL_GRAPHICS
+    #define ALL_COMMANDS
+#endif
+        enum class PipelineStageFlag : u32 {
+            NONE = 0,
+            TOP_OF_PIPE,
+            DRAW_INDIRECT,
+            VERTEX_INPUT,
+            VERTEX_SHADER,
+            TESSELLATION_CONTROL_SHADER,
+            TESSELLATION_EVALUATION_SHADER,
+            GEOMETRY_SHADER,
+            FRAGMENT_SHADER,
+            EARLY_FRAGMENT_TESTS,
+            LATE_FRAGMENT_TESTS,
+            COLOR_ATTACHMENT_OUTPUT,
+            COMPUTE_SHADER,
+            TRANSFER,
+            BOTTOM_OF_PIPE,
+            HOST,
+            ALL_GRAPHICS,
+            ALL_COMMANDS,
+        };
+#undef TOP_OF_PIPE
+#undef DRAW_INDIRECT
+#undef VERTEX_INPUT
+#undef VERTEX_SHADER
+#undef TESSELLATION_CONTROL_SHADER
+#undef TESSELLATION_EVALUATION_SHADER
+#undef GEOMETRY_SHADER
+#undef FRAGMENT_SHADER
+#undef EARLY_FRAGMENT_TESTS
+#undef LATE_FRAGMENT_TESTS
+#undef COLOR_ATTACHMENT_OUTPUT
+#undef COMPUTE_SHADER
+#undef TRANSFER
+#undef BOTTOM_OF_PIPE
+#undef HOST
+#undef ALL_GRAPHICS
+#undef ALL_COMMANDS
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define BY_REGION    DEPENDENCY_VALUE(BY_REGION)
+    #define DEVICE_GROUP DEPENDENCY_VALUE(DEVICE_GROUP)
+    #define VIEW_LOCAL   DEPENDENCY_VALUE(VIEW_LOCAL)
+#elifdef STORMKIT_GPU_WGPU
+    #define BY_REGION
+    #define DEVICE_GROUP
+    #define VIEW_LOCAL
+#endif
+        enum class DependencyFlag : u8 {
+            NONE = 0,
+            BY_REGION,
+            DEVICE_GROUP,
+            VIEW_LOCAL,
+        };
+#undef BY_REGION
+#undef DEVICE_GROUP
+#undef VIEW_LOCAL
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define VIEWPORT             DYNAMIC_STATE_VALUE(VIEWPORT)
+    #define SCISSOR              DYNAMIC_STATE_VALUE(SCISSOR)
+    #define LINE_WIDTH           DYNAMIC_STATE_VALUE(LINE_WIDTH)
+    #define DEPTH_BIAS           DYNAMIC_STATE_VALUE(DEPTH_BIAS)
+    #define BLEND_CONSTANTS      DYNAMIC_STATE_VALUE(BLEND_CONSTANTS)
+    #define DEPTH_BOUNDS         DYNAMIC_STATE_VALUE(DEPTH_BOUNDS)
+    #define STENCIL_COMPARE_MASK DYNAMIC_STATE_VALUE(STENCIL_COMPARE_MASK)
+    #define STENCIL_WRITE_MASK   DYNAMIC_STATE_VALUE(STENCIL_WRITE_MASK)
+    #define STENCIL_REFERENCE    DYNAMIC_STATE_VALUE(STENCIL_REFERENCE)
+#elifdef STORMKIT_GPU_WGPU
+    #define VIEWPORT
+    #define SCISSOR
+    #define LINE_WIDTH
+    #define DEPTH_BIAS
+    #define BLEND_CONSTANTS
+    #define DEPTH_BOUNDS
+    #define STENCIL_COMPARE_MASK
+    #define STENCIL_WRITE_MASK
+    #define STENCIL_REFERENCE
+#endif
+        enum class DynamicState : u8 {
+            VIEWPORT,
+            SCISSOR,
+            LINE_WIDTH,
+            DEPTH_BIAS,
+            BLEND_CONSTANTS,
+            DEPTH_BOUNDS,
+            STENCIL_COMPARE_MASK,
+            STENCIL_WRITE_MASK,
+            STENCIL_REFERENCE,
+        };
+#undef VIEWPORT
+#undef SCISSOR
+#undef LINE_WIDTH
+#undef DEPTH_BIAS
+#undef BLEND_CONSTANTS
+#undef DEPTH_BOUNDS
+#undef STENCIL_COMPARE_MASK
+#undef STENCIL_WRITE_MASK
+#undef STENCIL_REFERENCE
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define OPTIMAL IMAGE_TILING_VALUE(OPTIMAL)
+    #define LINEAR  IMAGE_TILING_VALUE(LINEAR)
+#elifdef STORMKIT_GPU_WGPU
+    #define OPTIMAL
+    #define LINEAR
+#endif
+        enum class ImageTiling : u32 {
+            OPTIMAL,
+            LINEAR,
+        };
+#undef OPTIMAL
+#undef LINEAR
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define FRONT STENCIL_FACE_VALUE(FRONT)
+    #define BACK  STENCIL_FACE_VALUE(BACK)
+#elifdef STORMKIT_GPU_WGPU
+    #define FRONT
+    #define BACK
+#endif
+        enum class StencilFaceFlag : u8 {
+            FRONT,
+            BACK,
+#undef FRONT
+#undef BACK
+            FRONT_AND_BACK = FRONT | BACK,
+        };
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define TRIANGLES GEOMETRY_TYPE_VALUE(TRIANGLES)
+    #define AABBS     GEOMETRY_TYPE_VALUE(AABBS)
+    #define INSTANCES GEOMETRY_TYPE_VALUE(INSTANCES)
+#elifdef STORMKIT_GPU_WGPU
+    #define TRIANGLES
+    #define AABBS
+    #define INSTANCES
+#endif
+        enum class GeometryType : u8 {
+            TRIANGLES,
+            AABBS,
+            INSTANCES,
+        };
+#undef TRIANGLES
+#undef AABBS
+#undef INSTANCES
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define OPAQUE                          GEOMETRY_VALUE(OPAQUE)
+    #define NO_DUPLICATE_ANY_HIT_INVOCATION GEOMETRY_VALUE(NO_DUPLICATE_ANY_HIT_INVOCATION)
+#elifdef STORMKIT_GPU_WGPU
+    #define OPAQUE
+    #define NO_DUPLICATE_ANY_HIT_INVOCATION
+#endif
+        enum class GeometryFlag : u8 {
+            OPAQUE,
+            NO_DUPLICATE_ANY_HIT_INVOCATION,
+        };
+#undef OPAQUE
+#undef NO_DUPLICATE_ANY_HIT_INVOCATION
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define SRGB_NONLINEAR          COLOR_SPACE_VALUE(SRGB_NONLINEAR_KHR)
+    #define DISPLAY_P3_NONLINEAR    COLOR_SPACE_VALUE_EXT(DISPLAY_P3_NONLINEAR)
+    #define EXTENDED_SRGB_LINEAR    COLOR_SPACE_VALUE_EXT(EXTENDED_SRGB_LINEAR)
+    #define DCI_P3_NONLINEAR        COLOR_SPACE_VALUE_EXT(DCI_P3_NONLINEAR)
+    #define BT709_LINEAR            COLOR_SPACE_VALUE_EXT(BT709_LINEAR)
+    #define BT709_NONLINEAR         COLOR_SPACE_VALUE_EXT(BT709_NONLINEAR)
+    #define BT2020_LINEAR           COLOR_SPACE_VALUE_EXT(BT2020_LINEAR)
+    #define HDR10_ST2084            COLOR_SPACE_VALUE_EXT(HDR10_ST2084)
+    #define DOLBYVISION             COLOR_SPACE_VALUE_EXT(DOLBYVISION)
+    #define HDR10_HLG               COLOR_SPACE_VALUE_EXT(HDR10_HLG)
+    #define ADOBERGB_LINEAR         COLOR_SPACE_VALUE_EXT(ADOBERGB_LINEAR)
+    #define ADOBERGB_NONLINEAR      COLOR_SPACE_VALUE_EXT(ADOBERGB_NONLINEAR)
+    #define PASS_THROUGH            COLOR_SPACE_VALUE_EXT(PASS_THROUGH)
+    #define EXTENDED_SRGB_NONLINEAR COLOR_SPACE_VALUE_EXT(EXTENDED_SRGB_NONLINEAR)
+    #define DISPLAY_NATIVE_AMD      COLOR_SPACE_VALUE(DISPLAY_NATIVE_AMD)
+    #define DISPLAY_P3_LINEAR       COLOR_SPACE_VALUE_EXT(DISPLAY_P3_LINEAR)
+#elifdef STORMKIT_GPU_WGPU
+    #define SRGB_NONLINEAR
+    #define DISPLAY_P3_NONLINEAR
+    #define DISPLAY_P3_LINEAR
+    #define DCI_P3_NONLINEAR
+    #define BT709_LINEAR
+    #define BT709_NONLINEAR
+    #define BT2020_LINEAR
+    #define HDR10_ST2084
+    #define DOLBYVISION
+    #define HDR10_HLG
+    #define ADOBERGB_LINEAR
+    #define ADOBERGB_NONLINEAR
+    #define PASS_THROUGH
+    #define EXTENDED_SRGB_LINEAR
+    #define EXTENDED_SRGB_NONLINEAR
+    #define DISPLAY_NATIVE_AMD
+#endif
+        enum class ColorSpace : u32 {
+            SRGB_NONLINEAR,
+            DISPLAY_P3_NONLINEAR,
+            DISPLAY_P3_LINEAR,
+            EXTENDED_SRGB_LINEAR,
+            DCI_P3_NONLINEAR,
+            BT709_LINEAR,
+            BT709_NONLINEAR,
+            BT2020_LINEAR,
+            HDR10_ST2084,
+            DOLBYVISION,
+            HDR10_HLG,
+            ADOBERGB_LINEAR,
+            ADOBERGB_NONLINEAR,
+            PASS_THROUGH,
+            EXTENDED_SRGB_NONLINEAR,
+            DISPLAY_NATIVE_AMD,
+        };
+#undef NO_DUPLICATE_ANY_HIT_INVOCATION
+#undef DISPLAY_P3_NONLINEAR
+#undef EXTENDED_SRGB_LINEAR
+#undef DCI_P3_NONLINEAR
+#undef BT709_LINEAR
+#undef BT709_NONLINEAR
+#undef BT2020_LINEAR
+#undef HDR10_ST2084
+#undef DOLBYVISION
+#undef HDR10_HLG
+#undef ADOBERGB_LINEAR
+#undef ADOBERGB_NONLINEAR
+#undef PASS_THROUGH
+#undef EXTENDED_SRGB_NONLINEAR
+#undef DISPLAY_NATIVE_AMD
+#undef SRGB_NONLINEAR
+#undef DCI_P3_LINEAR
+#undef DISPLAY_P3_LINEAR
+
+#ifdef STORMKIT_GPU_VULKAN
+    #define IMMEDIATE                 PRESENT_MODE_VALUE(IMMEDIATE)
+    #define MAILBOX                   PRESENT_MODE_VALUE(MAILBOX)
+    #define FIFO                      PRESENT_MODE_VALUE(FIFO)
+    #define FIFO_RELAXED              PRESENT_MODE_VALUE(FIFO_RELAXED)
+    #define SHARED_DEMAND_REFRESH     PRESENT_MODE_VALUE(SHARED_DEMAND_REFRESH)
+    #define SHARED_CONTINUOUS_REFRESH PRESENT_MODE_VALUE(SHARED_CONTINUOUS_REFRESH)
+#elifdef STORMKIT_GPU_WGPU
+    #define IMMEDIATE
+    #define MAILBOX
+    #define FIFO
+    #define FIFO_RELAXED
+    #define SHARED_DEMAND_REFRESH
+    #define SHARED_CONTINUOUS_REFRESH
+#endif
+        enum class PresentMode : u32 {
+            IMMEDIATE,
+            MAILBOX,
+            FIFO,
+            FIFO_RELAXED,
+            SHARED_DEMAND_REFRESH,
+            SHARED_CONTINUOUS_REFRESH,
+        };
+#undef IMMEDIATE
+#undef MAILBOX
+#undef FIFO
+#undef FIFO_RELAXED
+#undef SHARED_DEMAND_REFRESH
+#undef SHARED_CONTINUOUS_REFRESH
+
+        struct SurfaceFormat {
+            PixelFormat format;
+            ColorSpace  color_space;
+        };
+
+        struct MemoryBarrier {
+            AccessFlag src;
+            AccessFlag dst;
+        };
+
+        struct RenderCapabilities {
+            struct {
+                bool robust_buffer_access;
+                bool full_draw_index_uint32;
+                bool image_cube_array;
+                bool independent_blend;
+                bool geometry_shader;
+                bool tessellation_shader;
+                bool sampler_rate_shading;
+                bool dual_src_blend;
+                bool logic_op;
+                bool multi_draw_indirect;
+                bool draw_indirect_first_instance;
+                bool depth_clamp;
+                bool depth_bias_clamp;
+                bool fill_Mode_non_solid;
+                bool depth_bounds;
+                bool wide_lines;
+                bool large_points;
+                bool alpha_to_one;
+                bool multi_viewport;
+                bool sampler_anisotropy;
+                bool texture_compression_etc2;
+                bool texture_compression_astc_ldr;
+                bool texture_compression_bc;
+                bool occlusion_query_precise;
+                bool pipeline_statistics_query;
+                bool vertex_pipeline_stores_and_atomics;
+                bool fragment_stores_and_atomics;
+                bool shader_tessellation_and_geometry_point_size;
+                bool shader_image_gather_extended;
+                bool shader_storage_image_extended_formats;
+                bool shader_storage_image_multisample;
+                bool shader_storage_image_read_without_format;
+                bool shader_storage_image_write_without_format;
+                bool shader_uniform_buffer_array_dynamic_indexing;
+                bool shader_sampled_image_array_dynamic_indexing;
+                bool shader_storage_buffer_array_dynamic_indexing;
+                bool shader_storage_image_array_dynamic_indexing;
+                bool shader_clip_distance;
+                bool shader_cull_distance;
+                bool shader_float_64;
+                bool shader_int_64;
+                bool shader_int_16;
+                bool shader_resource_residency;
+                bool shader_resource_min_lod;
+                bool sparse_binding;
+                bool sparse_residency_buffer;
+                bool sparse_residency_image_2D;
+                bool sparse_residency_image_3D;
+                bool sparse_residency_2_samples;
+                bool sparse_residency_4_samples;
+                bool sparse_residency_6_samples;
+                bool sparse_residency_8_samples;
+                bool sparse_residency_16_samples;
+                bool sparse_residency_aliased;
+                bool variable_multisample_rate;
+                bool inherited_queries;
+            } features;
+
+            struct {
+                u32                  max_image_dimension_1D;
+                u32                  max_image_dimension_2D;
+                u32                  max_image_dimension_3D;
+                u32                  max_image_dimension_cube;
+                u32                  max_image_array_layers;
+                u32                  max_texel_buffer_elements;
+                u32                  max_uniform_buffer_range;
+                std::optional<u32>   max_storage_buffer_range;
+                u32                  max_push_constants_size;
+                std::optional<u32>   max_memory_allocation_count;
+                std::optional<u32>   max_sampler_allocation_count;
+                std::optional<u64>   buffer_image_granularity;
+                std::optional<u64>   sparse_address_space_size;
+                std::optional<u32>   max_bound_descriptor_sets;
+                u32                  max_per_stage_descriptor_samplers;
+                u32                  max_per_stage_descriptor_uniform_buffers;
+                u32                  max_per_stage_descriptor_storage_buffers;
+                u32                  max_per_stage_descriptor_sampled_images;
+                u32                  max_per_stage_descriptor_storage_images;
+                std::optional<u32>   max_per_stage_descriptor_input_attachments;
+                std::optional<u32>   max_per_stage_resources;
+                u32                  max_descriptor_set_samplers;
+                u32                  max_descriptor_set_uniform_buffers;
+                u32                  max_descriptor_set_uniform_buffers_dynamic;
+                u32                  max_descriptor_set_storage_buffers;
+                u32                  max_descriptor_set_storage_buffers_dynamic;
+                u32                  max_descriptor_set_sampled_images;
+                u32                  max_descriptor_set_storage_images;
+                std::optional<u32>   max_descriptor_set_input_attachments;
+                u32                  max_vertex_input_attributes;
+                u32                  max_vertex_input_bindings;
+                u32                  max_vertex_input_attribute_offset;
+                std::optional<u32>   max_vertex_input_binding_stride;
+                u32                  max_vertex_output_components;
+                u32                  max_tessellation_generation_level;
+                u32                  max_tessellation_patch_size;
+                u32                  max_tessellation_control_per_vertex_input_components;
+                u32                  max_tessellation_control_per_vertex_output_components;
+                u32                  max_tessellation_control_per_patch_output_components;
+                u32                  max_tessellation_control_total_output_components;
+                u32                  max_tessellation_evaluation_input_components;
+                u32                  max_tessellation_evaluation_output_components;
+                u32                  max_geometry_shader_invocations;
+                u32                  max_geometry_input_components;
+                u32                  max_geometry_output_components;
+                u32                  max_geometry_output_vertices;
+                u32                  max_geometry_total_output_components;
+                u32                  max_fragment_input_components;
+                u32                  max_fragment_output_attachments;
+                u32                  max_fragment_dual_src_attachments;
+                u32                  max_fragment_combined_output_resources;
+                u32                  max_compute_shared_memory_size;
+                std::array<u32, 3>   max_compute_work_group_count;
+                u32                  max_compute_work_group_invocations;
+                std::array<u32, 3>   max_compute_work_group_size;
+                std::optional<u32>   sub_pixel_precision_bits;
+                std::optional<u32>   sub_texel_precision_bits;
+                std::optional<u32>   mipmap_precision_bits;
+                u32                  max_draw_indexed_index_value;
+                std::optional<u32>   max_draw_indirect_count;
+                float                max_sampler_lod_bias;
+                float                max_sampler_anisotropy;
+                u32                  max_viewports;
+                std::array<u32, 2>   max_viewport_dimensions;
+                std::array<float, 2> viewport_bounds_range;
+                std::optional<u32>   viewport_sub_pixel_bits;
+                std::optional<usize> min_memory_map_alignment;
+                std::optional<u64>   min_texel_buffer_offset_alignment;
+                u64                  min_uniform_buffer_offset_alignment;
+                u64                  min_storage_buffer_offset_alignment;
+                i32                  min_texel_offset;
+                u32                  max_texel_offset;
+                i32                  min_texel_gather_offset;
+                u32                  max_texel_gather_offset;
+                float                min_interpolation_offset;
+                float                max_interpolation_offset;
+                std::optional<u32>   sub_pixel_interpolation_offset_bits;
+                u32                  max_framebuffer_width;
+                u32                  max_framebuffer_height;
+                u32                  max_framebuffer_layers;
+                SampleCountFlag      framebuffer_color_sample_counts;
+                SampleCountFlag      framebuffer_depth_sample_counts;
+                SampleCountFlag      framebuffer_stencil_sample_counts;
+                SampleCountFlag      framebuffer_no_attachments_sample_counts;
+                u32                  max_color_attachments;
+                SampleCountFlag      sampled_image_color_sample_counts;
+                SampleCountFlag      sampled_image_integer_sample_counts;
+                SampleCountFlag      sampled_image_depth_sample_counts;
+                SampleCountFlag      sampled_image_stencil_sample_counts;
+                SampleCountFlag      storage_image_sample_counts;
+                u32                  max_sample_mask_words;
+                bool                 timestamp_compute_and_engine;
+                float                timestamp_period;
+                u32                  max_clip_distances;
+                u32                  max_cull_distances;
+                u32                  max_combined_clip_and_cull_distances;
+                u32                  discrete_queue_priorities;
+                std::array<float, 2> point_size_range;
+                std::array<float, 2> line_width_range;
+                float                point_size_granularity;
+                float                line_width_granularity;
+                bool                 strict_lines;
+                bool                 standard_sample_locations;
+                std::optional<u64>   optimal_buffer_copy_offset_alignment;
+                std::optional<u64>   optimal_buffer_copy_row_pitch_alignment;
+                u64                  non_coherent_atom_size;
+            } limits;
+        };
+
+        struct ImageSubresourceRange {
+            ImageAspectMaskFlag aspect_mask = ImageAspectMaskFlag::COLOR;
+
+            u32 base_mip_level   = 0u;
+            u32 level_count      = 1u;
+            u32 base_array_layer = 0u;
+            u32 layer_count      = 1u;
+        };
+
+        struct ImageSubresourceLayers {
+            ImageAspectMaskFlag aspect_mask = ImageAspectMaskFlag::COLOR;
+
+            u32 mip_level        = 0u;
+            u32 base_array_layer = 0u;
+            u32 layer_count      = 1u;
+        };
+
+        struct Viewport {
+            math::Vector2F     position;
+            math::Extent2<f32> extent;
+            math::Vector2F     depth;
+        };
+
+        struct Scissor {
+            math::Vector2I     offset;
+            math::Extent2<u32> extent;
+        };
+
+        struct ClearColor {
+            RGBColorF color = stormkit::RGBColorDef::SILVER<float>;
+        };
+
+        struct ClearDepthStencil {
+            float depth   = 1.f;
+            u32   stencil = 0;
+        };
+
+        using ClearValue = std::variant<ClearColor, ClearDepthStencil>;
+
+        struct BufferImageCopy {
+            u32 buffer_offset;
+            u32 buffer_row_length;
+            u32 buffer_image_height;
+
+            ImageSubresourceLayers subresource_layers;
+
+            math::Vector3I     offset;
+            math::Extent3<u32> extent;
+        };
+
+        struct BlitRegion {
+            ImageSubresourceLayers src;
+            ImageSubresourceLayers dst;
+
+            std::array<math::Vector3I, 2> src_offset;
+            std::array<math::Vector3I, 2> dst_offset;
+        };
+
+        struct PushConstantRange {
+            ShaderStageFlag stages;
+            u32             offset;
+            usize           size;
+        };
+
+        struct PhysicalDeviceInfo {
+            u64         device_id;
+            std::string device_name;
+            u64         vendor_id;
+            std::string vendor_name;
+
+            u32 api_major_version;
+            u32 api_minor_version;
+            u32 api_patch_version;
+
+            u32 driver_major_version;
+            u32 driver_minor_version;
+            u32 driver_patch_version;
+
+            std::array<u8, 16> pipeline_cache_uuid;
+
+            PhysicalDeviceType type;
+        };
+
+        struct QueueFamily {
+            QueueFlag flags;
+            u32       count;
+        };
+
+        using ClearValue = std::variant<ClearColor, ClearDepthStencil>;
+        using SpirvID    = u32;
+
+        template<class T>
+        using Expected = std::expected<T, Result>;
+
+        [[nodiscard]]
+        constexpr auto is_depth_only_format(PixelFormat format) noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto is_depth_stencil_format(PixelFormat format) noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto is_depth_format(PixelFormat format) noexcept -> bool;
+
+        [[nodiscard]]
+        constexpr auto get_format_channel_count(PixelFormat format) noexcept -> u8;
+        [[nodiscard]]
+        constexpr auto get_format_element_count(PixelFormat format) noexcept -> u8;
+
+        [[nodiscard]]
+        constexpr auto compute_mip_level(const math::Extent2<u32>& extent) noexcept -> u32;
+        [[nodiscard]]
+        constexpr auto compute_uniform_buffer_offset_align(usize size,
+                                                           const RenderCapabilities&
+                                                             capabilities) noexcept -> usize;
+
+        [[nodiscard]]
+        auto to_string(const PhysicalDeviceInfo& data) noexcept;
+
+        template<meta::IsEnumeration Out = VkFlags, meta::IsEnumeration T>
+        [[nodiscard]]
+        constexpr auto to_vk(T value) noexcept -> Out;
+
+        template<typename T>
+            requires(
+              requires { std::declval<T>().native_handle(); }
+              or requires { std::declval<T>()->native_handle(); })
+        [[nodiscard]]
+        auto to_vk(const T& value) noexcept -> decltype(auto);
+
+        template<meta::IsEnumeration T, meta::IsEnumeration U = VkFlags>
+        [[nodiscard]]
+        constexpr auto from_vk(U) noexcept -> T;
+
+        template<typename Out>
+        [[nodiscard]]
+        constexpr auto to_vk(const math::Vector2I& vector) noexcept -> Out;
+
+        template<typename Out>
+        [[nodiscard]]
+        constexpr auto to_vk(const math::Vector3I& vector) noexcept -> Out;
+
+        // template<>
+        // [[nodiscard]]
+        // constexpr auto to_vk<VkOffset2D, math::Vector2I>(const math::Vector2I& vector) noexcept
+        //   -> VkOffset2D;
+
+        [[nodiscard]]
+        constexpr auto from_vk(const VkOffset2D& vector) noexcept -> math::Vector2I;
+
+        [[nodiscard]]
+        constexpr auto from_vk(const VkOffset3D& vector) noexcept -> math::Vector3I;
+
+        [[nodiscard]]
+        constexpr auto to_vk(const Viewport& viewport) noexcept -> VkViewport;
+
+        [[nodiscard]]
+        constexpr auto to_vk(const Scissor& viewport) noexcept -> VkRect2D;
+
+        [[nodiscard]]
+        constexpr auto from_vk(const VkViewport& viewport) noexcept -> Viewport;
+
+        template<math::meta::IsExtent2 Extent>
+        [[nodiscard]]
+        constexpr auto to_vk(const Extent& extent) noexcept -> VkExtent2D;
+
+        template<math::meta::IsExtent3 Extent>
+        [[nodiscard]]
+        constexpr auto to_vk(const Extent& extent) noexcept -> VkExtent3D;
+
+        template<math::meta::IsExtent2 Extent = math::Vector3<u32>>
+        [[nodiscard]]
+        constexpr auto from_vk(const VkExtent2D& viewport) noexcept -> Extent;
+
+        template<math::meta::IsExtent3 Extent = math::Vector3<u32>>
+        [[nodiscard]]
+        constexpr auto from_vk(const VkExtent3D& viewport) noexcept -> Extent;
+
+        namespace monadic {
+            template<meta::IsEnumeration T = VkFlags>
+            [[nodiscard]]
+            constexpr auto to_vk() noexcept -> decltype(auto);
+
+            [[nodiscard]]
+            constexpr auto to_vk() noexcept -> decltype(auto);
+
+            template<typename T>
+            [[nodiscard]]
+            constexpr auto from_vk() noexcept -> decltype(auto);
+
+            [[nodiscard]]
+            constexpr auto from_vk() noexcept -> decltype(auto);
+        } // namespace monadic
+
+    } // namespace stormkit::gpu
+
+    FLAG_ENUM(stormkit::gpu::QueueFlag)
+    FLAG_ENUM(stormkit::gpu::ShaderStageFlag)
+    FLAG_ENUM(stormkit::gpu::SampleCountFlag)
+    FLAG_ENUM(stormkit::gpu::ColorComponentFlag)
+    FLAG_ENUM(stormkit::gpu::ImageAspectMaskFlag)
+    FLAG_ENUM(stormkit::gpu::ImageCreateFlag)
+    FLAG_ENUM(stormkit::gpu::CullModeFlag)
+    FLAG_ENUM(stormkit::gpu::BufferUsageFlag)
+    FLAG_ENUM(stormkit::gpu::ImageUsageFlag)
+    FLAG_ENUM(stormkit::gpu::MemoryPropertyFlag)
+    FLAG_ENUM(stormkit::gpu::AccessFlag)
+    FLAG_ENUM(stormkit::gpu::PipelineStageFlag)
+    FLAG_ENUM(stormkit::gpu::DependencyFlag)
+    FLAG_ENUM(stormkit::gpu::StencilFaceFlag)
+    FLAG_ENUM(stormkit::gpu::GeometryFlag)
+    HASH_FUNC(stormkit::gpu::Viewport, value.position, value.extent, value.depth)
+    HASH_FUNC(stormkit::gpu::Scissor, value.offset, value.extent)
+}
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit::gpu {
+    // namespace details { namespace {
+    //     template<typename Flag>
+    //     [[maybe_unused]]
+    //     constexpr auto FLAG_MAPPER
+    //       = frozen::unordered_map<Flag, VkFlags, 0> {};
+
+    //    template<>
+    //    [[maybe_unused]]
+    //    constexpr auto FLAG_MAPPER<PhysicalDeviceType>
+    //      = frozen::make_unordered_map<PhysicalDeviceType, VkFlags>({
+    //        { PhysicalDeviceType::DISCRETE_GPU,   VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU   },
+    //        { PhysicalDeviceType::VIRTUAL_GPU,    VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU    },
+    //        { PhysicalDeviceType::INTEGRATED_GPU, VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU },
+    //        { PhysicalDeviceType::CPU,            VK_PHYSICAL_DEVICE_TYPE_CPU            },
+    //        { PhysicalDeviceType::OTHER,          VK_PHYSICAL_DEVICE_TYPE_OTHER          },
+    //    });
+    // }} // namespace details
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto is_depth_only_format(PixelFormat format) noexcept -> bool {
+        return format == PixelFormat::DEPTH16
+               or format == PixelFormat::DEPTH24
+               or format == PixelFormat::DEPTH32F;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto is_depth_stencil_format(PixelFormat format) noexcept -> bool {
+        return format == PixelFormat::DEPTH16_STENCIL8
+               or format == PixelFormat::DEPTH24_STENCIL8
+               or format == PixelFormat::DEPTH32F_STENCIL8;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto is_depth_format(PixelFormat format) noexcept -> bool {
+        return is_depth_only_format(format) or is_depth_stencil_format(format);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto get_format_channel_count(PixelFormat format) noexcept -> u8 {
+        switch (format) {
+            case PixelFormat::R8_SNORM:
+            case PixelFormat::R8_UNORM:
+            case PixelFormat::R16_SNORM:
+            case PixelFormat::R16_UNORM:
+            case PixelFormat::R8I:
+            case PixelFormat::R8U:
+            case PixelFormat::R16I:
+            case PixelFormat::R16U:
+            case PixelFormat::R32I:
+            case PixelFormat::R32U:
+            case PixelFormat::R16F:
+            case PixelFormat::R32F:
+            case PixelFormat::DEPTH16:
+            case PixelFormat::DEPTH24:
+            case PixelFormat::DEPTH32F: return 1;
+
+            case PixelFormat::RG8_SNORM:
+            case PixelFormat::RG8_UNORM:
+            case PixelFormat::RG16_SNORM:
+            case PixelFormat::RG16_UNORM:
+            case PixelFormat::RG8I:
+            case PixelFormat::RG8U:
+            case PixelFormat::RG16I:
+            case PixelFormat::RG16U:
+            case PixelFormat::RG32I:
+            case PixelFormat::RG32U:
+            case PixelFormat::RG16F:
+            case PixelFormat::RG32F:
+            case PixelFormat::DEPTH16_STENCIL8:
+            case PixelFormat::DEPTH24_STENCIL8:
+            case PixelFormat::DEPTH32F_STENCIL8: return 2;
+
+            case PixelFormat::RGB8_SNORM:
+            case PixelFormat::RGB8_UNORM:
+            case PixelFormat::RGB16_SNORM:
+            case PixelFormat::RGB16_UNORM:
+            case PixelFormat::BGR8_UNORM:
+            case PixelFormat::RGB8I:
+            case PixelFormat::RGB8U:
+            case PixelFormat::RGB16I:
+            case PixelFormat::RGB16U:
+            case PixelFormat::RGB32I:
+            case PixelFormat::RGB32U:
+            case PixelFormat::RGB16F:
+            case PixelFormat::RGB32F:
+            case PixelFormat::SRGB8:
+            case PixelFormat::SBGR8:
+            case PixelFormat::R5_G6_B5_UNORM_PACK16:
+            case PixelFormat::B10_GR11UF_PACK32: return 3;
+
+            case PixelFormat::RGBA8_SNORM:
+            case PixelFormat::RGBA8_UNORM:
+            case PixelFormat::RGBA16_SNORM:
+            case PixelFormat::RGBA16_UNORM:
+            case PixelFormat::BGRA8_UNORM:
+            case PixelFormat::RGBA8I:
+            case PixelFormat::RGBA8U:
+            case PixelFormat::RGBA16I:
+            case PixelFormat::RGBA16U:
+            case PixelFormat::RGBA32I:
+            case PixelFormat::RGBA32U:
+            case PixelFormat::RGBA16F:
+            case PixelFormat::RGBA32F:
+            case PixelFormat::SRGBA8:
+            case PixelFormat::SBGRA8: return 4;
+
+            default: break;
+        }
+
+        return 0u;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto get_format_element_count(PixelFormat format) noexcept -> u8 {
+        switch (format) {
+            case PixelFormat::R8_SNORM:
+            case PixelFormat::R8_UNORM:
+            case PixelFormat::RG8_SNORM:
+            case PixelFormat::RG8_UNORM:
+            case PixelFormat::R8I:
+            case PixelFormat::R8U:
+            case PixelFormat::RG8I:
+            case PixelFormat::RG8U:
+            case PixelFormat::RGB8_SNORM:
+            case PixelFormat::RGB8_UNORM:
+            case PixelFormat::BGR8_UNORM:
+            case PixelFormat::RGB8I:
+            case PixelFormat::RGB8U:
+            case PixelFormat::RGBA8_SNORM:
+            case PixelFormat::RGBA8_UNORM:
+            case PixelFormat::RGBA16_SNORM:
+            case PixelFormat::BGRA8_UNORM:
+            case PixelFormat::SRGB8:
+            case PixelFormat::SBGR8:
+            case PixelFormat::SRGBA8:
+            case PixelFormat::SBGRA8: return 1u;
+
+            case PixelFormat::R16_SNORM:
+            case PixelFormat::R16_UNORM:
+            case PixelFormat::R16I:
+            case PixelFormat::R16U:
+            case PixelFormat::RG16_SNORM:
+            case PixelFormat::RG16_UNORM:
+            case PixelFormat::RG16I:
+            case PixelFormat::RG16U:
+            case PixelFormat::RG16F:
+            case PixelFormat::RGB16I:
+            case PixelFormat::RGB16U:
+            case PixelFormat::RGB16F:
+            case PixelFormat::RGBA16I:
+            case PixelFormat::RGBA16U:
+            case PixelFormat::RGBA16F:
+            case PixelFormat::R16F: return 2u;
+
+            case PixelFormat::R32I:
+            case PixelFormat::R32U:
+            case PixelFormat::R32F:
+            case PixelFormat::RG32I:
+            case PixelFormat::RG32U:
+            case PixelFormat::RG32F:
+            case PixelFormat::RGB16_SNORM:
+            case PixelFormat::RGB32I:
+            case PixelFormat::RGB32U:
+            case PixelFormat::RGB32F:
+            case PixelFormat::RGBA8I:
+            case PixelFormat::RGBA8U:
+            case PixelFormat::RGBA32I:
+            case PixelFormat::RGBA32U:
+            case PixelFormat::RGBA32F: return 4u;
+
+            default: break;
+        }
+
+        return 0u;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto compute_mip_level(const math::Extent2<u32>& extent) noexcept -> u32 {
+        const auto as_float = extent.to<f32>();
+        return as<u32>(math::floor(math::log2(math::max(as_float.width, as_float.height)))) + 1;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr auto compute_uniform_buffer_offset_align(usize size,
+                                                       const RenderCapabilities&
+                                                         capabilities) noexcept -> usize {
+        const auto min_ubo_align = capabilities.limits.min_uniform_buffer_offset_alignment;
+        if (min_ubo_align > 0) size = (size + min_ubo_align - 1) & ~(min_ubo_align - 1);
+
+        return size;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto to_string(const PhysicalDeviceInfo& data) noexcept {
+        return std::format("[PhysicalDeviceInfo:\n"
+                           "   .device_id      = {:#06x},\n"
+                           "   .device_name    = {},\n"
+                           "   .vendor_id      = {:#06x},\n"
+                           "   .vendor_name    = {},\n"
+                           "   .api_version    = {}.{}.{},\n"
+                           "   .driver_version = {}.{}.{},\n"
+                           "   .type           = {}]",
+                           data.device_id,
+                           data.device_name,
+                           data.vendor_id,
+                           data.vendor_name,
+                           data.api_major_version,
+                           data.api_minor_version,
+                           data.api_patch_version,
+                           data.driver_major_version,
+                           data.driver_minor_version,
+                           data.driver_patch_version,
+                           data.type);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsEnumeration T = VkFlags, meta::IsEnumeration U>
+    STORMKIT_FORCE_INLINE STORMKIT_INTRINSIC
+    constexpr auto to_vk(U value) noexcept -> T {
+        return narrow<T>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsEnumeration T, meta::IsEnumeration U = VkFlags>
+    STORMKIT_FORCE_INLINE STORMKIT_INTRINSIC
+    constexpr auto from_vk(U value) noexcept -> T {
+        return narrow<T>(value);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+        requires(
+          requires { std::declval<T>().native_handle(); }
+          or requires { std::declval<T>()->native_handle(); })
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    inline auto to_vk(const T& value) noexcept -> decltype(auto) {
+        if constexpr (meta::IsPointer<T>) return value->native_handle();
+        else
+            return value.native_handle();
+    }
+
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto to_vk(const Viewport& viewport) noexcept -> VkViewport {
+        return VkViewport {
+            .x        = viewport.position.x,
+            .y        = viewport.position.y,
+            .width    = viewport.extent.width,
+            .height   = viewport.extent.height,
+            .minDepth = viewport.depth.x,
+            .maxDepth = viewport.depth.y,
+        };
+    }
+
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto to_vk(const Scissor& scissor) noexcept -> VkRect2D {
+        return VkRect2D {
+            .offset = { scissor.offset.x,     scissor.offset.y      },
+            .extent = { scissor.extent.width, scissor.extent.height }
+        };
+    }
+
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto from_vk(const VkViewport& viewport) noexcept -> Viewport {
+        return Viewport {
+            .position = { viewport.x,              viewport.y                },
+            .extent   = { .width = viewport.width, .height = viewport.height },
+            .depth    = { viewport.minDepth,       viewport.maxDepth         },
+        };
+    }
+
+    template<typename Out>
+    constexpr auto to_vk(const math::Vector2I& vector) noexcept -> Out {
+        return Out { .x = vector.x, .y = vector.y };
+    }
+
+    template<typename Out>
+    constexpr auto to_vk(const math::Vector3I& vector) noexcept -> Out {
+        return Out { .x = vector.x, .y = vector.y, .z = vector.z };
+    }
+
+    constexpr auto from_vk(const VkOffset2D& offset) noexcept -> math::Vector2I {
+        return math::Vector2I { offset.x, offset.y };
+    }
+
+    constexpr auto from_vk(const VkOffset3D& offset) noexcept -> math::Vector3I {
+        return math::Vector3I { offset.x, offset.y, offset.z };
+    }
+
+    template<math::meta::IsExtent2 Extent>
+    constexpr auto to_vk(const Extent& extent) noexcept -> VkExtent2D {
+        return VkExtent2D { .width = as<u32>(extent.width), .height = as<u32>(extent.height) };
+    }
+
+    template<math::meta::IsExtent3 Extent>
+    constexpr auto to_vk(const Extent& extent) noexcept -> VkExtent3D {
+        return VkExtent3D { .width  = as<u32>(extent.width),
+                            .height = as<u32>(extent.height),
+                            .depth  = as<u32>(extent.depth) };
+    }
+
+    template<math::meta::IsExtent2 Extent>
+    constexpr auto from_vk(const VkExtent2D& extent) noexcept -> Extent {
+        using T = typename Extent::ElementType;
+        return Extent { .width = as<T>(extent.width), .height = as<T>(extent.height) };
+    }
+
+    template<math::meta::IsExtent3 Extent>
+    constexpr auto from_vk(const VkExtent3D& extent) noexcept -> Extent {
+        using T = typename Extent::ElementType;
+        return Extent { .width = as<T>(extent.width), .height = as<T>(extent.height) };
+    }
+
+    namespace monadic {
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<meta::IsEnumeration T = VkFlags>
+        STORMKIT_FORCE_INLINE STORMKIT_CONST
+        constexpr auto to_vk() noexcept -> decltype(auto) {
+            return [](auto flag) static noexcept -> decltype(auto) { return gpu::to_vk<T>(flag); };
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE STORMKIT_CONST
+        constexpr auto to_vk() noexcept -> decltype(auto) {
+            return
+              [](const auto& value) static noexcept -> decltype(auto) { return gpu::to_vk(value); };
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<typename T>
+        STORMKIT_FORCE_INLINE STORMKIT_CONST
+        constexpr auto from_vk() noexcept -> decltype(auto) {
+            return
+              [](auto flag) static noexcept -> decltype(auto) { return gpu::from_vk<T>(flag); };
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE STORMKIT_CONST
+        constexpr auto from_vk() noexcept -> decltype(auto) {
+            return [](auto val) static noexcept -> decltype(auto) { return gpu::from_vk(val); };
+        }
+    } // namespace monadic
+
+#define SPECIALIZATION(x, y)  \
+    template x from_vk<x>(y); \
+    template y to_vk<y, x>(x)
+
+    SPECIALIZATION(PhysicalDeviceType, VkPhysicalDeviceType);
+    SPECIALIZATION(QueueFlag, VkQueueFlagBits);
+    SPECIALIZATION(ShaderStageFlag, VkShaderStageFlagBits);
+    SPECIALIZATION(PrimitiveTopology, VkPrimitiveTopology);
+    SPECIALIZATION(PolygonMode, VkPolygonMode);
+    SPECIALIZATION(CullModeFlag, VkCullModeFlagBits);
+    SPECIALIZATION(FrontFace, VkFrontFace);
+    SPECIALIZATION(SampleCountFlag, VkSampleCountFlagBits);
+    SPECIALIZATION(ColorComponentFlag, VkColorComponentFlagBits);
+    SPECIALIZATION(BlendFactor, VkBlendFactor);
+    SPECIALIZATION(BlendOperation, VkBlendOp);
+    SPECIALIZATION(LogicOperation, VkLogicOp);
+    SPECIALIZATION(PixelFormat, VkFormat);
+    SPECIALIZATION(AttachmentLoadOperation, VkAttachmentLoadOp);
+    SPECIALIZATION(AttachmentStoreOperation, VkAttachmentStoreOp);
+    SPECIALIZATION(PipelineBindPoint, VkPipelineBindPoint);
+    SPECIALIZATION(ImageLayout, VkImageLayout);
+    SPECIALIZATION(ImageAspectMaskFlag, VkImageAspectFlagBits);
+    SPECIALIZATION(VertexInputRate, VkVertexInputRate);
+    SPECIALIZATION(ImageCreateFlag, VkImageCreateFlagBits);
+    SPECIALIZATION(BufferUsageFlag, VkBufferUsageFlagBits);
+    SPECIALIZATION(ImageUsageFlag, VkImageUsageFlagBits);
+    SPECIALIZATION(MemoryPropertyFlag, VkMemoryPropertyFlagBits);
+    SPECIALIZATION(DescriptorType, VkDescriptorType);
+    SPECIALIZATION(CompareOperation, VkCompareOp);
+    SPECIALIZATION(Filter, VkFilter);
+    SPECIALIZATION(SamplerAddressMode, VkSamplerAddressMode);
+    SPECIALIZATION(BorderColor, VkBorderColor);
+    SPECIALIZATION(SamplerMipmapMode, VkSamplerMipmapMode);
+    SPECIALIZATION(Result, VkResult);
+    SPECIALIZATION(ImageType, VkImageType);
+    SPECIALIZATION(ImageViewType, VkImageViewType);
+    SPECIALIZATION(DebugObjectType, VkObjectType);
+    SPECIALIZATION(AccessFlag, VkAccessFlagBits);
+    SPECIALIZATION(PipelineStageFlag, VkPipelineStageFlagBits);
+    SPECIALIZATION(DependencyFlag, VkDependencyFlagBits);
+    SPECIALIZATION(DynamicState, VkDynamicState);
+    SPECIALIZATION(ImageTiling, VkImageTiling);
+    SPECIALIZATION(StencilFaceFlag, VkStencilFaceFlagBits);
+    SPECIALIZATION(GeometryType, VkGeometryTypeKHR);
+    SPECIALIZATION(GeometryFlag, VkGeometryFlagBitsKHR);
+    SPECIALIZATION(ColorSpace, VkColorSpaceKHR);
+    SPECIALIZATION(PresentMode, VkPresentModeKHR);
+} // namespace stormkit::gpu

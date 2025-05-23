@@ -79,6 +79,7 @@ jobs:
               libelf-dev
               libdwarf-dev
               mold
+              nasm
               llvm${{ env.LLVM_VERSION }}
               llvm${{ env.LLVM_VERSION }}-dev
               llvm${{ env.LLVM_VERSION }}-runtime
@@ -123,7 +124,7 @@ jobs:
       - name: Setup XMake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: Arthapz/xmake#branch@improve-jobgraph-support2
+          xmake-version: branch@dev
           actions-cache-folder: .xmake-cache
 
       - name: Cache XMake

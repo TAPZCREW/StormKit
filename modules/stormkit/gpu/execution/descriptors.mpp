@@ -1,0 +1,498 @@
+// Copyright (C) 2023 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/hash_macro.hpp>
+
+#include <stormkit/core/platform_macro.hpp>
+
+#include <stormkit/core/contract_macro.hpp>
+
+#include <volk.h>
+
+export module stormkit.gpu.execution:descriptors;
+
+import std;
+
+import stormkit.core;
+import stormkit.gpu.core;
+import stormkit.gpu.resource;
+
+export {
+    namespace stormkit::gpu {
+        struct BufferDescriptor {
+            DescriptorType    type = DescriptorType::UNIFORM_BUFFER;
+            u32               binding;
+            Ref<const Buffer> buffer;
+            u32               range;
+            u32               offset;
+        };
+
+        struct ImageDescriptor {
+            DescriptorType       type = DescriptorType::COMBINED_IMAGE_SAMPLER;
+            u32                  binding;
+            ImageLayout          layout;
+            Ref<const ImageView> image_view;
+            Ref<const Sampler>   sampler;
+        };
+
+        using Descriptor = std::variant<BufferDescriptor, ImageDescriptor>;
+        class DescriptorPool;
+
+        class STORMKIT_API DescriptorSet {
+          public:
+            static constexpr auto DEBUG_TYPE = DebugObjectType::DESCRIPTOR_SET;
+
+            ~DescriptorSet() noexcept;
+
+            DescriptorSet(const DescriptorSet&)                    = delete;
+            auto operator=(const DescriptorSet&) -> DescriptorSet& = delete;
+
+            DescriptorSet(DescriptorSet&&) noexcept;
+            auto operator=(DescriptorSet&&) noexcept -> DescriptorSet&;
+
+            auto update(std::span<const Descriptor> descriptors) -> void;
+
+            [[nodiscard]]
+            auto types() const noexcept -> const std::vector<DescriptorType>&;
+
+            [[nodiscard]]
+            auto native_handle() const noexcept -> VkDescriptorSet;
+
+          private:
+            using Deleter = std::function<void(VkDescriptorSet)>;
+
+            DescriptorSet(std::vector<DescriptorType>&& type,
+                          VkDescriptorSet&&             sets,
+                          Deleter&&                     deleter) noexcept;
+
+            std::vector<DescriptorType> m_types;
+
+            VkDescriptorSet m_vk_handle;
+
+            Deleter m_deleter;
+            friend class DescriptorPool;
+        };
+
+        struct DescriptorSetLayoutBinding {
+            u32             binding;
+            DescriptorType  type;
+            ShaderStageFlag stages;
+            usize           descriptor_count;
+        };
+
+        class STORMKIT_API DescriptorSetLayout {
+            struct PrivateFuncTag {};
+
+          public:
+            static constexpr auto DEBUG_TYPE = DebugObjectType::DESCRIPTOR_SET_LAYOUT;
+
+            static auto create(const Device&                           device,
+                               std::vector<DescriptorSetLayoutBinding> bindings) noexcept
+              -> Expected<DescriptorSetLayout>;
+            static auto allocate(const Device&                           device,
+                                 std::vector<DescriptorSetLayoutBinding> bindings) noexcept
+              -> Expected<Heap<DescriptorSetLayout>>;
+            ~DescriptorSetLayout() noexcept;
+
+            DescriptorSetLayout(const DescriptorSetLayout&)                    = delete;
+            auto operator=(const DescriptorSetLayout&) -> DescriptorSetLayout& = delete;
+
+            DescriptorSetLayout(DescriptorSetLayout&&) noexcept;
+            auto operator=(DescriptorSetLayout&&) noexcept -> DescriptorSetLayout&;
+
+            [[nodiscard]]
+            auto hash() const noexcept -> Hash64;
+            [[nodiscard]]
+            auto bindings() const noexcept -> const std::vector<DescriptorSetLayoutBinding>&;
+
+            [[nodiscard]]
+            auto native_handle() const noexcept -> VkDescriptorSetLayout;
+
+            [[nodiscard]]
+            auto operator==(const DescriptorSetLayout& second) const noexcept -> bool;
+
+            DescriptorSetLayout(const Device&,
+                                std::vector<DescriptorSetLayoutBinding>&&,
+                                PrivateFuncTag) noexcept;
+
+          private:
+            auto do_init() noexcept -> Expected<void>;
+
+            std::vector<DescriptorSetLayoutBinding> m_bindings;
+
+            Hash64                              m_hash      = 0;
+            VkDevice                            m_vk_device = nullptr;
+            Ref<const VolkDeviceTable>          m_vk_device_table;
+            VkRAIIHandle<VkDescriptorSetLayout> m_vk_handle = { { [this](auto handle) noexcept {
+                m_vk_device_table->vkDestroyDescriptorSetLayout(m_vk_device, handle, nullptr);
+            } } };
+        };
+
+        class STORMKIT_API DescriptorPool {
+            struct PrivateFuncTag {};
+
+          public:
+            static constexpr auto DEBUG_TYPE = DebugObjectType::DESCRIPTOR_POOL;
+
+            struct Size {
+                DescriptorType type;
+                u32            descriptor_count;
+            };
+
+            static auto create(const Device&         device,
+                               std::span<const Size> sizes,
+                               u32                   max_sets) noexcept -> Expected<DescriptorPool>;
+            static auto allocate(const Device&         device,
+                                 std::span<const Size> sizes,
+                                 u32 max_sets) noexcept -> Expected<Heap<DescriptorPool>>;
+            ~DescriptorPool() noexcept;
+
+            DescriptorPool(const DescriptorPool&)                    = delete;
+            auto operator=(const DescriptorPool&) -> DescriptorPool& = delete;
+
+            DescriptorPool(DescriptorPool&&) noexcept;
+            auto operator=(DescriptorPool&&) noexcept -> DescriptorPool&;
+
+            [[nodiscard]]
+            auto native_handle() const noexcept -> VkDescriptorPool;
+
+            DescriptorPool(const Device&, PrivateFuncTag) noexcept;
+
+          private:
+            auto do_init(std::span<const Size>, u32) noexcept -> Expected<void>;
+            auto create_descriptor_sets(usize, const DescriptorSetLayout&) const
+              -> std::pair<std::vector<VkDescriptorSet>, std::vector<DescriptorType>>;
+            auto deleteDescriptorSet(VkDescriptorSet&) const -> void;
+
+            VkDevice                       m_vk_device = nullptr;
+            Ref<const VolkDeviceTable>     m_vk_device_table;
+            VkRAIIHandle<VkDescriptorPool> m_vk_handle { { [this](auto handle) noexcept {
+                m_vk_device_table->vkDestroyDescriptorPool(m_vk_device, handle, nullptr);
+            } } };
+        };
+    } // namespace stormkit::gpu
+
+    template<>
+    struct STORMKIT_API std::hash<stormkit::gpu::DescriptorSetLayout> {
+        [[nodiscard]]
+        auto operator()(const stormkit::gpu::DescriptorSetLayout& value) const noexcept
+          -> stormkit::Hash64 {
+            return value.hash();
+        }
+    };
+
+    HASH_FUNC(stormkit::gpu::DescriptorSetLayoutBinding,
+              value.binding,
+              value.type,
+              value.stages,
+              value.descriptor_count)
+    HASH_FUNC(stormkit::gpu::BufferDescriptor,
+              value.type,
+              value.binding,
+              value.buffer.get(),
+              value.range,
+              value.offset)
+    HASH_FUNC(stormkit::gpu::ImageDescriptor,
+              value.type,
+              value.binding,
+              value.layout,
+              value.image_view.get(),
+              value.sampler.get())
+
+    template<>
+    struct STORMKIT_API std::hash<stormkit::gpu::Descriptor> {
+        [[nodiscard]]
+        auto operator()(const stormkit::gpu::Descriptor& value) const noexcept -> stormkit::Hash64 {
+            auto hash = stormkit::Hash64 { 0 };
+
+            std::visit([&hash](auto& descriptor) { stormkit::hash_combine(hash, descriptor); },
+                       value);
+
+            return hash;
+        }
+    };
+}
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit::gpu {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline DescriptorSet::DescriptorSet(std::vector<DescriptorType>&& type,
+                                        VkDescriptorSet&&             set,
+                                        Deleter&&                     deleter) noexcept
+        : m_types { std::move(type) }, m_vk_handle { std::move(set) },
+          m_deleter { std::move(deleter) } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline DescriptorSet::~DescriptorSet() noexcept {
+        if (m_vk_handle) m_deleter(m_vk_handle);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline DescriptorSet::DescriptorSet(DescriptorSet&&) noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto DescriptorSet::operator=(DescriptorSet&&) noexcept -> DescriptorSet& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto DescriptorSet::update(std::span<const Descriptor>) -> void {
+        // const auto [buffers, images] = [&descriptors]() -> decltype(auto) {
+        //     const auto buffers_count = jk
+
+        //    auto buffers = std::vector<vk::DescriptorBufferInfo> {};
+        //    auto images  = std::vector<vk::DescriptorImageInfo> {};
+        //    buffers.reserve(std::size(descriptors));
+        //    images.reserve(std::size(descriptors));
+
+        //    std::ranges::
+        //      for_each(descriptors,
+        //               core :.monadic::either(
+        //                 [&buffers](const BufferDescriptor& descriptor) noexcept -> decltype(auto)
+        //                 {
+        //                     buffers.emplace_back(vk::DescriptorBufferInfo {}
+        //                                            .setBuffer(to_vk(descriptor.buffer))
+        //                                            .setOffset(descriptor.offset)
+        //                                            .setRange(descriptor.range));
+        //                 },
+        //                 [&images](const ImageDescriptor& descriptor) noexcept -> decltype(auto) {
+        //                     images
+        //                       .emplace_back(vk::DescriptorImageInfo {}
+        //                                       .setSampler(to_vk(descriptor.sampler))
+        //                                       .setImageView(to_vk(descriptor.image_view))
+        //                                       .setImageLayout(narrow<vk::ImageLayout>(descriptor
+        //                                                                                 .layout)));
+        //                 }));
+
+        //    return std::pair { std::move(buffers), std::move(images) };
+        // }();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto DescriptorSet::types() const noexcept -> const std::vector<DescriptorType>& {
+        return m_types;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto DescriptorSet::native_handle() const noexcept -> VkDescriptorSet {
+        return m_vk_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline DescriptorSetLayout::DescriptorSetLayout(const Device& device,
+                                                    std::vector<DescriptorSetLayoutBinding>&&
+                                                      bindings,
+                                                    PrivateFuncTag) noexcept
+        : m_bindings { std::move(bindings) }, m_vk_device { device.native_handle() },
+          m_vk_device_table { as_ref(device.device_table()) } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto DescriptorSetLayout::create(const Device& device,
+                                            std::vector<DescriptorSetLayoutBinding>
+                                              bindings) noexcept -> Expected<DescriptorSetLayout> {
+        auto layout = DescriptorSetLayout { device, std::move(bindings), PrivateFuncTag {} };
+        return layout.do_init().transform(core::monadic::consume(layout));
+    }
+
+    ////////////////////////////////////p/
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto DescriptorSetLayout::allocate(const Device& device,
+                                              std::vector<DescriptorSetLayoutBinding>
+                                                bindings) noexcept
+      -> Expected<Heap<DescriptorSetLayout>> {
+        auto layout = allocate_unsafe<DescriptorSetLayout>(device,
+                                                           std::move(bindings),
+                                                           PrivateFuncTag {});
+        return layout->do_init().transform(core::monadic::consume(layout));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline DescriptorSetLayout::~DescriptorSetLayout() noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline DescriptorSetLayout::DescriptorSetLayout(DescriptorSetLayout&& other) noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto DescriptorSetLayout::operator=(DescriptorSetLayout&& other) noexcept
+      -> DescriptorSetLayout& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto DescriptorSetLayout::hash() const noexcept -> Hash64 {
+        return m_hash;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto DescriptorSetLayout::bindings() const noexcept
+      -> const std::vector<DescriptorSetLayoutBinding>& {
+        return m_bindings;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto DescriptorSetLayout::native_handle() const noexcept -> VkDescriptorSetLayout {
+        return m_vk_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto DescriptorSetLayout::operator==(const DescriptorSetLayout& second) const noexcept
+      -> bool {
+        return m_hash == second.hash();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto DescriptorSetLayout::do_init() noexcept -> Expected<void> {
+        const auto vk_bindings = m_bindings
+                                 | std::views::transform([](auto&& binding) static noexcept {
+                                       return VkDescriptorSetLayoutBinding {
+                                           .binding         = binding.binding,
+                                           .descriptorType  = to_vk<VkDescriptorType>(binding.type),
+                                           .descriptorCount = as<u32>(binding.descriptor_count),
+                                           .stageFlags      = to_vk<VkShaderStageFlagBits>(binding
+                                                                                        .stages),
+                                           .pImmutableSamplers = nullptr,
+                                       };
+                                   })
+                                 | std::ranges::to<std::vector>();
+
+        const auto create_info = VkDescriptorSetLayoutCreateInfo {
+            .sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
+            .pNext        = nullptr,
+            .flags        = 0,
+            .bindingCount = as<u32>(std::ranges::size(vk_bindings)),
+            .pBindings    = std::ranges::data(vk_bindings)
+        };
+
+        return vk_call<VkDescriptorSetLayout>(m_vk_device_table->vkCreateDescriptorSetLayout,
+                                              m_vk_device,
+                                              &create_info,
+                                              nullptr)
+          .transform(core::monadic::set(m_vk_handle))
+          .transform_error(monadic::from_vk<Result>());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline DescriptorPool::DescriptorPool(const Device& device, PrivateFuncTag) noexcept
+        : m_vk_device { device.native_handle() },
+          m_vk_device_table { as_ref(device.device_table()) } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto DescriptorPool::create(const Device&         device,
+                                       std::span<const Size> extents,
+                                       u32 max_sets) noexcept -> Expected<DescriptorPool> {
+        auto pool = DescriptorPool { device, PrivateFuncTag {} };
+        return pool.do_init(extents, max_sets).transform(core::monadic::consume(pool));
+    }
+
+    ////////////////////////////////////p/
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto DescriptorPool::allocate(const Device&         device,
+                                         std::span<const Size> extents,
+                                         u32 max_sets) noexcept -> Expected<Heap<DescriptorPool>> {
+        auto pool = allocate_unsafe<DescriptorPool>(device, PrivateFuncTag {});
+        return pool->do_init(extents, max_sets).transform(core::monadic::consume(pool));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline DescriptorPool::~DescriptorPool() noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline DescriptorPool::DescriptorPool(DescriptorPool&& other) noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto DescriptorPool::operator=(DescriptorPool&& other) noexcept
+      -> DescriptorPool& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto DescriptorPool::native_handle() const noexcept -> VkDescriptorPool {
+        return m_vk_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto DescriptorPool::do_init(std::span<const Size> sizes, u32 max_sets) noexcept
+      -> Expected<void> {
+        const auto pool_sizes = sizes
+                                | std::views::transform([](auto&& size) static noexcept {
+                                      return VkDescriptorPoolSize {
+                                          .type            = to_vk<VkDescriptorType>(size.type),
+                                          .descriptorCount = size.descriptor_count,
+                                      };
+                                  })
+                                | std::ranges::to<std::vector>();
+
+        const auto create_info = VkDescriptorPoolCreateInfo {
+            .sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
+            .pNext         = nullptr,
+            .flags         = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
+            .maxSets       = max_sets,
+            .poolSizeCount = as<u32>(std::ranges::size(sizes)),
+            .pPoolSizes    = std::ranges::data(pool_sizes),
+        };
+
+        return vk_call<VkDescriptorPool>(m_vk_device_table->vkCreateDescriptorPool,
+                                         m_vk_device,
+                                         &create_info,
+                                         nullptr)
+          .transform(core::monadic::set(m_vk_handle))
+          .transform_error(monadic::from_vk<Result>());
+    }
+} // namespace stormkit::gpu

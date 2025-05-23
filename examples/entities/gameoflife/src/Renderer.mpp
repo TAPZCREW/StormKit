@@ -7,7 +7,7 @@ import std;
 
 import stormkit.core;
 import stormkit.wsi;
-import stormkit.Gpu;
+import stormkit.gpu;
 
 export {
 #else
@@ -34,9 +34,9 @@ export {
         auto updateBoard(const stormkit::image::Image& board) -> void;
 
       private:
-        auto doInitBaseRenderObjects() -> void;
-        auto doInitMeshRenderObjects() -> void;
-        auto doInitPerFrameObjects() -> void;
+        auto do_initBaseRenderObjects() -> void;
+        auto do_initMeshRenderObjects() -> void;
+        auto do_initPerFrameObjects() -> void;
 
         const stormkit::wsi::Window* m_window = nullptr;
 
@@ -58,7 +58,7 @@ export {
             std::vector<stormkit::gpu::ImageView>   image_views;
             std::unique_ptr<stormkit::gpu::Sampler> sampler;
 
-            stormkit::UInt32 current_image = 0;
+            stormkit::u32 current_image = 0;
 
             std::unique_ptr<stormkit::gpu::Shader> vertex_shader;
             std::unique_ptr<stormkit::gpu::Shader> fragment_shader;

@@ -7,7 +7,7 @@ export module TriangleApp;
 import std;
 
 import stormkit.core;
-import stormkit.Gpu;
+import stormkit.gpu;
 import stormkit.Engine;
 import stormkit.wsi;
 
@@ -49,7 +49,7 @@ auto TriangleApp::run(std::span<const std::string_view> _) -> Int {
     m_application = engine::Application::create(APPLICATION_NAME, { 800u, 600u }, WINDOW_TITLE)
                         .transform_error(assert("Failed to initialize Render engine"))
                         .value();
-    m_application->setUpdateFrameGraphCallback(bindFront(&TriangleApp::updateFrameGraph, this));
+    m_application->setUpdateFrameGraphCallback(bind_front(&TriangleApp::updateFrameGraph, this));
 
     auto& window        = m_application->window();
     auto& event_handler = m_application->eventHandler();
@@ -59,12 +59,12 @@ auto TriangleApp::run(std::span<const std::string_view> _) -> Int {
     m_window_extent = window.extent();
 
     m_vertex_shader
-        = gpu::Shader::fromBytes(renderer.device(), SHADER_DATA, gpu::ShaderStageFlag::Vertex)
+        = gpu::Shader::load_from_bytes(renderer.device(), SHADER_DATA, gpu::ShaderStageFlag::Vertex)
               .transform_error(assert("Failed to load vertex shader"))
               .value();
 
     m_fragment_shader
-        = gpu::Shader::fromBytes(renderer.device(), SHADER_DATA, gpu::ShaderStageFlag::Fragment)
+        = gpu::Shader::load_from_bytes(renderer.device(), SHADER_DATA, gpu::ShaderStageFlag::Fragment)
               .transform_error(assert("Failed to load fragment shader"))
               .value();
 
@@ -139,7 +139,7 @@ auto TriangleApp::updateFrameGraph(engine::FrameGraphBuilder& graph,
                               .value();
                 }
 
-                cmb.bindPipeline(m_pipeline);
+                cmb.bind_pipeline(m_pipeline);
                 cmb.draw(3);
             });
 

@@ -12,7 +12,7 @@ import std;
 
 import stormkit.core;
 import stormkit.wsi;
-import stormkit.Gpu;
+import stormkit.gpu;
 
 export namespace stormkit::engine {
     class STORMKIT_API RenderSurface {
@@ -20,8 +20,8 @@ export namespace stormkit::engine {
 
       public:
         struct Frame {
-            UInt32 current_frame;
-            UInt32 image_index;
+            u32 current_frame;
+            u32 image_index;
 
             Ref<const gpu::Semaphore> image_available;
             Ref<const gpu::Semaphore> render_finished;
@@ -41,12 +41,12 @@ export namespace stormkit::engine {
         RenderSurface(RenderSurface&&) noexcept;
         auto operator=(RenderSurface&&) noexcept -> RenderSurface&;
 
-        static auto createFromWindow(const gpu::Instance& instance,
+        static auto create_from_window(const gpu::Instance& instance,
                                      const gpu::Device&   device,
                                      const gpu::Queue&    raster_queue,
                                      const wsi::Window&   window) noexcept
             -> gpu::Expected<RenderSurface>;
-        static auto allocateFromWindow(const gpu::Instance& instance,
+        static auto allocate_from_window(const gpu::Instance& instance,
                                        const gpu::Device&   device,
                                        const gpu::Queue&    raster_queue,
                                        const wsi::Window&   window) noexcept
@@ -58,7 +58,7 @@ export namespace stormkit::engine {
         auto presentFrame(const gpu::Queue& queue, const Frame& frame) -> gpu::Expected<void>;
 
         [[nodiscard]]
-        auto bufferingCount() const noexcept -> UInt32;
+        auto bufferingCount() const noexcept -> u32;
 
         [[nodiscard]]
         auto images() const noexcept -> const std::vector<gpu::SwapchainImage>&;
@@ -68,7 +68,7 @@ export namespace stormkit::engine {
         DeferInit<gpu::Swapchain>     m_swapchain;
         std::optional<gpu::Swapchain> m_old_swapchain;
 
-        RangeExtent                 m_current_frame = 0;
+        usize                 m_current_frame = 0;
         std::vector<gpu::Semaphore> m_image_availables;
         std::vector<gpu::Semaphore> m_render_finisheds;
         std::vector<gpu::Fence>     m_in_flight_fences;
@@ -99,7 +99,7 @@ namespace stormkit::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto RenderSurface::createFromWindow(const gpu::Instance& instance,
+    STORMKIT_FORCE_INLINE auto RenderSurface::create_from_window(const gpu::Instance& instance,
                                                                const gpu::Device&   device,
                                                                const gpu::Queue&    raster_queue,
                                                                const wsi::Window&   window) noexcept
@@ -109,7 +109,7 @@ namespace stormkit::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto RenderSurface::allocateFromWindow(const gpu::Instance& instance,
+    STORMKIT_FORCE_INLINE auto RenderSurface::allocate_from_window(const gpu::Instance& instance,
                                                                  const gpu::Device&   device,
                                                                  const gpu::Queue&    raster_queue,
                                                                  const wsi::Window& window) noexcept
@@ -119,8 +119,8 @@ namespace stormkit::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto RenderSurface::bufferingCount() const noexcept -> UInt32 {
-        return as<UInt32>(std::size(images()));
+    STORMKIT_FORCE_INLINE auto RenderSurface::bufferingCount() const noexcept -> u32 {
+        return as<u32>(std::size(images()));
     }
 
     /////////////////////////////////////

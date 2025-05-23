@@ -24,7 +24,7 @@ export namespace stormkit { inline namespace core {
         template<class T>
         using Callback = std::function<T()>;
 
-        explicit ThreadPool(Int worker_count = std::thread::hardware_concurrency() / 2);
+        explicit ThreadPool(u32 worker_count = std::thread::hardware_concurrency() / 2);
         ~ThreadPool();
 
         ThreadPool(const ThreadPool&)                    = delete;
@@ -49,7 +49,7 @@ export namespace stormkit { inline namespace core {
         struct Task {
             enum class Type {
                 Standard,
-                Terminate
+                Terminate,
             };
 
             Task() = default;
@@ -72,7 +72,7 @@ export namespace stormkit { inline namespace core {
 
         auto worker_main() noexcept -> void;
 
-        Int m_worker_count = 0;
+        u32 m_worker_count = 0;
 
         std::vector<std::thread> m_workers;
 
@@ -86,13 +86,13 @@ export namespace stormkit { inline namespace core {
 
     template<std::ranges::range Range, std::invocable<class Range::element_type&> F>
     auto parallel_transform(ThreadPool& pool, Range&& range, F&& f)
-        -> std::future<std::invoke_result_t<F, typename Range::element_type&>>;
+      -> std::future<std::invoke_result_t<F, typename Range::element_type&>>;
 
     template<std::ranges::range                         Range,
              std::predicate<class Range::element_type&> Predicate,
              std::invocable<class Range::element_type&> F>
     auto parallel_transform_if(ThreadPool& pool, Range&& range, Predicate&& predicate, F&& f)
-        -> std::future<std::invoke_result_t<F, typename Range::element_type&>>;
+      -> std::future<std::invoke_result_t<F, typename Range::element_type&>>;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -102,7 +102,8 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE ThreadPool::ThreadPool(Int worker_count)
+    STORMKIT_FORCE_INLINE
+    ThreadPool::ThreadPool(u32 worker_count)
         : m_worker_count { worker_count } {
         m_workers.reserve(m_worker_count);
 
@@ -114,19 +115,22 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE ThreadPool::~ThreadPool() {
+    STORMKIT_FORCE_INLINE
+    ThreadPool::~ThreadPool() {
         join_all();
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto ThreadPool::worker_count() const noexcept {
+    STORMKIT_FORCE_INLINE
+    auto ThreadPool::worker_count() const noexcept {
         return m_worker_count;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto ThreadPool::set_name(std::string_view name) noexcept -> void {
+    STORMKIT_FORCE_INLINE
+    auto ThreadPool::set_name(std::string_view name) noexcept -> void {
         // for (auto&& [i, worker] : m_workers | std::views::enumerate) {
         auto i = 0;
         for (auto&& worker : m_workers) {
@@ -137,14 +141,16 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T>
-    STORMKIT_FORCE_INLINE auto ThreadPool::post_task(Callback<T> callback) {
+    STORMKIT_FORCE_INLINE
+    auto ThreadPool::post_task(Callback<T> callback) {
         return post_task<T>(Task::Type::Standard, std::move(callback));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T>
-    STORMKIT_FORCE_INLINE auto ThreadPool::post_task(Callback<T> callback, NoFutureType t) {
+    STORMKIT_FORCE_INLINE
+    auto ThreadPool::post_task(Callback<T> callback, NoFutureType t) {
         post_task<T>(Task::Type::Standard, std::move(callback), t);
     }
 
@@ -211,36 +217,39 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<std::ranges::range Range, std::invocable<class Range::element_type&> F>
     auto parallel_transform(ThreadPool& pool, Range&& range, F&& f)
-        -> std::future<std::invoke_result_t<F, typename Range::element_type&>> {
+      -> std::future<std::invoke_result_t<F, typename Range::element_type&>> {
         using Element    = typename Range::element_type;
         using OutputType = std::invoke_result_t<F, Element&>;
 
         if constexpr (std::is_rvalue_reference_v<Range>) {
-            return pool.post_task<std::vector<class Range::element_type&>>(
-                [range = std::move(range), f = std::forward<F>(f), &pool]() {
-                    auto tasks = core::transform(range, [f = std::forward<F>(f)](auto& elem) {
-                        return f(elem);
-                    });
+            return pool
+              .post_task<std::vector<class Range::element_type&>>([range = std::move(range),
+                                                                   f     = std::forward<F>(f),
+                                                                   &pool]() {
+                  auto tasks = core::transform(range, [f = std::forward<F>(f)](auto& elem) {
+                      return f(elem);
+                  });
 
-                    auto futures = core::transform(tasks, [&pool](auto& l) {
-                        return pool.post_task<OutputType>(std::move(l));
-                    });
+                  auto futures = core::transform(tasks, [&pool](auto& l) {
+                      return pool.post_task<OutputType>(std::move(l));
+                  });
 
-                    return core::transform(futures, [](auto& future) { return future.get(); });
-                });
+                  return core::transform(futures, [](auto& future) { return future.get(); });
+              });
         } else {
-            return pool.post_task<std::vector<class Range::element_type&>>(
-                [&range, f = std::forward<F>(f), &pool]() {
-                    auto tasks = core::transform(range, [f = std::forward<F>(f)](auto& elem) {
-                        return f(elem);
-                    });
-
-                    auto futures = core::transform(tasks, [&pool](auto& l) {
-                        return pool.post_task<OutputType>(std::move(l));
-                    });
-
-                    return core::transform(futures, [](auto& future) { return future.get(); });
+            return pool.post_task<std::vector<class Range::element_type&>>([&range,
+                                                                            f = std::forward<F>(f),
+                                                                            &pool]() {
+                auto tasks = core::transform(range, [f = std::forward<F>(f)](auto& elem) {
+                    return f(elem);
                 });
+
+                auto futures = core::transform(tasks, [&pool](auto& l) {
+                    return pool.post_task<OutputType>(std::move(l));
+                });
+
+                return core::transform(futures, [](auto& future) { return future.get(); });
+            });
         }
     }
 
@@ -250,46 +259,48 @@ namespace stormkit { inline namespace core {
              std::predicate<class Range::element_type&> Predicate,
              std::invocable<class Range::element_type&> F>
     auto parallel_transform_if(ThreadPool& pool, Range&& range, Predicate&& predicate, F&& f)
-        -> std::future<std::invoke_result_t<F, typename Range::element_type&>> {
+      -> std::future<std::invoke_result_t<F, typename Range::element_type&>> {
         using Element    = typename Range::element_type;
         using OutputType = std::invoke_result_t<F, Element&>;
 
         if constexpr (std::is_rvalue_reference_v<Range>) {
-            return pool.post_task<std::vector<class Range::element_type&>>(
-                [range     = std::move(range),
-                 f         = std::forward<F>(f),
-                 predicate = std::forward<Predicate>(predicate),
-                 &pool]() {
-                    auto tasks = core::transform_if(range,
-                                                    predicate,
-                                                    [f = std::forward<F>(f)](auto& elem) {
-                                                        return f(elem);
-                                                    });
+            return pool
+              .post_task<std::vector<class Range::element_type&>>([range     = std::move(range),
+                                                                   f         = std::forward<F>(f),
+                                                                   predicate = std::forward<
+                                                                     Predicate>(predicate),
+                                                                   &pool]() {
+                  auto tasks = core::transform_if(range,
+                                                  predicate,
+                                                  [f = std::forward<F>(f)](auto& elem) {
+                                                      return f(elem);
+                                                  });
 
-                    auto futures = core::transform(tasks, [&pool](auto& l) {
-                        return pool.post_task<OutputType>(std::move(l));
-                    });
+                  auto futures = core::transform(tasks, [&pool](auto& l) {
+                      return pool.post_task<OutputType>(std::move(l));
+                  });
 
-                    return core::transform(futures, [](auto& future) { return future.get(); });
-                });
+                  return core::transform(futures, [](auto& future) { return future.get(); });
+              });
         } else {
-            return pool.post_task<std::vector<class Range::element_type&>>(
-                [&range,
-                 f         = std::forward<F>(f),
-                 predicate = std::forward<Predicate>(predicate),
-                 &pool]() {
-                    auto tasks = core::transform_if(range,
-                                                    predicate,
-                                                    [f = std::forward<F>(f)](auto& elem) {
-                                                        return f(elem);
-                                                    });
+            return pool
+              .post_task<std::vector<class Range::element_type&>>([&range,
+                                                                   f         = std::forward<F>(f),
+                                                                   predicate = std::forward<
+                                                                     Predicate>(predicate),
+                                                                   &pool]() {
+                  auto tasks = core::transform_if(range,
+                                                  predicate,
+                                                  [f = std::forward<F>(f)](auto& elem) {
+                                                      return f(elem);
+                                                  });
 
-                    auto futures = core::transform(tasks, [&pool](auto& l) {
-                        return pool.post_task<OutputType>(std::move(l));
-                    });
+                  auto futures = core::transform(tasks, [&pool](auto& l) {
+                      return pool.post_task<OutputType>(std::move(l));
+                  });
 
-                    return core::transform(futures, [](auto& future) { return future.get(); });
-                });
+                  return core::transform(futures, [](auto& future) { return future.get(); });
+              });
         }
     }
 }} // namespace stormkit::core

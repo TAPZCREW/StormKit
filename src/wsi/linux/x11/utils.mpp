@@ -20,7 +20,7 @@ import stormkit.wsi;
 export namespace stormkit::wsi::linux::x11 {
     auto x11_key_to_char(xcb_keysym_t key) noexcept -> char;
     auto x11_button_to_stormkit(xcb_button_t button) noexcept -> MouseButton;
-    auto default_root_window(xcb_connection_t* connection, Int32 screen_id) noexcept
+    auto default_root_window(xcb_connection_t* connection, i32 screen_id) noexcept
         -> xcb_window_t;
 } // namespace stormkit::wsi::linux::x11
 

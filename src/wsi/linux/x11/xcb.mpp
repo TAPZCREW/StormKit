@@ -21,6 +21,8 @@ import stormkit.core;
 
 import :linux.x11.log;
 
+namespace stdr = std::ranges;
+
 export namespace stormkit::wsi::linux::x11 {
     struct Error {
         std::string message;
@@ -28,14 +30,14 @@ export namespace stormkit::wsi::linux::x11 {
 
     auto get_xcb_connection() noexcept -> Ref<xcb_connection_t>;
     auto get_xcb_atom(std::string_view name, bool only_if_exists) noexcept
-        -> std::expected<xcb_atom_t, Error>;
+      -> std::expected<xcb_atom_t, Error>;
     auto get_xcb_atom_name(xcb_atom_t atom) -> std::expected<std::string, Error>;
 
     auto get_xcb_error_context() noexcept -> Ref<xcb_errors_context_t>;
     auto get_xcb_error(Ref<xcb_generic_error_t> error) -> std::string;
 
     auto get_xi_device_info(xcb_input_device_id_t device_id)
-        -> std::expected<Ref<xcb_input_xi_device_info_t>, Error>;
+      -> std::expected<Ref<xcb_input_xi_device_info_t>, Error>;
 } // namespace stormkit::wsi::linux::x11
 
 namespace stormkit::wsi::linux::x11 {
@@ -72,24 +74,25 @@ namespace stormkit::wsi::linux::x11 {
     /////////////////////////////////////
     /////////////////////////////////////
     inline auto get_xcb_atom(std::string_view name, bool only_if_exists) noexcept
-        -> std::expected<xcb_atom_t, Error> {
+      -> std::expected<xcb_atom_t, Error> {
         auto it = xcb_atoms.find(name);
 
-        if (it != std::ranges::end(xcb_atoms)) return it->second;
+        if (it != stdr::end(xcb_atoms)) return it->second;
 
         const auto connection = get_xcb_connection();
 
         const auto cookie = xcb_intern_atom(connection,
                                             (only_if_exists) ? 1 : 0,
-                                            std::ranges::size(name),
-                                            std::ranges::data(name));
+                                            as<u16>(stdr::size(name)),
+                                            stdr::data(name));
         auto       error  = XCBGenericErrorPtr { nullptr };
-        const auto reply
-            = XCBInternAtomReplyScoped { xcb_intern_atom_reply(connection.get(), cookie, &error) };
+        const auto reply  = XCBInternAtomReplyScoped {
+            xcb_intern_atom_reply(connection.get(), cookie, &error)
+        };
 
         if (error || !reply)
-            return std::unexpected { Error { (error) ? get_xcb_error(as_ref_mut(error))
-                                                     : std::string { " " } } };
+            return std::unexpected { Error {
+              (error) ? get_xcb_error(as_ref_mut(error)) : std::string { " " } } };
 
         auto atom = reply->atom;
         xcb_atoms.emplace(name, atom);
@@ -102,13 +105,14 @@ namespace stormkit::wsi::linux::x11 {
 
         const auto cookie = xcb_get_atom_name(connection, atom);
         auto       error  = XCBGenericErrorPtr { nullptr };
-        const auto reply
-            = XCBGetAtomReplyScoped { xcb_get_atom_name_reply(connection, cookie, &error) };
+        const auto reply  = XCBGetAtomReplyScoped {
+            xcb_get_atom_name_reply(connection, cookie, &error)
+        };
 
         if (error) return std::unexpected { Error { get_xcb_error(as_ref_mut(error)) } };
 
         return std::string { xcb_get_atom_name_name(reply.get()),
-                             as<RangeExtent>(xcb_get_atom_name_name_length(reply.get())) };
+                             as<usize>(xcb_get_atom_name_name_length(reply.get())) };
     }
 
     /////////////////////////////////////
@@ -136,8 +140,9 @@ namespace stormkit::wsi::linux::x11 {
         auto ctx = get_xcb_error_context();
 
         const auto major = xcb_errors_get_name_for_major_code(ctx, error->major_code);
-        const auto minor
-            = xcb_errors_get_name_for_minor_code(ctx, error->major_code, error->minor_code);
+        const auto minor = xcb_errors_get_name_for_minor_code(ctx,
+                                                              error->major_code,
+                                                              error->minor_code);
 
         const auto* extension = CZString { nullptr };
         const auto  str_error = xcb_errors_get_name_for_error(ctx, error->major_code, &extension);
@@ -152,7 +157,7 @@ namespace stormkit::wsi::linux::x11 {
     /////////////////////////////////////
     /////////////////////////////////////
     inline auto get_xi_device_info(xcb_input_device_id_t device_id)
-        -> std::expected<Ref<xcb_input_xi_device_info_t>, Error> {
+      -> std::expected<Ref<xcb_input_xi_device_info_t>, Error> {
         auto connection = get_xcb_connection();
 
         auto error  = XCBGenericErrorPtr {};

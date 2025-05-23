@@ -23,13 +23,13 @@ namespace stormkit::wsi::linux::wayland {
     /////////////////////////////////////
     auto registry_handler(void*        data,
                           wl_registry* registry,
-                          UInt32       id,
+                          u32       id,
                           const char*  interface,
-                          UInt32       version) noexcept -> void;
+                          u32       version) noexcept -> void;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto registry_remover_handler(void* data, wl_registry* registry, UInt32 id) noexcept -> void;
+    auto registry_remover_handler(void* data, wl_registry* registry, u32 id) noexcept -> void;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -43,8 +43,8 @@ namespace stormkit::wsi::linux::wayland {
     /////////////////////////////////////
     auto top_level_configure_handler(void*         data,
                                      xdg_toplevel* xdg_tl,
-                                     Int32         width,
-                                     Int32         height,
+                                     i32         width,
+                                     i32         height,
                                      wl_array*     states) noexcept -> void;
 
     /////////////////////////////////////
@@ -53,30 +53,30 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto surface_configure_handler(void* data, xdg_surface* surface, UInt32 serial) noexcept
+    auto surface_configure_handler(void* data, xdg_surface* surface, u32 serial) noexcept
         -> void;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto shell_ping_handler(void* data, xdg_wm_base* xdg_shell, UInt32 serial) noexcept -> void;
+    auto shell_ping_handler(void* data, xdg_wm_base* xdg_shell, u32 serial) noexcept -> void;
 
     auto shell_surface_configure_handler(void*             data,
                                          wl_shell_surface* shell_surface,
-                                         UInt32            edges,
-                                         Int32             width,
-                                         Int32             height) noexcept -> void;
+                                         u32            edges,
+                                         i32             width,
+                                         i32             height) noexcept -> void;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto shell_ping_handler(void* data, wl_shell_surface* shell_surface, UInt32 serial) noexcept
+    auto shell_ping_handler(void* data, wl_shell_surface* shell_surface, u32 serial) noexcept
         -> void;
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto relative_pointer_relative_motion_handler(void*                    data,
                                                   zwp_relative_pointer_v1* pointer,
-                                                  UInt32                   time_hi,
-                                                  UInt32                   time_lw,
+                                                  u32                   time_hi,
+                                                  u32                   time_lw,
                                                   wl_fixed_t               dx,
                                                   wl_fixed_t               dy,
                                                   wl_fixed_t               dx_unaccel,

@@ -12,12 +12,13 @@ import std;
 
 import :typesafe.byte;
 import :typesafe.integer;
+import :typesafe.integer_casts;
 
 export namespace stormkit { inline namespace core {
     [[nodiscard]]
-    auto read(std::istream& stream, RangeExtent size) noexcept -> std::vector<Byte>;
+    auto read(std::istream& stream, usize size) noexcept -> std::vector<Byte>;
 
-    template<RangeExtent size>
+    template<usize size>
     [[nodiscard]]
     auto read(std::istream& stream) noexcept -> std::array<Byte, size>;
 
@@ -26,7 +27,7 @@ export namespace stormkit { inline namespace core {
     auto write(std::ostream& stream, std::span<const Byte> data) noexcept -> void;
 
     [[nodiscard]]
-    auto read_text(std::istream& stream, RangeExtent size) noexcept -> std::string;
+    auto read_text(std::istream& stream, usize size) noexcept -> std::string;
 
     auto read_text(std::istream& stream, std::span<char> output) noexcept -> void;
 
@@ -37,11 +38,13 @@ export namespace stormkit { inline namespace core {
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
+namespace stdr = std::ranges;
+
 namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto read(std::istream& stream, RangeExtent size) noexcept
-        -> std::vector<Byte> {
+    STORMKIT_FORCE_INLINE
+    inline auto read(std::istream& stream, usize size) noexcept -> std::vector<Byte> {
         auto output = std::vector<Byte> {};
         output.resize(size);
 
@@ -52,8 +55,9 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<RangeExtent size>
-    STORMKIT_FORCE_INLINE auto read(std::istream& stream) noexcept -> std::array<Byte, size> {
+    template<usize size>
+    STORMKIT_FORCE_INLINE
+    inline auto read(std::istream& stream) noexcept -> std::array<Byte, size> {
         auto output = std::array<Byte, size> {};
 
         read(stream, output);
@@ -63,21 +67,24 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto read(std::istream& stream, std::span<Byte> output) noexcept -> void {
-        stream.read(std::bit_cast<char*>(std::data(output)), std::size(output));
+    STORMKIT_FORCE_INLINE
+    inline auto read(std::istream& stream, std::span<Byte> output) noexcept -> void {
+        stream
+          .read(std::bit_cast<char*>(stdr::data(output)), as<std::streamsize>(stdr::size(output)));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto write(std::ostream& stream, std::span<const Byte> data) noexcept
-        -> void {
-        stream.write(std::bit_cast<const char*>(std::data(data)), std::size(data));
+    STORMKIT_FORCE_INLINE
+    inline auto write(std::ostream& stream, std::span<const Byte> data) noexcept -> void {
+        stream.write(std::bit_cast<const char*>(stdr::data(data)),
+                     as<std::streamsize>(stdr::size(data)));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto read_text(std::istream& stream, RangeExtent size) noexcept
-        -> std::string {
+    STORMKIT_FORCE_INLINE
+    inline auto read_text(std::istream& stream, usize size) noexcept -> std::string {
         auto output = std::string {};
         output.resize(size);
 
@@ -88,15 +95,15 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto read_text(std::istream& stream, std::span<char> output) noexcept
-        -> void {
-        stream.read(std::data(output), std::size(output));
+    STORMKIT_FORCE_INLINE
+    inline auto read_text(std::istream& stream, std::span<char> output) noexcept -> void {
+        stream.read(stdr::data(output), as<std::streamsize>(stdr::size(output)));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto write_text(std::ostream& stream, std::string_view data) noexcept
-        -> void {
-        stream.write(std::data(data), std::size(data));
+    STORMKIT_FORCE_INLINE
+    inline auto write_text(std::ostream& stream, std::string_view data) noexcept -> void {
+        stream.write(stdr::data(data), as<std::streamsize>(stdr::size(data)));
     }
 }} // namespace stormkit::core

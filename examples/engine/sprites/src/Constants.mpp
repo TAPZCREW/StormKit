@@ -31,12 +31,12 @@ export {
     // using namespace stormkit::gpu;
     // return std::array { VertexInputAttributeDescription { .location = 0,
     //.binding  = 0,
-    //.format   = Format::Float2,
+    //.format   = Format::f322,
     //.offset =
     // offsetof(Vertex, position) },
     // VertexInputAttributeDescription { .location = 1,
     //.binding  = 0,
-    //.format   = Format::Float3,
+    //.format   = Format::f323,
     //.offset = offsetof(Vertex, color) } };
     //}();
 

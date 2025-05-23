@@ -49,10 +49,10 @@ export {
         };
 
         template<class T>
-        using Handle32 = Handle<T, UInt32>;
+        using Handle32 = Handle<T, u32>;
 
         template<class T>
-        using Handle64 = Handle<T, UInt64>;
+        using Handle64 = Handle<T, u64>;
     }} // namespace stormkit::core
 
     template<class T, std::integral _ID>

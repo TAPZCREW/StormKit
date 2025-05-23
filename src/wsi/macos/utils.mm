@@ -19,11 +19,11 @@ extern "C" {
 #import <IOKit/hid/IOHIDManager.h>
 }
 
-using UInt8 = std::uint8_t;
-using Int8  = std::int8_t;
+using u8 = std::uint8_t;
+using i8  = std::int8_t;
 
 namespace stormkit::wsi::macos {
-    enum class Key : UInt8 {
+    enum class Key : u8 {
         A = 0,
         B,
         C,
@@ -127,17 +127,17 @@ namespace stormkit::wsi::macos {
         F15,
         PAUSE,
         KEY_COUNT,
-        UNKNOWN = std::numeric_limits<Int8>::max(),
+        UNKNOWN = std::numeric_limits<i8>::max(),
     };
 
-    enum class MouseButton : UInt8 {
+    enum class MouseButton : u8 {
         LEFT,
         RIGHT,
         MIDDLE,
         BUTTON_1,
         BUTTON_2,
         BUTTON_COUNT,
-        UNKNOWN = std::numeric_limits<Int8>::max(),
+        UNKNOWN = std::numeric_limits<i8>::max(),
     };
 
     /////////////////////////////////////

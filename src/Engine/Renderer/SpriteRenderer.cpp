@@ -7,7 +7,7 @@ module stormkit.Engine;
 import std;
 
 import stormkit.core;
-import stormkit.Gpu;
+import stormkit.gpu;
 
 import :SpriteRenderer;
 
@@ -24,11 +24,11 @@ namespace stormkit::engine {
         constexpr auto Sprite_Vertex_Attribute_Descriptions = std::array {
             gpu::VertexInputAttributeDescription { .location = 0,
                                                   .binding  = 0,
-                                                  .format   = gpu::format::Float2,
+                                                  .format   = gpu::format::f322,
                                                   .offset   = offsetof(SpriteVertex, position) },
             gpu::VertexInputAttributeDescription { .location = 1,
                                                   .binding  = 0,
-                                                  .format   = gpu::format::Float2,
+                                                  .format   = gpu::format::f322,
                                                   .offset   = offsetof(SpriteVertex, uv)       }
         };
 
@@ -40,11 +40,11 @@ namespace stormkit::engine {
     SpriteRenderer::SpriteRenderer(const Renderer& renderer, const math::ExtentF& viewport, Tag)
         : m_renderer { as_ref(renderer) }, m_viewport { viewport } {
         m_render_data = allocate<RenderData>();
-        gpu::Shader::fromBytes(renderer.device(), Quad_Sprite_Shader, gpu::ShaderStageFlag::Vertex)
+        gpu::Shader::load_from_bytes(renderer.device(), Quad_Sprite_Shader, gpu::ShaderStageFlag::Vertex)
             .transform(monadic::set(m_render_data->vertex_shader))
             .transform_error(monadic::throw_as_exception());
 
-        gpu::Shader::fromBytes(renderer.device(),
+        gpu::Shader::load_from_bytes(renderer.device(),
                                Quad_Sprite_Shader,
                                gpu::ShaderStageFlag::Fragment)
             .transform(monadic::set(m_render_data->fragment_shader))
@@ -121,7 +121,7 @@ namespace stormkit::engine {
                     auto staging_buffer = graph_data.getActualResource(*task_data.staging_buffer);
                     auto vertex_buffer  = graph_data.getActualResource(*task_data.vertex_buffer);
 
-                    cmb.copyBuffer(staging_buffer, vertex_buffer, Sprite_Vertex_Buffer_Size);
+                    cmb.copy_buffer(staging_buffer, vertex_buffer, Sprite_Vertex_Buffer_Size);
                 });
             transfer_task_data = as_ref(graph.getTaskData<GeometryTransferTask>(task.dataID()));
             m_dirty            = false;
@@ -164,8 +164,8 @@ namespace stormkit::engine {
                 }
                 auto buffers = as_refs<std::array>(task_data.vertex_buffer);
 
-                cmb.bindPipeline(m_render_data->pipeline);
-                cmb.bindVertexBuffers(buffers);
+                cmb.bind_pipeline(m_render_data->pipeline);
+                cmb.bind_vertex_buffers(buffers);
                 for (auto&& [_, sprite_data] : m_sprites)
                     cmb.draw(std::size(sprite_data.sprite.vertices));
             },

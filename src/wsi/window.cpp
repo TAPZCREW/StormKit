@@ -4,7 +4,9 @@
 
 module;
 
-#include <stormkit/core/platform_macro.hpp> // can't use headerunit because macros won't be defined before the import
+#include <stormkit/core/platform_macro.hpp>
+
+#include <stormkit/core/contract_macro.hpp>
 
 module stormkit.wsi;
 
@@ -60,8 +62,9 @@ namespace stormkit::wsi {
     }
 
     auto parse_args(std::span<const std::string_view> args) noexcept -> void {
-        auto hint
-            = std::ranges::find_if(args, [](auto&& v) { return v == "--x11" or v == "--wayland"; });
+        auto hint = std::ranges::find_if(args, [](auto&& v) {
+            return v == "--x11" or v == "--wayland";
+        });
 
         if (hint != std::ranges::cend(args)) {
             if (*hint == "--x11") wm_hint = WM::X11;
@@ -77,7 +80,7 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Window::Window(std::string title, const math::ExtentU& size, WindowStyle style) noexcept
+    Window::Window(std::string title, const math::Extent2<u32>& size, WindowStyle style) noexcept
         : m_impl { wm() } {
         create(std::move(title), size, style);
     }
@@ -96,8 +99,9 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::create(std::string title, const math::ExtentU& size, WindowStyle style) noexcept
-        -> void {
+    auto Window::create(std::string               title,
+                        const math::Extent2<u32>& size,
+                        WindowStyle               style) noexcept -> void {
         m_impl->create(std::move(title), size, style);
     }
 
@@ -127,7 +131,7 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_extent(const math::ExtentU& extent) noexcept -> void {
+    auto Window::set_extent(const math::Extent2<u32>& extent) noexcept -> void {
         m_impl->set_extent(extent);
     }
 
@@ -158,9 +162,9 @@ namespace stormkit::wsi {
     /////////////////////////////////////
     /////////////////////////////////////
 #ifdef STORMKIT_OS_MACOS
-    auto Window::extent() const noexcept -> math::ExtentU {
+    auto Window::extent() const noexcept -> math::Extent2<u32> {
 #else
-    auto Window::extent() const noexcept -> const math::ExtentU& {
+    auto Window::extent() const noexcept -> const math::Extent2<u32>& {
 #endif
         return m_impl->extent();
     }
@@ -267,10 +271,10 @@ namespace stormkit::wsi {
         const auto settings = get_monitor_settings();
 
         const auto it = std::ranges::find_if(settings, [](const auto& monitor) {
-            return checkFlag(monitor.flags, Monitor::Flags::PRIMARY);
+            return check_flag_bit(monitor.flags, Monitor::Flags::PRIMARY);
         });
 
-        ensures(it != std::ranges::cend(settings));
+        ENSURES(it != std::ranges::cend(settings));
 
         return *it;
     }

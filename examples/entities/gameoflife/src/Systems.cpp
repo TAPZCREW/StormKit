@@ -40,14 +40,14 @@ auto UpdateBoardSystem::update(stormkit::Secondf delta) -> void {
     m_updated = true;
 
     struct Cell {
-        UInt32 x;
-        UInt32 y;
+        u32 x;
+        u32 y;
 
         bool alive = false;
 
         entities::Entity e = entities::INVALID_ENTITY;
 
-        UInt32 adjacent_alive_cells = 0;
+        u32 adjacent_alive_cells = 0;
     };
 
     constexpr auto CELL_COUNT = BOARD_SIZE * BOARD_SIZE;

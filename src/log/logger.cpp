@@ -2,6 +2,10 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
+module;
+
+#include <stormkit/core/contract_macro.hpp>
+
 module stormkit.log;
 
 import std;
@@ -19,14 +23,14 @@ namespace stormkit::log {
 #else
         constexpr auto DEFAULT_SEVERITY = Severity::INFO | Severity::ERROR | Severity::FATAL;
 #endif
-        Logger* logger = nullptr;
+        constinit Logger* logger = nullptr;
     } // namespace
 
     /////////////////////////////////////
     /////////////////////////////////////
     Logger::Logger(LogClock::time_point start_time) noexcept
         : Logger { std::move(start_time), DEFAULT_SEVERITY } {
-        expects(not logger);
+        EXPECTS(not logger);
 
         logger = this;
     }
@@ -39,7 +43,7 @@ namespace stormkit::log {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Logger::~Logger() {
+    Logger::~Logger() noexcept {
         logger = nullptr;
     }
 
@@ -54,7 +58,7 @@ namespace stormkit::log {
     /////////////////////////////////////
     /////////////////////////////////////
     auto Logger::instance() noexcept -> Logger& {
-        expects(logger);
+        EXPECTS(logger);
 
         return *logger;
     }

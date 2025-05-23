@@ -13,13 +13,13 @@
 
 #define SINGLE_ARG(...) __VA_ARGS__
 
-#define ALLOCATE_HELPERS(T)                                      \
-    template<class... Args>                                      \
-    [[nodiscard]]                                                \
-    static inline auto allocate(Args&&... args) {                \
-        return allocate<T>(std::forward<Args>(args)...)          \
-            .transform_error(stormkit::core :.monadic::assert()) \
-            .value();                                            \
+#define ALLOCATE_HELPERS(T)                                    \
+    template<class... Args>                                    \
+    [[nodiscard]]                                              \
+    static inline auto allocate(Args&&... args) {              \
+        return allocate<T>(std::forward<Args>(args)...)        \
+          .transform_error(stormkit::core :.monadic::assert()) \
+          .value();                                            \
     }
 
 /// \exclude
@@ -59,7 +59,10 @@
 
 /// \brief Add padding to a struct or a class
 /// \param size The size of the padding
-#define PADDING(size) stormkit::Byte private____padding[size];
+#define PADDING(size)          \
+    stormkit::Byte _[size] = { \
+        stormkit::Byte { 0 },  \
+    }
 
 /// \exclude
 #define STORMKIT_UNUSED(x) (void)(x);
