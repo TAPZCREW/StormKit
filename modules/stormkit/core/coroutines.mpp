@@ -20,6 +20,10 @@ export namespace std {
     namespace ranges {
         template<class _T, typename _U, typename _Alloc>
         inline constexpr bool enable_view<generator<_T, _U, _Alloc>> = true;
+
+        template<class _Rng,
+                 typename _Allocator = use_allocator_arg>
+        struct elements_of;
     } // namespace ranges
 } // namespace std
 
