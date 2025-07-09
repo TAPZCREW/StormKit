@@ -7,7 +7,7 @@ module stormkit.Engine;
 import std;
 
 import stormkit.core;
-import stormkit.Gpu;
+import stormkit.gpu;
 
 import :Renderer.FrameGraph;
 import :Renderer.RenderSurface;

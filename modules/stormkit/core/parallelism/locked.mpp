@@ -23,7 +23,7 @@ namespace stormkit { inline namespace core { namespace details {
 }}} // namespace stormkit::core::details
 
 export namespace stormkit { inline namespace core {
-    enum class LockAccessMode : core::UInt8 {
+    enum class LockAccessMode : core::u8 {
         Read_Only,
         Read_Write
     };
@@ -86,7 +86,7 @@ export namespace stormkit { inline namespace core {
             noexcept(std::is_nothrow_assignable_v<ValueType, ValueType&&>)) -> void;
 
         template<typename Self>
-        auto unsafe(this Self& self) noexcept -> meta::ConstnessLike<Self, ReferenceType>;
+        auto unsafe(this Self& self) noexcept -> meta::ForwardConst<Self, ReferenceType>;
 
         auto mutex() const noexcept -> const MutexType&;
 
@@ -112,10 +112,10 @@ export namespace stormkit { inline namespace core {
             explicit Access(Locked& locked, LockArgs&&... args) noexcept;
 
             template<class Self>
-            auto operator->(this Self&& self) noexcept -> meta::ConstnessLike<Self, PointerType>;
+            auto operator->(this Self&& self) noexcept -> meta::ForwardConst<Self, PointerType>;
 
             template<class Self>
-            auto operator*(this Self&& self) noexcept -> meta::ConstnessLike<Self, ReferenceType>;
+            auto operator*(this Self&& self) noexcept -> meta::ForwardConst<Self, ReferenceType>;
 
             mutable Lock<MutexType> lock;
 
@@ -218,7 +218,7 @@ namespace stormkit { inline namespace core {
     template<meta::IsNotRawIndirection T, class Mutex>
     template<typename Self>
     STORMKIT_FORCE_INLINE auto Locked<T, Mutex>::unsafe(this Self& self) noexcept
-        -> meta::ConstnessLike<Self, ReferenceType> {
+        -> meta::ForwardConst<Self, ReferenceType> {
         return self.m_value;
     }
 
@@ -269,7 +269,7 @@ namespace stormkit { inline namespace core {
     template<class Self>
     STORMKIT_FORCE_INLINE auto
         Locked<T, Mutex>::Access<Lock, Mode>::operator->(this Self&& self) noexcept
-        -> meta::ConstnessLike<Self, PointerType> {
+        -> meta::ForwardConst<Self, PointerType> {
         return self.m_value.get();
     }
 
@@ -280,7 +280,7 @@ namespace stormkit { inline namespace core {
     template<class Self>
     STORMKIT_FORCE_INLINE auto
         Locked<T, Mutex>::Access<Lock, Mode>::operator*(this Self&& self) noexcept
-        -> meta::ConstnessLike<Self, ReferenceType> {
+        -> meta::ForwardConst<Self, ReferenceType> {
         return *self.m_value;
     }
 }} // namespace stormkit::core

@@ -5,6 +5,7 @@
 module;
 
 #include <stormkit/core/hash_macro.hpp>
+
 #include <stormkit/core/memory_macro.hpp>
 
 export module stormkit.core:meta.strong_type;
@@ -31,23 +32,22 @@ export {
             constexpr ~NamedType() noexcept(std::is_nothrow_destructible_v<ElementType>);
 
             template<class... Args>
-            constexpr explicit(sizeof...(Args) == 1) NamedType(Args&&... args) noexcept(
-                std::is_nothrow_constructible_v<ElementType, Args...>)
+            constexpr explicit(sizeof...(Args) == 1)
+              NamedType(Args&&... args) noexcept(std::is_nothrow_constructible_v<ElementType,
+                                                                                 Args...>)
                 : m_value { std::forward<Args>(args)... } {}
 
-            constexpr NamedType(const NamedType&) noexcept(
-                std::is_nothrow_copy_constructible_v<ElementType>);
+            constexpr NamedType(const NamedType&) noexcept(std::is_nothrow_copy_constructible_v<
+                                                           ElementType>);
 
-            constexpr auto
-                operator=(const NamedType&) noexcept(std::is_nothrow_copy_assignable_v<ElementType>)
-                    -> NamedType&;
+            constexpr auto operator=(const NamedType&) noexcept(std::is_nothrow_copy_assignable_v<
+                                                                ElementType>) -> NamedType&;
 
-            constexpr NamedType(NamedType&&) noexcept(
-                std::is_nothrow_move_constructible_v<ElementType>);
+            constexpr NamedType(NamedType&&) noexcept(std::is_nothrow_move_constructible_v<
+                                                      ElementType>);
 
-            constexpr auto
-                operator=(NamedType&&) noexcept(std::is_nothrow_move_assignable_v<ElementType>)
-                    -> NamedType&;
+            constexpr auto operator=(NamedType&&) noexcept(std::is_nothrow_move_assignable_v<
+                                                           ElementType>) -> NamedType&;
 
             [[nodiscard]]
             constexpr auto get(this auto&& self) noexcept -> decltype(auto);
@@ -77,35 +77,36 @@ namespace stormkit { inline namespace core { namespace meta {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T, class Tag>
-    constexpr NamedType<T, Tag>::NamedType() noexcept(
-        std::is_nothrow_default_constructible_v<ElementType>)
-        = default;
+    constexpr NamedType<T, Tag>::NamedType() noexcept(std::is_nothrow_default_constructible_v<
+                                                      ElementType>)
+      = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T, class Tag>
     constexpr NamedType<T, Tag>::~NamedType() noexcept(std::is_nothrow_destructible_v<ElementType>)
-        = default;
+      = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T, class Tag>
-    constexpr NamedType<T, Tag>::NamedType(const NamedType&) noexcept(
-        std::is_nothrow_copy_constructible_v<ElementType>)
-        = default;
+    constexpr NamedType<T, Tag>::
+      NamedType(const NamedType&) noexcept(std::is_nothrow_copy_constructible_v<ElementType>)
+      = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T, class Tag>
-    constexpr auto NamedType<T, Tag>::operator=(const NamedType&) noexcept(
-        std::is_nothrow_copy_assignable_v<ElementType>) -> NamedType& = default;
+    constexpr auto NamedType<T, Tag>::
+      operator=(const NamedType&) noexcept(std::is_nothrow_copy_assignable_v<ElementType>)
+        -> NamedType& = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T, class Tag>
-    constexpr NamedType<T, Tag>::NamedType(NamedType&&) noexcept(
-        std::is_nothrow_move_constructible_v<ElementType>)
-        = default;
+    constexpr NamedType<T, Tag>::
+      NamedType(NamedType&&) noexcept(std::is_nothrow_move_constructible_v<ElementType>)
+      = default;
 
     // clang-format off
     ////////////////////////////////////////

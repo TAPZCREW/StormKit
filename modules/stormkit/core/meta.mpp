@@ -17,4 +17,14 @@ export namespace stormkit { inline namespace core {
 
     template<class... Ts>
     Overloaded(Ts...) -> Overloaded<Ts...>;
+
+    namespace meta {
+        template<class Type, class... Args>
+        consteval auto find_type_index_of() noexcept -> std::size_t {
+            static_assert(IsOneOf<Type, Args...>);
+            auto i = 0u;
+            ((not Is<Type, Args> and ++i) and ...);
+            return i;
+        }
+    } // namespace meta
 }} // namespace stormkit::core

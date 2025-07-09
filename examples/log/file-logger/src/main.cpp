@@ -27,7 +27,7 @@ struct std::formatter<Bar, CharT>: std::formatter<std::basic_string<CharT>, Char
 };
 
 struct Foo {
-    stormkit::UInt32 a = 0u;
+    stormkit::u32 a = 0u;
     float            b = 2.3f;
     Bar              c = Bar {};
 };

@@ -1,0 +1,206 @@
+module;
+
+#include <stormkit/core/flags_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
+
+#include <volk.h>
+
+export module stormkit.gpu.core:vulkan.structs;
+
+import std;
+import stormkit.core;
+
+import :structs;
+
+import :vulkan.volk;
+
+export namespace stormkit::gpu {
+    template<typename T>
+        requires(
+          requires { std::declval<T>().native_handle(); }
+          or requires { std::declval<T>()->native_handle(); })
+    [[nodiscard]]
+    auto to_vk(const T& value) noexcept -> decltype(auto);
+
+    template<typename Out>
+    [[nodiscard]]
+    constexpr auto to_vk(const math::Vector2I& vector) noexcept -> Out;
+
+    template<typename Out>
+    [[nodiscard]]
+    constexpr auto to_vk(const math::Vector3I& vector) noexcept -> Out;
+
+    // template<>
+    // [[nodiscard]]
+    // constexpr auto to_vk<VkOffset2D, math::Vector2I>(const math::Vector2I& vector) noexcept
+    //   -> VkOffset2D;
+
+    [[nodiscard]]
+    constexpr auto from_vk(const VkFormatProperties& properties) noexcept -> FormatProperties;
+
+    [[nodiscard]]
+    constexpr auto from_vk(const VkOffset2D& vector) noexcept -> math::Vector2I;
+
+    [[nodiscard]]
+    constexpr auto from_vk(const VkOffset3D& vector) noexcept -> math::Vector3I;
+
+    [[nodiscard]]
+    constexpr auto to_vk(const Viewport& viewport) noexcept -> VkViewport;
+
+    [[nodiscard]]
+    constexpr auto to_vk(const Scissor& viewport) noexcept -> VkRect2D;
+
+    [[nodiscard]]
+    constexpr auto from_vk(const VkViewport& viewport) noexcept -> Viewport;
+
+    template<math::meta::IsExtent2 Extent>
+    [[nodiscard]]
+    constexpr auto to_vk(const Extent& extent) noexcept -> VkExtent2D;
+
+    template<math::meta::IsExtent3 Extent>
+    [[nodiscard]]
+    constexpr auto to_vk(const Extent& extent) noexcept -> VkExtent3D;
+
+    template<math::meta::IsExtent2 Extent = math::Vector3<u32>>
+    [[nodiscard]]
+    constexpr auto from_vk(const VkExtent2D& viewport) noexcept -> Extent;
+
+    template<math::meta::IsExtent3 Extent = math::Vector3<u32>>
+    [[nodiscard]]
+    constexpr auto from_vk(const VkExtent3D& viewport) noexcept -> Extent;
+} // namespace stormkit::gpu
+
+namespace stormkit::gpu {
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+        requires(
+          requires { std::declval<T>().native_handle(); }
+          or requires { std::declval<T>()->native_handle(); })
+    STORMKIT_FORCE_INLINE
+    STORMKIT_CONST
+    inline auto to_vk(const T& value) noexcept -> decltype(auto) {
+        if constexpr (core::meta::IsPointer<T>) return value->native_handle();
+        else
+            return value.native_handle();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto to_vk(const Viewport& viewport) noexcept -> VkViewport {
+        return VkViewport {
+            .x        = viewport.position.x,
+            .y        = viewport.position.y,
+            .width    = viewport.extent.width,
+            .height   = viewport.extent.height,
+            .minDepth = viewport.depth.x,
+            .maxDepth = viewport.depth.y,
+        };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto to_vk(const Scissor& scissor) noexcept -> VkRect2D {
+        return VkRect2D {
+            .offset = { scissor.offset.x,     scissor.offset.y      },
+            .extent = { scissor.extent.width, scissor.extent.height }
+        };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto from_vk(const VkViewport& viewport) noexcept -> Viewport {
+        return Viewport {
+            .position = { viewport.x,              viewport.y                },
+            .extent   = { .width = viewport.width, .height = viewport.height },
+            .depth    = { viewport.minDepth,       viewport.maxDepth         },
+        };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Out>
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+    constexpr auto to_vk(const math::Vector2I& vector) noexcept -> Out {
+        return Out { .x = vector.x, .y = vector.y };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Out>
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+    constexpr auto to_vk(const math::Vector3I& vector) noexcept -> Out {
+        return Out { .x = vector.x, .y = vector.y, .z = vector.z };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto from_vk(const VkFormatProperties& properties) noexcept -> FormatProperties {
+        return {
+            .linear_tiling_features  = from_vk<FormatFeatureFlag>(properties.linearTilingFeatures),
+            .optimal_tiling_features = from_vk<FormatFeatureFlag>(properties.optimalTilingFeatures),
+            .buffer_features         = from_vk<FormatFeatureFlag>(properties.bufferFeatures),
+        };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto from_vk(const VkOffset2D& offset) noexcept -> math::Vector2I {
+        return math::Vector2I { offset.x, offset.y };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto from_vk(const VkOffset3D& offset) noexcept -> math::Vector3I {
+        return math::Vector3I { offset.x, offset.y, offset.z };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<math::meta::IsExtent2 Extent>
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+    constexpr auto to_vk(const Extent& extent) noexcept -> VkExtent2D {
+        return VkExtent2D { .width = as<u32>(extent.width), .height = as<u32>(extent.height) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<math::meta::IsExtent3 Extent>
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+    constexpr auto to_vk(const Extent& extent) noexcept -> VkExtent3D {
+        return VkExtent3D { .width  = as<u32>(extent.width),
+                            .height = as<u32>(extent.height),
+                            .depth  = as<u32>(extent.depth) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<math::meta::IsExtent2 Extent>
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+    constexpr auto from_vk(const VkExtent2D& extent) noexcept -> Extent {
+        using T = typename Extent::ElementType;
+        return Extent { .width = as<T>(extent.width), .height = as<T>(extent.height) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<math::meta::IsExtent3 Extent>
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+    constexpr auto from_vk(const VkExtent3D& extent) noexcept -> Extent {
+        using T = typename Extent::ElementType;
+        return Extent { .width = as<T>(extent.width), .height = as<T>(extent.height) };
+    }
+} // namespace stormkit::gpu

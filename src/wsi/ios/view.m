@@ -8,7 +8,7 @@
     return [CAMetalLayer class];
 }
 
-- (id)initWithFrame:(CGRect)frame withScaleFactor:(CGFloat)factor {
+- (id)initWithFrame:(CGRect)frame withScaleFactor:(CGf32)factor {
     self = [super initWithFrame:frame];
 
     if (self) {

@@ -1,0 +1,103 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+export module stormkit.core:containers.raii_capsule;
+
+import std;
+
+export namespace stormkit { inline namespace core {
+
+    template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE = T {}>
+    struct RAIICapsule {
+        explicit RAIICapsule(T v) noexcept;
+        template<class... Args>
+        RAIICapsule(Args&&... args) noexcept;
+        ~RAIICapsule() noexcept;
+
+        RAIICapsule(RAIICapsule& other)                    = delete;
+        auto operator=(RAIICapsule& other) -> RAIICapsule& = delete;
+
+        RAIICapsule(RAIICapsule&& other) noexcept;
+        auto operator=(RAIICapsule&& other) noexcept -> RAIICapsule&;
+
+             operator T() noexcept;
+        auto handle() noexcept -> T&;
+        auto handle() const noexcept -> T;
+        auto release() noexcept -> T;
+        auto reset(T handle = RELEASE_VALUE) noexcept -> void;
+
+      private:
+        auto destroy() noexcept -> void;
+
+        T m_handle = RELEASE_VALUE;
+    };
+}} // namespace stormkit::core
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+namespace stormkit { inline namespace core {
+    template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE>
+    RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::RAIICapsule(T v) noexcept {
+        m_handle = v;
+    }
+
+    template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE>
+    template<class... Args>
+    RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::RAIICapsule(Args&&... args) noexcept {
+        m_handle = Constructor(std::forward<Args>(args)...);
+    }
+
+    template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE>
+    RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::~RAIICapsule() noexcept {
+        destroy();
+    }
+
+    template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE>
+    RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::RAIICapsule(RAIICapsule&&
+                                                                            other) noexcept {
+        m_handle = other.release();
+    }
+
+    template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE>
+    auto RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::operator=(RAIICapsule&&
+                                                                               other) noexcept
+      -> RAIICapsule& {
+        m_handle = other.release();
+        return *this;
+    }
+
+    template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE>
+    RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::operator T() noexcept {
+        return m_handle;
+    }
+
+    template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE>
+    auto RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::handle() noexcept -> T& {
+        return m_handle;
+    }
+
+    template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE>
+    auto RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::handle() const noexcept -> T {
+        return m_handle;
+    }
+
+    template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE>
+    auto RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::release() noexcept -> T {
+        auto tmp = std::exchange(m_handle, RELEASE_VALUE);
+        return tmp;
+    }
+
+    template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE>
+    auto RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::reset(T handle) noexcept
+      -> void {
+        destroy();
+        m_handle = handle;
+    }
+
+    template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE>
+    auto RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::destroy() noexcept -> void {
+        if (m_handle != RELEASE_VALUE) { Deleter(release()); }
+    }
+}} // namespace stormkit::core

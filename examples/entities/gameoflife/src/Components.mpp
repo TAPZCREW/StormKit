@@ -17,8 +17,8 @@ export {
 #endif
 
     struct PositionComponent: public stormkit::entities::Component {
-        stormkit::UInt32 x;
-        stormkit::UInt32 y;
+        stormkit::u32 x;
+        stormkit::u32 y;
 
         static constexpr Type TYPE = stormkit::entities::component_hash("PositionComponent");
     };

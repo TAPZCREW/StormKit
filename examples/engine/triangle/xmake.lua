@@ -17,8 +17,6 @@ do
         add_defines("STORMKIT_ASSERT=0")
     end
 
-    if is_plat("windows") then add_ldflags("-Wl,/SUBSYSTEM:CONSOLE", { force = true }) end
-
     add_files("src/*.cpp")
     add_files("src/*.mpp")
     add_files("shaders/*.nzsl")

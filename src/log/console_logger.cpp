@@ -18,16 +18,16 @@ using namespace std::literals;
 namespace stormkit::log {
     namespace {
         constexpr auto StyleMap = frozen::make_unordered_map<Severity, ConsoleStyle>({
-            { Severity::INFO,
-             ConsoleStyle { .fg = ConsoleColor::GREEN, .modifiers = StyleModifier::INVERSE }   },
-            { Severity::WARNING,
-             ConsoleStyle { .fg = ConsoleColor::MAGENTA, .modifiers = StyleModifier::INVERSE } },
-            { Severity::ERROR,
-             ConsoleStyle { .fg = ConsoleColor::YELLOW, .modifiers = StyleModifier::INVERSE }  },
-            { Severity::FATAL,
-             ConsoleStyle { .fg = ConsoleColor::RED, .modifiers = StyleModifier::INVERSE }     },
-            { Severity::DEBUG,
-             ConsoleStyle { .fg = ConsoleColor::CYAN, .modifiers = StyleModifier::INVERSE }    },
+          { Severity::INFO,
+           ConsoleStyle { .fg = ConsoleColor::GREEN, .modifiers = StyleModifier::INVERSE }   },
+          { Severity::WARNING,
+           ConsoleStyle { .fg = ConsoleColor::MAGENTA, .modifiers = StyleModifier::INVERSE } },
+          { Severity::ERROR,
+           ConsoleStyle { .fg = ConsoleColor::YELLOW, .modifiers = StyleModifier::INVERSE }  },
+          { Severity::FATAL,
+           ConsoleStyle { .fg = ConsoleColor::RED, .modifiers = StyleModifier::INVERSE }     },
+          { Severity::DEBUG,
+           ConsoleStyle { .fg = ConsoleColor::CYAN, .modifiers = StyleModifier::INVERSE }    },
         });
     }
 
@@ -45,14 +45,15 @@ namespace stormkit::log {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto ConsoleLogger::write(Severity severity, const Module& m, const char* string) -> void {
+    auto ConsoleLogger::write(Severity severity, const Module& m, CZString string) noexcept
+      -> void {
         const auto now  = LogClock::now();
         const auto time = std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time);
 
         const auto str = [&]() {
-            if (std::empty(m.name)) return std::format("[{}, {:%S}]", severity, time);
+            if (std::empty(m.name)) return std::format("[{}, {:%S}]", as_string(severity), time);
             else
-                return std::format("[{}, {:%S}, {}]", severity, time, m.name);
+                return std::format("[{}, {:%S}, {}]", as_string(severity), time, m.name);
         }();
 
         const auto is_error = severity == Severity::ERROR or severity == Severity::FATAL;

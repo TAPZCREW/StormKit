@@ -1,0 +1,403 @@
+// Copyright (C) 2023 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+#include <stormkit/core/contract_macro.hpp>
+
+#include <volk.h>
+
+export module stormkit.gpu.core:instance;
+
+import std;
+
+import stormkit.core;
+import stormkit.wsi;
+import :vulkan;
+
+import :structs;
+import :device;
+
+export {
+    namespace stormkit::gpu {
+        class PhysicalDevice;
+
+        class STORMKIT_API Instance {
+            struct PrivateFuncTag {};
+
+          public:
+            static constexpr auto DEBUG_TYPE = DebugObjectType::INSTANCE;
+
+            [[nodiscard]]
+            static auto create(std::string app_name = "",
+                               bool        verbose  = (STORMKIT_BUILD_TYPE == "DEBUG")) noexcept
+              -> Expected<Instance>;
+            [[nodiscard]]
+            static auto allocate(std::string app_name = "",
+                                 bool        verbose  = (STORMKIT_BUILD_TYPE == "DEBUG")) noexcept
+              -> Expected<Heap<Instance>>;
+            ~Instance();
+
+            Instance(const Instance&)                    = delete;
+            auto operator=(const Instance&) -> Instance& = delete;
+
+            Instance(Instance&&) noexcept;
+            auto operator=(Instance&&) noexcept -> Instance&;
+
+            [[nodiscard]]
+            auto physical_devices() const noexcept -> const std::vector<PhysicalDevice>&;
+
+            [[nodiscard]]
+            auto native_handle() const noexcept -> VkInstance;
+
+            constexpr Instance(std::string app_name, bool verbose, PrivateFuncTag) noexcept;
+
+          private:
+            auto do_init() noexcept -> Expected<void>;
+            auto do_load_instance() noexcept -> VulkanExpected<void>;
+            auto do_init_debug_report_callback() noexcept -> VulkanExpected<void>;
+            auto do_retrieve_physical_devices() noexcept -> VulkanExpected<void>;
+
+            std::string m_app_name;
+            bool        m_validation_layers_enabled;
+
+            std::vector<std::string>    m_extensions;
+            std::vector<PhysicalDevice> m_physical_devices;
+
+            VkRAIIHandle<VkInstance> m_vk_handle = { [](auto handle) static noexcept {
+                vkDestroyInstance(handle, nullptr);
+            } };
+            VkRAIIHandle<VkDebugUtilsMessengerEXT> m_vk_debug_utils_handle = {
+                [](auto) static noexcept {}
+            };
+        };
+
+        [[nodiscard]]
+        STORMKIT_API
+        auto score_physical_device(const PhysicalDevice& physical_device) noexcept -> u64;
+
+        class STORMKIT_API PhysicalDevice {
+          public:
+            static constexpr auto DEBUG_TYPE = DebugObjectType::PHYSICAL_DEVICE;
+
+            ~PhysicalDevice();
+
+            PhysicalDevice(const PhysicalDevice&)                    = delete;
+            auto operator=(const PhysicalDevice&) -> PhysicalDevice& = delete;
+
+            PhysicalDevice(PhysicalDevice&&) noexcept;
+            auto operator=(PhysicalDevice&&) noexcept -> PhysicalDevice&;
+
+            [[nodiscard]]
+            auto check_extension_support(std::string_view extension) const noexcept -> bool;
+            [[nodiscard]]
+            auto check_extension_support(std::span<const std::string_view> extensions)
+              const noexcept -> bool;
+            [[nodiscard]]
+            auto check_extension_support(std::span<const CZString> extensions) const noexcept
+              -> bool;
+
+            [[nodiscard]]
+            auto info() const noexcept -> const PhysicalDeviceInfo&;
+            [[nodiscard]]
+            auto capabilities() const noexcept -> const RenderCapabilities&;
+            [[nodiscard]]
+            auto memory_types() const noexcept -> const std::vector<MemoryPropertyFlag>&;
+
+            [[nodiscard]]
+            auto queue_families() const noexcept -> const std::vector<QueueFamily>&;
+
+            [[nodiscard]]
+            auto extensions() const noexcept -> const std::vector<std::string>&;
+
+            [[nodiscard]]
+            auto formats_properties() const noexcept
+              -> const std::vector<std::pair<PixelFormat, FormatProperties>>&;
+
+            [[nodiscard]]
+            auto native_handle() const noexcept -> VkPhysicalDevice;
+
+          private:
+            explicit PhysicalDevice(VkPhysicalDevice physical_device) noexcept;
+
+            PhysicalDeviceInfo              m_device_info;
+            RenderCapabilities              m_capabilities;
+            std::vector<MemoryPropertyFlag> m_memory_types;
+
+            std::vector<QueueFamily>                              m_queue_families;
+            std::vector<std::string>                              m_extensions;
+            std::vector<std::pair<PixelFormat, FormatProperties>> m_format_properties;
+
+            VkPhysicalDevice m_vk_handle = nullptr;
+            friend class Instance;
+        };
+
+        class STORMKIT_API Surface {
+            struct PrivateFuncTag {};
+
+          public:
+            static constexpr auto DEBUG_TYPE = DebugObjectType::SURFACE;
+
+            ~Surface();
+
+            Surface(const Surface&)                    = delete;
+            auto operator=(const Surface&) -> Surface& = delete;
+
+            Surface(Surface&&) noexcept;
+            auto operator=(Surface&&) noexcept -> Surface&;
+
+#if false
+            [[nodiscard]]
+            static auto create_offscreen(const Instance& instance) noexcept -> Expected<Surface>;
+            [[nodiscard]]
+            static auto allocate_offscreen(const Instance& instance) noexcept
+                -> Expected<Heap<Surface>>;
+#endif
+
+            [[nodiscard]]
+            static auto create_from_window(const Instance&    instance,
+                                           const wsi::Window& window) noexcept -> Expected<Surface>;
+            [[nodiscard]]
+            static auto allocate_from_window(const Instance&    instance,
+                                             const wsi::Window& window) noexcept
+              -> Expected<Heap<Surface>>;
+
+            [[nodiscard]]
+            auto native_handle() const noexcept -> VkSurfaceKHR;
+
+            constexpr explicit Surface(PrivateFuncTag) noexcept;
+
+          private:
+            auto do_init_offscreen(const Instance&) noexcept -> Expected<void>;
+            auto do_init_from_window(const Instance&, const wsi::Window&) noexcept
+              -> Expected<void>;
+
+            VkInstance                 m_vk_instance = nullptr;
+            VkRAIIHandle<VkSurfaceKHR> m_vk_handle   = { [](auto) static noexcept {} };
+        };
+    } // namespace stormkit::gpu
+
+    namespace std {
+        template<class CharT>
+        struct formatter<stormkit::gpu::PhysicalDevice, CharT> {
+            template<class ParseContext>
+            STORMKIT_FORCE_INLINE
+            constexpr auto parse(ParseContext& ctx) -> decltype(auto) {
+                return ctx.begin();
+            }
+
+            template<class FormatContext>
+            STORMKIT_FORCE_INLINE
+            auto format(const stormkit::gpu::PhysicalDevice& device, FormatContext& ctx) const
+              -> decltype(auto) {
+                auto&&      out  = ctx.out();
+                const auto& info = device.info();
+                return format_to(out,
+                                 "[name: {}, vendor: {}, id: {}, vulkan: {}.{}.{}, driver version: "
+                                 "{}.{}.{}]",
+                                 info.device_name,
+                                 info.vendor_name,
+                                 info.device_id,
+                                 info.api_major_version,
+                                 info.api_minor_version,
+                                 info.api_patch_version,
+                                 info.driver_major_version,
+                                 info.driver_minor_version,
+                                 info.driver_patch_version);
+            }
+        };
+    } // namespace std
+}
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit::gpu {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    constexpr Instance::Instance(std::string app_name,
+                                 bool        enable_validation,
+                                 PrivateFuncTag) noexcept
+        : m_app_name { std::move(app_name) }, m_validation_layers_enabled { enable_validation } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Instance::create(std::string app_name, bool enable_validation) noexcept
+      -> Expected<Instance> {
+        auto instance = Instance { std::move(app_name), enable_validation, PrivateFuncTag {} };
+        return instance.do_init().transform(core::monadic::consume(instance));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Instance::allocate(std::string app_name, bool enable_validation) noexcept
+      -> Expected<Heap<Instance>> {
+        auto instance = core::allocate_unsafe<Instance>(std::move(app_name),
+                                                        enable_validation,
+                                                        PrivateFuncTag {});
+        return instance->do_init().transform(core::monadic::consume(instance));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline Instance::~Instance()
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline Instance::Instance(Instance&&) noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Instance::operator=(Instance&&) noexcept -> Instance& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Instance::physical_devices() const noexcept -> const std::vector<PhysicalDevice>& {
+        return m_physical_devices;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Instance::native_handle() const noexcept -> VkInstance {
+        EXPECTS(m_vk_handle);
+        return m_vk_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto PhysicalDevice::info() const noexcept -> const PhysicalDeviceInfo& {
+        return m_device_info;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto PhysicalDevice::capabilities() const noexcept -> const RenderCapabilities& {
+        return m_capabilities;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto PhysicalDevice::memory_types() const noexcept
+      -> const std::vector<MemoryPropertyFlag>& {
+        return m_memory_types;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto PhysicalDevice::queue_families() const noexcept -> const std::vector<QueueFamily>& {
+        return m_queue_families;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto PhysicalDevice::extensions() const noexcept -> const std::vector<std::string>& {
+        return m_extensions;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto PhysicalDevice::formats_properties() const noexcept
+      -> const std::vector<std::pair<PixelFormat, FormatProperties>>& {
+        return m_format_properties;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto PhysicalDevice::native_handle() const noexcept -> VkPhysicalDevice {
+        EXPECTS(m_vk_handle);
+        return m_vk_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline constexpr Surface::Surface(PrivateFuncTag) noexcept {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline Surface::~Surface()
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline Surface::Surface(Surface&&) noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Surface::operator=(Surface&&) noexcept -> Surface& = default;
+
+#if false
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto Surface::create_offscreen(const Instance& instance) noexcept
+        -> Expected<Surface> {
+        auto surface = Surface { PrivateFuncTag {} };
+        return surface.do_init_offscreen(instance).transform(core::monadic::consume(instance));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE auto Surface::allocate_offscreen(const Instance& instance) noexcept
+        -> Expected<Heap<Surface>> {
+        auto surface = core::allocate_unsafe<Surface>(PrivateFuncTag {});
+        return surface->do_init_offscreen(instance).transform(core::monadic::consume(instance));
+    }
+#endif
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Surface::create_from_window(const Instance&    instance,
+                                            const wsi::Window& window) noexcept
+      -> Expected<Surface> {
+        auto surface = Surface { PrivateFuncTag {} };
+        return surface.do_init_from_window(instance, window)
+          .transform(core::monadic::consume(surface));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Surface::allocate_from_window(const Instance&    instance,
+                                              const wsi::Window& window) noexcept
+      -> Expected<Heap<Surface>> {
+        auto surface = core::allocate_unsafe<Surface>(PrivateFuncTag {});
+        return surface->do_init_from_window(instance, window)
+          .transform(core::monadic::consume(surface));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Surface::native_handle() const noexcept -> VkSurfaceKHR {
+        EXPECTS(m_vk_handle);
+        return m_vk_handle;
+    }
+} // namespace stormkit::gpu

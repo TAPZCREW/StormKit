@@ -7,7 +7,7 @@ export module SpritesApp;
 import std;
 
 import stormkit.core;
-import stormkit.Gpu;
+import stormkit.gpu;
 import stormkit.Engine;
 import stormkit.wsi;
 
@@ -50,7 +50,7 @@ auto SpritesApp::run(std::span<const std::string_view> _) -> Int {
 
     auto& render_system = world.add_system<engine::SpriteRenderSystem>(renderer, window.extent());
     m_application->setUpdateFrameGraphCallback(
-        bindFront(&engine::SpriteRenderSystem::updateFrameGraph, &render_system));
+        bind_front(&engine::SpriteRenderSystem::updateFrameGraph, &render_system));
 
     engine::makeSprite(world, { 32.f, 32.f });
 

@@ -1,0 +1,368 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+#include <volk.h>
+
+export module stormkit.gpu.core:vulkan.utils;
+
+import std;
+
+import stormkit.core;
+import stormkit.log;
+
+import :vulkan.enums;
+import :vulkan.structs;
+
+export namespace stormkit::gpu {
+    template<std::integral T>
+    [[nodiscard]]
+    constexpr auto vk_make_version(T major, T minor, T patch) noexcept -> u32;
+    [[nodiscard]]
+    constexpr auto vk_version_major(std::integral auto version) noexcept -> u32;
+    [[nodiscard]]
+    constexpr auto vk_version_minor(std::integral auto version) noexcept -> u32;
+    [[nodiscard]]
+    constexpr auto vk_version_patch(std::integral auto version) noexcept -> u32;
+
+    template<typename T>
+    using VulkanExpected = std::expected<T, VkResult>;
+
+    template<typename Func, typename... Args>
+    concept IsVulkanFuncWithResult = core::meta::Is<std::invoke_result_t<Func, Args...>, VkResult>;
+
+    template<typename Func, typename... Args>
+    auto vk_call(const Func& func, Args&&... args) noexcept -> decltype(auto);
+
+    template<typename Func, typename... Args>
+        requires(IsVulkanFuncWithResult<Func, Args...>)
+    [[nodiscard]]
+    auto vk_call(const Func& func, Args&&... args) noexcept -> decltype(auto);
+
+    template<typename T, typename Func, typename... Args>
+    [[nodiscard]]
+    auto vk_call(const Func& func, Args&&... args) noexcept -> decltype(auto);
+
+    template<typename T, typename Func, typename... Args>
+    [[nodiscard]]
+    auto vk_call(const Func&               func,
+                 std::span<const VkResult> success_result,
+                 Args&&... args) noexcept -> T;
+
+    template<typename T, typename Func, typename... Args>
+        requires(IsVulkanFuncWithResult<Func, Args..., T*> or IsVulkanFuncWithResult<Func, Args...>)
+    [[nodiscard]]
+    auto vk_call(const Func&               func,
+                 std::span<const VkResult> success_result,
+                 Args&&... args) noexcept -> VulkanExpected<T>;
+
+    template<typename T, typename Func, typename... Args>
+        requires(IsVulkanFuncWithResult<Func, Args..., std::nullptr_t>)
+    [[nodiscard]]
+    auto vk_allocate(usize count, const Func& func, Args&&... args) noexcept
+      -> VulkanExpected<std::vector<T>>;
+
+    template<typename T, typename Func, typename... Args>
+        requires(IsVulkanFuncWithResult<Func, Args..., std::nullptr_t>)
+    [[nodiscard]]
+    auto vk_allocate(usize                     count,
+                     const Func&               func,
+                     std::span<const VkResult> possible_results,
+                     Args&&... args) noexcept -> VulkanExpected<std::vector<T>>;
+
+    template<typename T, typename Size = u32, typename Func, typename... Args>
+    [[nodiscard]]
+    auto vk_enumerate(const Func& func, Args&&... args) noexcept -> decltype(auto);
+
+    template<typename T, typename Size = u32, typename Func, typename... Args>
+        requires(IsVulkanFuncWithResult<Func, Args..., std::nullptr_t, std::nullptr_t>)
+    [[nodiscard]]
+    auto vk_enumerate(const Func&               func,
+                      std::span<const VkResult> possible_results,
+                      Args&&... args) noexcept -> VulkanExpected<std::vector<T>>;
+
+    template<typename T>
+    class VkRAIIHandle {
+      public:
+        // TODO move_only_function
+        using Deleter = std::function<void(T)>;
+
+        constexpr VkRAIIHandle(Deleter deleter) noexcept : m_deleter { std::move(deleter) } {}
+
+        constexpr ~VkRAIIHandle() noexcept {
+            if (m_value) {
+                m_deleter(m_value);
+                m_value = nullptr;
+            }
+        }
+
+        VkRAIIHandle(const VkRAIIHandle&)                    = delete;
+        auto operator=(const VkRAIIHandle&) -> VkRAIIHandle& = delete;
+
+        constexpr VkRAIIHandle(VkRAIIHandle&& other) noexcept
+            : m_value { std::exchange(other.m_value, nullptr) },
+              m_deleter { std::move(other.m_deleter) } {}
+
+        constexpr auto operator=(VkRAIIHandle&& other) noexcept -> VkRAIIHandle& {
+            if (this == &other) [[unlikely]]
+                return *this;
+
+            m_value   = std::exchange(other.m_value, nullptr);
+            m_deleter = std::move(other.m_deleter);
+
+            return *this;
+        }
+
+        constexpr auto operator=(T&& value) noexcept -> void {
+            if (m_value == value) return;
+            if (m_value) m_deleter(m_value);
+            m_value = std::move(value);
+        }
+
+        constexpr auto value() const noexcept -> const T& { return m_value; }
+
+        constexpr operator T() const noexcept { return value(); }
+
+      private:
+        T       m_value = nullptr;
+        Deleter m_deleter;
+    };
+
+    namespace monadic {
+        template<typename T>
+        [[nodiscard]]
+        constexpr auto to_vk() noexcept -> decltype(auto);
+
+        [[nodiscard]]
+        constexpr auto to_vk() noexcept -> decltype(auto);
+
+        [[nodiscard]]
+        constexpr auto from_vk() noexcept -> decltype(auto);
+
+        template<typename T>
+        [[nodiscard]]
+        constexpr auto from_vk() noexcept -> decltype(auto);
+    } // namespace monadic
+} // namespace stormkit::gpu
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stdr = std::ranges;
+
+namespace stormkit::gpu {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<std::integral T>
+    STORMKIT_FORCE_INLINE
+    STORMKIT_CONST
+    inline constexpr auto vk_make_version(T major, T minor, T patch) noexcept -> u32 {
+        return vk_version_major(major) | vk_version_minor(minor) | vk_version_patch(patch);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    inline constexpr auto vk_version_major(std::integral auto version) noexcept -> u32 {
+        return as<u32>(version) >> 22u;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    inline constexpr auto vk_version_minor(std::integral auto version) noexcept -> u32 {
+        return ((as<u32>(version) >> 12u) & 0x3ffu);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST STORMKIT_INTRINSIC
+    inline constexpr auto vk_version_patch(std::integral auto version) noexcept -> u32 {
+        return as<u32>(version) & 0xfffu;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Func, typename... Args>
+    STORMKIT_FORCE_INLINE
+    STORMKIT_CONST
+    inline auto vk_call(const Func& func, Args&&... args) noexcept -> decltype(auto) {
+        std::invoke(func, std::forward<Args>(args)...);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Func, typename... Args>
+        requires(IsVulkanFuncWithResult<Func, Args...>)
+    STORMKIT_FORCE_INLINE
+    STORMKIT_CONST
+    inline auto vk_call(const Func& func, Args&&... args) noexcept -> decltype(auto) {
+        return vk_call<void, Func, Args...>(func, { VK_SUCCESS }, std::forward<Args>(args)...);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, typename Func, typename... Args>
+    STORMKIT_FORCE_INLINE
+    STORMKIT_CONST
+    inline auto vk_call(const Func& func, Args&&... args) noexcept -> decltype(auto) {
+        if constexpr (IsVulkanFuncWithResult<Func, Args..., T*>
+                      or IsVulkanFuncWithResult<Func, Args...>)
+            return vk_call<T, Func, Args...>(func, { VK_SUCCESS }, std::forward<Args>(args)...);
+        else if constexpr (not core::meta::Is<T, void>) {
+            auto out = T {};
+            std::invoke(func, std::forward<Args>(args)..., &out);
+            return out;
+        } else
+            std::invoke(func, std::forward<Args>(args)...);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, typename Func, typename... Args>
+        requires(IsVulkanFuncWithResult<Func, Args..., T*> or IsVulkanFuncWithResult<Func, Args...>)
+    STORMKIT_CONST
+    inline auto vk_call(const Func&               func,
+                        std::span<const VkResult> success_result,
+                        Args&&... args) noexcept -> VulkanExpected<T> {
+        using Out = VulkanExpected<T>;
+        auto out  = Out { std::in_place };
+
+        const auto result = [&] noexcept {
+            if constexpr (core::meta::IsOneOf<T, void>)
+                return std::invoke(func, std::forward<Args>(args)...);
+            else if constexpr (core::meta::Is<T, VkResult>) {
+                const auto _result = std::invoke(func, std::forward<Args>(args)...);
+                out                = _result;
+                return _result;
+            } else
+                return std::invoke(func, std::forward<Args>(args)..., &(*out));
+        }();
+
+        if (not std::ranges::any_of(success_result, core::monadic::is(result))) [[likely]]
+            out = Out { std::unexpect, result };
+
+        return out;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, typename Func, typename... Args>
+        requires(IsVulkanFuncWithResult<Func, Args..., std::nullptr_t>)
+    STORMKIT_FORCE_INLINE
+    STORMKIT_CONST
+    inline auto vk_allocate(usize count, const Func& func, Args&&... args) noexcept
+      -> VulkanExpected<std::vector<T>> {
+        return vk_allocate<T>(count, func, { VK_SUCCESS }, std::forward<Args>(args)...);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, typename Func, typename... Args>
+        requires(IsVulkanFuncWithResult<Func, Args..., std::nullptr_t>)
+    STORMKIT_CONST
+    inline auto vk_allocate(usize                     count,
+                            const Func&               func,
+                            std::span<const VkResult> possible_results,
+                            Args&&... args) noexcept -> VulkanExpected<std::vector<T>> {
+        using Out   = VulkanExpected<std::vector<T>>;
+        auto out    = Out { std::in_place, count };
+        auto result = std::invoke(func, std::forward<Args>(args)..., stdr::data(*out));
+        if (not std::ranges::any_of(possible_results, core::monadic::is(result))) [[unlikely]]
+            out = Out { std::unexpect, result };
+
+        return out;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, typename Size = u32, typename Func, typename... Args>
+    STORMKIT_FORCE_INLINE
+    STORMKIT_CONST
+    inline auto vk_enumerate(const Func& func, Args&&... args) noexcept -> decltype(auto) {
+        if constexpr (IsVulkanFuncWithResult<Func, Args..., std::nullptr_t, std::nullptr_t>)
+            return vk_enumerate<T, Size, Func, Args...>(func,
+                                                        { VK_SUCCESS },
+                                                        std::forward<Args>(args)...);
+        else {
+            auto out = std::vector<T> {};
+
+            auto size = Size { 0 };
+            std::invoke(func, std::forward<Args>(args)..., &size, nullptr);
+            out.resize(size);
+            std::invoke(func, std::forward<Args>(args)..., &size, stdr::data(out));
+
+            return out;
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, typename Size = u32, typename Func, typename... Args>
+        requires(IsVulkanFuncWithResult<Func, Args..., std::nullptr_t, std::nullptr_t>)
+    STORMKIT_CONST
+    inline auto vk_enumerate(const Func&               func,
+                             std::span<const VkResult> possible_results,
+                             Args&&... args) noexcept -> VulkanExpected<std::vector<T>> {
+        using Out = VulkanExpected<std::vector<T>>;
+        auto out  = Out {};
+
+        auto size   = Size { 0 };
+        auto result = std::invoke(func, std::forward<Args>(args)..., &size, nullptr);
+        if (not std::ranges::any_of(possible_results, core::monadic::is(result))) [[unlikely]]
+            out = Out { std::unexpect, result };
+
+        out = Out { std::in_place, size };
+        if (out) [[likely]] {
+            result = std::invoke(func, std::forward<Args>(args)..., &size, stdr::data(*out));
+            if (not std::ranges::any_of(possible_results, core::monadic::is(result))) [[unlikely]]
+                out = Out { std::unexpect, result };
+        }
+
+        return out;
+    }
+
+    namespace monadic {
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<typename T>
+        STORMKIT_FORCE_INLINE STORMKIT_CONST
+        constexpr auto to_vk() noexcept -> decltype(auto) {
+            return []<typename U>(const U& value) static noexcept -> decltype(auto)
+                       requires(requires { gpu::to_vk<T>(std::declval<U>()); })
+            { return gpu::to_vk<T>(value); };
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE STORMKIT_CONST
+        constexpr auto to_vk() noexcept -> decltype(auto) {
+            return []<typename T>(const T& value) static noexcept -> decltype(auto) {
+                return gpu::to_vk(value);
+            };
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE STORMKIT_CONST
+        constexpr auto from_vk() noexcept -> decltype(auto) {
+            return [](auto val) static noexcept -> decltype(auto) { return gpu::from_vk(val); };
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        template<typename T>
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto from_vk() noexcept -> decltype(auto) {
+            return []<typename U>(U val) static noexcept -> T
+                       requires(requires { gpu::from_vk<T>(std::declval<U>()); })
+            { return gpu::from_vk<T>(val); };
+        }
+    } // namespace monadic
+} // namespace stormkit::gpu

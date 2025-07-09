@@ -1,0 +1,313 @@
+// Copyright (C) 2023 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+#include <stormkit/core/contract_macro.hpp>
+
+#include <volk.h>
+
+export module stormkit.gpu.core:device;
+
+import std;
+
+import stormkit.core;
+import :vulkan;
+
+import :structs;
+
+using namespace stormkit;
+
+export {
+    namespace stormkit::gpu {
+        class PhysicalDevice;
+        class Instance;
+        class Fence;
+        class Semaphore;
+
+        class STORMKIT_API Device {
+            struct PrivateFuncTag {};
+
+          public:
+            static constexpr auto DEBUG_TYPE = DebugObjectType::DEVICE;
+
+            struct QueueEntry {
+                u32       id;
+                u32       count;
+                QueueFlag flags = QueueFlag {};
+            };
+
+            struct Info {
+                bool enable_swapchain  = true;
+                bool enable_raytracing = false;
+            };
+
+            static auto create(const PhysicalDevice& physical_device,
+                               const Instance&       instance,
+                               const Info& info = { true, false }) noexcept -> Expected<Device>;
+            static auto allocate(const PhysicalDevice& physical_device,
+                                 const Instance&       instance,
+                                 const Info&           info = { true, false }) noexcept
+              -> Expected<Heap<Device>>;
+            ~Device() noexcept;
+
+            Device(const Device&)                    = delete;
+            auto operator=(const Device&) -> Device& = delete;
+
+            Device(Device&&) noexcept;
+            auto operator=(Device&&) noexcept -> Device&;
+
+            auto wait_idle() const noexcept -> void;
+
+            auto wait_for_fences(std::span<const Ref<const Fence>> fences,
+                                 bool                              wait_all = true,
+                                 const std::chrono::milliseconds&  timeout  = std::chrono::
+                                   milliseconds::max()) const noexcept -> Expected<Result>;
+            auto wait_for_fence(const Fence&                     fence,
+                                const std::chrono::milliseconds& timeout = std::chrono::
+                                  milliseconds::max()) const noexcept -> Expected<Result>;
+
+            auto reset_fences(std::span<const Ref<const Fence>> fences) const noexcept
+              -> Expected<void>;
+            auto reset_fence(const Fence& fence) const noexcept -> Expected<void>;
+
+            [[nodiscard]]
+            auto raster_queue_entry() const noexcept -> const QueueEntry&;
+            [[nodiscard]]
+            auto async_transfer_queue_entry() const noexcept -> const QueueEntry&;
+            [[nodiscard]]
+            auto async_compute_queue_entry() const noexcept -> const QueueEntry&;
+
+            [[nodiscard]]
+            auto has_async_transfer_queue() const noexcept -> bool;
+            [[nodiscard]]
+            auto has_async_compute_queue() const noexcept -> bool;
+
+            [[nodiscard]]
+            auto physical_device() const noexcept -> const PhysicalDevice&;
+
+            template<class T>
+            auto set_object_name(const T& object, std::string_view name) const -> Expected<void>;
+
+            auto set_object_name(u64 object, DebugObjectType type, std::string_view name) const
+              -> Expected<void>;
+
+            [[nodiscard]]
+            auto native_handle() const noexcept -> VkDevice;
+
+            [[nodiscard]]
+            auto device_table() const noexcept -> const VolkDeviceTable&;
+
+            [[nodiscard]]
+            auto allocator() const noexcept -> VmaAllocator;
+
+            Device(const PhysicalDevice&, PrivateFuncTag) noexcept;
+
+          private:
+            auto do_init(const Instance&, const Info&) noexcept -> Expected<void>;
+
+            Ref<const PhysicalDevice> m_physical_device;
+
+            QueueEntry                m_raster_queue;
+            std::optional<QueueEntry> m_async_transfert_queue;
+            std::optional<QueueEntry> m_async_compute_queue;
+
+            VolkDeviceTable            m_vk_device_table    = zeroed<VolkDeviceTable>();
+            VkRAIIHandle<VkDevice>     m_vk_handle          = { [](auto) static noexcept {} };
+            VmaVulkanFunctions         m_vma_function_table = zeroed<VmaVulkanFunctions>();
+            VkRAIIHandle<VmaAllocator> m_vma_allocator      = { [](auto handle) static noexcept {
+                vmaDestroyAllocator(handle);
+            } };
+        };
+    } // namespace stormkit::gpu
+
+    template<class CharT>
+    struct std::formatter<gpu::Device::QueueEntry, CharT> {
+        template<class ParseContext>
+        [[nodiscard]]
+        constexpr auto parse(ParseContext& ctx) noexcept -> ParseContext::iterator;
+
+        template<class FormatContext>
+        [[nodiscard]]
+        auto format(const gpu::Device::QueueEntry& queue, FormatContext& ctx) const noexcept
+          -> decltype(ctx.out());
+    };
+}
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit::gpu {
+    /////////////////////////////////////
+    /////////////////////////////////////
+
+    inline Device::Device(const PhysicalDevice& physical_device, PrivateFuncTag) noexcept
+        : m_physical_device { as_ref(physical_device) } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+
+    inline Device::~Device() noexcept {
+        if (m_vk_handle) wait_idle();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+
+    inline auto Device::create(const PhysicalDevice& physical_device,
+                               const Instance&       instance,
+                               const Info&           info) noexcept -> Expected<Device> {
+        auto device = Device { physical_device, PrivateFuncTag {} };
+        return device.do_init(instance, info).transform(core::monadic::consume(device));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+
+    inline auto Device::allocate(const PhysicalDevice& physical_device,
+                                 const Instance&       instance,
+                                 const Info&           info) noexcept -> Expected<Heap<Device>> {
+        auto device = core::allocate_unsafe<Device>(physical_device, PrivateFuncTag {});
+        return device->do_init(instance, info).transform(core::monadic::consume(device));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+
+    inline Device::Device(Device&&) noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+
+    inline auto Device::operator=(Device&&) noexcept -> Device& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+
+    inline auto Device::wait_idle() const noexcept -> void {
+        // native_handle().wait_idle();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+
+    inline auto Device::wait_for_fence(const Fence&                     fence,
+                                       const std::chrono::milliseconds& timeout) const noexcept
+      -> Expected<Result> {
+        return wait_for_fences(as_refs<std::array>(fence), true, timeout);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+
+    inline auto Device::reset_fence(const Fence& fence) const noexcept -> Expected<void> {
+        return reset_fences(as_refs<std::array>(fence));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+
+    inline auto Device::raster_queue_entry() const noexcept -> const QueueEntry& {
+        return m_raster_queue;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+
+    inline auto Device::async_transfer_queue_entry() const noexcept -> const QueueEntry& {
+        EXPECTS(m_async_transfert_queue != std::nullopt);
+
+        return *m_async_transfert_queue;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+
+    inline auto Device::async_compute_queue_entry() const noexcept -> const QueueEntry& {
+        EXPECTS(m_async_compute_queue != std::nullopt);
+
+        return *m_async_compute_queue;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+
+    inline auto Device::has_async_transfer_queue() const noexcept -> bool {
+        return m_async_transfert_queue != std::nullopt;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+
+    inline auto Device::has_async_compute_queue() const noexcept -> bool {
+        return m_async_compute_queue != std::nullopt;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+
+    inline auto Device::physical_device() const noexcept -> const PhysicalDevice& {
+        return m_physical_device;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<class T>
+
+    inline auto Device::set_object_name(const T& object, std::string_view name) const
+      -> Expected<void> {
+        if (not vkSetDebugUtilsObjectNameEXT) return {};
+
+        auto&& vk_object = to_vk(object);
+        return set_object_name(std::bit_cast<u64>(static_cast<const void*>(vk_object)),
+                               T::DEBUG_TYPE,
+                               name);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+
+    inline auto Device::native_handle() const noexcept -> VkDevice {
+        EXPECTS(m_vk_handle.value() != nullptr);
+        return m_vk_handle.value();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+
+    inline auto Device::device_table() const noexcept -> const VolkDeviceTable& {
+        return m_vk_device_table;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+
+    inline auto Device::allocator() const noexcept -> VmaAllocator {
+        return m_vma_allocator;
+    }
+} // namespace stormkit::gpu
+
+template<class CharT>
+template<class ParseContext>
+constexpr auto std::formatter<gpu::Device::QueueEntry, CharT>::parse(ParseContext& ctx) noexcept
+  -> ParseContext::iterator {
+    return ctx.begin();
+}
+
+template<class CharT>
+template<class FormatContext>
+auto std::formatter<gpu::Device::QueueEntry, CharT>::format(const gpu::Device::QueueEntry& queue,
+                                                            FormatContext& ctx) const noexcept
+  -> decltype(ctx.out()) {
+    auto&& out = ctx.out();
+    return format_to(out,
+                     "[Device::QueueEntry: .id = {}, .count = {}, .flags = {}]",
+                     queue.id,
+                     queue.count,
+                     queue.flags);
+}

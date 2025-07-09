@@ -1,0 +1,343 @@
+// Copyright (C) 2023 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+#include <stormkit/core/contract_macro.hpp>
+
+#include <volk.h>
+
+export module stormkit.gpu.resource:buffer;
+
+import std;
+
+import stormkit.core;
+import stormkit.gpu.core;
+
+namespace stdr = std::ranges;
+
+export namespace stormkit::gpu {
+    class STORMKIT_API Buffer {
+        struct PrivateFuncTag {};
+
+      public:
+        struct CreateInfo {
+            BufferUsageFlag    usages;
+            usize              size;
+            MemoryPropertyFlag property = MemoryPropertyFlag::HOST_VISIBLE
+                                          | MemoryPropertyFlag::HOST_COHERENT;
+        };
+
+        static constexpr auto DEBUG_TYPE = DebugObjectType::BUFFER;
+
+        ~Buffer();
+
+        Buffer(const Buffer&)                    = delete;
+        auto operator=(const Buffer&) -> Buffer& = delete;
+
+        Buffer(Buffer&&) noexcept;
+        auto operator=(Buffer&&) noexcept -> Buffer&;
+
+        static auto create(const Device&     device,
+                           const CreateInfo& info,
+                           bool persistently_mapped = false) noexcept -> Expected<Buffer>;
+        static auto allocate(const Device&     device,
+                             const CreateInfo& info,
+                             bool persistently_mapped = false) noexcept -> Expected<Heap<Buffer>>;
+
+        [[nodiscard]]
+        auto usages() const noexcept -> BufferUsageFlag;
+        [[nodiscard]]
+        auto size() const noexcept -> usize;
+        [[nodiscard]]
+        auto memory_property() const noexcept -> MemoryPropertyFlag;
+
+        auto map(ioffset offset) noexcept -> Expected<Byte*>;
+        auto map(ioffset offset, usize size) noexcept -> Expected<MutableByteView>;
+
+        template<typename T>
+        auto map_as(ioffset offset) noexcept -> Expected<Ref<T>>;
+
+        template<typename Self>
+        [[nodiscard]]
+        auto data(this Self& self) noexcept -> core::meta::ForwardConst<Self, Byte>*;
+        template<typename Self>
+        [[nodiscard]]
+        auto data(this Self& self, usize size) noexcept
+          -> core::meta::If<core::meta::IsConst<Self>, ByteView, MutableByteView>;
+
+        template<typename T>
+        [[nodiscard]]
+        auto data_as(this auto& self) noexcept -> Ref<T>;
+
+        auto flush(ioffset offset, usize size) noexcept -> Expected<void>;
+        auto unmap() noexcept -> void;
+
+        [[nodiscard]]
+        auto is_persistently_mapped() const noexcept -> bool;
+
+        auto upload(std::span<const Byte> data, ioffset offset = 0) noexcept -> Expected<void>;
+
+        template<core::meta::IsNot<ByteView> T>
+        auto upload(const T& data, ioffset offset = 0) noexcept -> Expected<void>;
+
+        [[nodiscard]]
+        auto native_handle() const noexcept -> VkBuffer;
+
+        Buffer(const Device&     device,
+               const CreateInfo& info,
+               bool              persistently_mapping,
+               PrivateFuncTag) noexcept;
+
+      private:
+        static auto find_memory_type(u32,
+                                     VkMemoryPropertyFlagBits,
+                                     const VkPhysicalDeviceMemoryProperties&,
+                                     const VkMemoryRequirements&) noexcept -> u32;
+
+        auto do_init(MemoryPropertyFlag memory_properties) noexcept -> Expected<void>;
+
+        BufferUsageFlag    m_usages          = {};
+        usize              m_size            = 0;
+        MemoryPropertyFlag m_memory_property = {};
+
+        bool  m_is_persistently_mapped = false;
+        Byte* m_mapped_pointer         = nullptr;
+
+        VkDevice                    m_vk_device;
+        Ref<const VolkDeviceTable>  m_vk_device_table;
+        VmaAllocator                m_vma_allocator;
+        VkRAIIHandle<VmaAllocation> m_vma_allocation = { [](auto) static noexcept {} };
+        VkRAIIHandle<VkBuffer>      m_vk_handle;
+    };
+
+    struct BufferMemoryBarrier {
+        AccessFlag src;
+        AccessFlag dst;
+
+        u32 src_queue_family_index = QUEUE_FAMILY_IGNORED;
+        u32 dst_queue_family_index = QUEUE_FAMILY_IGNORED;
+
+        const Buffer& buffer;
+        usize         size;
+        u64           offset = 0;
+    };
+} // namespace stormkit::gpu
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit::gpu {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline Buffer::Buffer(const Device&     device,
+                          const CreateInfo& info,
+                          bool              persistently_mapped,
+                          PrivateFuncTag) noexcept
+        : m_usages { info.usages }, m_size { info.size }, m_memory_property { info.property },
+          m_is_persistently_mapped { persistently_mapped }, m_vk_device { device.native_handle() },
+          m_vk_device_table { as_ref(device.device_table()) },
+          m_vma_allocator { device.allocator() },
+          m_vk_handle { [vk_device_table = *m_vk_device_table,
+                         vk_device       = m_vk_device](auto handle) noexcept {
+              vk_device_table.vkDestroyBuffer(vk_device, handle, nullptr);
+          } } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline Buffer::~Buffer() {
+        if (m_vma_allocation and m_mapped_pointer) {
+            vk_call(vmaUnmapMemory, m_vma_allocator, m_vma_allocation);
+
+            m_mapped_pointer = nullptr;
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline Buffer::Buffer(Buffer&& other) noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Buffer::operator=(Buffer&& other) noexcept -> Buffer& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Buffer::create(const Device&     device,
+                               const CreateInfo& info,
+                               bool              persistently_mapped) noexcept -> Expected<Buffer> {
+        auto buffer = Buffer { device, info, persistently_mapped, PrivateFuncTag {} };
+        return buffer.do_init(info.property).transform(core::monadic::consume(buffer));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Buffer::allocate(const Device&     device,
+                                 const CreateInfo& info,
+                                 bool persistently_mapped) noexcept -> Expected<Heap<Buffer>> {
+        auto buffer = std::make_unique<Buffer>(device,
+                                               info,
+                                               persistently_mapped,
+                                               PrivateFuncTag {});
+        return buffer->do_init(info.property).transform(core::monadic::consume(buffer));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Buffer::usages() const noexcept -> BufferUsageFlag {
+        EXPECTS(m_vma_allocation and m_vk_handle);
+        return m_usages;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Buffer::size() const noexcept -> usize {
+        EXPECTS(m_vma_allocation and m_vk_handle);
+        return m_size;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Buffer::map(ioffset offset) noexcept -> Expected<Byte*> {
+        EXPECTS(m_vma_allocation and m_vk_handle);
+        EXPECTS(offset < as<ioffset>(m_size));
+
+        return vk_call<void*>(vmaMapMemory, m_vma_allocator, m_vma_allocation)
+          .transform([this, &offset](auto&& ptr) noexcept {
+              m_mapped_pointer = std::bit_cast<Byte*>(ptr);
+              m_mapped_pointer += offset;
+              return m_mapped_pointer;
+          })
+          .transform_error(monadic::from_vk<Result>());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Buffer::map(ioffset offset, usize size) noexcept -> Expected<MutableByteView> {
+        EXPECTS(m_vma_allocation and m_vk_handle);
+        return map(offset).transform([&size](auto&& ptr) noexcept { return as_bytes(ptr, size); });
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    STORMKIT_FORCE_INLINE
+    inline auto Buffer::map_as(ioffset offset) noexcept -> Expected<Ref<T>> {
+        EXPECTS(m_vma_allocation and m_vk_handle);
+
+        return map(offset)
+          .transform([](auto&& ptr) static noexcept { return std::bit_cast<T*>(ptr); })
+          .transform(core::monadic::as_ref_mut);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Self>
+    STORMKIT_FORCE_INLINE
+    inline auto Buffer::data(this Self& self) noexcept -> core::meta::ForwardConst<Self, Byte>* {
+        EXPECTS(self.m_vma_allocation and self.m_vk_handle);
+        EXPECTS(self.m_mapped_pointer);
+
+        using Out = core::meta::ForwardConst<decltype(self), Byte>*;
+        return std::bit_cast<Out>(self.m_mapped_pointer);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Self>
+    STORMKIT_FORCE_INLINE
+    inline auto Buffer::data(this Self& self, usize size) noexcept
+      -> core::meta::If<core::meta::IsConst<Self>, ByteView, MutableByteView> {
+        EXPECTS(self.m_vma_allocation and self.m_vk_handle);
+        EXPECTS(self.m_mapped_pointer);
+
+        using Out = core::meta::If<core::meta::IsConst<Self>, ByteView, MutableByteView>;
+        return Out { std::bit_cast<typename Out::element_type>(self.m_mapped_pointer), size };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, typename Self>
+    STORMKIT_FORCE_INLINE
+    inline auto Buffer::data_as(this Self& self) noexcept -> Ref<T> {
+        EXPECTS(self.m_vma_allocation and self.m_vk_handle);
+        EXPECTS(self.m_mapped_pointer);
+
+        using Type = core::meta::ForwardConst<decltype(self), T>*;
+        return as_ref_like<Self>(std::bit_cast<Type>(self.data()));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Buffer::flush(ioffset offset, usize size) noexcept -> Expected<void> {
+        EXPECTS(m_vma_allocation and m_vk_handle);
+        EXPECTS(offset <= as<ioffset>(m_size));
+        EXPECTS(size <= m_size);
+
+        return vk_call(vmaFlushAllocation, m_vma_allocator, m_vma_allocation, offset, size)
+          .transform_error(monadic::from_vk<Result>());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Buffer::unmap() noexcept -> void {
+        EXPECTS(m_vma_allocation and m_vk_handle);
+        expects(not m_is_persistently_mapped, "unmapping persistent buffer !");
+
+        vk_call(vmaUnmapMemory, m_vma_allocator, m_vma_allocation);
+
+        m_mapped_pointer = nullptr;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Buffer::upload(std::span<const Byte> data, ioffset offset) noexcept
+      -> Expected<void> {
+        EXPECTS(stdr::size(data) <= m_size);
+
+        if (m_is_persistently_mapped) {
+            std::ranges::copy(data, m_mapped_pointer);
+            return {};
+        }
+
+        return map(offset, std::ranges::size(data)).transform([this, &data](auto&& out) noexcept {
+            std::ranges::copy(data, std::ranges::begin(out));
+            unmap();
+        });
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<core::meta::IsNot<std::span<const Byte>> T>
+    STORMKIT_FORCE_INLINE
+    inline auto Buffer::upload(const T& data, ioffset offset) noexcept -> Expected<void> {
+        const auto bytes = as_bytes(data);
+        return upload(bytes, offset);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Buffer::native_handle() const noexcept -> VkBuffer {
+        EXPECTS(m_vk_handle);
+        return m_vk_handle;
+    }
+} // namespace stormkit::gpu

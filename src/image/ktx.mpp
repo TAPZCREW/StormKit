@@ -9,6 +9,8 @@ module;
 #include <glm/gtc/quaternion.hpp>
 #include <glm/integer.hpp>
 
+#include <stormkit/core/contract_macro.hpp>
+
 export module stormkit.image:ktx;
 
 import std;
@@ -19,15 +21,15 @@ import stormkit.image;
 export namespace stormkit::image::details {
     [[nodiscard]]
     auto load_ktx(std::span<const Byte> data) noexcept
-        -> std::expected<image::Image, image::Image::Error>;
+      -> std::expected<image::Image, image::Image::Error>;
 
     [[nodiscard]]
     auto save_ktx(const image::Image& image, const std::filesystem::path& filepath) noexcept
-        -> std::expected<void, image::Image::Error>;
+      -> std::expected<void, image::Image::Error>;
 
     [[nodiscard]]
     auto save_ktx(const image::Image& image) noexcept
-        -> std::expected<std::vector<Byte>, image::Image::Error>;
+      -> std::expected<std::vector<Byte>, image::Image::Error>;
 } // namespace stormkit::image::details
 
 namespace stormkit::image::details {
@@ -107,13 +109,13 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     /////////////////////////////////////
     auto load_ktx([[maybe_unused]] std::span<const Byte> data) noexcept
-        -> std::expected<image::Image, image::Image::Error> {
+      -> std::expected<image::Image, image::Image::Error> {
         /*auto image = gli::load_ktx(reinterpret_cast<const char*>(std::data(data)),
          * std::size(data));*/
         /**/
-        /*const auto faces      = as<UInt32>(image.faces());*/
-        /*const auto layers     = as<UInt32>(image.layers());*/
-        /*const auto mip_levels = as<UInt32>(image.levels());*/
+        /*const auto faces      = as<u32>(image.faces());*/
+        /*const auto layers     = as<u32>(image.layers());*/
+        /*const auto mip_levels = as<u32>(image.levels());*/
         /*const auto format     = toStormFormat(image.format());*/
         /**/
         /*if (format == Format::UNDEFINED)*/
@@ -138,14 +140,14 @@ namespace stormkit::image::details {
         /*image_data.format            = format;*/
         /**/
         /*return Image { std::move(image_data) };*/
-        return std::unexpected(
-            Error { .reason = Reason::NOT_IMPLEMENTED, .str_error = "load to memory" });
+        return std::unexpected(Error { .reason    = Reason::NOT_IMPLEMENTED,
+                                       .str_error = "load to memory" });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto save_ktx(const image::Image& image, const std::filesystem::path& filepath) noexcept
-        -> std::expected<void, image::Image::Error> {
+      -> std::expected<void, image::Image::Error> {
         auto result = save_ktx(image);
 
         if (!result) return std::unexpected(result.error());
@@ -153,7 +155,7 @@ namespace stormkit::image::details {
         auto& output = *result;
 
         auto stream = std::ofstream { filepath, std::ios::binary };
-        write(stream, as_bytes(output));
+        io::write(stream, as_bytes(output));
 
         return {};
     }
@@ -161,8 +163,8 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     /////////////////////////////////////
     auto save_ktx(const image::Image&) noexcept
-        -> std::expected<std::vector<Byte>, image::Image::Error> {
-        return std::unexpected(
-            Error { .reason = Reason::NOT_IMPLEMENTED, .str_error = "save to memory" });
+      -> std::expected<std::vector<Byte>, image::Image::Error> {
+        return std::unexpected(Error { .reason    = Reason::NOT_IMPLEMENTED,
+                                       .str_error = "save to memory" });
     }
 } // namespace stormkit::image::details

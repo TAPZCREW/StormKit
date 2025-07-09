@@ -23,6 +23,8 @@ BitFieldColonSpacing: After
 BreakBeforeConceptDeclarations: 'true'
 BreakBinaryOperations: RespectPrecedence
 EmptyLineBeforeAccessModifier: LogicalBlock
+EnumTrailingComma: Insert
+FixNamespaceComments: 'true'
 IndentExternBlock: Indent
 IndentGotoLabels: 'false'
 IndentRequiresClause: 'true'
@@ -30,6 +32,13 @@ InsertBraces: 'false'
 InsertTrailingCommas: Wrapped
 LambdaBodyIndentation: Signature
 PPIndentWidth: 4
+PenaltyBreakAssignment: 1000
+PenaltyReturnTypeOnItsOwnLine: 1000
+PenaltyBreakBeforeFirstCallParameter: 1000
+PenaltyBreakOpenParenthesis: 1000
+PenaltyBreakBeforeMemberAccess: 10
+PenaltyIndentedWhitespace: 1
+ContinuationIndentWidth: 2
 ReferenceAlignment: Left
 # RemoveBracesLLVM: 'true'
 RequiresClausePosition: OwnLine
@@ -40,9 +49,18 @@ SpaceBeforeCaseColon: 'false'
 AlwaysBreakAfterDefinitionReturnType: None
 SpaceBeforeSquareBrackets: 'false'
 SpaceInEmptyBlock: 'false'
-AttributeMacros: [STORMKIT_FORCE_INLINE, STORMKIT_API, STORMKIT_PRIVATE, STORMKIT_PUBLIC]
+AttributeMacros: [STORMKIT_FORCE_INLINE, STORMKIT_API, STORMKIT_PRIVATE, STORMKIT_PUBLIC, STORMKIT_CONST, STORMKIT_PURE, STORMKIT_INTRINSIC]
 IfMacros: [CASE_DO, CASE_DO_RETURN, CASE, CASE_ARGS_DO]
 BreakAfterAttributes: Always
+Macros:
+  - STORMKIT_FORCE_INLINE=[[maybe_unused]]
+  - STORMKIT_API=[[maybe_unused]]
+  - STORMKIT_PRIVATE=[[maybe_unused]]
+  - STORMKIT_PUBLIC=[[maybe_unused]]
+  - STORMKIT_CONST=[[maybe_unused]]
+  - STORMKIT_PURE=[[maybe_unused]]
+  - STORMKIT_INTRINSIC=[[maybe_unused]]
+  
 QualifierAlignment: Custom
 QualifierOrder: [static, inline, volatile, restrict, constexpr, const, type]
 
@@ -64,7 +82,6 @@ ColumnLimit: '100'
 CompactNamespaces: 'true'
 ConstructorInitializerAllOnOneLineOrOnePerLine: 'false'
 ConstructorInitializerIndentWidth: '4'
-ContinuationIndentWidth: '4'
 IncludeBlocks: Preserve
 IndentCaseLabels: 'true'
 IndentWidth: '4'
@@ -76,7 +93,6 @@ MaxEmptyLinesToKeep: '1'
 NamespaceIndentation: All
 ObjCSpaceAfterProperty: true
 ObjCSpaceBeforeProtocolList: false
-PenaltyBreakAssignment: '0'
 PointerAlignment: Left
 SortIncludes: 'true'
 SortUsingDeclarations: 'true'
@@ -91,7 +107,6 @@ SpacesInAngles: 'false'
 Standard: c++20
 TabWidth: '4'
 UseTab: Never
-PenaltyBreakBeforeFirstCallParameter: '120'
 ---
 Language: ObjC
 AlignAfterOpenBracket: Align
@@ -137,8 +152,12 @@ MaxEmptyLinesToKeep: '1'
 NamespaceIndentation: All
 ObjCSpaceAfterProperty: true
 ObjCSpaceBeforeProtocolList: false
-PenaltyBreakAssignment: '0'
 PointerAlignment: Right
+PenaltyBreakAssignment: 1000
+PenaltyReturnTypeOnItsOwnLine: 1000
+PenaltyBreakBeforeFirstCallParameter: 1000
+PenaltyBreakOpenParenthesis: 1000
+PenaltyBreakBeforeMemberAccess: 10
 SortIncludes: 'true'
 SortUsingDeclarations: 'true'
 SpaceAfterTemplateKeyword: 'false'
@@ -152,7 +171,6 @@ SpacesInAngles: 'false'
 Standard: c++20
 TabWidth: '4'
 UseTab: Never
-PenaltyBreakBeforeFirstCallParameter: '120'
 PenaltyIndentedWhitespace: '1'
 QualifierAlignment: Custom
 QualifierOrder: [static, inline, volatile, restrict, constexpr, const, type]

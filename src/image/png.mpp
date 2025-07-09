@@ -19,15 +19,15 @@ import stormkit.image;
 export namespace stormkit::image::details {
     [[nodiscard]]
     auto load_png(std::span<const Byte> data) noexcept
-        -> std::expected<image::Image, image::Image::Error>;
+      -> std::expected<image::Image, image::Image::Error>;
 
     [[nodiscard]]
     auto save_png(const image::Image& image, const std::filesystem::path& filepath) noexcept
-        -> std::expected<void, image::Image::Error>;
+      -> std::expected<void, image::Image::Error>;
 
     [[nodiscard]]
     auto save_png(const image::Image& image) noexcept
-        -> std::expected<std::vector<Byte>, image::Image::Error>;
+      -> std::expected<std::vector<Byte>, image::Image::Error>;
 } // namespace stormkit::image::details
 
 namespace stormkit::image::details {
@@ -39,7 +39,7 @@ namespace stormkit::image::details {
 
     namespace png {
         struct ReadParam {
-            RangeExtent            readed;
+            usize                  readed;
             std::span<const Byte>& data;
         };
 
@@ -75,31 +75,31 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     /////////////////////////////////////
     auto load_png(std::span<const Byte> data) noexcept
-        -> std::expected<image::Image, image::Image::Error> {
+      -> std::expected<image::Image, image::Image::Error> {
         auto image_memory = std::vector<Byte> {};
         auto format       = Format {};
-        auto extent       = math::ExtentU {};
+        auto extent       = math::Extent3<u32> {};
 
         auto read_param = png::ReadParam { 8u, data };
 
         auto sig = reinterpret_cast<png_const_bytep>(std::data(data));
         if (!png_check_sig(sig, 8u))
-            return std::unexpected(
-                Error { .reason    = Reason::FAILED_TO_PARSE,
-                        .str_error = "[libpng] Failed to validate PNG signature" });
+            return std::unexpected(Error {
+              .reason    = Reason::FAILED_TO_PARSE,
+              .str_error = "[libpng] Failed to validate PNG signature" });
 
         auto png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
         if (!png_ptr)
-            return std::unexpected(
-                Error { .reason    = Reason::FAILED_TO_PARSE,
-                        .str_error = "[libpng] Failed to init (png_create_read_struct)" });
+            return std::unexpected(Error {
+              .reason    = Reason::FAILED_TO_PARSE,
+              .str_error = "[libpng] Failed to init (png_create_read_struct)" });
 
         auto info_ptr = png_create_info_struct(png_ptr);
         if (!info_ptr) {
             png_destroy_read_struct(&png_ptr, nullptr, nullptr);
-            return std::unexpected(
-                Error { .reason    = Reason::FAILED_TO_PARSE,
-                        .str_error = "[libpng] Failed to init (png_create_info_struct)" });
+            return std::unexpected(Error {
+              .reason    = Reason::FAILED_TO_PARSE,
+              .str_error = "[libpng] Failed to init (png_create_info_struct)" });
         }
 
         png_set_read_fn(png_ptr, &read_param, png::read_func);
@@ -194,15 +194,16 @@ namespace stormkit::image::details {
         png_destroy_info_struct(png_ptr, &info_ptr);
         png_destroy_read_struct(&png_ptr, nullptr, nullptr);
 
-        auto image_data
-            = image::Image::ImageData { .extent            = std::move(extent),
-                                        .channel_count     = get_format_channel_count(format),
-                                        .bytes_per_channel = getSizeof(format),
-                                        .layers            = 1u,
-                                        .faces             = 1u,
-                                        .mip_levels        = 1u,
-                                        .format            = format,
-                                        .data              = std::move(image_memory) };
+        auto image_data = image::Image::ImageData {
+            .extent            = std::move(extent),
+            .channel_count     = get_format_channel_count(format),
+            .bytes_per_channel = getSizeof(format),
+            .layers            = 1u,
+            .faces             = 1u,
+            .mip_levels        = 1u,
+            .format            = format,
+            .data              = std::move(image_memory)
+        };
 
         return Image { std::move(image_data) };
     }
@@ -210,13 +211,13 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     /////////////////////////////////////
     auto save_png(const image::Image& image, const std::filesystem::path& filepath) noexcept
-        -> std::expected<void, image::Image::Error> {
+      -> std::expected<void, image::Image::Error> {
         auto result = save_png(image);
 
         if (!result) return std::unexpected(result.error());
 
         auto stream = std::ofstream { filepath, std::ios::binary };
-        write(stream, *result);
+        io::write(stream, *result);
 
         return {};
     }
@@ -224,31 +225,31 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     /////////////////////////////////////
     auto save_png(const image::Image& image) noexcept
-        -> std::expected<std::vector<Byte>, image::Image::Error> {
+      -> std::expected<std::vector<Byte>, image::Image::Error> {
         auto output = std::vector<Byte> {};
 
         auto write_param = png::WriteParam { output };
 
         auto png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
         if (!png_ptr)
-            return std::unexpected(
-                Error { .reason    = Reason::FAILED_TO_PARSE,
-                        .str_error = "[libpng] Failed to init (png_create_write_struct)" });
+            return std::unexpected(Error {
+              .reason    = Reason::FAILED_TO_PARSE,
+              .str_error = "[libpng] Failed to init (png_create_write_struct)" });
 
         auto info_ptr = png_create_info_struct(png_ptr);
         if (!info_ptr) {
             png_destroy_write_struct(&png_ptr, nullptr);
-            return std::unexpected(
-                Error { .reason    = Reason::FAILED_TO_PARSE,
-                        .str_error = "[libpng] Failed to init (png_create_info_struct)" });
+            return std::unexpected(Error {
+              .reason    = Reason::FAILED_TO_PARSE,
+              .str_error = "[libpng] Failed to init (png_create_info_struct)" });
         }
 
         if (setjmp(png_jmpbuf(png_ptr))) {
             png_destroy_info_struct(png_ptr, &info_ptr);
             png_destroy_write_struct(&png_ptr, nullptr);
-            return std::unexpected(
-                Error { .reason    = Reason::FAILED_TO_PARSE,
-                        .str_error = "[libpng] Unkown error during png creation" });
+            return std::unexpected(Error {
+              .reason    = Reason::FAILED_TO_PARSE,
+              .str_error = "[libpng] Unkown error during png creation" });
         }
 
         png_set_write_fn(png_ptr, &write_param, png::write_func, nullptr);

@@ -1,7 +1,7 @@
 #ifdef STORMKIT_BUILD_MODULES
 module App;
 
-import stormkit.Gpu;
+import stormkit.gpu;
 
 import Components;
 import Systems;
@@ -25,12 +25,12 @@ App::~App() {
     ilog("Cleaning");
 }
 
-auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char** argv) -> Int32 {
+auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] CZString argv[]) -> i32 {
     using Clock = std::chrono::high_resolution_clock;
 
     using namespace stormkit::literals;
 
-    doInitWindow();
+    do_initWindow();
 
     m_board = image::Image {
         { BOARD_SIZE, BOARD_SIZE },
@@ -80,7 +80,7 @@ auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] const char** arg
     return EXIT_SUCCESS;
 }
 
-auto App::doInitWindow() -> void {
+auto App::do_initWindow() -> void {
     const auto window_style = wsi::WindowStyle::ALL;
 
     m_window = allocate<wsi::Window>(WINDOW_TITLE, math::ExtentU { 800u, 600u }, window_style);
@@ -153,7 +153,7 @@ auto App::handleMouse(const stormkit::wsi::MouseButtonPushedEventData& event) ->
         createCell(x, y);
 }
 
-auto App::createCell(stormkit::UInt32 x, stormkit::UInt32 y) -> void {
+auto App::createCell(stormkit::u32 x, stormkit::u32 y) -> void {
     auto  e        = m_entities.make_entity();
     auto& position = m_entities.add_component<PositionComponent>(e);
 

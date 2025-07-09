@@ -26,6 +26,6 @@ export namespace stormkit { inline namespace core {
         App(const App&) noexcept                    = delete;
         auto operator=(const App&) noexcept -> App& = delete;
 
-        virtual auto run(std::span<const std::string_view> args) -> Int = 0;
+        virtual auto run(std::span<const std::string_view> args) -> i32 = 0;
     };
 }} // namespace stormkit::core

@@ -17,7 +17,7 @@ namespace {
 namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    FileLogger::FileLogger(LogClock::time_point start, std::filesystem::path path)
+    FileLogger::FileLogger(LogClock::time_point start, std::filesystem::path path) noexcept
         : Logger { std::move(start) }, m_base_path { std::move(path) } {
         if (not std::filesystem::exists(m_base_path))
             std::filesystem::create_directory(m_base_path);
@@ -32,7 +32,7 @@ namespace stormkit::log {
     ////////////////////////////////////////
     FileLogger::FileLogger(LogClock::time_point  start,
                            std::filesystem::path path,
-                           Severity              log_level)
+                           Severity              log_level) noexcept
         : Logger { std::move(start), log_level }, m_base_path { std::move(path) } {
         if (not std::filesystem::exists(m_base_path))
             std::filesystem::create_directory(m_base_path);
@@ -45,16 +45,16 @@ namespace stormkit::log {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto FileLogger::flush() -> void {
+    auto FileLogger::flush() noexcept -> void {
         for (auto& [path, stream] : m_streams) stream.flush();
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto FileLogger::write(Severity severity, const Module& m, const char* string) -> void {
-        const auto now = LogClock::now();
-        const auto time
-            = std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time).count();
+    auto FileLogger::write(Severity severity, const Module& m, CZString string) noexcept -> void {
+        const auto now  = LogClock::now();
+        const auto time = std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time)
+                            .count();
 
         auto filepath = m_base_path / std::filesystem::path { to_native_encoding(LOG_FILE_NAME) };
         if (not std::empty(m.name)) {

@@ -23,7 +23,7 @@ namespace {
             } },
           { "Allocation.unsafe",
             [] static noexcept {
-                auto allocation = allocateUnsafe<int>(5);
+                auto allocation = allocate_unsafe<int>(5);
                 expects(*allocation == 5);
             } } }
     };

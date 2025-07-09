@@ -2,6 +2,10 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
+module;
+
+#include <stormkit/core/contract_macro.hpp>
+
 export module stormkit.image:tga;
 
 import std;
@@ -13,15 +17,15 @@ import stormkit.image;
 export namespace stormkit::image::details {
     [[nodiscard]]
     auto load_tga(std::span<const Byte> data) noexcept
-        -> std::expected<image::Image, image::Image::Error>;
+      -> std::expected<image::Image, image::Image::Error>;
 
     [[nodiscard]]
     auto save_tga(const image::Image& image, const std::filesystem::path& filepath) noexcept
-        -> std::expected<void, image::Image::Error>;
+      -> std::expected<void, image::Image::Error>;
 
     [[nodiscard]]
     auto save_tga(const image::Image& image) noexcept
-        -> std::expected<std::vector<Byte>, image::Image::Error>;
+      -> std::expected<std::vector<Byte>, image::Image::Error>;
 } // namespace stormkit::image::details
 
 namespace stormkit::image::details {
@@ -33,21 +37,21 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     /////////////////////////////////////
     auto load_tga(std::span<const Byte>) noexcept
-        -> std::expected<image::Image, image::Image::Error> {
-        return std::unexpected(
-            Error { .reason = Reason::NOT_IMPLEMENTED, .str_error = "loader from memory" });
+      -> std::expected<image::Image, image::Image::Error> {
+        return std::unexpected(Error { .reason    = Reason::NOT_IMPLEMENTED,
+                                       .str_error = "loader from memory" });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto save_tga(const image::Image& image, const std::filesystem::path& filepath) noexcept
-        -> std::expected<void, image::Image::Error> {
+      -> std::expected<void, image::Image::Error> {
         auto result = save_tga(image);
 
         if (!result) return std::unexpected(result.error());
 
         auto stream = std::ofstream { filepath, std::ios::binary };
-        write(stream, *result);
+        io::write(stream, *result);
 
         return {};
     }
@@ -55,8 +59,8 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     /////////////////////////////////////
     auto save_tga(const image::Image&) noexcept
-        -> std::expected<std::vector<Byte>, image::Image::Error> {
-        return std::unexpected(
-            Error { .reason = Reason::NOT_IMPLEMENTED, .str_error = "save to file" });
+      -> std::expected<std::vector<Byte>, image::Image::Error> {
+        return std::unexpected(Error { .reason    = Reason::NOT_IMPLEMENTED,
+                                       .str_error = "save to file" });
     }
 } // namespace stormkit::image::details

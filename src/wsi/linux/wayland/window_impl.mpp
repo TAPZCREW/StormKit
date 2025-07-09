@@ -148,7 +148,7 @@ export namespace stormkit::wsi::linux::wayland {
         };
 
         WindowImpl();
-        WindowImpl(std::string title, const math::ExtentU& extent, WindowStyle style);
+        WindowImpl(std::string title, const math::Extent2<u32>& extent, WindowStyle style);
         ~WindowImpl();
 
         WindowImpl(const WindowImpl&) noexcept                    = delete;
@@ -157,7 +157,7 @@ export namespace stormkit::wsi::linux::wayland {
         WindowImpl(WindowImpl&&) noexcept;
         auto operator=(WindowImpl&&) noexcept -> WindowImpl&;
 
-        auto create(std::string title, const math::ExtentU& extent, WindowStyle style) -> void;
+        auto create(std::string title, const math::Extent2<u32>& extent, WindowStyle style) -> void;
         auto close() noexcept -> void;
 
         [[nodiscard]]
@@ -166,7 +166,7 @@ export namespace stormkit::wsi::linux::wayland {
         auto wait_event(Event& event) noexcept -> bool;
 
         auto set_title(std::string title) noexcept -> void;
-        auto set_extent(const math::ExtentU& size) noexcept -> void;
+        auto set_extent(const math::Extent2<u32>& size) noexcept -> void;
         auto toggle_fullscreen(bool enabled) noexcept -> void;
 
         auto lock_mouse() noexcept -> void;
@@ -176,7 +176,7 @@ export namespace stormkit::wsi::linux::wayland {
         auto unhide_mouse() noexcept -> void;
 
         [[nodiscard]]
-        auto extent() const noexcept -> const math::ExtentU&;
+        auto extent() const noexcept -> const math::Extent2<u32>&;
         [[nodiscard]]
         auto title() const noexcept -> const std::string&;
 
@@ -324,7 +324,7 @@ export namespace stormkit::wsi::linux::wayland {
         bool        m_is_mouse_locked = false;
         bool        m_fullscreen      = false;
 
-        math::ExtentU m_extent;
+        math::Extent2<u32> m_extent;
 
         int m_xi_opcode;
 
@@ -336,7 +336,7 @@ export namespace stormkit::wsi::linux::wayland {
 
         math::Vector2I         m_locked_mouse_position;
         mutable math::Vector2I m_mouse_position;
-        math::ExtentU          m_fullscreen_extent = {};
+        math::Extent2<u32>          m_fullscreen_extent = {};
 
         std::array<KeyState, 102> m_keyboard_state;
 
@@ -391,7 +391,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto WindowImpl::extent() const noexcept -> const math::ExtentU& {
+    inline auto WindowImpl::extent() const noexcept -> const math::Extent2<u32>& {
         return m_extent;
     }
 

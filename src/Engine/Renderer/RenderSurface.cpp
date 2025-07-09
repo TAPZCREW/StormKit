@@ -5,7 +5,7 @@ import std;
 import stormkit.core;
 import stormkit.log;
 import stormkit.wsi;
-import stormkit.Gpu;
+import stormkit.gpu;
 
 import :Renderer;
 
@@ -19,9 +19,9 @@ namespace stormkit::engine {
                                  const gpu::Queue&    raster_queue,
                                  const wsi::Window&   window,
                                  Tag) {
-        gpu::Surface::createFromWindow(instance, window)
+        gpu::Surface::create_from_window(instance, window)
             .transform(monadic::set(m_surface))
-            .and_then(bindFront(gpu::Swapchain::create,
+            .and_then(bind_front(gpu::Swapchain::create,
                                 std::cref(device),
                                 std::cref(*m_surface),
                                 std::cref(window.extent()),
@@ -32,9 +32,9 @@ namespace stormkit::engine {
         for (auto _ : range(std::size(m_swapchain->images()))) {
             gpu::Semaphore::create(device)
                 .transform(monadic::emplace_to(m_image_availables))
-                .and_then(bindFront(gpu::Semaphore::create, std::cref(device)))
+                .and_then(bind_front(gpu::Semaphore::create, std::cref(device)))
                 .transform(monadic::emplace_to(m_render_finisheds))
-                .and_then(bindFront(gpu::Fence::createSignaled, std::cref(device)))
+                .and_then(bind_front(gpu::Fence::create_signaled, std::cref(device)))
                 .transform(monadic::emplace_to(m_in_flight_fences))
                 .transform_error(
                     monadic::map(monadic::narrow<gpu::Result>(), monadic::throw_as_exception()));
@@ -46,14 +46,14 @@ namespace stormkit::engine {
                   .value();
 
         auto transition_command_buffers
-            = command_pool.createCommandBuffers(device, std::size(m_swapchain->images()));
+            = command_pool.create_command_buffers(device, std::size(m_swapchain->images()));
 
         for (auto i : range(std::size(transition_command_buffers))) {
             auto&& image                     = m_swapchain->images()[i];
             auto&& transition_command_buffer = transition_command_buffers[i];
 
             transition_command_buffer.begin(true);
-            transition_command_buffer.transitionImageLayout(image,
+            transition_command_buffer.transition_image_layout(image,
                                                             gpu::ImageLayout::UNDEFINED,
                                                             gpu::ImageLayout::Present_Src);
             transition_command_buffer.end();
@@ -83,13 +83,13 @@ namespace stormkit::engine {
 
         return in_flight.wait()
             .transform([&in_flight](auto&& _) noexcept { in_flight.reset(); })
-            .and_then(bindFront(&gpu::Swapchain::acquireNextImage,
+            .and_then(bind_front(&gpu::Swapchain::acquire_next_image,
                                 &(m_swapchain.get()),
                                 100ms,
                                 std::cref(image_available)))
             .transform([&, this](auto&& _result) noexcept {
                 auto&& [result, image_index] = _result; // TODO handle result
-                return Frame { .current_frame   = as<UInt32>(m_current_frame),
+                return Frame { .current_frame   = as<u32>(m_current_frame),
                                .image_index     = image_index,
                                .image_available = image_available,
                                .render_finished = render_finished,

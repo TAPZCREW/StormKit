@@ -1,0 +1,594 @@
+// Copyright (C) 2023 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+#include <stormkit/core/contract_macro.hpp>
+
+#include <volk.h>
+
+export module stormkit.gpu.resource:image;
+
+import std;
+
+import stormkit.core;
+import stormkit.image;
+import stormkit.gpu.core;
+
+export namespace stormkit::gpu {
+    class STORMKIT_API Sampler {
+        struct PrivateFuncTag {};
+
+      public:
+        struct Settings {
+            Filter mag_filter = Filter::LINEAR;
+            Filter min_filter = Filter::LINEAR;
+
+            SamplerAddressMode address_mode_u = SamplerAddressMode::REPEAT;
+            SamplerAddressMode address_mode_v = SamplerAddressMode::REPEAT;
+            SamplerAddressMode address_mode_w = SamplerAddressMode::REPEAT;
+
+            bool  enable_anisotropy = false;
+            float max_anisotropy    = 0.f;
+
+            BorderColor border_color = BorderColor::INT_OPAQUE_BLACK;
+
+            bool unnormalized_coordinates = false;
+
+            bool             compare_enable    = false;
+            CompareOperation compare_operation = CompareOperation::ALWAYS;
+
+            SamplerMipmapMode mipmap_mode  = SamplerMipmapMode::LINEAR;
+            float             mip_lod_bias = 0.f;
+
+            float min_lod = 0.f;
+            float max_lod = 0.f;
+        };
+
+        static constexpr auto DEBUG_TYPE = DebugObjectType::SAMPLER;
+
+        static auto create(const Device& device, const Settings& settings) noexcept
+          -> Expected<Sampler>;
+        static auto allocate(const Device& device, const Settings& settings) noexcept
+          -> Expected<Heap<Sampler>>;
+        ~Sampler();
+
+        Sampler(const Sampler&)                    = delete;
+        auto operator=(const Sampler&) -> Sampler& = delete;
+
+        Sampler(Sampler&&) noexcept;
+        auto operator=(Sampler&&) noexcept -> Sampler&;
+
+        [[nodiscard]]
+        auto settings() const noexcept -> const Settings&;
+
+        [[nodiscard]]
+        auto native_handle() const noexcept -> VkSampler;
+
+        Sampler(const Device& device, const Settings& settings, PrivateFuncTag) noexcept;
+
+      private:
+        auto do_init() noexcept -> Expected<void>;
+
+        Settings m_settings = {};
+
+        VkDevice                   m_vk_device = nullptr;
+        Ref<const VolkDeviceTable> m_vk_device_table;
+        VkRAIIHandle<VkSampler>    m_vk_handle;
+    };
+
+    class Image;
+
+    class STORMKIT_API ImageView {
+        struct PrivateFuncTag {};
+
+      public:
+        static constexpr auto DEBUG_TYPE = DebugObjectType::IMAGE_VIEW;
+
+        static auto create(const Device&                device,
+                           const Image&                 image,
+                           ImageViewType                type              = ImageViewType::T2D,
+                           const ImageSubresourceRange& subresource_range = {}) noexcept
+          -> Expected<ImageView>;
+        static auto allocate(const Device&                device,
+                             const Image&                 image,
+                             ImageViewType                type              = ImageViewType::T2D,
+                             const ImageSubresourceRange& subresource_range = {}) noexcept
+          -> Expected<Heap<ImageView>>;
+        ~ImageView();
+
+        ImageView(const ImageView&)                    = delete;
+        auto operator=(const ImageView&) -> ImageView& = delete;
+
+        ImageView(ImageView&&) noexcept;
+        auto operator=(ImageView&&) noexcept -> ImageView&;
+
+        [[nodiscard]]
+        auto type() const noexcept -> ImageViewType;
+        [[nodiscard]]
+        auto subresource_range() const noexcept -> const ImageSubresourceRange&;
+
+        [[nodiscard]]
+        auto native_handle() const noexcept -> VkImageView;
+
+        ImageView(const Device&,
+                  ImageViewType,
+                  const ImageSubresourceRange&,
+                  PrivateFuncTag) noexcept;
+
+      private:
+        auto do_init(const Image&) noexcept -> Expected<void>;
+
+        ImageViewType         m_type              = {};
+        ImageSubresourceRange m_subresource_range = {};
+
+        VkDevice                   m_vk_device = nullptr;
+        Ref<const VolkDeviceTable> m_vk_device_table;
+        VkRAIIHandle<VkImageView>  m_vk_handle;
+    };
+
+    class STORMKIT_API Image {
+        struct PrivateFuncTag {};
+
+      public:
+        struct CreateInfo {
+            math::Extent3<u32> extent;
+            PixelFormat        format     = PixelFormat::RGBA8_UNORM;
+            u32                layers     = 1u;
+            u32                mip_levels = 1u;
+            ImageType          type       = ImageType::T2D;
+            ImageCreateFlag    flags      = ImageCreateFlag::NONE;
+            SampleCountFlag    samples    = SampleCountFlag::C1;
+            ImageUsageFlag     usages     = ImageUsageFlag::SAMPLED
+                                    | ImageUsageFlag::TRANSFER_DST
+                                    | ImageUsageFlag::TRANSFER_SRC;
+            ImageTiling        tiling   = ImageTiling::OPTIMAL;
+            MemoryPropertyFlag property = MemoryPropertyFlag::DEVICE_LOCAL;
+        };
+
+        static constexpr auto DEBUG_TYPE = DebugObjectType::IMAGE;
+
+        static auto create(const Device& device, const CreateInfo& info) noexcept
+          -> Expected<Image>;
+        static auto allocate(const Device& device, const CreateInfo& create_info) noexcept
+          -> Expected<Heap<Image>>;
+        ~Image();
+
+        Image(const Image&)                    = delete;
+        auto operator=(const Image&) -> Image& = delete;
+
+        Image(Image&&) noexcept;
+        auto operator=(Image&&) noexcept -> Image&;
+
+        [[nodiscard]]
+        auto extent() const noexcept -> const math::Extent3<u32>&;
+        [[nodiscard]]
+        auto format() const noexcept -> PixelFormat;
+        [[nodiscard]]
+        auto type() const noexcept -> ImageType;
+        [[nodiscard]]
+        auto samples() const noexcept -> SampleCountFlag;
+        [[nodiscard]]
+        auto layers() const noexcept -> u32;
+        [[nodiscard]]
+        auto faces() const noexcept -> u32;
+        [[nodiscard]]
+        auto mip_levels() const noexcept -> u32;
+        [[nodiscard]]
+        auto usages() const noexcept -> ImageUsageFlag;
+
+        [[nodiscard]]
+        auto native_handle() const noexcept -> VkImage;
+
+        Image(const Device&, const CreateInfo&, PrivateFuncTag) noexcept;
+
+        [[nodiscard]]
+        static auto create(const Device&, const CreateInfo&, VkImage&&) noexcept -> Image;
+
+      private:
+        auto do_init(const CreateInfo&) noexcept -> Expected<void>;
+        auto do_init(const VkImageCreateInfo&, MemoryPropertyFlag) noexcept -> Expected<void>;
+
+        math::Extent3<u32> m_extent     = { 0, 0, 0 };
+        PixelFormat        m_format     = {};
+        u32                m_layers     = 0;
+        u32                m_faces      = 0;
+        u32                m_mip_levels = 0;
+        ImageType          m_type       = {};
+        ImageCreateFlag    m_flags      = {};
+        SampleCountFlag    m_samples    = {};
+        ImageUsageFlag     m_usages     = {};
+
+        VkDevice                    m_vk_device = nullptr;
+        Ref<const VolkDeviceTable>  m_vk_device_table;
+        VmaAllocator                m_vma_allocator  = nullptr;
+        VkRAIIHandle<VmaAllocation> m_vma_allocation = { [](auto) static noexcept {} };
+        VkRAIIHandle<VkImage>       m_vk_handle;
+    };
+
+    struct ImageMemoryBarrier {
+        AccessFlag src;
+        AccessFlag dst;
+
+        ImageLayout old_layout;
+        ImageLayout new_layout;
+
+        u32 src_queue_family_index = QUEUE_FAMILY_IGNORED;
+        u32 dst_queue_family_index = QUEUE_FAMILY_IGNORED;
+
+        const Image&          image;
+        ImageSubresourceRange range;
+    };
+} // namespace stormkit::gpu
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit::gpu {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Sampler::do_init() noexcept -> Expected<void> {
+        const auto create_info = VkSamplerCreateInfo {
+            .sType                   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+            .pNext                   = nullptr,
+            .flags                   = 0,
+            .magFilter               = to_vk<VkFilter>(m_settings.mag_filter),
+            .minFilter               = to_vk<VkFilter>(m_settings.min_filter),
+            .mipmapMode              = to_vk<VkSamplerMipmapMode>(m_settings.mipmap_mode),
+            .addressModeU            = to_vk<VkSamplerAddressMode>(m_settings.address_mode_u),
+            .addressModeV            = to_vk<VkSamplerAddressMode>(m_settings.address_mode_v),
+            .addressModeW            = to_vk<VkSamplerAddressMode>(m_settings.address_mode_w),
+            .mipLodBias              = m_settings.mip_lod_bias,
+            .anisotropyEnable        = m_settings.enable_anisotropy,
+            .maxAnisotropy           = m_settings.max_anisotropy,
+            .compareEnable           = m_settings.compare_enable,
+            .compareOp               = to_vk<VkCompareOp>(m_settings.compare_operation),
+            .minLod                  = m_settings.min_lod,
+            .maxLod                  = m_settings.max_lod,
+            .borderColor             = to_vk<VkBorderColor>(m_settings.border_color),
+            .unnormalizedCoordinates = m_settings.unnormalized_coordinates
+        };
+        return vk_call<VkSampler>(m_vk_device_table->vkCreateSampler,
+                                  m_vk_device,
+                                  &create_info,
+                                  nullptr)
+          .transform(core::monadic::set(m_vk_handle))
+          .transform_error(monadic::from_vk<Result>());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline Sampler::Sampler(const Device& device, const Settings& settings, PrivateFuncTag) noexcept
+        : m_settings { settings }, m_vk_device { device.native_handle() },
+          m_vk_device_table { as_ref(device.device_table()) },
+          m_vk_handle { [vk_device_table = *m_vk_device_table,
+                         vk_device       = m_vk_device](auto&& handle) noexcept {
+              vk_device_table.vkDestroySampler(vk_device, handle, nullptr);
+          } } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline Sampler::~Sampler()
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline Sampler::Sampler(Sampler&&) noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Sampler::operator=(Sampler&&) noexcept -> Sampler& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Sampler::create(const Device& device, const Settings& settings) noexcept
+      -> Expected<Sampler> {
+        auto sampler = Sampler { device, settings, PrivateFuncTag {} };
+        return sampler.do_init().transform(core::monadic::consume(sampler));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Sampler::allocate(const Device& device, const Settings& settings) noexcept
+      -> Expected<Heap<Sampler>> {
+        auto sampler = std::make_unique<Sampler>(device, settings, PrivateFuncTag {});
+        return sampler->do_init().transform(core::monadic::consume(sampler));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Sampler::settings() const noexcept -> const Settings& {
+        return m_settings;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Sampler::native_handle() const noexcept -> VkSampler {
+        EXPECTS(m_vk_handle);
+        return m_vk_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto ImageView::do_init(const Image& image) noexcept -> Expected<void> {
+        const auto vk_subresource_range = VkImageSubresourceRange {
+            .aspectMask     = to_vk<VkImageAspectFlagBits>(m_subresource_range.aspect_mask),
+            .baseMipLevel   = m_subresource_range.base_mip_level,
+            .levelCount     = m_subresource_range.level_count,
+            .baseArrayLayer = m_subresource_range.base_array_layer,
+            .layerCount     = m_subresource_range.layer_count,
+        };
+
+        const auto create_info = VkImageViewCreateInfo {
+            .sType            = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+            .pNext            = nullptr,
+            .flags            = 0,
+            .image            = image.native_handle(),
+            .viewType         = to_vk<VkImageViewType>(m_type),
+            .format           = to_vk<VkFormat>(image.format()),
+            .components       = { .r = VK_COMPONENT_SWIZZLE_R,
+                                 .g = VK_COMPONENT_SWIZZLE_G,
+                                 .b = VK_COMPONENT_SWIZZLE_B,
+                                 .a = VK_COMPONENT_SWIZZLE_A },
+            .subresourceRange = vk_subresource_range,
+        };
+
+        return vk_call<VkImageView>(m_vk_device_table->vkCreateImageView,
+                                    m_vk_device,
+                                    &create_info,
+                                    nullptr)
+          .transform(core::monadic::set(m_vk_handle))
+          .transform_error(monadic::from_vk<Result>());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline ImageView::ImageView(const Device&                device,
+                                ImageViewType                type,
+                                const ImageSubresourceRange& subresource_range,
+                                PrivateFuncTag) noexcept
+        : m_type { type }, m_subresource_range { subresource_range },
+          m_vk_device { device.native_handle() },
+          m_vk_device_table { as_ref(device.device_table()) },
+          m_vk_handle { [vk_device_table = *m_vk_device_table,
+                         vk_device       = m_vk_device](auto&& handle) noexcept {
+              vk_device_table.vkDestroyImageView(vk_device, handle, nullptr);
+          } } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline ImageView::~ImageView()
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline ImageView::ImageView(ImageView&&) noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto ImageView::operator=(ImageView&&) noexcept -> ImageView& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto ImageView::create(const Device&                device,
+                                  const Image&                 image,
+                                  ImageViewType                type,
+                                  const ImageSubresourceRange& subresource_range) noexcept
+      -> Expected<ImageView> {
+        auto image_view = ImageView { device, type, subresource_range, PrivateFuncTag {} };
+        return image_view.do_init(image).transform(core::monadic::consume(image_view));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto ImageView::allocate(const Device&                device,
+                                    const Image&                 image,
+                                    ImageViewType                type,
+                                    const ImageSubresourceRange& subresource_range) noexcept
+      -> Expected<Heap<ImageView>> {
+        auto image_view = std::make_unique<ImageView>(device,
+                                                      type,
+                                                      subresource_range,
+                                                      PrivateFuncTag {});
+        return image_view->do_init(image).transform(core::monadic::consume(image_view));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto ImageView::type() const noexcept -> ImageViewType {
+        return m_type;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto ImageView::subresource_range() const noexcept -> const ImageSubresourceRange& {
+        return m_subresource_range;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto ImageView::native_handle() const noexcept -> VkImageView {
+        EXPECTS(m_vk_handle);
+        return m_vk_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline Image::Image(const Device& device, const CreateInfo& info, PrivateFuncTag) noexcept
+        : m_extent { info.extent }, m_format { info.format }, m_layers { info.layers },
+          m_faces { 1 }, m_mip_levels { info.mip_levels }, m_type { info.type },
+          m_flags { info.flags }, m_samples { info.samples }, m_usages { info.usages },
+          m_vk_device { device.native_handle() },
+          m_vk_device_table { as_ref(device.device_table()) },
+          m_vma_allocator { device.allocator() },
+          m_vk_handle { [vk_device_table = *m_vk_device_table,
+                         vk_device       = m_vk_device](auto handle) noexcept {
+              vk_device_table.vkDestroyImage(vk_device, handle, nullptr);
+          } } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline Image::~Image()
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline Image::Image(Image&&) noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Image::operator=(Image&&) noexcept -> Image& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Image::create(const Device& device, const CreateInfo& create_info) noexcept
+      -> Expected<Image> {
+        auto image = Image { device, create_info, PrivateFuncTag {} };
+        return image.do_init(create_info).transform(core::monadic::consume(image));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Image::allocate(const Device& device, const CreateInfo& create_info) noexcept
+      -> Expected<Heap<Image>> {
+        auto image = std::make_unique<Image>(device, create_info, PrivateFuncTag {});
+        return image->do_init(create_info).transform(core::monadic::consume(image));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Image::extent() const noexcept -> const math::Extent3<u32>& {
+        return m_extent;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Image::format() const noexcept -> PixelFormat {
+        return m_format;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Image::type() const noexcept -> ImageType {
+        return m_type;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Image::samples() const noexcept -> SampleCountFlag {
+        return m_samples;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Image::layers() const noexcept -> u32 {
+        return m_layers;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Image::faces() const noexcept -> u32 {
+        return m_faces;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Image::mip_levels() const noexcept -> u32 {
+        return m_mip_levels;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Image::usages() const noexcept -> ImageUsageFlag {
+        return m_usages;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Image::native_handle() const noexcept -> VkImage {
+        EXPECTS(m_vk_handle);
+        return m_vk_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::create(const Device&     device,
+                              const CreateInfo& info,
+                              VkImage&&         vk_image) noexcept -> Image {
+        auto image             = Image { device, info, PrivateFuncTag {} };
+        image.m_vma_allocation = { core::monadic::noop() };
+        image.m_vk_handle      = { core::monadic::noop() };
+        image.m_vk_handle      = std::move(vk_image);
+        return image;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Image::do_init(const CreateInfo& info) noexcept -> Expected<void> {
+        if (core::check_flag_bit(m_flags, gpu::ImageCreateFlag::CUBE_COMPATIBLE)) m_faces = 6u;
+        const auto create_info = VkImageCreateInfo {
+            .sType                 = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+            .pNext                 = nullptr,
+            .flags                 = to_vk<VkImageCreateFlagBits>(m_flags),
+            .imageType             = to_vk<VkImageType>(m_type),
+            .format                = to_vk<VkFormat>(m_format),
+            .extent                = { m_extent.width, m_extent.height, m_extent.depth },
+            .mipLevels             = m_mip_levels,
+            .arrayLayers           = m_layers * m_faces,
+            .samples               = to_vk<VkSampleCountFlagBits>(m_samples),
+            .tiling                = to_vk<VkImageTiling>(info.tiling),
+            .usage                 = to_vk<VkImageUsageFlagBits>(m_usages),
+            .sharingMode           = VK_SHARING_MODE_EXCLUSIVE,
+            .queueFamilyIndexCount = 0, // TODO CHECK IF VALID VALUE
+            .pQueueFamilyIndices   = nullptr,
+            .initialLayout         = VK_IMAGE_LAYOUT_UNDEFINED,
+        };
+
+        return do_init(create_info, info.property);
+    }
+} // namespace stormkit::gpu

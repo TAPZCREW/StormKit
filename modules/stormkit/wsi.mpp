@@ -34,7 +34,7 @@ export {
 
         using NativeHandle = void*;
 
-        enum class Key : UInt8 {
+        enum class Key : u8 {
             A = 0,
             B,
             C,
@@ -138,31 +138,31 @@ export {
             F15,
             PAUSE,
             KEY_COUNT,
-            UNKNOWN = std::numeric_limits<Int8>::max(),
+            UNKNOWN = std::numeric_limits<i8>::max(),
         };
         inline constexpr auto KEY_COUNT = as<Underlying>(Key::KEY_COUNT);
 
-        enum class MouseButton : UInt8 {
+        enum class MouseButton : u8 {
             LEFT,
             RIGHT,
             MIDDLE,
             BUTTON_1,
             BUTTON_2,
             BUTTON_COUNT,
-            UNKNOWN = std::numeric_limits<Int8>::max(),
+            UNKNOWN = std::numeric_limits<i8>::max(),
         };
         inline constexpr auto MOUSE_BUTTON_COUNT = as<Underlying>(MouseButton::BUTTON_COUNT);
 
         struct Monitor {
             enum class Flags {
                 NONE = 0,
-                PRIMARY
+                PRIMARY,
             };
 
             Flags       flags = Flags::NONE;
             std::string name;
 
-            std::vector<math::ExtentU> extents;
+            std::vector<math::Extent2<u32>> extents;
 
             void* handle = nullptr;
 
@@ -170,15 +170,15 @@ export {
             constexpr auto operator<=>(const Monitor& other) const noexcept -> std::strong_ordering;
         };
 
-        enum class WindowStyle : UInt8 {
+        enum class WindowStyle : u8 {
             TITLE_BAR   = 0b1,
             CLOSE       = TITLE_BAR | 0b10,
             MINIMIZABLE = TITLE_BAR | 0b100,
             RESIZEABLE  = TITLE_BAR | 0b1000,
-            ALL         = RESIZEABLE | MINIMIZABLE | CLOSE
+            ALL         = RESIZEABLE | MINIMIZABLE | CLOSE,
         };
 
-        enum class EventType : UInt8 {
+        enum class EventType : u8 {
             NONE,
             CLOSED,
             RESIZED,
@@ -205,7 +205,7 @@ export {
 
         struct ResizedEventData {
             static constexpr auto TYPE = EventType::RESIZED;
-            math::ExtentU         extent;
+            math::Extent2<u32>        extent;
         };
 
         struct MinimizedEventData {
@@ -284,14 +284,14 @@ export {
         class STORMKIT_API Window {
           public:
             Window() noexcept;
-            Window(std::string title, const math::ExtentU& size, WindowStyle style) noexcept;
+            Window(std::string title, const math::Extent2<u32>& size, WindowStyle style) noexcept;
             ~Window();
 
             Window(Window&&);
             auto operator=(Window&&) -> Window&;
 
-            auto create(std::string title, const math::ExtentU& size, WindowStyle style) noexcept
-                -> void;
+            auto create(std::string title, const math::Extent2<u32>& size, WindowStyle style) noexcept
+              -> void;
             auto close() noexcept -> void;
 
             [[nodiscard]]
@@ -303,7 +303,7 @@ export {
 
             auto toggle_fullscreen(bool fullscreen) noexcept -> void;
 
-            auto set_extent(const math::ExtentU& extent) noexcept -> void;
+            auto set_extent(const math::Extent2<u32>& extent) noexcept -> void;
 
             auto lock_mouse() noexcept -> void;
             auto unlock_mouse() noexcept -> void;
@@ -311,10 +311,10 @@ export {
 
 #ifdef STORMKIT_OS_MACOS
             [[nodiscard]]
-            auto extent() const noexcept -> math::ExtentU;
+            auto extent() const noexcept -> math::Extent2<u32>;
 #else
             [[nodiscard]]
-            auto extent() const noexcept -> const math::ExtentU&;
+            auto extent() const noexcept -> const math::Extent2<u32>&;
 #endif
             [[nodiscard]]
             auto title() const noexcept -> const std::string&;
@@ -340,7 +340,7 @@ export {
 
             auto        set_mouse_position(const math::Vector2I& position) noexcept -> void;
             static auto set_mouse_position_on_desktop(const math::Vector2U& position) noexcept
-                -> void;
+              -> void;
 
             [[nodiscard]]
             static auto get_monitor_settings() -> std::vector<Monitor>;
@@ -355,7 +355,8 @@ export {
             WindowImplPimpl m_impl;
         };
 
-        STORMKIT_API auto parse_args(std::span<const std::string_view> args) noexcept -> void;
+        STORMKIT_API
+        auto parse_args(std::span<const std::string_view> args) noexcept -> void;
 
         struct STORMKIT_API EventHandler {
             using Callback = std::function<void(const Event&)>;
@@ -385,7 +386,7 @@ export {
 
             template<class FormatContext>
             auto format(const stormkit::wsi::Monitor& data, FormatContext& ctx) const
-                -> decltype(ctx.out()) {
+              -> decltype(ctx.out()) {
                 return std::format_to(ctx.out(), "{}", stormkit::as<std::string>(data));
             }
         };
@@ -397,9 +398,6 @@ export {
 ////////////////////////////////////////////////////////////////////
 
 ASCASTER_STRICT_DEFINE(std::string, stormkit::wsi::Monitor) {
-    if (from.flags == stormkit::wsi::Monitor::Flags::NONE)
-        return std::format("[Monitor: name = {}, extents = {}]", from.name, from.extents);
-
     return std::format("[Monitor: flags = {}, name = {}, extents = {}]",
                        from.flags,
                        from.name,
@@ -410,7 +408,7 @@ namespace stormkit { namespace wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     inline constexpr auto Monitor::operator<=>(const Monitor& other) const noexcept
-        -> std::strong_ordering {
+      -> std::strong_ordering {
         if (auto ret = flags <=> other.flags; ret != 0) return ret;
 
 #ifdef STORMKIT_COMPILER_CLANG
@@ -449,22 +447,24 @@ namespace stormkit { namespace wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto EventHandler::set_callback(EventType event_type, Callback callback)
-        -> void {
+    STORMKIT_FORCE_INLINE
+    auto EventHandler::set_callback(EventType event_type, Callback callback) -> void {
         m_callback[event_type].emplace_back(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto
-        EventHandler::set_callbacks(std::vector<std::pair<EventType, Callback>> callbacks) -> void {
+    STORMKIT_FORCE_INLINE
+    auto EventHandler::set_callbacks(std::vector<std::pair<EventType, Callback>> callbacks)
+      -> void {
         for (auto&& [event_type, callback] : callbacks)
             set_callback(event_type, std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto EventHandler::clear_callbacks(EventType event_type) -> void {
+    STORMKIT_FORCE_INLINE
+    auto EventHandler::clear_callbacks(EventType event_type) -> void {
         m_callback[event_type].clear();
     }
 }} // namespace stormkit::wsi

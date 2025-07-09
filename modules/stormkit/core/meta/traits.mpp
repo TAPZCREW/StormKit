@@ -9,6 +9,9 @@ import std;
 import :meta.concepts;
 
 export namespace stormkit { inline namespace core { namespace meta {
+    template<bool Cond, typename IfRes, typename ElseRes>
+    using If = std::conditional_t<Cond, IfRes, ElseRes>;
+
     template<class T>
     using CanonicalType = std::remove_cvref_t<T>;
 
@@ -46,7 +49,7 @@ export namespace stormkit { inline namespace core { namespace meta {
     using SafeNarrowHelperOtherType = std::conditional_t<is_greater<T, V>(), V, T>;
 
     template<class T, typename U>
-    struct ConstnessLikeTrait {
+    struct ForwardConstTrait {
       private:
         using T1 = RemoveIndirectionsType<T>;
         using U1 = std::conditional_t<std::is_const_v<T1>, std::add_const_t<U>, U>;
@@ -57,16 +60,16 @@ export namespace stormkit { inline namespace core { namespace meta {
     };
 
     template<class T, typename U>
-    using ConstnessLike = ConstnessLikeTrait<T, U>::Type;
+    using ForwardConst = ForwardConstTrait<T, U>::Type;
 
     template<class T, typename U>
     struct ForwardLikeTrait {
       private:
-        using U1 = ConstnessLike<T, U>;
+        using U1 = ForwardConst<T, U>;
         using U2 = std::
-            conditional_t<std::is_lvalue_reference_v<T>, std::add_lvalue_reference_t<U1>, U1>;
+          conditional_t<std::is_lvalue_reference_v<T>, std::add_lvalue_reference_t<U1>, U1>;
         using U3 = std::
-            conditional_t<std::is_rvalue_reference_v<T>, std::add_rvalue_reference_t<U2>, U2>;
+          conditional_t<std::is_rvalue_reference_v<T>, std::add_rvalue_reference_t<U2>, U2>;
 
       public:
         using Type = U3;
@@ -101,6 +104,13 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     template<typename T>
     using UnderlyingType = UnderlyingTypeTrait<T>::Type;
+
+    template<IsArithmetic T>
+    using ArithmeticOrderingType = std::
+      conditional_t<IsIntegral<T>, std::strong_ordering, std::weak_ordering>;
+
+    template<IsEnumeration>
+    constexpr auto enumerate() noexcept -> decltype(auto) = delete;
 }}} // namespace stormkit::core::meta
 
 ////////////////////////////////////////////////////////////////////

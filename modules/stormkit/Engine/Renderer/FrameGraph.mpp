@@ -7,16 +7,16 @@ export module stormkit.Engine:Renderer.FrameGraph;
 import std;
 
 import stormkit.core;
-import stormkit.Gpu;
+import stormkit.gpu;
 
 import :Renderer.RenderSurface;
 
 export namespace stormkit::engine {
-    using GraphID                    = UInt64;
+    using GraphID                    = u64;
     inline constexpr auto INVALID_ID = std::numeric_limits<GraphID>::max();
 
     struct BufferDescription {
-        RangeExtent size;
+        usize size;
     };
 
     struct ImageDescription {
@@ -25,7 +25,7 @@ export namespace stormkit::engine {
         gpu::ImageType   type;
         gpu::PixelFormat format;
 
-        UInt32 layers = 1u;
+        u32 layers = 1u;
 
         std::optional<gpu::ClearValue> clear_value;
     };
@@ -55,7 +55,7 @@ export namespace stormkit::engine {
         auto creator() const noexcept -> GraphID;
         auto writers() const noexcept -> const std::vector<GraphID>&;
         auto readers() const noexcept -> const std::vector<GraphID>&;
-        auto refCount() const noexcept -> RangeExtent;
+        auto refCount() const noexcept -> usize;
         auto description() const noexcept -> const Description&;
 
       private:
@@ -68,7 +68,7 @@ export namespace stormkit::engine {
         std::vector<GraphID> m_writers;
         std::vector<GraphID> m_readers;
 
-        RangeExtent m_ref_count;
+        usize m_ref_count;
 
         friend class GraphTaskBuilder;  // TODO rework this
         friend class FrameGraphBuilder; // TODO rework this
@@ -87,7 +87,7 @@ export namespace stormkit::engine {
             Compute
         };
 
-        GraphTask(RangeOffset data_id,
+        GraphTask(ioffset data_id,
                   std::string name,
                   Type        type       = Type::Raster,
                   bool        cull_imune = false);
@@ -100,11 +100,11 @@ export namespace stormkit::engine {
         auto operator=(GraphTask&&) noexcept -> GraphTask&;
 
         auto id() const noexcept -> GraphID;
-        auto dataID() const noexcept -> RangeOffset;
+        auto dataID() const noexcept -> ioffset;
         auto name() const noexcept -> const std::string&;
         auto type() const noexcept -> Type;
         auto cullImune() const noexcept -> bool;
-        auto refCount() const noexcept -> RangeExtent;
+        auto refCount() const noexcept -> usize;
 
         auto creates() const noexcept -> const std::vector<GraphID>&;
         auto writes() const noexcept -> const std::vector<GraphID>&;
@@ -120,11 +120,11 @@ export namespace stormkit::engine {
 
       private:
         GraphID     m_id;
-        RangeOffset m_data_id;
+        ioffset m_data_id;
         std::string m_name;
         Type        m_type;
         bool        m_cull_imune;
-        RangeExtent m_ref_count = 0;
+        usize m_ref_count = 0;
 
         std::vector<GraphID> m_creates;
         std::vector<GraphID> m_writes;
@@ -448,7 +448,7 @@ namespace stormkit::engine {
     /////////////////////////////////////
     /////////////////////////////////////
     template<ResourceDescriptionType D>
-    STORMKIT_FORCE_INLINE auto GraphResource<D>::refCount() const noexcept -> RangeExtent {
+    STORMKIT_FORCE_INLINE auto GraphResource<D>::refCount() const noexcept -> usize {
         return m_ref_count;
     }
 
@@ -463,7 +463,7 @@ namespace stormkit::engine {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    GraphTask::GraphTask(RangeOffset data_id, std::string name, Type type, bool cull_imune)
+    GraphTask::GraphTask(ioffset data_id, std::string name, Type type, bool cull_imune)
         : m_data_id { data_id }, m_name { std::move(name) }, m_type { type },
           m_cull_imune { cull_imune } {
         static GraphID s_next_id = 0;
@@ -492,7 +492,7 @@ namespace stormkit::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto GraphTask::dataID() const noexcept -> RangeOffset {
+    STORMKIT_FORCE_INLINE auto GraphTask::dataID() const noexcept -> ioffset {
         return m_data_id;
     }
 
@@ -516,7 +516,7 @@ namespace stormkit::engine {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto GraphTask::refCount() const noexcept -> RangeExtent {
+    STORMKIT_FORCE_INLINE auto GraphTask::refCount() const noexcept -> usize {
         return m_ref_count;
     }
 
@@ -710,7 +710,7 @@ namespace stormkit::engine {
     STORMKIT_FORCE_INLINE auto FrameGraphBuilder::getTask(this auto&       self,
                                                           std::string_view name) noexcept
         -> decltype(auto) {
-        return as<meta::ConstnessLike<decltype(self), GraphTask>>(self.getTask(name));
+        return as<meta::ForwardConst<decltype(self), GraphTask>>(self.getTask(name));
     }
 
     /////////////////////////////////////
@@ -718,7 +718,7 @@ namespace stormkit::engine {
     template<class TaskData>
     STORMKIT_FORCE_INLINE auto FrameGraphBuilder::getTask(this auto& self, GraphID id) noexcept
         -> decltype(auto) {
-        return as<meta::ConstnessLike<decltype(self), GraphTask>>(self.getTask(id));
+        return as<meta::ForwardConst<decltype(self), GraphTask>>(self.getTask(id));
     }
 
     /////////////////////////////////////

@@ -38,7 +38,7 @@ namespace stormkit::engine {
             m_world->step(Secondf { 0 });
             // if (m_surf0ace->needRecreate()) {
             // m_surface->recreate();
-            // doInitPerFrameObjects();
+            // do_initPerFrameObjects();
             //}
         }
     }

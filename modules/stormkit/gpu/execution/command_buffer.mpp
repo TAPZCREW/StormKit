@@ -1,0 +1,917 @@
+// Copyright (C) 2023 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/hash_macro.hpp>
+
+#include <stormkit/core/platform_macro.hpp>
+
+#include <stormkit/core/contract_macro.hpp>
+
+#include <volk.h>
+
+export module stormkit.gpu.execution:command_buffer;
+
+import std;
+
+import stormkit.core;
+import stormkit.gpu.core;
+import stormkit.gpu.resource;
+
+import :descriptors;
+import :render_pass;
+import :pipeline;
+import :swapchain;
+
+namespace stdr = std::ranges;
+
+export namespace stormkit::gpu {
+    struct SubmitInfo {
+        std::span<const Ref<const Semaphore>>     wait_semaphores   = {};
+        std::span<const PipelineStageFlag>        wait_dst_stages   = {};
+        std::span<const Ref<const CommandBuffer>> command_buffers   = {};
+        std::span<const Ref<const Semaphore>>     signal_semaphores = {};
+    };
+
+    class SwapChain;
+
+    class STORMKIT_API Queue {
+        struct PrivateFuncTag {};
+
+      public:
+        static constexpr auto DEBUG_TYPE = DebugObjectType::QUEUE;
+
+        static auto create(const Device& device, const Device::QueueEntry& entry) noexcept -> Queue;
+        static auto allocate(const Device& device, const Device::QueueEntry& entry) noexcept
+          -> Heap<Queue>;
+        ~Queue() noexcept;
+
+        Queue(const Queue&)          = delete;
+        auto operator=(const Queue&) = delete;
+
+        Queue(Queue&&) noexcept;
+        auto operator=(Queue&&) noexcept -> Queue&;
+
+        auto wait_idle() const noexcept -> Expected<void>;
+
+        auto submit(std::span<const SubmitInfo> submit_infos,
+                    OptionalRef<const Fence> fence = std::nullopt) const noexcept -> Expected<void>;
+
+        auto submit(const SubmitInfo&        submit_info,
+                    OptionalRef<const Fence> fence = std::nullopt) const noexcept -> Expected<void>;
+
+        [[nodiscard]]
+        auto present(std::span<const Ref<const SwapChain>> swapchains,
+                     std::span<const Ref<const Semaphore>> wait_semaphores,
+                     std::span<const u32> image_indices) const noexcept -> Expected<Result>;
+
+        [[nodiscard]]
+        auto entry() const noexcept -> const Device::QueueEntry&;
+
+        [[nodiscard]]
+        auto native_handle() const noexcept -> VkQueue;
+
+        Queue(const Device& device, const Device::QueueEntry& entry, PrivateFuncTag) noexcept;
+
+      private:
+        Device::QueueEntry m_entry;
+
+        VkDevice                   m_vk_device = nullptr;
+        Ref<const VolkDeviceTable> m_vk_device_table;
+        VkQueue                    m_vk_handle = nullptr;
+    };
+
+    class CommandPool;
+
+    struct InheritanceInfo {
+        OptionalRef<const RenderPass>  render_pass = std::nullopt;
+        u32                            subpass     = 0;
+        OptionalRef<const FrameBuffer> framebuffer = std::nullopt;
+    };
+
+    class STORMKIT_API CommandBuffer {
+        struct PrivateFuncTag {};
+
+      public:
+        enum class State {
+            INITIAL,
+            RECORDING,
+            EXECUTABLE,
+        };
+
+        static constexpr auto DEBUG_TYPE = DebugObjectType::COMMAND_BUFFER;
+
+        using Deleter = std::function<
+          void(VkDevice, VkCommandPool, const VolkDeviceTable&, VkCommandBuffer)>;
+        ~CommandBuffer() noexcept;
+
+        CommandBuffer(const CommandBuffer&)                    = delete;
+        auto operator=(const CommandBuffer&) -> CommandBuffer& = delete;
+
+        CommandBuffer(CommandBuffer&&) noexcept;
+        auto operator=(CommandBuffer&&) noexcept -> CommandBuffer&;
+
+        auto reset() noexcept -> Expected<void>;
+        auto submit(const Queue&                          queue,
+                    std::span<const Ref<const Semaphore>> wait_semaphores   = {},
+                    std::span<const PipelineStageFlag>    wait_dst_stages   = {},
+                    std::span<const Ref<const Semaphore>> signal_semaphores = {},
+                    OptionalRef<const Fence> fence = std::nullopt) const noexcept -> Expected<void>;
+
+        [[nodiscard]]
+        auto state() const noexcept -> State;
+        [[nodiscard]]
+        auto level() const noexcept -> CommandBufferLevel;
+
+        auto begin(bool                           one_time_submit  = false,
+                   std::optional<InheritanceInfo> inheritance_info = std::nullopt) noexcept
+          -> Expected<void>;
+        auto end() noexcept -> Expected<void>;
+
+        auto begin_debug_region(std::string_view name,
+                                const RGBColorF& color = RGBColorDef::WHITE<float>) noexcept
+          -> CommandBuffer&;
+        auto insert_debug_label(std::string_view name,
+                                const RGBColorF& color = RGBColorDef::WHITE<float>) noexcept
+          -> CommandBuffer&;
+        auto end_debug_region() noexcept -> CommandBuffer&;
+
+        auto begin_render_pass(const RenderPass&           render_pass,
+                               const FrameBuffer&          framebuffer,
+                               std::span<const ClearValue> clear_values = std::array { ClearValue {
+                                 ClearColor { .color = RGBColorDef::SILVER<float> } } },
+                               bool secondary_commandbuffers = false) noexcept -> CommandBuffer&;
+        auto next_sub_pass() noexcept -> CommandBuffer&;
+        auto end_render_pass() noexcept -> CommandBuffer&;
+
+        auto bind_pipeline(const Pipeline& pipeline) noexcept -> CommandBuffer&;
+        auto set_viewport(u32 first_viewport, std::span<const Viewport> viewports) noexcept
+          -> CommandBuffer&;
+        auto set_scissor(u32 first_scissor, std::span<const Scissor> scissors) noexcept
+          -> CommandBuffer&;
+        auto set_line_width(float width) noexcept -> CommandBuffer&;
+        auto set_depth_bias(float constant_factor, float clamp, float slope_factor) noexcept
+          -> CommandBuffer&;
+        auto set_blend_constants(std::span<const float> constants) noexcept -> CommandBuffer&;
+        auto set_depth_bounds(float min, float max) noexcept -> CommandBuffer&;
+        auto set_stencil_compare_mask(StencilFaceFlag face, u32 mask) noexcept -> CommandBuffer&;
+        auto set_stencil_write_mask(StencilFaceFlag face, u32 mask) noexcept -> CommandBuffer&;
+        auto set_stencil_reference(StencilFaceFlag face, u32 reference) noexcept -> CommandBuffer&;
+
+        auto dispatch(u32 group_count_x, u32 group_count_y, u32 group_count_z) noexcept
+          -> CommandBuffer&;
+
+        auto draw(u32 vertex_count,
+                  u32 instance_count = 1u,
+                  u32 first_vertex   = 0,
+                  u32 first_instance = 0) noexcept -> CommandBuffer&;
+        auto draw_indexed(u32 index_count,
+                          u32 instance_count = 1u,
+                          u32 first_index    = 0u,
+                          i32 vertex_offset  = 0,
+                          u32 first_instance = 0u) noexcept -> CommandBuffer&;
+        auto draw_indirect(const Buffer& buffer, usize offset, u32 draw_count, u32 stride) noexcept
+          -> CommandBuffer&;
+        auto draw_indexed_indirect(const Buffer& buffer,
+                                   usize         offset,
+                                   u32           draw_count,
+                                   u32           stride) noexcept -> CommandBuffer&;
+
+        auto bind_vertex_buffers(std::span<const Ref<const Buffer>> buffers,
+                                 std::span<const u64> offsets) noexcept -> CommandBuffer&;
+        auto bind_index_buffer(const Buffer& buffer,
+                               u64           offset        = 0,
+                               bool          large_indices = false) noexcept -> CommandBuffer&;
+        auto bind_descriptor_sets(const Pipeline&                           pipeline,
+                                  const PipelineLayout&                     layout,
+                                  std::span<const Ref<const DescriptorSet>> descriptor_sets,
+                                  std::span<const u32> dynamic_offsets = {}) noexcept
+          -> CommandBuffer&;
+
+        auto copy_buffer(const Buffer& src,
+                         const Buffer& dst,
+                         usize         size,
+                         u64           src_offset = 0u,
+                         u64           dst_offset = 0u) noexcept -> CommandBuffer&;
+        auto copy_buffer_to_image(
+          const Buffer&                    src,
+          const Image&                     dst,
+          std::span<const BufferImageCopy> buffer_image_copies = {}) noexcept -> CommandBuffer&;
+        auto copy_image_to_buffer(
+          const Image&                     src,
+          const Buffer&                    dst,
+          std::span<const BufferImageCopy> buffer_image_copies = {}) noexcept -> CommandBuffer&;
+        auto copy_image(const Image&                  src,
+                        const Image&                  dst,
+                        ImageLayout                   src_layout,
+                        ImageLayout                   dst_layout,
+                        const ImageSubresourceLayers& src_subresource_layers,
+                        const ImageSubresourceLayers& dst_subresource_layers,
+                        const math::Extent3<u32>&     extent) noexcept -> CommandBuffer&;
+
+        auto resolve_image(const Image&                  src,
+                           const Image&                  dst,
+                           ImageLayout                   src_layout,
+                           ImageLayout                   dst_layout,
+                           const ImageSubresourceLayers& src_subresource_layers = {},
+                           const ImageSubresourceLayers& dst_subresource_layers = {}) noexcept
+          -> CommandBuffer&;
+
+        auto blit_image(const Image&                src,
+                        const Image&                dst,
+                        ImageLayout                 src_layout,
+                        ImageLayout                 dst_layout,
+                        std::span<const BlitRegion> regions,
+                        Filter                      filter) noexcept -> CommandBuffer&;
+
+        auto transition_image_layout(const Image&                 image,
+                                     ImageLayout                  src_layout,
+                                     ImageLayout                  dst_layout,
+                                     const ImageSubresourceRange& subresource_range = {}) noexcept
+          -> CommandBuffer&;
+
+        auto execute_sub_command_buffers(std::span<const Ref<const CommandBuffer>>
+                                           commandbuffers) noexcept -> CommandBuffer&;
+
+        auto pipeline_barrier(PipelineStageFlag                    src_mask,
+                              PipelineStageFlag                    dst_mask,
+                              DependencyFlag                       dependency,
+                              std::span<const MemoryBarrier>       memory_barriers,
+                              std::span<const BufferMemoryBarrier> buffer_memory_barriers,
+                              std::span<const ImageMemoryBarrier>  image_memory_barriers) noexcept
+          -> CommandBuffer&;
+
+        auto push_constants(const PipelineLayout& pipeline_layout,
+                            ShaderStageFlag       stage,
+                            std::span<const Byte> data,
+                            u32                   offset = 0u) noexcept -> CommandBuffer&;
+
+        [[nodiscard]]
+        auto native_handle() const noexcept -> VkCommandBuffer;
+
+        CommandBuffer(VkDevice,
+                      VkCommandPool,
+                      Ref<const VolkDeviceTable>,
+                      CommandBufferLevel,
+                      VkCommandBuffer&&,
+                      Deleter&&,
+                      PrivateFuncTag) noexcept;
+
+      private:
+        static auto create(VkDevice,
+                           VkCommandPool,
+                           Ref<const VolkDeviceTable>,
+                           CommandBufferLevel,
+                           VkCommandBuffer&&,
+                           Deleter&&) noexcept -> CommandBuffer;
+        static auto allocate(VkDevice,
+                             VkCommandPool,
+                             Ref<const VolkDeviceTable>,
+                             CommandBufferLevel,
+                             VkCommandBuffer&&,
+                             Deleter&&) noexcept -> Heap<CommandBuffer>;
+        friend class CommandPool;
+
+        CommandBufferLevel m_level = CommandBufferLevel::PRIMARY;
+
+        Deleter m_deleter;
+
+        State m_state = State::INITIAL;
+
+        VkDevice                      m_vk_device = nullptr;
+        Ref<const VolkDeviceTable>    m_vk_device_table;
+        VkCommandPool                 m_vk_pool = nullptr;
+        VkRAIIHandle<VkCommandBuffer> m_vk_handle;
+    };
+
+    class STORMKIT_API CommandPool {
+        struct PrivateFuncTag {};
+
+      public:
+        static auto create(const Device& device) noexcept -> Expected<CommandPool>;
+        static auto allocate(const Device& device) noexcept -> Expected<Heap<CommandPool>>;
+        ~CommandPool() noexcept;
+
+        CommandPool(const CommandPool&)    = delete;
+        auto operator=(const CommandPool&) = delete;
+
+        CommandPool(CommandPool&&) noexcept;
+        auto operator=(CommandPool&&) noexcept -> CommandPool&;
+
+        auto create_command_buffer(CommandBufferLevel level = CommandBufferLevel::PRIMARY)
+          const noexcept -> Expected<CommandBuffer>;
+        auto create_command_buffers(usize              count,
+                                    CommandBufferLevel level = CommandBufferLevel::PRIMARY)
+          const noexcept -> Expected<std::vector<CommandBuffer>>;
+
+        auto allocate_command_buffer(CommandBufferLevel level = CommandBufferLevel::PRIMARY)
+          const noexcept -> Expected<Heap<CommandBuffer>>;
+        auto allocate_command_buffers(usize              count,
+                                      CommandBufferLevel level = CommandBufferLevel::PRIMARY)
+          const noexcept -> Expected<std::vector<Heap<CommandBuffer>>>;
+
+        [[nodiscard]]
+        auto native_handle() const noexcept -> VkCommandPool;
+
+        CommandPool(const Device& device, PrivateFuncTag) noexcept;
+
+      private:
+        auto do_init() noexcept -> Expected<void>;
+        auto create_vk_command_buffers(usize count, CommandBufferLevel level) const noexcept
+          -> VulkanExpected<std::vector<VkCommandBuffer>>;
+        static auto delete_vk_command_buffers(VkDevice device,
+                                              VkCommandPool,
+                                              const VolkDeviceTable&,
+                                              VkCommandBuffer cmb) noexcept -> void;
+
+        VkDevice                    m_vk_device = nullptr;
+        Ref<const VolkDeviceTable>  m_vk_device_table;
+        VkRAIIHandle<VkCommandPool> m_vk_handle;
+
+        // std::mutex                           m_reuse_mutex;
+        std::vector<VkCommandBuffer> m_reusable_command_buffers;
+    };
+} // namespace stormkit::gpu
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit::gpu {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline Queue::Queue(const Device&             device,
+                        const Device::QueueEntry& entry,
+                        PrivateFuncTag) noexcept
+        : m_entry { entry }, m_vk_device { device.native_handle() },
+          m_vk_device_table { as_ref(device.device_table()) } {
+        m_vk_handle = vk_call<VkQueue>(m_vk_device_table->vkGetDeviceQueue,
+                                       m_vk_device,
+                                       m_entry.id,
+                                       0);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline Queue::~Queue() noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline Queue::Queue(Queue&&) noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Queue::operator=(Queue&&) noexcept -> Queue& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Queue::create(const Device& device, const Device::QueueEntry& entry) noexcept
+      -> Queue {
+        return Queue { device, entry, PrivateFuncTag {} };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Queue::allocate(const Device& device, const Device::QueueEntry& entry) noexcept
+      -> Heap<Queue> {
+        return core::allocate_unsafe<Queue>(device, entry, PrivateFuncTag {});
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Queue::wait_idle() const noexcept -> Expected<void> {
+        return vk_call(m_vk_device_table->vkQueueWaitIdle, m_vk_handle)
+          .transform_error(monadic::from_vk<Result>());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    //
+    STORMKIT_FORCE_INLINE
+    inline auto Queue::submit(const SubmitInfo&        submit_info,
+                              OptionalRef<const Fence> fence) const noexcept -> Expected<void> {
+        return submit({ &submit_info, 1 }, std::move(fence));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Queue::entry() const noexcept -> const Device::QueueEntry& {
+        return m_entry;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Queue::native_handle() const noexcept -> VkQueue {
+        return m_vk_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline CommandBuffer::CommandBuffer(VkDevice                   device,
+                                        VkCommandPool              pool,
+                                        Ref<const VolkDeviceTable> device_table,
+                                        CommandBufferLevel         level,
+                                        VkCommandBuffer&&          command_buffer,
+                                        Deleter&&                  deleter,
+                                        PrivateFuncTag) noexcept
+        : m_level { level }, m_vk_device { device }, m_vk_device_table { device_table },
+          m_vk_pool { pool },
+          m_vk_handle { { [vk_device       = m_vk_device,
+                           vk_pool         = m_vk_pool,
+                           vk_device_table = *m_vk_device_table,
+                           deleter         = std::move(deleter)](auto handle) noexcept {
+              deleter(vk_device, vk_pool, vk_device_table, handle);
+          } } } {
+        m_vk_handle = std::move(command_buffer);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::create(VkDevice                   device,
+                                      VkCommandPool              pool,
+                                      Ref<const VolkDeviceTable> device_table,
+                                      CommandBufferLevel         level,
+                                      VkCommandBuffer&&          cmb,
+                                      Deleter&& deleter) noexcept -> CommandBuffer {
+        return CommandBuffer {
+            device, pool, device_table, level, std::move(cmb), std::move(deleter), PrivateFuncTag {}
+        };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::allocate(VkDevice                   device,
+                                        VkCommandPool              pool,
+                                        Ref<const VolkDeviceTable> device_table,
+                                        CommandBufferLevel         level,
+                                        VkCommandBuffer&&          cmb,
+                                        Deleter&& deleter) noexcept -> Heap<CommandBuffer> {
+        return *allocate<CommandBuffer>(device,
+                                        pool,
+                                        device_table,
+                                        level,
+                                        std::move(cmb),
+                                        std::move(deleter),
+                                        PrivateFuncTag {})
+                  .transform_error(core::monadic::assert());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline CommandBuffer::~CommandBuffer() noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline CommandBuffer::CommandBuffer(CommandBuffer&&) noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::operator=(CommandBuffer&&) noexcept -> CommandBuffer& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::reset() noexcept -> Expected<void> {
+        return vk_call(m_vk_device_table->vkResetCommandBuffer, m_vk_handle, 0)
+          .transform([this] { m_state = State::INITIAL; })
+          .transform_error(monadic::from_vk<Result>());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::submit(const Queue&                          queue,
+                                      std::span<const Ref<const Semaphore>> wait_semaphores,
+                                      std::span<const PipelineStageFlag>    wait_dst_stages,
+                                      std::span<const Ref<const Semaphore>> signal_semaphores,
+                                      OptionalRef<const Fence>              fence) const noexcept
+      -> Expected<void> {
+        auto cmbs = as_refs<std::array>(*this);
+
+        return queue.submit(
+          std::array {
+            SubmitInfo { .wait_semaphores   = wait_semaphores,
+                        .wait_dst_stages   = wait_dst_stages,
+                        .command_buffers   = cmbs,
+                        .signal_semaphores = signal_semaphores }
+        },
+          std::move(fence));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::state() const noexcept -> State {
+        return m_state;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::level() const noexcept -> CommandBufferLevel {
+        return m_level;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::end() noexcept -> Expected<void> {
+        EXPECTS(m_state == State::RECORDING);
+
+        return vk_call(m_vk_device_table->vkEndCommandBuffer, m_vk_handle)
+          .transform([this] noexcept { m_state = State::EXECUTABLE; })
+          .transform_error(monadic::from_vk<Result>());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::begin_debug_region(std::string_view name,
+                                                  const RGBColorF& color) noexcept
+      -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+
+        if (not vkCmdBeginDebugUtilsLabelEXT) [[unlikely]]
+            return *this;
+
+        const auto info = VkDebugUtilsLabelEXT {
+            .sType      = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT,
+            .pNext      = nullptr,
+            .pLabelName = stdr::data(name),
+            .color      = { color.red, color.green, color.blue, color.alpha }
+        };
+
+        vk_call(vkCmdBeginDebugUtilsLabelEXT, m_vk_handle, &info);
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::insert_debug_label(std::string_view name,
+                                                  const RGBColorF& color) noexcept
+      -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+
+        if (not vkCmdInsertDebugUtilsLabelEXT) [[unlikely]]
+            return *this;
+
+        const auto info = VkDebugUtilsLabelEXT {
+            .sType      = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT,
+            .pNext      = nullptr,
+            .pLabelName = stdr::data(name),
+            .color      = { color.red, color.green, color.blue, color.alpha }
+        };
+
+        vk_call(vkCmdInsertDebugUtilsLabelEXT, m_vk_handle, &info);
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::end_debug_region() noexcept -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+
+        if (not vkCmdEndDebugUtilsLabelEXT) [[unlikely]]
+            return *this;
+
+        vk_call(vkCmdEndDebugUtilsLabelEXT, m_vk_handle);
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::next_sub_pass() noexcept -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+
+        vk_call(m_vk_device_table->vkCmdNextSubpass, m_vk_handle, VK_SUBPASS_CONTENTS_INLINE);
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::end_render_pass() noexcept -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+
+        vk_call(m_vk_device_table->vkCmdEndRenderPass, m_vk_handle);
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::bind_pipeline(const Pipeline& pipeline) noexcept -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+
+        const auto bind_point = (pipeline.type() == Pipeline::Type::RASTER)
+                                  ? VK_PIPELINE_BIND_POINT_GRAPHICS
+                                  : VK_PIPELINE_BIND_POINT_COMPUTE;
+
+        vk_call(m_vk_device_table->vkCmdBindPipeline, m_vk_handle, bind_point, to_vk(pipeline));
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::set_line_width(float width) noexcept -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+
+        vk_call(m_vk_device_table->vkCmdSetLineWidth, m_vk_handle, width);
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::set_depth_bias(float constant_factor,
+                                              float clamp,
+                                              float slope_factor) noexcept -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+
+        vk_call(m_vk_device_table->vkCmdSetDepthBias,
+                m_vk_handle,
+                constant_factor,
+                clamp,
+                slope_factor);
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::set_blend_constants(std::span<const float> constants) noexcept
+      -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+
+        f32 data[] = { constants[0], constants[1], constants[2], constants[3] };
+
+        vk_call(m_vk_device_table->vkCmdSetBlendConstants, m_vk_handle, data);
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::set_depth_bounds(float min, float max) noexcept -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+
+        vk_call(m_vk_device_table->vkCmdSetDepthBounds, m_vk_handle, min, max);
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::set_stencil_compare_mask(StencilFaceFlag face, u32 mask) noexcept
+      -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+
+        vk_call(m_vk_device_table->vkCmdSetStencilCompareMask,
+                m_vk_handle,
+                to_vk<VkStencilFaceFlagBits>(face),
+                mask);
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::set_stencil_write_mask(StencilFaceFlag face, u32 mask) noexcept
+      -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+
+        vk_call(m_vk_device_table->vkCmdSetStencilWriteMask,
+                m_vk_handle,
+                to_vk<VkStencilFaceFlagBits>(face),
+                mask);
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::set_stencil_reference(StencilFaceFlag face, u32 reference) noexcept
+      -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+
+        vk_call(m_vk_device_table->vkCmdSetStencilReference,
+                m_vk_handle,
+                to_vk<VkStencilFaceFlagBits>(face),
+                reference);
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::dispatch(u32 group_count_x,
+                                        u32 group_count_y,
+                                        u32 group_count_z) noexcept -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+
+        vk_call(m_vk_device_table->vkCmdDispatch,
+                m_vk_handle,
+                group_count_x,
+                group_count_y,
+                group_count_z);
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::draw(u32 vertex_count,
+                                    u32 instance_count,
+                                    u32 first_vertex,
+                                    u32 first_instance) noexcept -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+        EXPECTS(vertex_count > 0);
+
+        vk_call(m_vk_device_table->vkCmdDraw,
+                m_vk_handle,
+                vertex_count,
+                instance_count,
+                first_vertex,
+                first_instance);
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::draw_indexed(u32 index_count,
+                                            u32 instance_count,
+                                            u32 first_index,
+                                            i32 vertex_offset,
+                                            u32 first_instance) noexcept -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+        EXPECTS(index_count > 0);
+
+        vk_call(m_vk_device_table->vkCmdDrawIndexed,
+                m_vk_handle,
+                index_count,
+                instance_count,
+                first_index,
+                vertex_offset,
+                first_instance);
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::draw_indirect(const Buffer& buffer,
+                                             usize         offset,
+                                             u32           draw_count,
+                                             u32           stride) noexcept -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+        EXPECTS(draw_count > 0);
+
+        vk_call(m_vk_device_table->vkCmdDrawIndirect,
+                m_vk_handle,
+                to_vk(buffer),
+                offset,
+                draw_count,
+                stride);
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::draw_indexed_indirect(const Buffer& buffer,
+                                                     usize         offset,
+                                                     u32           draw_count,
+                                                     u32 stride) noexcept -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+        EXPECTS(draw_count > 0);
+
+        vk_call(m_vk_device_table->vkCmdDrawIndexedIndirect,
+                m_vk_handle,
+                to_vk(buffer),
+                offset,
+                draw_count,
+                stride);
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::bind_index_buffer(const Buffer& buffer,
+                                                 u64           offset,
+                                                 bool large_indices) noexcept -> CommandBuffer& {
+        EXPECTS(m_state == State::RECORDING);
+
+        vk_call(m_vk_device_table->vkCmdBindIndexBuffer,
+                m_vk_handle,
+                to_vk(buffer),
+                offset,
+                (large_indices) ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);
+        return *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandBuffer::native_handle() const noexcept -> VkCommandBuffer {
+        return m_vk_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline CommandPool::CommandPool(const Device& device, PrivateFuncTag) noexcept
+        : m_vk_device { device.native_handle() },
+          m_vk_device_table { as_ref(device.device_table()) },
+          m_vk_handle { { [vk_device_table = *m_vk_device_table,
+                           vk_device       = m_vk_device](auto handle) noexcept {
+              vk_device_table.vkDestroyCommandPool(vk_device, handle, nullptr);
+          } } } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandPool::create(const Device& device) noexcept -> Expected<CommandPool> {
+        auto pool = CommandPool { device, PrivateFuncTag {} };
+        return pool.do_init().transform(core::monadic::consume(pool));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandPool::allocate(const Device& device) noexcept
+      -> Expected<Heap<CommandPool>> {
+        auto pool = *core::allocate<CommandPool>(device, PrivateFuncTag {})
+                       .transform_error(core::monadic::assert());
+        return pool->do_init().transform(core::monadic::consume(pool));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline CommandPool::~CommandPool() noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline CommandPool::CommandPool(CommandPool&&) noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandPool::operator=(CommandPool&&) noexcept -> CommandPool& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandPool::create_command_buffer(CommandBufferLevel level) const noexcept
+      -> Expected<CommandBuffer> {
+        return create_command_buffers(1, level)
+          .transform([](auto&& cmbs) static noexcept { return std::move(cmbs.front()); });
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandPool::allocate_command_buffer(CommandBufferLevel level) const noexcept
+      -> Expected<Heap<CommandBuffer>> {
+        return allocate_command_buffers(1, level)
+          .transform([](auto&& cmbs) static noexcept { return std::move(cmbs.front()); });
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto CommandPool::native_handle() const noexcept -> VkCommandPool {
+        return m_vk_handle;
+    }
+} // namespace stormkit::gpu

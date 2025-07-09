@@ -22,7 +22,7 @@ if has_config("enable_gpu") and has_config("enable_wsi") and has_config("enable-
         add_files("shaders/*.nzsl")
         if is_plat("windows") then add_files("win32/*.manifest") end
 
-        add_rules("windows.subsystem.windows")
+        add_rules("platform.windows.subsystem.windows")
 
         set_group("examples/stormkit-entities")
     end
