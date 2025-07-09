@@ -4,6 +4,8 @@
 
 export module stormkit.core:containers;
 
+export import :containers.multi_buffer;
 export import :containers.ringbuffer;
 export import :containers.tree;
 export import :containers.utils;
+export import :containers.raii_capsule;

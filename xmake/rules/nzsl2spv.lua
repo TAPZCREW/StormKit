@@ -1,69 +1,65 @@
 -- Compile shaders to includables headers
-rule("compile.shaders")
-do
+rule("compile.shaders", function()
     set_extensions(".nzsl", ".nzslb")
-
-    -- for c++ module dependency discovery
-    on_load(function(target)
-        if target:rule("c++.build.modules.builder") then
-            local rule = target:rule("c++.build.modules.builder"):clone()
-            rule:add("deps", "compile.shaders", { order = true })
-            target:rule_add(rule)
-        end
-    end)
-
+    add_deps("@nzsl/find_nzsl")
     on_config(function(target)
-        import("core.base.option")
+        local archives = {}
 
-        -- add outputdir to include path
-        local outputdir = target:extraconf("rules", "compile.shaders", "outputdir")
-            or path.join(target:autogendir(), "rules", "compile.shaders")
-        if not os.isdir(outputdir) then os.mkdir(outputdir) end
-        target:add("includedirs", outputdir)
-
-        if target:rule("c++.build.modules") then
-            local dryrun = option.get("dry-run")
-            local sourcebatches = target:sourcebatches()
-            if not dryrun and sourcebatches["compile.shaders"] and sourcebatches["compile.shaders"].sourcefiles then
-                for _, shaderfile in ipairs(sourcebatches["compile.shaders"].sourcefiles) do
-                    local outputfile = path.join(outputdir, path.basename(shaderfile) .. ".spv.h")
-
-                    -- for c++ module dependency discovery
-                    if not os.exists(outputfile) then os.touch(outputfile) end
+        for _, sourcebatch in pairs(target:sourcebatches()) do
+            local rulename = sourcebatch.rulename
+            if rulename == "compile.shaders" then
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                    local fileconfig = target:fileconfig(sourcefile)
+                    if fileconfig and fileconfig.archive then
+                        local archivefiles = archives[fileconfig.archive]
+                        if not archivefiles then
+                            archivefiles = {}
+                            archives[fileconfig.archive] = archivefiles
+                        end
+                        table.insert(
+                            archivefiles,
+                            path.join(path.directory(sourcefile), path.basename(sourcefile) .. ".nzslb")
+                        )
+                    end
                 end
+            end
+        end
+
+        if not table.empty(archives) then
+            assert(target:rule("@nzsl/archive.shaders"), "you must add the @nzsl/archive.shaders rule to the target")
+            for archive, archivefiles in table.orderpairs(archives) do
+                local args =
+                    { rule = "@nzsl/archive.shaders", always_added = true, compress = true, files = archivefiles }
+                if archive:endswith(".nzsla.h") or archive:endswith(".nzsla.hpp") then
+                    args.header = path.extension(archive)
+                    archive = archive:sub(1, -#args.header - 1) -- foo.nzsla.h => foo.nzsla
+                end
+
+                target:add("files", archive, args)
             end
         end
     end)
 
     before_buildcmd_file(function(target, batchcmds, shaderfile, opt)
-        import("core.tool.toolchain")
         import("lib.detect.find_tool")
-        import("core.project.project")
 
-        local outputdir = target:extraconf("rules", "compile.shaders", "outputdir")
-            or path.join(target:autogendir(), "rules", "compile.shaders")
-        local fileconfig = target:fileconfig(shaderfile)
-        if fileconfig and fileconfig.prefixdir then outputdir = path.join(outputdir, fileconfig.prefixdir) end
+        local outputdir = path.join(import("core.project.config").builddir(), "shaders")
+        local nzslc = find_tool("nzslc") -- target:data("nzslc")
+        local runenvs = target:data("nzsl_runenv")
+        assert(nzslc, "nzslc not found! please install nzsl package with nzslc enabled")
 
-        -- on mingw we need run envs because of .dll dependencies which may be not part of the PATH
-        local envs
-        if is_plat("mingw") then
-            local mingw = toolchain.load("mingw")
-            if mingw and mingw:check() then envs = mingw:runenvs() end
-        end
-
-        -- find nzslc
-        local nzsl = project.required_package("nzsl~host") or project.required_package("nzsl")
-        local nzsldir
-        if nzsl then nzsldir = path.join(nzsl:installdir(), "bin") end
-
-        local nzslc = find_tool("nzslc", { paths = nzsldir, envs = envs })
-        assert(nzslc, "nzslc not found! please install nzsl package")
+       local outputfile = path.join(
+            outputdir or path.directory(shaderfile),
+            path.basename(shaderfile) .. ".spv"
+        )
 
         -- add commands
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.shader %s", shaderfile)
-        local argv = { "--compile=spv-header", "--optimize", "--output=" .. outputdir }
-        batchcmds:mkdir(outputdir)
+    		local argv = { "--compile=spv", "--optimize", "--spv-version=130", "--gl-flipy" }
+    		if outputdir then
+    			batchcmds:mkdir(outputdir)
+    			table.insert(argv, "--output=" .. outputdir)
+    		end
 
         -- handle --log-format
         local kind = target:data("plugin.project.kind") or ""
@@ -71,12 +67,12 @@ do
 
         table.insert(argv, shaderfile)
 
-        local outputfile = path.join(outputdir, path.basename(shaderfile) .. ".nzslb.h")
-        batchcmds:vrunv(nzslc.program, argv, { curdir = ".", envs = envs })
+        batchcmds:vrunv(nzslc.program, argv, { curdir = ".", envs = runenvs })
 
         -- add deps
         batchcmds:add_depfiles(shaderfile)
+        batchcmds:add_depvalues(nzslc.version)
         batchcmds:set_depmtime(os.mtime(outputfile))
         batchcmds:set_depcache(target:dependfile(outputfile))
     end)
-end
+end)

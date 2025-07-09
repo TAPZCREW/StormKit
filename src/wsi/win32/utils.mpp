@@ -29,7 +29,7 @@ namespace stormkit::wsi::win32 {
         switch (key) {
             case VK_SHIFT: {
                 static const auto l_shift  = MapVirtualKey(VK_LSHIFT, MAPVK_VK_TO_VSC);
-                auto              scancode = as<UInt32>((flags & (0xFF << 16)) >> 16);
+                auto              scancode = as<u32>((flags & (0xFF << 16)) >> 16);
                 return scancode == l_shift ? Key::L_SHIFT : Key::R_SHIFT;
             }
             case VK_MENU: return (HIWORD(flags) & KF_EXTENDED) ? Key::R_ALT : Key::L_ALT;

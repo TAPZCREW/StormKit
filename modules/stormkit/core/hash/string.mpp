@@ -8,7 +8,9 @@ module;
 
 export module stormkit.core:hash.string;
 
+import :string.czstring;
 import :typesafe.integer;
+import :typesafe.integer_casts;
 
 import std;
 import ankerl.unordered_dense;
@@ -21,16 +23,16 @@ export namespace stormkit { inline namespace core {
 
 #ifdef STORMKIT_COMPILER_MSVC
         [[nodiscard]]
-        auto operator()(std::string_view value, UInt32 seed = 0) const noexcept -> UInt64;
+        auto operator()(std::string_view value, u64 seed = 0) const noexcept -> u64;
 #else
         [[nodiscard]]
-        static auto operator()(std::string_view value, UInt32 seed = 0) noexcept -> UInt64;
+        static auto operator()(std::string_view value, u64 seed = 0) noexcept -> u64;
 #endif
     };
 
     template<class Value, class Key = std::string>
     using StringHashMap = ankerl::unordered_dense::
-        map<std::remove_cvref_t<Key>, std::remove_cvref_t<Value>, StringHash, std::equal_to<>>;
+      map<std::remove_cvref_t<Key>, std::remove_cvref_t<Value>, StringHash, std::equal_to<>>;
 
     template<class Value, std::size_t Size, class Key = std::string>
     using FrozenStringHashMap = frozen::unordered_map<std::remove_cvref_t<Key>,
@@ -40,12 +42,12 @@ export namespace stormkit { inline namespace core {
                                                       std::equal_to<>>;
 
     template<class Value = std::string>
-    using StringHashSet
-        = ankerl::unordered_dense::set<std::remove_cvref_t<Value>, StringHash, std::equal_to<>>;
+    using StringHashSet = ankerl::unordered_dense::
+      set<std::remove_cvref_t<Value>, StringHash, std::equal_to<>>;
 
     template<std::size_t Size, class Value = std::string>
-    using FrozenStringHashSet
-        = frozen::unordered_set<std::remove_cvref_t<Value>, Size, StringHash, std::equal_to<>>;
+    using FrozenStringHashSet = frozen::
+      unordered_set<std::remove_cvref_t<Value>, Size, StringHash, std::equal_to<>>;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -55,59 +57,66 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     class Lehmer128Hasher {
       public:
-        STORMKIT_FORCE_INLINE explicit constexpr Lehmer128Hasher(UInt32 basis) noexcept
+        STORMKIT_FORCE_INLINE
+        explicit constexpr Lehmer128Hasher(u64 basis) noexcept
             : m_hash { basis } {}
 
-        STORMKIT_FORCE_INLINE constexpr auto bytes(std::span<const std::byte, 4> bytes) noexcept
-            -> void {
+        STORMKIT_FORCE_INLINE
+        constexpr auto bytes(std::span<const std::byte, 4> bytes) noexcept -> void {
             bytes_4(bytes);
         }
 
-        STORMKIT_FORCE_INLINE constexpr auto bytes_4(std::span<const std::byte, 4> bytes) noexcept
-            -> void {
-            const auto val = UInt32(bytes[0]) << 0
-                             | UInt32(bytes[1]) << 8
-                             | UInt32(bytes[2]) << 16
-                             | UInt32(bytes[3]) << 24;
+        STORMKIT_FORCE_INLINE
+        constexpr auto bytes_4(std::span<const std::byte, 4> bytes) noexcept -> void {
+            const auto val = u64(bytes[0]) << 0
+                             | u64(bytes[1]) << 8
+                             | u64(bytes[2]) << 16
+                             | u64(bytes[3]) << 24;
             dword(val);
         }
 
-        STORMKIT_FORCE_INLINE constexpr auto dword(UInt32 val) noexcept -> void {
+        STORMKIT_FORCE_INLINE
+        constexpr auto dword(u64 val) noexcept -> void {
             m_hash = mix(val ^ m_hash);
         }
 
-        STORMKIT_FORCE_INLINE constexpr auto hash() const noexcept -> UInt32 { return m_hash; }
+        STORMKIT_FORCE_INLINE
+        constexpr auto hash() const noexcept -> u64 {
+            return m_hash;
+        }
 
       private:
-        static constexpr UInt32 mix(UInt32 seed) noexcept {
-            auto seed128 = static_cast<UInt128>(seed);
+        static constexpr u64 mix(u64 seed) noexcept {
+            auto seed128 = static_cast<u128>(seed);
             // Pierre L’Ecuyer. 1999. Tables of linear congruential generators of different sizes
             // and good lattice structure. Mathematics of Computation of the American Mathematical
             // Society 68, 225 (1999), 249–260.
             // https://www.ams.org/journals/mcom/1999-68-225/S0025-5718-99-00996-5/S0025-5718-99-00996-5.pdf
             seed128 *= 4292484099903637661;
-            return static_cast<UInt32>(seed128 >> 64);
+            return static_cast<u64>(seed128 >> 64);
         }
 
-        UInt32 m_hash;
+        u64 m_hash;
     };
 
     template<class Hasher>
-    STORMKIT_FORCE_INLINE constexpr auto
-        hashSelectedCharacters(UInt8 mask, Hasher& hasher, const char* s, RangeExtent size) noexcept
-        -> void {
+    STORMKIT_FORCE_INLINE
+    constexpr auto hash_selected_characters(u8       mask,
+                                            Hasher&  hasher,
+                                            CZString s,
+                                            usize    size) noexcept -> void {
         if (std::popcount(mask) == 4) {
-            auto dword = UInt32 { 0 };
-            auto i     = Int { 0 };
+            auto dword = u64 { 0 };
+            auto i     = i32 { 0 };
 
             if ((mask & (3 << 0)) == (3 << 0)) {
-                auto w = UInt16 { 0 };
+                auto w = u16 { 0 };
 #ifdef STORMKIT_COMPILER_MSVC
                 if constexpr (std::is_constant_evaluated()) {
 #else
                 if consteval {
 #endif
-                    w = s[0] | (s[1] << 8);
+                    w = as<u16>(s[0] | (s[1] << 8));
                 } else {
                     // FIXME(strager): This is endian-dependent, but it makes GCC
                     // generate the code we want.
@@ -117,43 +126,43 @@ namespace stormkit { inline namespace core {
                 i += 2;
             } else {
                 if (mask & (1 << 0)) {
-                    dword = static_cast<UInt8>(s[0]);
+                    dword = static_cast<u8>(s[0]);
                     i += 1;
                 }
                 if (mask & (1 << 1)) {
-                    dword |= static_cast<UInt32>(static_cast<UInt8>(s[1])) << (i * 8);
+                    dword |= static_cast<u64>(static_cast<u8>(s[1])) << (i * 8);
                     i += 1;
                 }
             }
 
             if ((mask & (3 << 2)) == (3 << 2)) {
-                auto w = UInt16 { 0 };
+                auto w = u16 { 0 };
 #ifdef STORMKIT_COMPILER_MSVC
                 if constexpr (std::is_constant_evaluated()) {
 #else
                 if consteval {
 #endif
-                    w = s[size - 2] | (s[size - 1] << 8);
+                    w = as<u16>(s[size - 2] | (s[size - 1] << 8));
                 } else {
                     // FIXME(strager): This is endian-dependent, but it makes GCC
                     // generate the code we want.
                     std::memcpy(&w, &s[size - 2], 2);
                 }
-                dword |= w << (i * 8);
+                dword |= as<u64>(w << (i * 8));
                 i += 2;
             } else {
                 if (mask & (1 << 2)) {
-                    dword |= static_cast<UInt32>(static_cast<UInt8>(s[size - 2])) << (i * 8);
+                    dword |= static_cast<u64>(static_cast<u8>(s[size - 2])) << (i * 8);
                     i += 1;
                 }
                 if (mask & (1 << 3)) {
-                    dword |= static_cast<UInt32>(static_cast<UInt8>(s[size - 1])) << (i * 8);
+                    dword |= static_cast<u64>(static_cast<u8>(s[size - 1])) << (i * 8);
                     i += 1;
                 }
             }
 
             if (mask & (1 << 4)) {
-                dword |= static_cast<UInt32>(static_cast<UInt8>(size)) << (i * 8);
+                dword |= static_cast<u64>(static_cast<u8>(size)) << (i * 8);
                 i += 1;
             }
 
@@ -162,7 +171,7 @@ namespace stormkit { inline namespace core {
             hasher.dword(dword);
         } else {
             std::array<std::byte, 5> bytes;
-            auto                     i = RangeExtent { 0 };
+            auto                     i = usize { 0 };
 
             if (mask & (1 << 0)) bytes[i++] = static_cast<std::byte>(s[0]);
             if (mask & (1 << 1)) bytes[i++] = static_cast<std::byte>(s[1]);
@@ -180,14 +189,14 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
 #ifdef STORMKIT_COMPILER_MSVC
-    auto StringHash::operator()(std::string_view value, UInt32 seed) const noexcept
+    inline auto StringHash::operator()(std::string_view value, u64 seed) const noexcept
 #else
-    auto StringHash::operator()(std::string_view value, UInt32 seed) noexcept
+    inline auto StringHash::operator()(std::string_view value, u64 seed) noexcept
 #endif
-        -> UInt64 {
-        auto mask   = UInt8 { 0b01111 };
+      -> u64 {
+        auto mask   = u8 { 0b01111 };
         auto hasher = Lehmer128Hasher { seed };
-        hashSelectedCharacters(mask, hasher, std::data(value), std::size(value));
+        hash_selected_characters(mask, hasher, std::data(value), std::size(value));
         return hasher.hash();
     }
 }} // namespace stormkit::core

@@ -1,0 +1,382 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+export module stormkit.core:math.extent;
+
+import std;
+
+import :utils.contract;
+import :meta;
+import :hash;
+import :typesafe.integer_casts;
+import :typesafe.integer;
+import :typesafe.floating_point;
+import :string.constexpr_string;
+
+using namespace stormkit;
+using namespace std::literals;
+
+namespace stdr = std::ranges;
+
+export {
+    namespace stormkit { inline namespace core { namespace math {
+        template<core::meta::IsArithmetic T, usize N>
+        struct Extent;
+
+        template<core::meta::IsArithmetic T>
+        struct alignas(std::array<T, 2>) Extent<T, 2> {
+            static constexpr auto RANK = 2uz;
+            using ElementType          = T;
+            using OrderingType         = meta::ArithmeticOrderingType<T>;
+
+            template<core::meta::IsArithmetic U>
+            constexpr auto to() const noexcept -> Extent<U, 2>;
+
+            template<usize NEW_RANK>
+            constexpr auto to() const noexcept -> Extent<T, NEW_RANK>;
+
+            /// @brief The extent width
+            ElementType width = 0;
+
+            /// @brief The extent height
+            ElementType height = 0;
+        };
+
+        template<core::meta::IsArithmetic T>
+        using Extent2 = Extent<T, 2>;
+
+        template<core::meta::IsArithmetic T>
+        struct alignas(std::array<T, 3>) Extent<T, 3> {
+            static constexpr auto RANK = 3uz;
+            using ElementType          = T;
+            using OrderingType         = meta::ArithmeticOrderingType<T>;
+
+            template<core::meta::IsArithmetic U>
+            constexpr auto to() const noexcept -> Extent<U, 3>;
+
+            template<usize NEW_RANK>
+            constexpr auto to() const noexcept -> Extent<T, NEW_RANK>;
+
+            /// @brief The extent width
+            ElementType width = 0;
+
+            /// @brief The extent height
+            ElementType height = 0;
+
+            /// @brief The extent depth
+            ElementType depth = 1;
+        };
+
+        template<core::meta::IsArithmetic T>
+        using Extent3 = Extent<T, 3>;
+
+        namespace meta {
+            template<class T>
+            concept IsExtent = requires(T&&) {
+                typename T::ElementType;
+                typename T::OrderingType;
+                { T::RANK } -> core::meta::Is<const usize&>;
+            };
+
+            template<class T>
+            concept IsExtent2 = IsExtent<T> and requires(T&&) { requires T::RANK == 2uz; };
+
+            template<class T>
+            concept IsExtent3 = IsExtent<T> and requires(T&&) { requires T::RANK == 3uz; };
+        } // namespace meta
+
+        /// @output_section Publics operators members
+        /// @brief ValueType the equality with an other extent.
+        /// @param other ValueType extent to test
+        /// @returns true if this extent is equal to `other`, otherwise returns false.
+        template<meta::IsExtent Extent>
+        [[nodiscard]]
+        constexpr auto operator<=>(const Extent& first, const Extent& second) noexcept ->
+          typename Extent::OrderingType;
+
+        /// @brief Multiply an extent with a factor.
+        /// @param factor ElementType factor to multiply
+        /// @returns A newly constructed extent equal to this extent multiplied with
+        /// `factor`
+        template<meta::IsExtent Extent>
+        [[nodiscard]]
+        constexpr auto operator*(Extent&& event, typename Extent::ElemenType factor) noexcept
+          -> core::meta::CanonicalType<Extent>;
+
+        /// @brief Divide an extent with a factor.
+        /// @param factor ElementType factor to divide
+        /// @returns A newly constructed extent equal to this extent Divided with `factor`
+        template<meta::IsExtent Extent>
+        [[nodiscard]]
+        constexpr auto operator/(Extent&& event, typename Extent::ElemenType factor) noexcept
+          -> core::meta::CanonicalType<Extent>;
+
+        /// @brief Multiply this extent with a factor.
+        /// @param factor ElementType factor to multiply
+        /// @returns A reference to this after the multiplication with `factor`
+        template<meta::IsExtent Extent>
+        [[nodiscard]]
+        constexpr auto operator*=(Extent& extent, typename Extent::ElementType factor) noexcept
+          -> Extent&;
+
+        /// @brief Divide this extent with a factor.
+        /// @param factor ElementType factor to divide
+        /// @returns A reference to this after the division with `factor`
+        template<meta::IsExtent Extent>
+        [[nodiscard]]
+        constexpr auto operator/=(Extent& extent, typename Extent::ElementType factor) noexcept
+          -> Extent&;
+
+        template<meta::IsExtent2 Extent>
+        auto to_string(Extent&& extent) noexcept -> std::string;
+    }}} // namespace stormkit::core::math
+
+    template<meta::IsArithmetic T>
+    struct std::formatter<math::Extent<T, 2>>: std::formatter<T> {
+        template<typename FormatContext>
+        auto format(const math::Extent<T, 2>& extent, FormatContext& ctx) const noexcept
+          -> decltype(ctx.out());
+    };
+
+    template<meta::IsArithmetic T>
+    struct std::formatter<math::Extent<T, 3>>: std::formatter<T> {
+        template<typename FormatContext>
+        auto format(const math::Extent<T, 3>& extent, FormatContext& ctx) const noexcept
+          -> decltype(ctx.out());
+    };
+
+    template<meta::IsArithmetic T>
+    struct std::hash<math::Extent<T, 2>> {
+        static constexpr auto operator()(const math::Extent<T, 2>& extent) noexcept;
+    };
+
+    template<meta::IsArithmetic T>
+    struct std::hash<math::Extent<T, 3>> {
+        static constexpr auto operator()(const math::Extent<T, 3>& extent) noexcept;
+    };
+}
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit { inline namespace core { namespace math {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<core::meta::IsArithmetic T>
+    template<core::meta::IsArithmetic U>
+    constexpr auto Extent<T, 2>::to() const noexcept -> Extent<U, 2> {
+        return { .width = as<U>(width), .height = as<U>(height) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<core::meta::IsArithmetic T>
+    template<usize NEW_RANK>
+    constexpr auto Extent<T, 2>::to() const noexcept -> Extent<T, NEW_RANK> {
+        using Out        = Extent<ElementType, NEW_RANK>;
+        using Array      = std::array<ElementType, RANK>;
+        using OtherArray = std::array<typename Out::ElementType, Out::RANK>;
+
+        auto out = Out {};
+
+        auto& values       = *std::bit_cast<Array*>(this);
+        auto& other_values = *std::bit_cast<OtherArray*>(&out);
+
+        if constexpr (NEW_RANK > RANK) {
+            stdr::copy(values, stdr::begin(other_values));
+        } else
+            stdr::copy_n(stdr::begin(values), NEW_RANK, stdr::begin(other_values));
+
+        return out;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<core::meta::IsArithmetic T>
+    template<core::meta::IsArithmetic U>
+    constexpr auto Extent<T, 3>::to() const noexcept -> Extent<U, 3> {
+        return { .width = as<U>(width), .height = as<U>(height), .depth = as<U>(depth) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<core::meta::IsArithmetic T>
+    template<usize NEW_RANK>
+    constexpr auto Extent<T, 3>::to() const noexcept -> Extent<T, NEW_RANK> {
+        using Out        = Extent<ElementType, NEW_RANK>;
+        using Array      = std::array<ElementType, RANK>;
+        using OtherArray = std::array<typename Out::ElementType, Out::RANK>;
+
+        auto out = Out {};
+
+        auto& values       = *std::bit_cast<Array*>(this);
+        auto& other_values = *std::bit_cast<OtherArray*>(&out);
+
+        if constexpr (NEW_RANK > RANK) {
+            stdr::copy(values, stdr::begin(other_values));
+        } else
+            stdr::copy_n(stdr::begin(values), NEW_RANK, stdr::begin(other_values));
+
+        return out;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsExtent Extent>
+    constexpr auto operator<=>(const Extent& first, const Extent& second) noexcept ->
+      typename Extent::OrderingType {
+        using Array                = std::array<typename Extent::ElementType, Extent::RANK>;
+        using OrderingType         = typename Extent::OrderingType;
+        static constexpr auto RANK = Extent::RANK;
+
+        const auto& values       = *std::bit_cast<Array*>(&first);
+        const auto& other_values = *std::bit_cast<Array*>(&second);
+
+        for (auto i = 0; i < RANK; ++i)
+            if (auto ret = values[i] <=> other_values[i]; ret != 0) return ret;
+
+        return OrderingType::equivalent;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsExtent Extent>
+    constexpr auto operator*(Extent&& event, typename Extent::ElemenType factor) noexcept
+      -> core::meta::CanonicalType<Extent> {
+        return core::meta::CanonicalType<Extent> { std::forward<Extent>(event) } *= factor;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsExtent Extent>
+    constexpr auto operator/(Extent&& event, typename Extent::ElemenType factor) noexcept
+      -> core::meta::CanonicalType<Extent> {
+        return core::meta::CanonicalType<Extent> { std::forward<Extent>(event) } /= factor;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsExtent Extent>
+    constexpr auto operator*=(Extent& extent, typename Extent::ElementType factor) noexcept
+      -> Extent& {
+        using ElementType            = typename Extent::ElementType;
+        static constexpr auto RANK   = Extent::RANK;
+        auto&                 values = *std::bit_cast<std::array<ElementType, RANK>>(&extent);
+        for (auto&& val : values) val *= factor;
+        return extent;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsExtent Extent>
+    constexpr auto operator/=(Extent& extent, typename Extent::ElementType factor) noexcept
+      -> Extent& {
+        using ElementType            = typename Extent::ElementType;
+        static constexpr auto RANK   = Extent::RANK;
+        auto&                 values = *std::bit_cast<std::array<ElementType, RANK>>(&extent);
+        for (auto&& val : values) val /= factor;
+        return extent;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<stormkit::math::meta::IsExtent2 Extent>
+    auto to_string(Extent&& extent) noexcept -> std::string {
+        return std::format("{}", extent);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<stormkit::math::meta::IsExtent3 Extent>
+    auto to_string(Extent&& extent) noexcept -> std::string {
+        return std::format("{}", extent);
+    }
+}}} // namespace stormkit::core::math
+
+/////////////////////////////////////
+/////////////////////////////////////
+template<meta::IsArithmetic T>
+template<typename FormatContext>
+auto std::formatter<math::Extent<T, 2>>::format(const math::Extent<T, 2>& extent,
+                                                FormatContext&            ctx) const noexcept
+  -> decltype(ctx.out()) {
+    auto&& out = ctx.out();
+    format_to(out, "[ .width = ");
+    formatter<T>::format(extent.width, ctx);
+    format_to(out, ", .height = ");
+    formatter<T>::format(extent.height, ctx);
+    return format_to(out, "]");
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+template<meta::IsArithmetic T>
+template<typename FormatContext>
+auto std::formatter<math::Extent<T, 3>>::format(const math::Extent<T, 3>& extent,
+                                                FormatContext&            ctx) const noexcept
+  -> decltype(ctx.out()) {
+    auto&& out = ctx.out();
+    format_to(out, "[ .width = ");
+    formatter<T>::format(extent.width, ctx);
+    format_to(out, ", .height = ");
+    formatter<T>::format(extent.height, ctx);
+    format_to(out, ", .depth = ");
+    formatter<T>::format(extent.depth, ctx);
+    return format_to(out, "]");
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+template<meta::IsArithmetic T>
+constexpr auto std::hash<math::Extent<T, 2>>::operator()(const math::Extent<T, 2>&
+                                                           extent) noexcept {
+    auto hash = Hash64 { 0 };
+
+    hash_combine(hash, extent.width);
+    hash_combine(hash, extent.height);
+
+    return hash;
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+template<meta::IsArithmetic T>
+constexpr auto std::hash<math::Extent<T, 3>>::operator()(const math::Extent<T, 3>&
+                                                           extent) noexcept {
+    auto hash = Hash64 { 0 };
+
+    hash_combine(hash, extent.width);
+    hash_combine(hash, extent.height);
+    hash_combine(hash, extent.depth);
+
+    return hash;
+}
+
+static_assert(sizeof(math::Extent2<u32>) == sizeof(std::array<u32, 2>));
+static_assert(sizeof(math::Extent3<u32>) == sizeof(std::array<u32, 3>));
+
+static_assert(sizeof(math::Extent2<i32>) == sizeof(std::array<i32, 2>));
+static_assert(sizeof(math::Extent3<i32>) == sizeof(std::array<i32, 3>));
+
+static_assert(sizeof(math::Extent2<u16>) == sizeof(std::array<u16, 2>));
+static_assert(sizeof(math::Extent3<u16>) == sizeof(std::array<u16, 3>));
+
+static_assert(sizeof(math::Extent2<i16>) == sizeof(std::array<i16, 2>));
+static_assert(sizeof(math::Extent3<i16>) == sizeof(std::array<i16, 3>));
+
+static_assert(sizeof(math::Extent2<f32>) == sizeof(std::array<f32, 2>));
+static_assert(sizeof(math::Extent3<f32>) == sizeof(std::array<f32, 3>));
+
+static_assert(math::Extent2<f32>::RANK == 2);
+static_assert(math::Extent3<f32>::RANK == 3);
+static_assert(math::Extent3<f32>::RANK != 2);
+static_assert(math::Extent2<f32>::RANK != 3);
+
+static_assert(math::meta::IsExtent<math::Extent2<f32>>);
+static_assert(math::meta::IsExtent<math::Extent3<f32>>);
+static_assert(math::meta::IsExtent2<math::Extent2<f32>>);
+static_assert(not math::meta::IsExtent2<math::Extent3<f32>>);
+static_assert(math::meta::IsExtent3<math::Extent3<f32>>);
+static_assert(not math::meta::IsExtent3<math::Extent2<f32>>);

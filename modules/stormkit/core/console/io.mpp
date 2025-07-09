@@ -22,13 +22,15 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto get_stderr() noexcept -> std::FILE* {
+    STORMKIT_FORCE_INLINE STORMKIT_INTRINSIC
+    inline auto get_stderr() noexcept -> std::FILE* {
         return std::bit_cast<std::FILE*>(stderr);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto get_stdout() noexcept -> std::FILE* {
+    STORMKIT_FORCE_INLINE STORMKIT_INTRINSIC
+    inline auto get_stdout() noexcept -> std::FILE* {
         return std::bit_cast<std::FILE*>(stdout);
     }
 }} // namespace stormkit::core

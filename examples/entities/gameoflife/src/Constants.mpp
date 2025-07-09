@@ -9,7 +9,7 @@ import std;
 
 import stormkit.core;
 import stormkit.log;
-import stormkit.Gpu;
+import stormkit.gpu;
 
 export {
 #else
@@ -30,11 +30,11 @@ export {
     inline constexpr auto MESH_VERTEX_ATTRIBUTE_DESCRIPTIONS = std::array {
         stormkit::gpu::VertexInputAttributeDescription { .location = 0,
                                                         .binding  = 0,
-                                                        .format   = stormkit::gpu::format::Float2,
+                                                        .format   = stormkit::gpu::format::f322,
                                                         .offset   = 0                       },
         stormkit::gpu::VertexInputAttributeDescription { .location = 1,
                                                         .binding  = 0,
-                                                        .format   = stormkit::gpu::format::Float2,
+                                                        .format   = stormkit::gpu::format::f322,
                                                         .offset
                                                          = sizeof(stormkit::math::Vector2F) }
     };

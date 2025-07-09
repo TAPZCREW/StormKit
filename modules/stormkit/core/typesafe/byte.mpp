@@ -2,6 +2,12 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+#include <stormkit/core/contract_macro.hpp>
+
 export module stormkit.core:typesafe.byte;
 
 import std;
@@ -9,59 +15,83 @@ import std;
 import :meta.concepts;
 import :meta.traits;
 import :typesafe.integer;
-import :utils.contrat;
+import :utils.contract;
+
+namespace stdr = std::ranges;
 
 export namespace stormkit { inline namespace core {
     using Byte     = std::byte;
     using ByteView = std::span<const std::byte>;
-    template<RangeExtent N>
+    template<usize N>
     using ByteArray       = std::array<std::byte, N>;
     using ByteDynArray    = std::vector<std::byte>;
     using MutableByteView = std::span<std::byte>;
 
-    [[nodiscard]]
-    constexpr auto byte_swap(auto value) noexcept;
+    struct Force {};
 
-    [[nodiscard]]
-    constexpr auto as_bytes(std::ranges::range auto& container);
+    template<typename T>
+    constexpr auto zero_bytes(T& value) noexcept -> void;
 
+    template<typename T>
+    constexpr auto zeroed() noexcept -> T;
+
+    template<typename T>
     [[nodiscard]]
-    constexpr auto as_bytes(meta::IsPointer auto ptr, RangeExtent size = 1);
+    constexpr auto byte_swap(const T& value) noexcept -> T;
+
+    template<stdr::range T>
+    [[nodiscard]]
+    constexpr auto as_bytes(T& container) noexcept -> std::span<meta::ForwardConst<T, Byte>>;
+
+    template<meta::IsPointer T>
+    [[nodiscard]]
+    constexpr auto as_bytes(T ptr, usize size = 1) noexcept
+      -> std::span<meta::ForwardConst<meta::RemoveIndirectionsType<T>, Byte>>;
 
     template<class T>
-        requires(not std::ranges::range<T> and not meta::IsPointer<T>)
     [[nodiscard]]
-    constexpr auto as_bytes(T& value);
+    constexpr auto as_bytes(T& value) noexcept -> std::span<meta::ForwardConst<T, Byte>>;
 
-    template<typename... Bytes>
+    template<class T>
     [[nodiscard]]
-    constexpr auto into_bytes(Bytes... bytes) noexcept -> ByteArray<sizeof...(Bytes)>;
+    constexpr auto as_bytes(T& value, Force) noexcept -> std::span<meta::ForwardConst<T, Byte>>;
 
-    template<meta::IsByteSized... Bytes>
+    template<class T, class Bytes>
+        requires(stdr::range<T> and meta::IsOneOf<Bytes, ByteView, MutableByteView>)
     [[nodiscard]]
-    constexpr auto into_bytes(Bytes... bytes) noexcept -> ByteArray<sizeof...(Bytes)>;
+    constexpr auto bytes_as(Bytes& bytes) noexcept -> T;
+
+    template<class T, class Bytes>
+        requires(meta::IsOneOf<Bytes, ByteView, MutableByteView>)
+    [[nodiscard]]
+    constexpr auto bytes_as(Bytes& bytes) noexcept
+      -> meta::ForwardConst<typename Bytes::element_type, T&>;
+
+    template<typename T, usize N>
+    [[nodiscard]]
+    constexpr auto into_bytes(const T (&bytes)[N]) noexcept -> ByteArray<N>;
 
     namespace literals {
         [[nodiscard]]
-        constexpr auto operator""_b(unsigned long long int value) noexcept;
+        constexpr auto operator""_b(unsigned long long value) noexcept -> Byte;
 
         [[nodiscard]]
-        constexpr auto operator""_kb(unsigned long long x) noexcept -> core::UInt64;
+        constexpr auto operator""_kb(unsigned long long x) noexcept -> u64;
 
         [[nodiscard]]
-        constexpr auto operator""_mb(unsigned long long x) noexcept -> core::UInt64;
+        constexpr auto operator""_mb(unsigned long long x) noexcept -> u64;
 
         [[nodiscard]]
-        constexpr auto operator""_gb(unsigned long long x) noexcept -> core::UInt64;
+        constexpr auto operator""_gb(unsigned long long x) noexcept -> u64;
 
         [[nodiscard]]
-        constexpr auto operator""_kib(unsigned long long x) noexcept -> core::UInt64;
+        constexpr auto operator""_kib(unsigned long long x) noexcept -> u64;
 
         [[nodiscard]]
-        constexpr auto operator""_mib(unsigned long long x) noexcept -> core::UInt64;
+        constexpr auto operator""_mib(unsigned long long x) noexcept -> u64;
 
         [[nodiscard]]
-        constexpr auto operator""_gib(unsigned long long x) noexcept -> core::UInt64;
+        constexpr auto operator""_gib(unsigned long long x) noexcept -> u64;
 
     } // namespace literals
 }} // namespace stormkit::core
@@ -73,28 +103,57 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    constexpr auto byte_swap(auto value) noexcept {
+    template<typename T>
+    STORMKIT_FORCE_INLINE
+    inline constexpr auto zero_bytes(T& value) noexcept -> void {
+        auto bytes = as_bytes(value);
+
+        std::memset(&bytes[0], 0, stdr::size(bytes));
+    }
+
+    template<typename T>
+    STORMKIT_FORCE_INLINE
+    inline constexpr auto zeroed() noexcept -> T {
+        auto data = T {};
+        zero_bytes(data);
+        return data;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T>
+    STORMKIT_CONST
+    STORMKIT_FORCE_INLINE
+    inline constexpr auto byte_swap(const T& value) noexcept -> T {
         auto repr = std::bit_cast<std::array<Byte, sizeof(value)>>(value);
 
-        std::ranges::reverse(repr);
+        stdr::reverse(repr);
 
-        return std::bit_cast<decltype(value)>(repr);
+        return std::bit_cast<T>(repr);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    constexpr auto as_bytes(std::ranges::range auto& container) {
-        return as_bytes(std::data(container), std::size(container));
+    template<stdr::range T>
+    STORMKIT_FORCE_INLINE
+    STORMKIT_PURE
+    inline constexpr auto as_bytes(T& container) noexcept
+      -> std::span<meta::ForwardConst<T, Byte>> {
+        return as_bytes(stdr::data(container), stdr::size(container));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    constexpr auto as_bytes(meta::IsPointer auto ptr, std::size_t size) {
+    template<meta::IsPointer T>
+    STORMKIT_FORCE_INLINE
+    STORMKIT_PURE
+    inline constexpr auto as_bytes(T ptr, usize size) noexcept
+      -> std::span<meta::ForwardConst<meta::RemoveIndirectionsType<T>, Byte>> {
         auto raw_ptr = std::to_address(ptr);
 
         using PtrType     = decltype(raw_ptr);
         using ElementType = meta::ElementType<PtrType>;
-        using ByteType    = meta::ConstnessLike<ElementType, core::Byte>;
+        using ByteType    = meta::ForwardConst<ElementType, Byte>;
 
         constexpr auto byte_count = []() {
             if constexpr (meta::Is<ElementType, void>) return 1;
@@ -102,73 +161,112 @@ namespace stormkit { inline namespace core {
                 return sizeof(ElementType);
         }();
 
-        return std::span<ByteType> { std::bit_cast<ByteType*>(ptr), size * byte_count };
+        return std::span<ByteType> { std::bit_cast<ByteType*>(raw_ptr), size * byte_count };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<class T>
-        requires(not std::ranges::range<T> and not meta::IsPointer<T>)
-    constexpr auto as_bytes(T& value) {
+    STORMKIT_FORCE_INLINE
+    STORMKIT_PURE
+    inline constexpr auto as_bytes(T& value) noexcept -> std::span<meta::ForwardConst<T, Byte>> {
         return as_bytes(&value, 1);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename... Bytes>
-    constexpr auto into_bytes(Bytes... bytes) noexcept -> ByteArray<sizeof...(Bytes)> {
-        expects(((static_cast<decltype(bytes)>(static_cast<Byte>(bytes)) == bytes) and ...));
-        return ByteArray<sizeof...(Bytes)> { static_cast<Byte>(bytes)... };
+    template<class T>
+    STORMKIT_FORCE_INLINE
+    STORMKIT_PURE
+    inline constexpr auto as_bytes(T& value, Force) noexcept
+      -> std::span<meta::ForwardConst<T, Byte>> {
+        return as_bytes(&value, 1);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::IsByteSized... Bytes>
-    constexpr auto into_bytes(Bytes... bytes) noexcept -> ByteArray<sizeof...(Bytes)> {
-        return ByteArray<sizeof...(Bytes)> { static_cast<Byte>(bytes)... };
+    template<class T, class Bytes>
+        requires(meta::IsOneOf<Bytes, ByteView, MutableByteView>)
+    STORMKIT_FORCE_INLINE
+    STORMKIT_PURE
+    inline constexpr auto bytes_as(Bytes& bytes) noexcept
+      -> meta::ForwardConst<typename Bytes::element_type, T&> {
+        return *std::bit_cast<
+          meta::ForwardConst<typename Bytes::element_type, T>*>(stdr::data(bytes));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<class T, class Bytes>
+        requires(stdr::range<T> and meta::IsOneOf<Bytes, ByteView, MutableByteView>)
+    STORMKIT_FORCE_INLINE
+    STORMKIT_PURE
+    inline constexpr auto bytes_as(Bytes& bytes) noexcept -> T {
+        using ElementType = typename T::element_type;
+        return T { std::bit_cast<ElementType*>(stdr::data(bytes)),
+                   stdr::size(bytes) * sizeof(ElementType) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, usize N>
+    STORMKIT_FORCE_INLINE STORMKIT_PURE
+    inline constexpr auto into_bytes(const T (&bytes)[N]) noexcept -> ByteArray<N> {
+        EXPECTS(static_cast<T>(static_cast<Byte>(bytes[0])) == bytes[0]);
+        auto out = ByteArray<N> {};
+        auto i   = 0uz;
+        for (auto&& byte : bytes) out[i++] = static_cast<Byte>(byte);
+        return out;
     }
 
     namespace literals {
         /////////////////////////////////////
         /////////////////////////////////////
-        constexpr auto operator""_b(unsigned long long int value) noexcept {
+        STORMKIT_FORCE_INLINE STORMKIT_PURE STORMKIT_INTRINSIC
+        inline constexpr auto operator""_b(unsigned long long value) noexcept -> Byte {
             return static_cast<Byte>(value);
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        constexpr auto operator""_kb(unsigned long long x) noexcept -> core::UInt64 {
-            return 1000ULL * x;
+        STORMKIT_FORCE_INLINE STORMKIT_PURE
+        inline constexpr auto operator""_kb(unsigned long long x) noexcept -> u64 {
+            return x * 1000ULL;
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        constexpr auto operator""_mb(unsigned long long x) noexcept -> core::UInt64 {
-            return 1000ULL * 1000ULL * x;
+        STORMKIT_FORCE_INLINE STORMKIT_PURE
+        inline constexpr auto operator""_mb(unsigned long long x) noexcept -> u64 {
+            return x * 1000_kb;
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        constexpr auto operator""_gb(unsigned long long x) noexcept -> core::UInt64 {
-            return 1000ULL * 1000ULL * 1000ULL * x;
+        STORMKIT_FORCE_INLINE STORMKIT_PURE
+        inline constexpr auto operator""_gb(unsigned long long x) noexcept -> u64 {
+            return x * 1000_mb;
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        constexpr auto operator""_kib(unsigned long long x) noexcept -> core::UInt64 {
-            return 1024ULL * x;
+        STORMKIT_FORCE_INLINE STORMKIT_PURE
+        inline constexpr auto operator""_kib(unsigned long long x) noexcept -> u64 {
+            return x * 1024;
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        constexpr auto operator""_mib(unsigned long long x) noexcept -> core::UInt64 {
-            return 1024ULL * 1024ULL * x;
+        STORMKIT_FORCE_INLINE STORMKIT_PURE
+        inline constexpr auto operator""_mib(unsigned long long x) noexcept -> u64 {
+            return x * 1024_kib;
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        constexpr auto operator""_gib(unsigned long long x) noexcept -> core::UInt64 {
-            return 1024ULL * 1000ULL * 1024ULL * x;
+        STORMKIT_FORCE_INLINE STORMKIT_PURE
+        inline constexpr auto operator""_gib(unsigned long long x) noexcept -> u64 {
+            return x * 1024_mib;
         }
     } // namespace literals
 }} // namespace stormkit::core

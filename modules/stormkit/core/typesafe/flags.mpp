@@ -9,7 +9,6 @@ module;
 export module stormkit.core:typesafe.flags;
 
 import std;
-export import magic_enum;
 
 import :meta;
 
@@ -26,47 +25,50 @@ export {
             inline constexpr auto BITMASK_OPERATORS_ENABLED = EnableBitmaskOperators<T>::enable;
         } // namespace details
 
-        template<class T>
-        concept FlagsType
-            = meta::IsEnumeration<meta::CanonicalType<T>> and details::BITMASK_OPERATORS_ENABLED<T>;
+        namespace meta {
+            template<class T>
+            concept IsFlag = (IsScopedEnumeration<meta::CanonicalType<T>>
+                              and core::details::BITMASK_OPERATORS_ENABLED<T>)
+                             or IsPlainEnumeration<meta::CanonicalType<T>>;
+        }
 
         /// \brief Check if a flag bit is enabled
         /// \requires `Enum` to be an enumeration promoted static_cast a flag with `FLAG_ENUM`
         /// macro
         /// \returns true if the flag big is set and false if not
-        template<FlagsType T>
+        template<meta::IsFlag T>
         [[nodiscard]]
-        constexpr auto checkFlag(const T& value, const T& flag) noexcept -> bool;
+        constexpr auto check_flag_bit(const T& value, const T& flag) noexcept -> bool;
 
         /// \exclude
-        template<FlagsType T>
+        template<meta::IsFlag T>
         [[nodiscard]]
         constexpr auto next_value(const T& value) noexcept -> T;
     }} // namespace stormkit::core
 
-    template<stormkit::core::FlagsType T>
+    template<stormkit::meta::IsFlag T>
     [[nodiscard]]
     constexpr auto operator|(const T& lhs, const T& rhs) noexcept -> decltype(auto);
 
-    template<stormkit::core::FlagsType T>
+    template<stormkit::meta::IsFlag T>
     [[nodiscard]]
     constexpr auto operator&(const T& lhs, const T& rhs) noexcept -> decltype(auto);
 
-    template<stormkit::core::FlagsType T>
+    template<stormkit::meta::IsFlag T>
     [[nodiscard]]
     constexpr auto operator^(const T& lhs, const T& rhs) noexcept -> decltype(auto);
 
-    template<stormkit::core::FlagsType T>
+    template<stormkit::meta::IsFlag T>
     [[nodiscard]]
     constexpr auto operator~(const T& lhs) noexcept -> decltype(auto);
 
-    template<stormkit::core::FlagsType T>
+    template<stormkit::meta::IsFlag T>
     constexpr auto operator|=(T& lhs, const T& rhs) noexcept -> decltype(auto);
 
-    template<stormkit::core::FlagsType T>
+    template<stormkit::meta::IsFlag T>
     constexpr auto operator&=(T& lhs, const T& rhs) noexcept -> decltype(auto);
 
-    template<stormkit::core::FlagsType T>
+    template<stormkit::meta::IsFlag T>
     constexpr auto operator^=(T& lhs, const T& rhs) noexcept -> decltype(auto);
 }
 
@@ -77,15 +79,17 @@ export {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<FlagsType T>
-    STORMKIT_FORCE_INLINE constexpr auto checkFlag(const T& value, const T& flag) noexcept -> bool {
+    template<meta::IsFlag T>
+    STORMKIT_FORCE_INLINE
+    constexpr auto check_flag_bit(const T& value, const T& flag) noexcept -> bool {
         return (value & flag) == flag;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<FlagsType T>
-    STORMKIT_FORCE_INLINE constexpr auto next_value(const T& value) noexcept -> T {
+    template<meta::IsFlag T>
+    STORMKIT_FORCE_INLINE
+    constexpr auto next_value(const T& value) noexcept -> T {
         using Underlying = meta::UnderlyingType<T>;
         return static_cast<T>(static_cast<Underlying>(value) << 1);
     }
@@ -93,9 +97,9 @@ namespace stormkit { inline namespace core {
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<stormkit::core::FlagsType T>
-STORMKIT_FORCE_INLINE constexpr auto operator|(const T& lhs, const T& rhs) noexcept
-    -> decltype(auto) {
+template<stormkit::meta::IsFlag T>
+STORMKIT_FORCE_INLINE
+constexpr auto operator|(const T& lhs, const T& rhs) noexcept -> decltype(auto) {
     using namespace stormkit;
     namespace details = stormkit::core::details;
 
@@ -105,9 +109,9 @@ STORMKIT_FORCE_INLINE constexpr auto operator|(const T& lhs, const T& rhs) noexc
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<stormkit::core::FlagsType T>
-STORMKIT_FORCE_INLINE constexpr auto operator&(const T& lhs, const T& rhs) noexcept
-    -> decltype(auto) {
+template<stormkit::meta::IsFlag T>
+STORMKIT_FORCE_INLINE
+constexpr auto operator&(const T& lhs, const T& rhs) noexcept -> decltype(auto) {
     using namespace stormkit;
     namespace details = stormkit::core::details;
 
@@ -117,9 +121,9 @@ STORMKIT_FORCE_INLINE constexpr auto operator&(const T& lhs, const T& rhs) noexc
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<stormkit::core::FlagsType T>
-STORMKIT_FORCE_INLINE constexpr auto operator^(const T& lhs, const T& rhs) noexcept
-    -> decltype(auto) {
+template<stormkit::meta::IsFlag T>
+STORMKIT_FORCE_INLINE
+constexpr auto operator^(const T& lhs, const T& rhs) noexcept -> decltype(auto) {
     using namespace stormkit;
     namespace details = stormkit::core::details;
 
@@ -129,8 +133,9 @@ STORMKIT_FORCE_INLINE constexpr auto operator^(const T& lhs, const T& rhs) noexc
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<stormkit::core::FlagsType T>
-STORMKIT_FORCE_INLINE constexpr auto operator~(const T& lhs) noexcept -> decltype(auto) {
+template<stormkit::meta::IsFlag T>
+STORMKIT_FORCE_INLINE
+constexpr auto operator~(const T& lhs) noexcept -> decltype(auto) {
     using namespace stormkit;
     namespace details = stormkit::core::details;
 
@@ -140,8 +145,9 @@ STORMKIT_FORCE_INLINE constexpr auto operator~(const T& lhs) noexcept -> decltyp
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<stormkit::core::FlagsType T>
-STORMKIT_FORCE_INLINE constexpr auto operator|=(T& lhs, const T& rhs) noexcept -> decltype(auto) {
+template<stormkit::meta::IsFlag T>
+STORMKIT_FORCE_INLINE
+constexpr auto operator|=(T& lhs, const T& rhs) noexcept -> decltype(auto) {
     using namespace stormkit;
     namespace details = stormkit::core::details;
 
@@ -151,8 +157,9 @@ STORMKIT_FORCE_INLINE constexpr auto operator|=(T& lhs, const T& rhs) noexcept -
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<stormkit::core::FlagsType T>
-STORMKIT_FORCE_INLINE constexpr auto operator&=(T& lhs, const T& rhs) noexcept -> decltype(auto) {
+template<stormkit::meta::IsFlag T>
+STORMKIT_FORCE_INLINE
+constexpr auto operator&=(T& lhs, const T& rhs) noexcept -> decltype(auto) {
     using namespace stormkit;
     namespace details = stormkit::core::details;
 
@@ -162,8 +169,9 @@ STORMKIT_FORCE_INLINE constexpr auto operator&=(T& lhs, const T& rhs) noexcept -
 
 /////////////////////////////////////
 /////////////////////////////////////
-template<stormkit::core::FlagsType T>
-STORMKIT_FORCE_INLINE constexpr auto operator^=(T& lhs, const T& rhs) noexcept -> decltype(auto) {
+template<stormkit::meta::IsFlag T>
+STORMKIT_FORCE_INLINE
+constexpr auto operator^=(T& lhs, const T& rhs) noexcept -> decltype(auto) {
     using namespace stormkit;
     namespace details = stormkit::core::details;
 

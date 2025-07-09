@@ -1,0 +1,167 @@
+// Copyright (C) 2023 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+#include <volk.h>
+
+export module stormkit.gpu.execution:swapchain;
+
+import std;
+
+import stormkit.core;
+import stormkit.gpu.core;
+import stormkit.gpu.resource;
+
+export namespace stormkit::gpu {
+    class STORMKIT_API SwapChain {
+        struct PrivateFuncTag {};
+
+      public:
+        static constexpr auto DEBUG_TYPE = DebugObjectType::SWAPCHAIN;
+
+        using ImageID = u32;
+
+        struct NextImage {
+            Result  result;
+            ImageID id;
+        };
+
+        static auto create(const Device&             device,
+                           const Surface&            surface,
+                           const math::Extent3<u32>& extent,
+                           OptionalRef<SwapChain>    old_swapchain = std::nullopt) noexcept
+          -> Expected<SwapChain>;
+        static auto allocate(const Device&             device,
+                             const Surface&            surface,
+                             const math::Extent3<u32>& extent,
+                             OptionalRef<SwapChain>    old_swapchain = std::nullopt) noexcept
+          -> Expected<Heap<SwapChain>>;
+        ~SwapChain();
+
+        SwapChain(const SwapChain&)                    = delete;
+        auto operator=(const SwapChain&) -> SwapChain& = delete;
+
+        SwapChain(SwapChain&&) noexcept;
+        auto operator=(SwapChain&&) noexcept -> SwapChain&;
+
+        [[nodiscard]]
+        auto pixel_format() const noexcept -> PixelFormat;
+        [[nodiscard]]
+        auto images() const noexcept -> const std::vector<Image>&;
+        auto acquire_next_image(std::chrono::nanoseconds wait,
+                                const Semaphore&         image_available) const noexcept
+          -> Expected<NextImage>;
+
+        [[nodiscard]]
+        auto native_handle() const noexcept -> VkSwapchainKHR;
+
+        SwapChain(const Device&, PrivateFuncTag) noexcept;
+
+      private:
+        auto do_init(const Device&,
+                     const Surface&,
+                     const math::Extent3<u32>&,
+                     VkSwapchainKHR) noexcept -> Expected<void>;
+
+        math::Extent3<u32> m_extent;
+        PixelFormat        m_pixel_format;
+        u32                m_image_count;
+
+        VkDevice                     m_vk_device;
+        Ref<const VolkDeviceTable>   m_vk_device_table;
+        VkRAIIHandle<VkSwapchainKHR> m_vk_handle;
+        std::vector<Image>           m_images;
+    };
+} // namespace stormkit::gpu
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit::gpu {
+    STORMKIT_FORCE_INLINE
+    inline SwapChain::SwapChain(const Device& device, PrivateFuncTag) noexcept
+        : m_vk_device { device.native_handle() },
+          m_vk_device_table { as_ref(device.device_table()) },
+          m_vk_handle { [vk_device_table = *m_vk_device_table,
+                         vk_device       = m_vk_device](auto&& handle) noexcept {
+              vk_device_table.vkDestroySwapchainKHR(vk_device, handle, nullptr);
+          } } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline SwapChain::~SwapChain()
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline SwapChain::SwapChain(SwapChain&&) noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto SwapChain::operator=(SwapChain&&) noexcept -> SwapChain& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto SwapChain::create(const Device&             device,
+                                  const Surface&            surface,
+                                  const math::Extent3<u32>& extent,
+                                  OptionalRef<SwapChain>    old_swapchain) noexcept
+      -> Expected<SwapChain> {
+        auto swapchain = SwapChain { device, PrivateFuncTag {} };
+        return swapchain
+          .do_init(device,
+                   surface,
+                   extent,
+                   old_swapchain.has_value() ? old_swapchain.value()->native_handle() : nullptr)
+          .transform(core::monadic::consume(swapchain));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto SwapChain::allocate(const Device&             device,
+                                    const Surface&            surface,
+                                    const math::Extent3<u32>& extent,
+                                    OptionalRef<SwapChain>    old_swapchain) noexcept
+      -> Expected<Heap<SwapChain>> {
+        auto swapchain = std::make_unique<SwapChain>(device, PrivateFuncTag {});
+        return swapchain
+          ->do_init(device,
+                    surface,
+                    extent,
+                    old_swapchain.has_value() ? old_swapchain.value()->native_handle() : nullptr)
+          .transform(core::monadic::consume(swapchain));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto SwapChain::pixel_format() const noexcept -> PixelFormat {
+        return m_pixel_format;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto SwapChain::images() const noexcept -> const std::vector<Image>& {
+        return m_images;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto SwapChain::native_handle() const noexcept -> VkSwapchainKHR {
+        return m_vk_handle;
+    }
+} // namespace stormkit::gpu

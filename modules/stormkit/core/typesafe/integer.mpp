@@ -34,31 +34,74 @@ export {
             using LongDouble = long double;
         } // namespace cpp
 
-        using UInt8  = std::uint8_t;
-        using UInt16 = std::uint16_t;
-        using UInt32 = std::uint32_t;
-        using UInt64 = std::uint64_t;
-#ifdef __SIZEOF_INT128__
-        using UInt128 = unsigned __int128;
-#elif defined(STORMKIT_COMPILER_MSVC)
-        using UInt128 = std::_Unsigned128;
-#endif
-        using UInt = std::uint_fast32_t;
+#define STORMKIT_ALLOW_PRIMITIVE_TYPE_IMPLICIT_CONVERSION
+#ifdef STORMKIT_ALLOW_PRIMITIVE_TYPE_IMPLICIT_CONVERSION
+        using u8  = std::uint8_t;
+        using u16 = std::uint16_t;
+        using u32 = std::uint32_t;
+        using u64 = std::uint64_t;
+    #ifdef __SIZEOF_INT128__
+        using u128 = unsigned __int128;
+    #elif defined(STORMKIT_COMPILER_MSVC)
+        using u128 = std::_Unsigned128;
+    #endif
 
-        using Int8  = std::int8_t;
-        using Int16 = std::int16_t;
-        using Int32 = std::int32_t;
-        using Int64 = std::int64_t;
-#ifdef __SIZEOF_INT128__
-        using Int128 = __int128;
-#elif defined(STORMKIT_COMPILER_MSVC)
-        using Int128 = std::_Signed128;
+        using i8  = std::int8_t;
+        using i16 = std::int16_t;
+        using i32 = std::int32_t;
+        using i64 = std::int64_t;
+    #ifdef __SIZEOF_INT128__
+        using i128 = __int128;
+    #elif defined(STORMKIT_COMPILER_MSVC)
+        using i128 = std::_Signed128;
+    #else
+    #endif
+
+        using usize   = std::size_t;
+        using isize   = std::ptrdiff_t;
+        using ioffset = std::ptrdiff_t;
 #else
-#endif
-        using Int = std::int_fast32_t;
+        enum class u8 : std::uint8_t {
+        };
+        enum class u16 : std::uint16_t {
+        };
+        enum class u32 : std::uint32_t {
+        };
+        enum class u64 : std::uint64_t {
+        };
 
-        using RangeExtent = std::size_t;
-        using RangeOffset = std::ptrdiff_t;
+    #ifdef __SIZEOF_INT128__
+        enum class u128 : unsigned __int128 {
+        };
+    #elif defined(STORMKIT_COMPILER_MSVC)
+        enum class u128 : std::_Unsigned128 {
+        };
+    #endif
+
+        enum class i8 : std::int8_t {
+        };
+        enum class i16 : std::int16_t {
+        };
+        enum class i32 : std::int32_t {
+        };
+        enum class i64 : std::int64_t {
+        };
+    #ifdef __SIZEOF_INT128__
+        enum class i128 : __int128 {
+        };
+    #elif defined(STORMKIT_COMPILER_MSVC)
+        enum class i128 : std::_Signed128 {
+        };
+    #else
+    #endif
+
+        enum class usize : std::size_t {
+        };
+        enum class isize : std::ptrdiff_t {
+        };
+        enum class ioffset : std::ptrdiff_t {
+        };
+#endif
 
         template<meta::IsIntegral T>
         class Integer {
@@ -81,7 +124,7 @@ export {
     struct std::formatter<stormkit::core::Integer<T>, CharT>: std::formatter<T, CharT> {
         template<class FormatContext>
         auto format(stormkit::core::Integer<T> data, FormatContext& ctx) const noexcept
-            -> decltype(ctx.out());
+          -> decltype(ctx.out());
     };
 }
 
@@ -93,9 +136,9 @@ export {
 /////////////////////////////////////
 template<class T, class CharT>
 template<class FormatContext>
-STORMKIT_FORCE_INLINE auto
-    std::formatter<stormkit::core::Integer<T>, CharT>::format(stormkit::core::Integer<T> data,
-                                                              FormatContext& ctx) const noexcept
-    -> decltype(ctx.out()) {
+STORMKIT_FORCE_INLINE
+auto std::formatter<stormkit::core::Integer<T>, CharT>::format(stormkit::core::Integer<T> data,
+                                                               FormatContext& ctx) const noexcept
+  -> decltype(ctx.out()) {
     return std::formatter<T, CharT>::format(static_cast<T>(data), ctx);
 }

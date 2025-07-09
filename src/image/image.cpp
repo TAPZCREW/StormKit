@@ -2,6 +2,10 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
+module;
+
+#include <stormkit/core/contract_macro.hpp>
+
 module stormkit.image;
 
 import std;
@@ -20,20 +24,26 @@ namespace stormkit::image {
     namespace details {
         using namespace stormkit::literals;
         inline constexpr auto KTX_HEADER
-            = into_bytes(0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A);
+          = into_bytes({ 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A });
 
-        inline constexpr auto PNG_HEADER
-            = into_bytes(0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A);
+        inline constexpr auto PNG_HEADER = into_bytes({ 0x89,
+                                                        0x50,
+                                                        0x4E,
+                                                        0x47,
+                                                        0x0D,
+                                                        0x0A,
+                                                        0x1A,
+                                                        0x0A });
 
-        inline constexpr auto QOI_HEADER = into_bytes(0x71, 0x6f, 0x69, 0x66);
+        inline constexpr auto QOI_HEADER = into_bytes({ 0x71, 0x6f, 0x69, 0x66 });
 
-        inline constexpr auto JPEG_HEADER = into_bytes(0xFF, 0xD8);
+        inline constexpr auto JPEG_HEADER = into_bytes({ 0xFF, 0xD8 });
 
         auto filename_to_codec(const std::filesystem::path& filename) noexcept -> Image::Codec {
-            expects(std::filesystem::exists(filename));
-            expects(filename.has_extension());
-            expects(!std::filesystem::is_directory(filename));
-            expects(std::filesystem::is_regular_file(filename));
+            EXPECTS(std::filesystem::exists(filename));
+            EXPECTS(filename.has_extension());
+            EXPECTS(!std::filesystem::is_directory(filename));
+            EXPECTS(std::filesystem::is_regular_file(filename));
 
             const auto ext = to_lower(filename.extension().string());
 
@@ -55,7 +65,7 @@ namespace stormkit::image {
         }
 
         auto header_to_codec(std::span<const Byte> data) noexcept -> Image::Codec {
-            expects(std::size(data) >= 12);
+            EXPECTS(std::size(data) >= 12);
 
             if (std::memcmp(std::data(data), std::data(KTX_HEADER), std::size(KTX_HEADER)) == 0)
                 return Image::Codec::KTX;
@@ -72,84 +82,83 @@ namespace stormkit::image {
             return Image::Codec::UNKNOWN;
         }
 
-        auto map(std::span<const Byte> bytes,
-                 UInt32                source_count,
-                 UInt32                destination_count) noexcept -> std::vector<Byte> {
-            expects(source_count <= 4u
+        auto map(std::span<const Byte> bytes, u32 source_count, u32 destination_count) noexcept
+          -> std::vector<Byte> {
+            EXPECTS(source_count <= 4u
                     and source_count > 0u
                     and destination_count <= 4u
                     and destination_count > 0u);
 
-            static constexpr auto BYTE_1_MIN = std::numeric_limits<UInt8>::min();
-            static constexpr auto BYTE_1_MAX = std::numeric_limits<UInt8>::max();
-            static constexpr auto BYTE_2_MIN = std::numeric_limits<UInt16>::min();
-            static constexpr auto BYTE_2_MAX = std::numeric_limits<UInt16>::max();
-            static constexpr auto BYTE_4_MIN = std::numeric_limits<UInt32>::min();
-            static constexpr auto BYTE_4_MAX = std::numeric_limits<UInt32>::max();
+            static constexpr auto BYTE_1_MIN = std::numeric_limits<u8>::min();
+            static constexpr auto BYTE_1_MAX = std::numeric_limits<u8>::max();
+            static constexpr auto BYTE_2_MIN = std::numeric_limits<u16>::min();
+            static constexpr auto BYTE_2_MAX = std::numeric_limits<u16>::max();
+            static constexpr auto BYTE_4_MIN = std::numeric_limits<u32>::min();
+            static constexpr auto BYTE_4_MAX = std::numeric_limits<u32>::max();
 
             auto data = std::vector<Byte> {};
             data.resize(std::size(bytes) * destination_count);
 
             if (source_count == 1u and destination_count == 2u) {
-                const auto input_it  = std::bit_cast<const UInt8*>(std::data(data));
-                auto       output_it = std::bit_cast<UInt16*>(std::data(data));
+                const auto input_it  = std::bit_cast<const u8*>(std::data(data));
+                auto       output_it = std::bit_cast<u16*>(std::data(data));
 
                 for (auto i : range(std::size(bytes)))
-                    output_it[i] = math::scale<UInt16>(input_it[i],
-                                                       BYTE_1_MIN,
-                                                       BYTE_1_MAX,
-                                                       BYTE_2_MIN,
-                                                       BYTE_2_MAX);
+                    output_it[i] = math::scale<u16>(input_it[i],
+                                                    BYTE_1_MIN,
+                                                    BYTE_1_MAX,
+                                                    BYTE_2_MIN,
+                                                    BYTE_2_MAX);
             } else if (source_count == 1u and destination_count == 4u) {
-                const auto input_it  = std::bit_cast<const UInt8*>(std::data(data));
-                auto       output_it = std::bit_cast<UInt32*>(std::data(data));
+                const auto input_it  = std::bit_cast<const u8*>(std::data(data));
+                auto       output_it = std::bit_cast<u32*>(std::data(data));
 
                 for (auto i : range(std::size(bytes)))
-                    output_it[i] = math::scale<UInt32>(input_it[i],
-                                                       BYTE_1_MIN,
-                                                       BYTE_1_MAX,
-                                                       BYTE_4_MIN,
-                                                       BYTE_4_MAX);
+                    output_it[i] = math::scale<u32>(input_it[i],
+                                                    BYTE_1_MIN,
+                                                    BYTE_1_MAX,
+                                                    BYTE_4_MIN,
+                                                    BYTE_4_MAX);
             } else if (source_count == 2u and destination_count == 1u) {
-                const auto input_it  = std::bit_cast<const UInt16*>(std::data(data));
-                auto       output_it = std::bit_cast<UInt8*>(std::data(data));
+                const auto input_it  = std::bit_cast<const u16*>(std::data(data));
+                auto       output_it = std::bit_cast<u8*>(std::data(data));
 
                 for (auto i : range(std::size(bytes)))
-                    output_it[i] = math::scale<UInt8>(input_it[i],
-                                                      BYTE_2_MIN,
-                                                      BYTE_2_MAX,
-                                                      BYTE_1_MIN,
-                                                      BYTE_1_MAX);
+                    output_it[i] = math::scale<u8>(input_it[i],
+                                                   BYTE_2_MIN,
+                                                   BYTE_2_MAX,
+                                                   BYTE_1_MIN,
+                                                   BYTE_1_MAX);
             } else if (source_count == 2u and destination_count == 4u) {
-                const auto input_it  = std::bit_cast<const UInt16*>(std::data(data));
-                auto       output_it = std::bit_cast<UInt32*>(std::data(data));
+                const auto input_it  = std::bit_cast<const u16*>(std::data(data));
+                auto       output_it = std::bit_cast<u32*>(std::data(data));
 
                 for (auto i : range(std::size(bytes)))
-                    output_it[i] = math::scale<UInt32>(input_it[i],
-                                                       BYTE_2_MIN,
-                                                       BYTE_2_MAX,
-                                                       BYTE_4_MIN,
-                                                       BYTE_4_MAX);
+                    output_it[i] = math::scale<u32>(input_it[i],
+                                                    BYTE_2_MIN,
+                                                    BYTE_2_MAX,
+                                                    BYTE_4_MIN,
+                                                    BYTE_4_MAX);
             } else if (source_count == 4u and destination_count == 1u) {
-                const auto input_it  = std::bit_cast<const UInt32*>(std::data(data));
-                auto       output_it = std::bit_cast<UInt8*>(std::data(data));
+                const auto input_it  = std::bit_cast<const u32*>(std::data(data));
+                auto       output_it = std::bit_cast<u8*>(std::data(data));
 
                 for (auto i : range(std::size(bytes)))
-                    output_it[i] = math::scale<UInt8>(input_it[i],
-                                                      BYTE_4_MIN,
-                                                      BYTE_4_MAX,
-                                                      BYTE_1_MIN,
-                                                      BYTE_1_MAX);
+                    output_it[i] = math::scale<u8>(input_it[i],
+                                                   BYTE_4_MIN,
+                                                   BYTE_4_MAX,
+                                                   BYTE_1_MIN,
+                                                   BYTE_1_MAX);
             } else if (source_count == 4u and destination_count == 2u) {
-                const auto input_it  = std::bit_cast<const UInt32*>(std::data(data));
-                auto       output_it = std::bit_cast<UInt16*>(std::data(data));
+                const auto input_it  = std::bit_cast<const u32*>(std::data(data));
+                auto       output_it = std::bit_cast<u16*>(std::data(data));
 
                 for (auto i : range(std::size(bytes)))
-                    output_it[i] = math::scale<UInt16>(input_it[i],
-                                                       BYTE_4_MIN,
-                                                       BYTE_4_MAX,
-                                                       BYTE_2_MIN,
-                                                       BYTE_2_MAX);
+                    output_it[i] = math::scale<u16>(input_it[i],
+                                                    BYTE_4_MIN,
+                                                    BYTE_4_MAX,
+                                                    BYTE_2_MIN,
+                                                    BYTE_2_MAX);
             } else
                 data = { std::ranges::begin(bytes), std::ranges::end(bytes) };
 
@@ -169,7 +178,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Image::Image(const math::ExtentU& extent, Format format) noexcept : Image {} {
+    Image::Image(const math::Extent3<u32>& extent, Format format) noexcept : Image {} {
         create(extent, format);
     }
 
@@ -222,11 +231,11 @@ namespace stormkit::image {
     /////////////////////////////////////
     /////////////////////////////////////
     auto Image::load_from_file(std::filesystem::path filepath, Image::Codec codec) noexcept
-        -> std::expected<void, Error> {
+      -> std::expected<void, Error> {
         filepath = std::filesystem::canonical(filepath);
 
-        expects(codec != Image::Codec::UNKNOWN);
-        expects(!std::empty(filepath));
+        EXPECTS(codec != Image::Codec::UNKNOWN);
+        EXPECTS(!std::empty(filepath));
 
         if (!std::filesystem::exists(filepath)) {
             return std::unexpected<Error> {
@@ -236,60 +245,63 @@ namespace stormkit::image {
             };
         }
 
-        const auto data = [&filepath]() {
-            auto       stream = std::ifstream { filepath, std::ios::binary | std::ios::ate };
-            const auto size   = stream.tellg();
+        return io::readfile(filepath)
+          .transform_error([](auto&& error) static noexcept -> Error {
+              return { Error::Reason::UNKNOWN, error.message() };
+          })
+          .and_then([this,
+                     &filepath,
+                     codec](auto&& data) mutable noexcept -> std::expected<void, Error> {
+              if (codec == Image::Codec::AUTODETECT) codec = details::filename_to_codec(filepath);
+              switch (codec) {
+                  CASE_DO (JPEG, load_jpg)
+                      ;
+                  CASE_DO (PNG, load_png)
+                      ;
+                  CASE_DO (TARGA, load_tga)
+                      ;
+                  CASE_DO (PPM, load_ppm)
+                      ;
+                  CASE_DO (HDR, load_hdr)
+                      ;
+                  CASE_DO (KTX, load_ktx)
+                      ;
+                  CASE_DO (QOI, load_qoi)
+                      ;
+                  default: break;
+              }
 
-            return read(stream, size);
-        }();
-
-        if (codec == Image::Codec::AUTODETECT) codec = details::filename_to_codec(filepath);
-        switch (codec) {
-            CASE_DO (JPEG, load_jpg)
-                ;
-            CASE_DO (PNG, load_png)
-                ;
-            CASE_DO (TARGA, load_tga)
-                ;
-            CASE_DO (PPM, load_ppm)
-                ;
-            CASE_DO (HDR, load_hdr)
-                ;
-            CASE_DO (KTX, load_ktx)
-                ;
-            CASE_DO (QOI, load_qoi)
-                ;
-            default: break;
-        }
-
-        return std::unexpected<Error> {
-            std::in_place,
-            Error::Reason::INVALID_FORMAT,
-            std::format("Failed to save image from {}\n    > Invalid format", filepath.string())
-        };
+              return std::unexpected<Error> {
+                  std::in_place,
+                  Error::Reason::INVALID_FORMAT,
+                  std::format("Failed to open image from {}\n    > Invalid format",
+                              filepath.string())
+              };
+          });
     }
 
 #undef CASE_DO
-#define CASE_DO(_E, _Func, _Name)                                                     \
-    case Image::Codec::_E: {                                                          \
-        auto result = details::_Func(data);                                           \
-        if (!result) {                                                                \
-            return std::unexpected<Error> { std::in_place,                            \
-                                            result.error().reason,                    \
-                                            std::format("Failed to load " _Name       \
-                                                        " image from data\n    > {}", \
-                                                        result.error().str_error) };  \
-        }                                                                             \
-        *this = std::move(*result);                                                   \
-        return {};                                                                    \
+#define CASE_DO(_E, _Func, _Name)                                                 \
+    case Image::Codec::_E: {                                                      \
+        auto result = details::_Func(data);                                       \
+        if (!result) {                                                            \
+            return std::unexpected<Error> {                                       \
+                std::in_place,                                                    \
+                result.error().reason,                                            \
+                std::format("Failed to load " _Name " image from data\n    > {}", \
+                            result.error().str_error)                             \
+            };                                                                    \
+        }                                                                         \
+        *this = std::move(*result);                                               \
+        return {};                                                                \
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto Image::load_from_memory(std::span<const Byte> data, Image::Codec codec) noexcept
-        -> std::expected<void, Error> {
-        expects(codec != Image::Codec::UNKNOWN);
-        expects(!std::empty(data));
+      -> std::expected<void, Error> {
+        EXPECTS(codec != Image::Codec::UNKNOWN);
+        EXPECTS(!std::empty(data));
 
         if (codec == Image::Codec::AUTODETECT) codec = details::header_to_codec(data);
         switch (codec) {
@@ -348,11 +360,11 @@ namespace stormkit::image {
                              CodecArgs args) const noexcept -> std::expected<void, Error> {
         filepath = std::filesystem::canonical(filepath.parent_path()) / filepath.filename();
 
-        expects(codec != Image::Codec::UNKNOWN);
-        expects(codec != Image::Codec::AUTODETECT);
-        expects(!std::empty(filepath));
-        expects(!std::empty(m_data.data));
-        expects(std::filesystem::exists(filepath.root_directory()));
+        EXPECTS(codec != Image::Codec::UNKNOWN);
+        EXPECTS(codec != Image::Codec::AUTODETECT);
+        EXPECTS(!std::empty(filepath));
+        EXPECTS(!std::empty(m_data.data));
+        EXPECTS(std::filesystem::exists(filepath.root_directory()));
 
         switch (codec) {
             CASE_DO (JPEG, save_jpg)
@@ -385,11 +397,12 @@ namespace stormkit::image {
     case Image::Codec::_E: {                                                                  \
         auto result = details::_Func(*this);                                                  \
         if (!result) {                                                                        \
-            return std::unexpected<Error> { std::in_place,                                    \
-                                            result.error().reason,                            \
-                                            std::format("Failed to load " _Name               \
-                                                        " image from data\n    > {}",         \
-                                                        result.error().str_error) };          \
+            return std::unexpected<Error> {                                                   \
+                std::in_place,                                                                \
+                result.error().reason,                                                        \
+                std::format("Failed to load " _Name " image from data\n    > {}",             \
+                            result.error().str_error)                                         \
+            };                                                                                \
         }                                                                                     \
         return std::expected<std::vector<Byte>, Error> { std::in_place, std::move(*result) }; \
     }
@@ -397,11 +410,12 @@ namespace stormkit::image {
     case Image::Codec::_E: {                                                                  \
         auto result = details::_Func(*this, std::move(args));                                 \
         if (!result) {                                                                        \
-            return std::unexpected<Error> { std::in_place,                                    \
-                                            result.error().reason,                            \
-                                            std::format("Failed to load " _Name               \
-                                                        " image from data\n    > {}",         \
-                                                        result.error().str_error) };          \
+            return std::unexpected<Error> {                                                   \
+                std::in_place,                                                                \
+                result.error().reason,                                                        \
+                std::format("Failed to load " _Name " image from data\n    > {}",             \
+                            result.error().str_error)                                         \
+            };                                                                                \
         }                                                                                     \
         return std::expected<std::vector<Byte>, Error> { std::in_place, std::move(*result) }; \
     }
@@ -409,10 +423,10 @@ namespace stormkit::image {
     /////////////////////////////////////
     /////////////////////////////////////
     auto Image::save_to_memory(Codec codec, CodecArgs args) const noexcept
-        -> std::expected<std::vector<Byte>, Error> {
-        expects(codec != Image::Codec::UNKNOWN);
-        expects(codec != Image::Codec::AUTODETECT);
-        expects(!std::empty(m_data.data));
+      -> std::expected<std::vector<Byte>, Error> {
+        EXPECTS(codec != Image::Codec::UNKNOWN);
+        EXPECTS(codec != Image::Codec::AUTODETECT);
+        EXPECTS(!std::empty(m_data.data));
 
         auto output = std::vector<Byte> {};
 
@@ -444,8 +458,8 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::create(math::ExtentU extent, Format format) noexcept -> void {
-        expects(extent.width > 0u
+    auto Image::create(math::Extent3<u32> extent, Format format) noexcept -> void {
+        EXPECTS(extent.width > 0u
                 and extent.height > 0u
                 and extent.depth > 0u
                 and format != Format::UNDEFINED);
@@ -459,51 +473,53 @@ namespace stormkit::image {
         m_data.mip_levels        = 1u;
         m_data.format            = format;
 
-        m_data.data.resize(m_data.extent.width
-                           * m_data.extent.height
-                           * m_data.extent.depth
-                           * m_data.layers
-                           * m_data.faces
-                           * m_data.mip_levels
-                           * m_data.channel_count
-                           * m_data.bytes_per_channel);
+        m_data.data
+          .resize(m_data.extent.width
+                  * m_data.extent.height
+                  * m_data.extent.depth
+                  * m_data.layers
+                  * m_data.faces
+                  * m_data.mip_levels
+                  * m_data.channel_count
+                  * m_data.bytes_per_channel);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto Image::convert_to(Format format) const noexcept -> Image {
-        expects(!std::empty(m_data.data));
-        expects(format != Format::UNDEFINED);
+        EXPECTS(!std::empty(m_data.data));
+        EXPECTS(format != Format::UNDEFINED);
 
         if (m_data.format == format) return *this;
 
-        auto image_data = ImageData { .extent            = m_data.extent,
-                                      .channel_count     = get_format_channel_count(format),
-                                      .bytes_per_channel = getSizeof(format),
-                                      .layers            = m_data.layers,
-                                      .faces             = m_data.faces,
-                                      .mip_levels        = m_data.mip_levels,
-                                      .format            = format };
+        auto image_data = ImageData {
+            .extent            = m_data.extent,
+            .channel_count     = get_format_channel_count(format),
+            .bytes_per_channel = getSizeof(format),
+            .layers            = m_data.layers,
+            .faces             = m_data.faces,
+            .mip_levels        = m_data.mip_levels,
+            .format            = format
+        };
 
         /*const auto channel_delta =
-            static_cast<UInt8>(std::max(0,
-                                              static_cast<Int8>(image_data.channel_count) -
-                                                  static_cast<Int8>(m_data.channel_count)));*/
+            static_cast<u8>(std::max(0,
+                                              static_cast<i8>(image_data.channel_count) -
+                                                  static_cast<i8>(m_data.channel_count)));*/
         const auto pixel_count = m_data.extent.width * m_data.extent.height * m_data.extent.depth;
 
-        image_data.data.resize(pixel_count
-                                   * image_data.channel_count
-                                   * image_data.bytes_per_channel,
-                               Byte { 255u });
+        image_data.data
+          .resize(pixel_count * image_data.channel_count * image_data.bytes_per_channel,
+                  Byte { 255u });
 
         auto image = Image { std::move(image_data) };
 
         for (auto [layer, face, level, i] :
              multi_range(image.layers(), image.faces(), image.layers(), pixel_count)) {
-            const auto from_image = details::map(pixel(as<RangeExtent>(i), layer, face, level),
+            const auto from_image = details::map(pixel(as<usize>(i), layer, face, level),
                                                  m_data.bytes_per_channel,
                                                  image.bytesPerChannel());
-            auto       to_image   = image.pixel(as<RangeExtent>(i), layer, face, level);
+            auto       to_image   = image.pixel(as<usize>(i), layer, face, level);
 
             std::ranges::copy_n(std::ranges::begin(from_image),
                                 std::min(m_data.channel_count, image.channelCount()),
@@ -515,31 +531,34 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::scale(const math::ExtentU&) const noexcept -> Image {
+    auto Image::scale(const math::Extent3<u32>&) const noexcept -> Image {
         return *this;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto Image::flip_x() const noexcept -> Image {
-        auto image_data = ImageData { .extent            = m_data.extent,
-                                      .channel_count     = m_data.channel_count,
-                                      .bytes_per_channel = m_data.bytes_per_channel,
-                                      .layers            = m_data.layers,
-                                      .faces             = m_data.faces,
-                                      .mip_levels        = m_data.mip_levels,
-                                      .format            = m_data.format };
+        auto image_data = ImageData {
+            .extent            = m_data.extent,
+            .channel_count     = m_data.channel_count,
+            .bytes_per_channel = m_data.bytes_per_channel,
+            .layers            = m_data.layers,
+            .faces             = m_data.faces,
+            .mip_levels        = m_data.mip_levels,
+            .format            = m_data.format
+        };
 
         image_data.data.resize(std::size(m_data.data));
 
         auto image = Image { std::move(image_data) };
 
-        for (auto [layer, face, mip, x, y, z] : multi_range(m_data.layers,
-                                                            m_data.faces,
-                                                            m_data.mip_levels,
-                                                            m_data.extent.width,
-                                                            m_data.extent.height,
-                                                            m_data.extent.depth)) {
+        for (auto [layer, face, mip, x, y, z] :
+             multi_range(m_data.layers,
+                         m_data.faces,
+                         m_data.mip_levels,
+                         m_data.extent.width,
+                         m_data.extent.height,
+                         m_data.extent.depth)) {
             const auto inv_x  = m_data.extent.width - x - 1u;
             auto       output = image.pixel({ inv_x, y, z }, layer, face, mip);
             // const auto data  = pixel({ x, y, z }, layer, face, mip);
@@ -553,24 +572,27 @@ namespace stormkit::image {
     /////////////////////////////////////
     /////////////////////////////////////
     auto Image::flip_y() const noexcept -> Image {
-        auto image_data = ImageData { .extent            = m_data.extent,
-                                      .channel_count     = m_data.channel_count,
-                                      .bytes_per_channel = m_data.bytes_per_channel,
-                                      .layers            = m_data.layers,
-                                      .faces             = m_data.faces,
-                                      .mip_levels        = m_data.mip_levels,
-                                      .format            = m_data.format };
+        auto image_data = ImageData {
+            .extent            = m_data.extent,
+            .channel_count     = m_data.channel_count,
+            .bytes_per_channel = m_data.bytes_per_channel,
+            .layers            = m_data.layers,
+            .faces             = m_data.faces,
+            .mip_levels        = m_data.mip_levels,
+            .format            = m_data.format
+        };
 
         image_data.data.resize(std::size(m_data.data));
 
         auto image = Image { std::move(image_data) };
 
-        for (auto [layer, face, mip, x, y, z] : multi_range(m_data.layers,
-                                                            m_data.faces,
-                                                            m_data.mip_levels,
-                                                            m_data.extent.width,
-                                                            m_data.extent.height,
-                                                            m_data.extent.depth)) {
+        for (auto [layer, face, mip, x, y, z] :
+             multi_range(m_data.layers,
+                         m_data.faces,
+                         m_data.mip_levels,
+                         m_data.extent.width,
+                         m_data.extent.height,
+                         m_data.extent.depth)) {
             const auto inv_y  = m_data.extent.height - 1u - y;
             auto       output = image.pixel({ x, inv_y, z }, layer, face, mip);
 
@@ -583,23 +605,26 @@ namespace stormkit::image {
     /////////////////////////////////////
     /////////////////////////////////////
     auto Image::flip_z() const noexcept -> Image {
-        auto image_data = ImageData { .extent            = m_data.extent,
-                                      .channel_count     = m_data.channel_count,
-                                      .bytes_per_channel = m_data.bytes_per_channel,
-                                      .layers            = m_data.layers,
-                                      .faces             = m_data.faces,
-                                      .mip_levels        = m_data.mip_levels,
-                                      .format            = m_data.format };
+        auto image_data = ImageData {
+            .extent            = m_data.extent,
+            .channel_count     = m_data.channel_count,
+            .bytes_per_channel = m_data.bytes_per_channel,
+            .layers            = m_data.layers,
+            .faces             = m_data.faces,
+            .mip_levels        = m_data.mip_levels,
+            .format            = m_data.format
+        };
         image_data.data.resize(std::size(m_data.data));
 
         auto image = Image { std::move(image_data) };
 
-        for (auto [layer, face, mip, x, y, z] : multi_range(m_data.layers,
-                                                            m_data.faces,
-                                                            m_data.mip_levels,
-                                                            m_data.extent.width,
-                                                            m_data.extent.height,
-                                                            m_data.extent.depth)) {
+        for (auto [layer, face, mip, x, y, z] :
+             multi_range(m_data.layers,
+                         m_data.faces,
+                         m_data.mip_levels,
+                         m_data.extent.width,
+                         m_data.extent.height,
+                         m_data.extent.depth)) {
             const auto inv_z  = m_data.extent.depth - 1u - z;
             auto       output = image.pixel({ x, z, inv_z }, layer, face, mip);
 
@@ -612,13 +637,15 @@ namespace stormkit::image {
     /////////////////////////////////////
     /////////////////////////////////////
     auto Image::rotate_90() const noexcept -> Image {
-        auto image_data = ImageData { .extent            = m_data.extent,
-                                      .channel_count     = m_data.channel_count,
-                                      .bytes_per_channel = m_data.bytes_per_channel,
-                                      .layers            = m_data.layers,
-                                      .faces             = m_data.faces,
-                                      .mip_levels        = m_data.mip_levels,
-                                      .format            = m_data.format };
+        auto image_data = ImageData {
+            .extent            = m_data.extent,
+            .channel_count     = m_data.channel_count,
+            .bytes_per_channel = m_data.bytes_per_channel,
+            .layers            = m_data.layers,
+            .faces             = m_data.faces,
+            .mip_levels        = m_data.mip_levels,
+            .format            = m_data.format
+        };
 
         image_data.data.resize(std::size(m_data.data));
 
@@ -630,13 +657,15 @@ namespace stormkit::image {
     /////////////////////////////////////
     /////////////////////////////////////
     auto Image::rotate_180() const noexcept -> Image {
-        auto image_data = ImageData { .extent            = m_data.extent,
-                                      .channel_count     = m_data.channel_count,
-                                      .bytes_per_channel = m_data.bytes_per_channel,
-                                      .layers            = m_data.layers,
-                                      .faces             = m_data.faces,
-                                      .mip_levels        = m_data.mip_levels,
-                                      .format            = m_data.format };
+        auto image_data = ImageData {
+            .extent            = m_data.extent,
+            .channel_count     = m_data.channel_count,
+            .bytes_per_channel = m_data.bytes_per_channel,
+            .layers            = m_data.layers,
+            .faces             = m_data.faces,
+            .mip_levels        = m_data.mip_levels,
+            .format            = m_data.format
+        };
 
         image_data.data.resize(std::size(m_data.data));
 
@@ -646,13 +675,15 @@ namespace stormkit::image {
     /////////////////////////////////////
     /////////////////////////////////////
     auto Image::rotate_270() const noexcept -> Image {
-        auto image_data = ImageData { .extent            = m_data.extent,
-                                      .channel_count     = m_data.channel_count,
-                                      .bytes_per_channel = m_data.bytes_per_channel,
-                                      .layers            = m_data.layers,
-                                      .faces             = m_data.faces,
-                                      .mip_levels        = m_data.mip_levels,
-                                      .format            = m_data.format };
+        auto image_data = ImageData {
+            .extent            = m_data.extent,
+            .channel_count     = m_data.channel_count,
+            .bytes_per_channel = m_data.bytes_per_channel,
+            .layers            = m_data.layers,
+            .faces             = m_data.faces,
+            .mip_levels        = m_data.mip_levels,
+            .format            = m_data.format
+        };
 
         image_data.data.resize(std::size(m_data.data));
 

@@ -4,44 +4,77 @@
 
 module;
 
+#include <stormkit/core/memory_macro.hpp>
+
+#include <stormkit/core/contract_macro.hpp>
+
 #include <stormkit/core/platform_macro.hpp>
+
+#include <errno.h>
 
 export module stormkit.core:utils.filesystem;
 
 import std;
+// import std.compat;
+
+import :utils.contract;
 
 import :typesafe.byte;
 import :typesafe.integer;
+import :typesafe.integer_casts;
 
-export namespace stormkit { inline namespace core {
+import :functional.monadic;
+
+import :containers.raii_capsule;
+
+namespace stdfs = std::filesystem;
+
+export namespace stormkit { inline namespace core { namespace io {
+    template<typename T>
+    using Expected = std::expected<T, std::error_code>;
+
+    using FileHandle = stormkit::
+      RAIICapsule<std::FILE*, std::fopen, std::fclose, struct FileHandleTag, nullptr>;
+
+    inline constexpr struct STORMKIT_EBCO TextFile {
+    } text_file_tag;
+
     [[nodiscard]]
-    auto read(std::istream& stream, RangeExtent size) noexcept -> std::vector<Byte>;
+    auto read(std::istream& stream, usize size) noexcept -> std::vector<Byte>;
 
-    template<RangeExtent size>
+    template<usize size>
     [[nodiscard]]
     auto read(std::istream& stream) noexcept -> std::array<Byte, size>;
 
     auto read(std::istream& stream, std::span<Byte> output) noexcept -> void;
 
+    auto readfile(TextFile, const stdfs::path& path, std::span<char> output) -> Expected<void>;
+    auto readfile(TextFile, const stdfs::path& path) -> Expected<std::vector<char>>;
+
+    auto readfile(const stdfs::path& path, std::span<Byte> output) -> Expected<void>;
+    auto readfile(const stdfs::path& path) -> Expected<std::vector<Byte>>;
+
     auto write(std::ostream& stream, std::span<const Byte> data) noexcept -> void;
 
     [[nodiscard]]
-    auto read_text(std::istream& stream, RangeExtent size) noexcept -> std::string;
+    auto read_text(std::istream& stream, usize size) noexcept -> std::string;
 
     auto read_text(std::istream& stream, std::span<char> output) noexcept -> void;
 
     auto write_text(std::ostream& stream, std::string_view data) noexcept -> void;
-}} // namespace stormkit::core
+}}} // namespace stormkit::core::io
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit { inline namespace core {
+namespace stdr = std::ranges;
+
+namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto read(std::istream& stream, RangeExtent size) noexcept
-        -> std::vector<Byte> {
+    STORMKIT_FORCE_INLINE
+    inline auto read(std::istream& stream, usize size) noexcept -> std::vector<Byte> {
         auto output = std::vector<Byte> {};
         output.resize(size);
 
@@ -52,8 +85,9 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<RangeExtent size>
-    STORMKIT_FORCE_INLINE auto read(std::istream& stream) noexcept -> std::array<Byte, size> {
+    template<usize size>
+    STORMKIT_FORCE_INLINE
+    inline auto read(std::istream& stream) noexcept -> std::array<Byte, size> {
         auto output = std::array<Byte, size> {};
 
         read(stream, output);
@@ -63,21 +97,69 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto read(std::istream& stream, std::span<Byte> output) noexcept -> void {
-        stream.read(std::bit_cast<char*>(std::data(output)), std::size(output));
+    STORMKIT_FORCE_INLINE
+    inline auto read(std::istream& stream, std::span<Byte> output) noexcept -> void {
+        stream
+          .read(std::bit_cast<char*>(stdr::data(output)), as<std::streamsize>(stdr::size(output)));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto write(std::ostream& stream, std::span<const Byte> data) noexcept
-        -> void {
-        stream.write(std::bit_cast<const char*>(std::data(data)), std::size(data));
+    inline auto readfile(TextFile, const stdfs::path& path, std::span<char> output)
+      -> Expected<void> {
+        EXPECTS(stdfs::file_size(path) <= stdr::size(output));
+        auto handle = FileHandle { path.c_str(), "r" };
+        if (not handle) return std::unexpected { std::make_error_code(std::errc(errno)) };
+
+        std::fread(stdr::data(output), sizeof(char), stdr::size(output), handle);
+        if (std::ferror(handle)) return std::unexpected { std::make_error_code(std::errc(errno)) };
+
+        return {};
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto read_text(std::istream& stream, RangeExtent size) noexcept
-        -> std::string {
+    STORMKIT_FORCE_INLINE
+    inline auto readfile(TextFile, const stdfs::path& path) -> Expected<std::vector<char>> {
+        auto out = std::vector<char> {};
+        out.resize(stdfs::file_size(path) / sizeof(char));
+        return readfile(text_file_tag, path, out).transform(monadic::consume(out));
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto readfile(const stdfs::path& path, std::span<Byte> output) -> Expected<void> {
+        EXPECTS(stdfs::file_size(path) <= stdr::size(output));
+        auto handle = FileHandle { path.c_str(), "rb" };
+        if (not handle) return std::unexpected { std::make_error_code(std::errc(errno)) };
+
+        std::fread(stdr::data(output), sizeof(Byte), stdr::size(output), handle);
+        if (std::ferror(handle)) return std::unexpected { std::make_error_code(std::errc(errno)) };
+
+        return {};
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto readfile(const stdfs::path& path) -> Expected<std::vector<Byte>> {
+        auto out = std::vector<Byte> { stdfs::file_size(path) };
+        out.resize(stdfs::file_size(path) / sizeof(Byte));
+        return readfile(path, out).transform(monadic::consume(out));
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto write(std::ostream& stream, std::span<const Byte> data) noexcept -> void {
+        stream.write(std::bit_cast<const char*>(stdr::data(data)),
+                     as<std::streamsize>(stdr::size(data)));
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto read_text(std::istream& stream, usize size) noexcept -> std::string {
         auto output = std::string {};
         output.resize(size);
 
@@ -88,15 +170,15 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto read_text(std::istream& stream, std::span<char> output) noexcept
-        -> void {
-        stream.read(std::data(output), std::size(output));
+    STORMKIT_FORCE_INLINE
+    inline auto read_text(std::istream& stream, std::span<char> output) noexcept -> void {
+        stream.read(stdr::data(output), as<std::streamsize>(stdr::size(output)));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto write_text(std::ostream& stream, std::string_view data) noexcept
-        -> void {
-        stream.write(std::data(data), std::size(data));
+    STORMKIT_FORCE_INLINE
+    inline auto write_text(std::ostream& stream, std::string_view data) noexcept -> void {
+        stream.write(stdr::data(data), as<std::streamsize>(stdr::size(data)));
     }
-}} // namespace stormkit::core
+}}} // namespace stormkit::core::io

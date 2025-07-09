@@ -11,7 +11,7 @@ export module stormkit.Engine:SpriteRenderer;
 import std;
 
 import stormkit.core;
-import stormkit.Gpu;
+import stormkit.gpu;
 
 import :Core;
 import :Renderer;
@@ -52,8 +52,8 @@ export namespace stormkit::engine {
         static auto allocate(const Renderer& renderer, const math::ExtentF& viewport) noexcept
             -> gpu::Expected<std::unique_ptr<SpriteRenderer>>;
 
-        auto addSprite(Sprite sprite) noexcept -> UInt32;
-        auto removeSprite(UInt32 id) noexcept -> void;
+        auto addSprite(Sprite sprite) noexcept -> u32;
+        auto removeSprite(u32 id) noexcept -> void;
 
         auto updateFrameGraph(FrameGraphBuilder& graph) noexcept -> void;
 
@@ -77,9 +77,9 @@ export namespace stormkit::engine {
         math::ExtentF m_viewport;
         math::MatrixF m_projection_matrix;
 
-        UInt32                      m_next_sprite_id = 0;
+        u32                      m_next_sprite_id = 0;
         DeferInit<gpu::Buffer>      m_vertex_buffer;
-        HashMap<UInt32, SpriteData> m_sprites;
+        HashMap<u32, SpriteData> m_sprites;
 
         bool m_dirty = true;
     };
@@ -128,7 +128,7 @@ namespace stormkit::engine {
 
     //////////////////////////////////////
     //////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto SpriteRenderer::addSprite(Sprite sprite) noexcept -> UInt32 {
+    STORMKIT_FORCE_INLINE auto SpriteRenderer::addSprite(Sprite sprite) noexcept -> u32 {
         const auto id = m_next_sprite_id++;
 
         auto sprite_data = SpriteData {
@@ -144,7 +144,7 @@ namespace stormkit::engine {
 
     //////////////////////////////////////
     //////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto SpriteRenderer::removeSprite(UInt32 id) noexcept -> void {
+    STORMKIT_FORCE_INLINE auto SpriteRenderer::removeSprite(u32 id) noexcept -> void {
         auto it = m_sprites.find(id);
         if (it == std::ranges::cend(m_sprites)) return;
         m_sprites.erase(it);

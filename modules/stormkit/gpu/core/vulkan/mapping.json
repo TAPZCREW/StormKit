@@ -1,0 +1,749 @@
+{
+  "PhysicalDeviceType": {
+    "flag":  false,
+    "type": "u8",
+    "vktype": "VkPhysicalDeviceType",
+    "values": {
+      "DISCRETE_GPU":   { "vulkan": "VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU",   "webgpu": "" },
+      "VIRTUAL_GPU":    { "vulkan": "VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU",    "webgpu": "" },
+      "INTEGRATED_GPU": { "vulkan": "VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU", "webgpu": "" },
+      "CPU":            { "vulkan": "VK_PHYSICAL_DEVICE_TYPE_CPU",            "webgpu": "" },
+      "OTHER":          { "vulkan": "VK_PHYSICAL_DEVICE_TYPE_OTHER",          "webgpu": "" }
+    }
+  },
+  "QueueFlag": {
+    "flag":  true,
+    "type": "u8",
+    "vktype": "VkQueueFlagBits",
+    "values": {
+      "NONE":           { "vulkan": "0",                          "webgpu": "" },
+      "GRAPHICS":       { "vulkan": "VK_QUEUE_GRAPHICS_BIT",       "webgpu": "" },
+      "COMPUTE":        { "vulkan": "VK_QUEUE_COMPUTE_BIT",        "webgpu": "" },
+      "TRANSFER":       { "vulkan": "VK_QUEUE_TRANSFER_BIT",       "webgpu": "" },
+      "SPARSE_BINDING": { "vulkan": "VK_QUEUE_SPARSE_BINDING_BIT", "webgpu": "" },
+      "PROTECTED":      { "vulkan": "VK_QUEUE_PROTECTED_BIT",      "webgpu": "" }
+    }
+  },
+  "ShaderStageFlag": {
+    "flag":  true,
+    "type": "u8",
+    "vktype": "VkShaderStageFlagBits",
+    "values": {
+      "NONE":     { "vulkan": "0",                            "webgpu": "" }, 
+      "VERTEX":   { "vulkan": "VK_SHADER_STAGE_VERTEX_BIT",   "webgpu": "" }, 
+      "FRAGMENT": { "vulkan": "VK_SHADER_STAGE_FRAGMENT_BIT", "webgpu": "" }, 
+      "GEOMETRY": { "vulkan": "VK_SHADER_STAGE_GEOMETRY_BIT", "webgpu": "" }, 
+      "COMPUTE":  { "vulkan": "VK_SHADER_STAGE_COMPUTE_BIT",  "webgpu": "" }
+    }
+  },
+  "PrimitiveTopology": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkPrimitiveTopology",
+    "values": {
+      "POINT_LIST":     { "vulkan": "VK_PRIMITIVE_TOPOLOGY_POINT_LIST",     "webgpu": "" },
+      "LINE_LIST":      { "vulkan": "VK_PRIMITIVE_TOPOLOGY_LINE_LIST",      "webgpu": "" },
+      "LINE_STRIP":     { "vulkan": "VK_PRIMITIVE_TOPOLOGY_LINE_STRIP",     "webgpu": "" },
+      "TRIANGLE_LIST":  { "vulkan": "VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST",  "webgpu": "" },
+      "TRIANGLE_STRIP": { "vulkan": "VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP", "webgpu": "" },
+      "TRIANGLE_FAN":   { "vulkan": "VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN",   "webgpu": "" }
+    }
+  },
+  "PolygonMode": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkPolygonMode",
+    "values": {
+      "FILL":  { "vulkan": "VK_POLYGON_MODE_FILL",  "webgpu": "" },
+      "LINE":  { "vulkan": "VK_POLYGON_MODE_LINE",  "webgpu": "" },
+      "POINT": { "vulkan": "VK_POLYGON_MODE_POINT", "webgpu": "" }
+    }
+  },
+  "CullModeFlag": {
+    "flag": true,
+    "type": "u8",
+    "vktype": "VkCullModeFlagBits",
+    "values": {
+      "NONE":       { "vulkan": "0",                      "webgpu": "" }, 
+      "FRONT":      { "vulkan": "VK_CULL_MODE_FRONT_BIT", "webgpu": "" },
+      "BACK":       { "vulkan": "VK_CULL_MODE_BACK_BIT",  "webgpu": "" },
+      "FRONT_BACK": { "vulkan": "FRONT | BACK",           "webgpu": "" }
+    }
+  },
+  "FrontFace": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkFrontFace",
+    "values": {
+      "CLOCKWISE":         { "vulkan": "VK_FRONT_FACE_CLOCKWISE",         "webgpu": "" },
+      "COUNTER_CLOCKWISE": { "vulkan": "VK_FRONT_FACE_COUNTER_CLOCKWISE", "webgpu": "" }
+    }
+  },
+  "SampleCountFlag": {
+    "flag": true,
+    "type": "u8",
+    "vktype": "VkSampleCountFlagBits",
+    "values": {
+      "C1":  { "vulkan": "VK_SAMPLE_COUNT_1_BIT",  "webgpu": "" },
+      "C2":  { "vulkan": "VK_SAMPLE_COUNT_2_BIT",  "webgpu": "" },
+      "C4":  { "vulkan": "VK_SAMPLE_COUNT_4_BIT",  "webgpu": "" },
+      "C8":  { "vulkan": "VK_SAMPLE_COUNT_8_BIT",  "webgpu": "" },
+      "C16": { "vulkan": "VK_SAMPLE_COUNT_16_BIT", "webgpu": "" },
+      "C32": { "vulkan": "VK_SAMPLE_COUNT_32_BIT", "webgpu": "" },
+      "C64": { "vulkan": "VK_SAMPLE_COUNT_64_BIT", "webgpu": "" }
+    }
+  },
+  "ColorComponentFlag": {
+    "flag": true,
+    "type": "u8",
+    "vktype": "VkColorComponentFlagBits",
+    "values": {
+        "NONE": { "vulkan": "0",                        "webgpu": "" }, 
+        "R":    { "vulkan": "VK_COLOR_COMPONENT_R_BIT", "webgpu": "" },
+        "G":    { "vulkan": "VK_COLOR_COMPONENT_G_BIT", "webgpu": "" },
+        "B":    { "vulkan": "VK_COLOR_COMPONENT_B_BIT", "webgpu": "" },
+        "A":    { "vulkan": "VK_COLOR_COMPONENT_A_BIT", "webgpu": "" },
+        "RG":   { "vulkan": "R | G",                    "webgpu": "" },
+        "RGB":  { "vulkan": "RG | B",                   "webgpu": "" },
+        "RGBA": { "vulkan": "RGB | A",                  "webgpu": "" }
+    }
+  },
+  "BlendFactor": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkBlendFactor",
+    "values": {
+      "ONE":                      { "vulkan": "VK_BLEND_FACTOR_ONE",                      "webgpu": "" },
+      "ZERO":                     { "vulkan": "VK_BLEND_FACTOR_ZERO",                     "webgpu": "" },
+      "SRC_COLOR":                { "vulkan": "VK_BLEND_FACTOR_SRC_COLOR",                "webgpu": "" },
+      "ONE_MINUS_SRC_COLOR":      { "vulkan": "VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR",      "webgpu": "" },
+      "DST_COLOR":                { "vulkan": "VK_BLEND_FACTOR_DST_COLOR",                "webgpu": "" },
+      "ONE_MINUS_DST_COLOR":      { "vulkan": "VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR",      "webgpu": "" },
+      "SRC_ALPHA":                { "vulkan": "VK_BLEND_FACTOR_SRC_ALPHA",                "webgpu": "" },
+      "ONE_MINUS_SRC_ALPHA":      { "vulkan": "VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA",      "webgpu": "" },
+      "DST_ALPHA":                { "vulkan": "VK_BLEND_FACTOR_DST_ALPHA",                "webgpu": "" },
+      "ONE_MINUS_DST_ALPHA":      { "vulkan": "VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA",      "webgpu": "" },
+      "CONSTANT_COLOR":           { "vulkan": "VK_BLEND_FACTOR_CONSTANT_COLOR",           "webgpu": "" },
+      "ONE_MINUS_CONSTANT_COLOR": { "vulkan": "VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR", "webgpu": "" },
+      "CONSTANT_ALPHA":           { "vulkan": "VK_BLEND_FACTOR_CONSTANT_ALPHA",           "webgpu": "" },
+      "ONE_MINUS_CONSTANT_ALPHA": { "vulkan": "VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA", "webgpu": "" },
+      "SRC_ALPHA_SATURATE":       { "vulkan": "VK_BLEND_FACTOR_SRC_ALPHA_SATURATE",       "webgpu": "" },
+      "SRC1_COLOR":               { "vulkan": "VK_BLEND_FACTOR_SRC1_COLOR",               "webgpu": "" },
+      "ONE_MINUS_SRC1_COLOR":     { "vulkan": "VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR",     "webgpu": "" },
+      "SRC1_ALPHA":               { "vulkan": "VK_BLEND_FACTOR_SRC1_ALPHA",               "webgpu": "" },
+      "ONE_MINUS_SRC1_ALPHA":     { "vulkan": "VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA",     "webgpu": "" }
+    }
+  },
+  "BlendOperation": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkBlendOp",
+    "values": {
+      "ADD":              { "vulkan": "VK_BLEND_OP_ADD",              "webgpu": "" },
+      "SUBTRACT":         { "vulkan": "VK_BLEND_OP_SUBTRACT",         "webgpu": "" },
+      "REVERSE_SUBTRACT": { "vulkan": "VK_BLEND_OP_REVERSE_SUBTRACT", "webgpu": "" },
+      "MIN":              { "vulkan": "VK_BLEND_OP_MIN",              "webgpu": "" },
+      "MAX":              { "vulkan": "VK_BLEND_OP_MAX",              "webgpu": "" }
+    }
+  },
+  "LogicOperation": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkLogicOp",
+    "values": {
+      "CLEAR":         { "vulkan": "VK_LOGIC_OP_CLEAR",        "webgpu": ""},      
+      "AND":           { "vulkan": "VK_LOGIC_OP_AND",          "webgpu": ""},    
+      "AND_REVERSE":   { "vulkan": "VK_LOGIC_OP_AND_REVERSE",  "webgpu": ""},            
+      "COPY":          { "vulkan": "VK_LOGIC_OP_COPY",         "webgpu": ""},     
+      "AND_INVERTED":  { "vulkan": "VK_LOGIC_OP_AND_INVERTED", "webgpu": ""},             
+      "NO_OP":         { "vulkan": "VK_LOGIC_OP_NO_OP",        "webgpu": ""},      
+      "XOR":           { "vulkan": "VK_LOGIC_OP_XOR",          "webgpu": ""},    
+      "OR":            { "vulkan": "VK_LOGIC_OP_OR",           "webgpu": ""},   
+      "NOR":           { "vulkan": "VK_LOGIC_OP_NOR",          "webgpu": ""},    
+      "EQUIVALENT":    { "vulkan": "VK_LOGIC_OP_EQUIVALENT",   "webgpu": ""},           
+      "INVERT":        { "vulkan": "VK_LOGIC_OP_INVERT",       "webgpu": ""},       
+      "OR_REVERSE":    { "vulkan": "VK_LOGIC_OP_OR_REVERSE",   "webgpu": ""},           
+      "COPY_INVERTED": { "vulkan": "VK_LOGIC_OP_COPY_INVERTED","webgpu": ""},              
+      "OR_INVERTED":   { "vulkan": "VK_LOGIC_OP_OR_INVERTED",  "webgpu": ""},            
+      "NAND":          { "vulkan": "VK_LOGIC_OP_NAND",         "webgpu": ""},     
+      "SET":           { "vulkan": "VK_LOGIC_OP_SET",          "webgpu": ""}
+    }
+  },
+  "PixelFormat": {
+    "flag": false,
+    "type": "u32",
+    "vktype": "VkFormat",
+    "values": {
+      "UNDEFINED":               { "vulkan": "VK_FORMAT_UNDEFINED",                "webgpu": ""},    
+      "R8_SNORM":                { "vulkan": "VK_FORMAT_R8_SNORM",                 "webgpu": ""},   
+      "RG8_SNORM":               { "vulkan": "VK_FORMAT_R8G8_SNORM",               "webgpu": ""},     
+      "RGB8_SNORM":              { "vulkan": "VK_FORMAT_R8G8B8_SNORM",             "webgpu": ""},       
+      "RGBA8_SNORM":             { "vulkan": "VK_FORMAT_R8G8B8A8_SNORM",           "webgpu": ""},         
+      "R8_UNORM":                { "vulkan": "VK_FORMAT_R8_UNORM",                 "webgpu": ""},   
+      "RG8_UNORM":               { "vulkan": "VK_FORMAT_R8G8_UNORM",               "webgpu": ""},     
+      "RGB8_UNORM":              { "vulkan": "VK_FORMAT_R8G8B8_UNORM",             "webgpu": ""},       
+      "RGBA8_UNORM":             { "vulkan": "VK_FORMAT_R8G8B8A8_UNORM",           "webgpu": ""},         
+      "R16_SNORM":               { "vulkan": "VK_FORMAT_R16_SNORM",                "webgpu": ""},    
+      "RG16_SNORM":              { "vulkan": "VK_FORMAT_R16G16_SNORM",             "webgpu": ""},       
+      "RGB16_SNORM":             { "vulkan": "VK_FORMAT_R16G16B16_SNORM",          "webgpu": ""},          
+      "RGBA16_SNORM":            { "vulkan": "VK_FORMAT_R16G16B16A16_SNORM",       "webgpu": ""},             
+      "R16_UNORM":               { "vulkan": "VK_FORMAT_R16_UNORM",                "webgpu": ""},    
+      "RG16_UNORM":              { "vulkan": "VK_FORMAT_R16G16_UNORM",             "webgpu": ""},       
+      "RGB16_UNORM":             { "vulkan": "VK_FORMAT_R16G16B16_UNORM",          "webgpu": ""},          
+      "RGBA16_UNORM":            { "vulkan": "VK_FORMAT_R16G16B16A16_UNORM",       "webgpu": ""},             
+      "A2_RGB10_UNORM_PACK32":   { "vulkan": "VK_FORMAT_A2R10G10B10_UNORM_PACK32", "webgpu": ""},                   
+      "A2_RGB10_SNORM_PACK32":   { "vulkan": "VK_FORMAT_A2R10G10B10_SNORM_PACK32", "webgpu": ""},                   
+      "A2_RGB10U_PACK32":        { "vulkan": "VK_FORMAT_A2R10G10B10_UINT_PACK32",  "webgpu": ""},                  
+      "A2_RGB10I_PACK32":        { "vulkan": "VK_FORMAT_A2R10G10B10_SINT_PACK32",  "webgpu": ""},                  
+      "RGBA4_UNORM_PACK16":      { "vulkan": "VK_FORMAT_R4G4B4A4_UNORM_PACK16",    "webgpu": ""},                
+      "A1_RGB5_UNORM_PACK16":    { "vulkan": "VK_FORMAT_A1R5G5B5_UNORM_PACK16",    "webgpu": ""},                
+      "R5_G6_B5_UNORM_PACK16":   { "vulkan": "VK_FORMAT_R5G6B5_UNORM_PACK16",      "webgpu": ""},              
+      "BGR8_UNORM":              { "vulkan": "VK_FORMAT_B8G8R8_UNORM",             "webgpu": ""},       
+      "BGRA8_UNORM":             { "vulkan": "VK_FORMAT_B8G8R8A8_UNORM",           "webgpu": ""},         
+      "R8I":                     { "vulkan": "VK_FORMAT_R8_SINT",                  "webgpu": ""},  
+      "RG8I":                    { "vulkan": "VK_FORMAT_R8G8_SINT",                "webgpu": ""},    
+      "RGB8I":                   { "vulkan": "VK_FORMAT_R8G8B8_SINT",              "webgpu": ""},      
+      "RGBA8I":                  { "vulkan": "VK_FORMAT_R8G8B8A8_SINT",            "webgpu": ""},        
+      "R8U":                     { "vulkan": "VK_FORMAT_R8_UINT",                  "webgpu": ""},  
+      "RG8U":                    { "vulkan": "VK_FORMAT_R8G8_UINT",                "webgpu": ""},    
+      "RGB8U":                   { "vulkan": "VK_FORMAT_R8G8B8_UINT",              "webgpu": ""},      
+      "RGBA8U":                  { "vulkan": "VK_FORMAT_R8G8B8A8_UINT",            "webgpu": ""},        
+      "R16I":                    { "vulkan": "VK_FORMAT_R16_SINT",                 "webgpu": ""},   
+      "RG16I":                   { "vulkan": "VK_FORMAT_R16G16_SINT",              "webgpu": ""},      
+      "RGB16I":                  { "vulkan": "VK_FORMAT_R16G16B16_SINT",           "webgpu": ""},         
+      "RGBA16I":                 { "vulkan": "VK_FORMAT_R16G16B16A16_SINT",        "webgpu": ""},            
+      "R16U":                    { "vulkan": "VK_FORMAT_R16_UINT",                 "webgpu": ""},   
+      "RG16U":                   { "vulkan": "VK_FORMAT_R16G16_UINT",              "webgpu": ""},      
+      "RGB16U":                  { "vulkan": "VK_FORMAT_R16G16B16_UINT",           "webgpu": ""},         
+      "RGBA16U":                 { "vulkan": "VK_FORMAT_R16G16B16A16_UINT",        "webgpu": ""},            
+      "R32I":                    { "vulkan": "VK_FORMAT_R32_SINT",                 "webgpu": ""},   
+      "RG32I":                   { "vulkan": "VK_FORMAT_R32G32_SINT",              "webgpu": ""},      
+      "RGB32I":                  { "vulkan": "VK_FORMAT_R32G32B32_SINT",           "webgpu": ""},         
+      "RGBA32I":                 { "vulkan": "VK_FORMAT_R32G32B32A32_SINT",        "webgpu": ""},            
+      "R32U":                    { "vulkan": "VK_FORMAT_R32_UINT",                 "webgpu": ""},   
+      "RG32U":                   { "vulkan": "VK_FORMAT_R32G32_UINT",              "webgpu": ""},      
+      "RGB32U":                  { "vulkan": "VK_FORMAT_R32G32B32_UINT",           "webgpu": ""},         
+      "RGBA32U":                 { "vulkan": "VK_FORMAT_R32G32B32A32_UINT",        "webgpu": ""},            
+      "R16F":                    { "vulkan": "VK_FORMAT_R16_SFLOAT",               "webgpu": ""},     
+      "RG16F":                   { "vulkan": "VK_FORMAT_R16G16_SFLOAT",            "webgpu": ""},        
+      "RGB16F":                  { "vulkan": "VK_FORMAT_R16G16B16_SFLOAT",         "webgpu": ""},           
+      "RGBA16F":                 { "vulkan": "VK_FORMAT_R16G16B16A16_SFLOAT",      "webgpu": ""},              
+      "R32F":                    { "vulkan": "VK_FORMAT_R32_SFLOAT",               "webgpu": ""},     
+      "RG32F":                   { "vulkan": "VK_FORMAT_R32G32_SFLOAT",            "webgpu": ""},        
+      "RGB32F":                  { "vulkan": "VK_FORMAT_R32G32B32_SFLOAT",         "webgpu": ""},           
+      "RGBA32F":                 { "vulkan": "VK_FORMAT_R32G32B32A32_SFLOAT",      "webgpu": ""},              
+      "B10_GR11UF_PACK32":       { "vulkan": "VK_FORMAT_B10G11R11_UFLOAT_PACK32",  "webgpu": ""},                  
+      "SR8":                     { "vulkan": "VK_FORMAT_R8_SRGB",                  "webgpu": ""},  
+      "SRG8":                    { "vulkan": "VK_FORMAT_R8G8_SRGB",                "webgpu": ""},    
+      "SRGB8":                   { "vulkan": "VK_FORMAT_R8G8B8_SRGB",              "webgpu": ""},      
+      "SRGBA8":                  { "vulkan": "VK_FORMAT_R8G8B8A8_SRGB",            "webgpu": ""},        
+      "SBGR8":                   { "vulkan": "VK_FORMAT_B8G8R8_SRGB",              "webgpu": ""},      
+      "SBGRA8":                  { "vulkan": "VK_FORMAT_B8G8R8A8_SRGB",            "webgpu": ""},        
+      "DEPTH16_UNORM":           { "vulkan": "VK_FORMAT_D16_UNORM",                "webgpu": ""},    
+      "DEPTH24_UNORM_PACK32":    { "vulkan": "VK_FORMAT_X8_D24_UNORM_PACK32",      "webgpu": ""},    
+      "DEPTH32F":                { "vulkan": "VK_FORMAT_D32_SFLOAT",               "webgpu": ""},     
+      "DEPTH16_UNORM_STENCIL8U": { "vulkan": "VK_FORMAT_D16_UNORM_S8_UINT",        "webgpu": ""},            
+      "DEPTH24_UNORM_STENCIL8U": { "vulkan": "VK_FORMAT_D24_UNORM_S8_UINT",        "webgpu": ""},            
+      "DEPTH32F_STENCIL8U":      { "vulkan": "VK_FORMAT_D32_SFLOAT_S8_UINT",       "webgpu": ""}
+    }
+  },
+  "AttachmentLoadOperation": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkAttachmentLoadOp",
+    "values": {
+      "LOAD":      { "vulkan": "VK_ATTACHMENT_LOAD_OP_LOAD", "webgpu": ""},
+      "CLEAR":     { "vulkan": "VK_ATTACHMENT_LOAD_OP_CLEAR", "webgpu": ""},
+      "DONT_CARE": { "vulkan": "VK_ATTACHMENT_LOAD_OP_DONT_CARE", "webgpu": ""}
+    }
+  },
+  "AttachmentStoreOperation": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkAttachmentStoreOp",
+    "values": {
+    "STORE":     { "vulkan": "VK_ATTACHMENT_STORE_OP_STORE", "webgpu": ""},
+    "DONT_CARE": { "vulkan": "VK_ATTACHMENT_STORE_OP_DONT_CARE", "webgpu": ""}
+    }
+  },
+  "PipelineBindPoint": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkPipelineBindPoint",
+    "values": {
+    "GRAPHICS": { "vulkan": "VK_PIPELINE_BIND_POINT_GRAPHICS", "webgpu": ""},
+    "COMPUTE":  { "vulkan": "VK_PIPELINE_BIND_POINT_COMPUTE", "webgpu": ""}
+    }
+  },
+  "ImageLayout": {
+    "flag": false,
+    "type": "u32",
+    "vktype": "VkImageLayout",
+    "values": {
+    "UNDEFINED":                         { "vulkan":  "VK_IMAGE_LAYOUT_UNDEFINED", "webgpu": "" },
+    "GENERAL":                           { "vulkan":  "VK_IMAGE_LAYOUT_GENERAL", "webgpu": "" },
+    "COLOR_ATTACHMENT_OPTIMAL":          { "vulkan":  "VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL", "webgpu": "" },
+    "DEPTH_STENCIL_ATTACHMENT_OPTIMAL": { "vulkan":  "VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL", "webgpu": "" },
+    "DEPTH_STENCIL_READ_ONLY_OPTIMAL":   { "vulkan":  "VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL", "webgpu": "" },
+    "SHADER_READ_ONLY_OPTIMAL":          { "vulkan":  "VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL", "webgpu": "" },
+    "TRANSFER_SRC_OPTIMAL":              { "vulkan":  "VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL", "webgpu": "" },
+    "TRANSFER_DST_OPTIMAL":              { "vulkan":  "VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL", "webgpu": "" },
+    "PREINITIALIZED":                    { "vulkan":  "VK_IMAGE_LAYOUT_PREINITIALIZED", "webgpu": "" },
+    "DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL": { "vulkan":  "VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL", "webgpu": "" },
+    "DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL": { "vulkan":  "VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL", "webgpu": "" },
+    "PRESENT_SRC":    { "vulkan":  "VK_IMAGE_LAYOUT_PRESENT_SRC_KHR", "webgpu": "" },
+    "SHARED_PRESENT": { "vulkan":  "VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR", "webgpu": "" }
+    }
+  },
+  "ImageAspectFlag": {
+    "flag": true,
+    "type": "u8",
+    "vktype": "VkImageAspectFlagBits",
+    "values": {
+      "NONE":   { "vulkan": "VK_IMAGE_ASPECT_NONE_KHR", "webgpu": ""},
+      "COLOR":   { "vulkan": "VK_IMAGE_ASPECT_COLOR_BIT", "webgpu": ""},
+      "DEPTH":   { "vulkan": "VK_IMAGE_ASPECT_DEPTH_BIT", "webgpu": ""},
+      "STENCIL": { "vulkan": "VK_IMAGE_ASPECT_STENCIL_BIT", "webgpu": ""}
+    }
+  },
+  "VertexInputRate": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkVertexInputRate",
+    "values": {
+        "VERTEX":   { "vulkan": "VK_VERTEX_INPUT_RATE_VERTEX", "webgpu": ""},
+        "INSTANCE": { "vulkan": "VK_VERTEX_INPUT_RATE_INSTANCE", "webgpu": ""}
+    }
+  },
+  "ImageCreateFlag": {
+    "flag": true,
+    "type": "u16",
+    "vktype": "VkImageCreateFlagBits",
+    "values": {
+      "NONE":                        { "vulkan": "0", "webgpu": "" },
+      "SPARSE_BINDING":              { "vulkan": "VK_IMAGE_CREATE_SPARSE_BINDING_BIT", "webgpu": ""},
+      "SPARSE_RESIDENCY":            { "vulkan": "VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT", "webgpu": ""},
+      "SPARSE_ALIASED":              { "vulkan": "VK_IMAGE_CREATE_SPARSE_ALIASED_BIT", "webgpu": ""},
+      "MUTABLE_FORMAT":              { "vulkan": "VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT", "webgpu": ""},
+      "CUBE_COMPATIBLE":             { "vulkan": "VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT", "webgpu": ""},
+      "ALIAS":                       { "vulkan": "VK_IMAGE_CREATE_ALIAS_BIT", "webgpu": ""},
+      "SPLIT_INSTANCE_BIND_REGIONS": { "vulkan": "VK_IMAGE_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT", "webgpu": ""},
+      "ARRAY_2D_COMPATIBLE":         { "vulkan": "VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT", "webgpu": ""},
+      "BLOCK_TEXEL_VIEW_COMPATIBLE": { "vulkan": "VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT", "webgpu": ""},
+      "EXTENDED_USAGE":              { "vulkan": "VK_IMAGE_CREATE_EXTENDED_USAGE_BIT", "webgpu": ""},
+      "PROTECTED":                   { "vulkan": "VK_IMAGE_CREATE_PROTECTED_BIT", "webgpu": ""},
+      "DISJOINT":                    { "vulkan": "VK_IMAGE_CREATE_DISJOINT_BIT", "webgpu": ""}
+    }
+  },
+  "BufferUsageFlag": {
+    "flag": true,
+    "type": "u16",
+    "vktype": "VkBufferUsageFlagBits",
+    "values": {
+    "VERTEX":        { "vulkan": "VK_BUFFER_USAGE_VERTEX_BUFFER_BIT", "webgpu": ""},
+    "INDEX":         { "vulkan": "VK_BUFFER_USAGE_INDEX_BUFFER_BIT", "webgpu": ""},
+    "TRANSFER_SRC":  { "vulkan": "VK_BUFFER_USAGE_TRANSFER_SRC_BIT", "webgpu": ""},
+    "TRANSFER_DST":  { "vulkan": "VK_BUFFER_USAGE_TRANSFER_DST_BIT", "webgpu": ""},
+    "UNIFORM":       { "vulkan": "VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT", "webgpu": ""},
+    "STORAGE":       { "vulkan": "VK_BUFFER_USAGE_STORAGE_BUFFER_BIT", "webgpu": ""},
+    "UNIFORM_TEXEL": { "vulkan": "VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT", "webgpu": ""},
+    "STORAGE_TEXEL": { "vulkan": "VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT", "webgpu": ""},
+    "INDIRECT":      { "vulkan": "VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT", "webgpu": ""}
+    }
+  },
+  "ImageUsageFlag": {
+    "flag": true,
+    "type": "u16",
+    "vktype": "VkImageUsageFlagBits",
+    "values": {
+      "TRANSFER_SRC":             { "vulkan": "VK_IMAGE_USAGE_TRANSFER_SRC_BIT", "webgpu": "" },
+      "TRANSFER_DST":             { "vulkan": "VK_IMAGE_USAGE_TRANSFER_DST_BIT", "webgpu": "" },
+      "SAMPLED":                  { "vulkan": "VK_IMAGE_USAGE_SAMPLED_BIT", "webgpu": "" },
+      "STORAGE":                  { "vulkan": "VK_IMAGE_USAGE_STORAGE_BIT", "webgpu": "" },
+      "COLOR_ATTACHMENT":         { "vulkan": "VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT", "webgpu": "" },
+      "DEPTH_STENCIL_ATTACHMENT": { "vulkan": "VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT", "webgpu": "" },
+      "TRANSIENT_ATTACHMENT":     { "vulkan": "VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT", "webgpu": "" },
+      "INPUT_ATTACHMENT":         { "vulkan": "VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT", "webgpu": "" }
+    }
+  },
+  "MemoryPropertyFlag": {
+    "flag": true,
+    "type": "u8",
+    "vktype": "VkMemoryPropertyFlagBits",
+    "values": {
+    "DEVICE_LOCAL":  { "vulkan": "VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT", "webgpu": ""},
+    "HOST_VISIBLE":  { "vulkan": "VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT", "webgpu": ""},
+    "HOST_COHERENT": { "vulkan": "VK_MEMORY_PROPERTY_HOST_COHERENT_BIT", "webgpu": ""},
+    "HOST_CACHED":   { "vulkan": "VK_MEMORY_PROPERTY_HOST_CACHED_BIT", "webgpu": ""}
+    }
+  },
+  "CommandBufferLevel": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkCommandBufferLevel",
+    "values": {
+    "PRIMARY":   { "vulkan": "VK_COMMAND_BUFFER_LEVEL_PRIMARY", "webgpu": "" },
+    "SECONDARY": { "vulkan": "VK_COMMAND_BUFFER_LEVEL_SECONDARY", "webgpu": "" }
+    }
+  },
+  "DescriptorType": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkDescriptorType",
+    "values": {
+    "SAMPLER":                { "vulkan": "VK_DESCRIPTOR_TYPE_SAMPLER", "webgpu": "" },
+    "COMBINED_IMAGE_SAMPLER": { "vulkan": "VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER", "webgpu": "" },
+    "SAMPLED_IMAGE":          { "vulkan": "VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE", "webgpu": "" },
+    "STORAGE_IMAGE":          { "vulkan": "VK_DESCRIPTOR_TYPE_STORAGE_IMAGE", "webgpu": "" },
+    "UNIFORM_TEXEL_BUFFER":   { "vulkan": "VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER", "webgpu": "" },
+    "STORAGE_TEXEL_BUFFER":   { "vulkan": "VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER", "webgpu": "" },
+    "UNIFORM_BUFFER":         { "vulkan": "VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER", "webgpu": "" },
+    "STORAGE_BUFFER":         { "vulkan": "VK_DESCRIPTOR_TYPE_STORAGE_BUFFER", "webgpu": "" },
+    "UNIFORM_BUFFER_DYNAMIC": { "vulkan": "VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC", "webgpu": "" },
+    "STORAGE_BUFFER_DYNAMIC": { "vulkan": "VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC", "webgpu": "" },
+    "INPUT_ATTACHMENT":       { "vulkan": "VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT", "webgpu": "" }
+    }
+  },
+  "CompareOperation": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkCompareOp",
+    "values": {
+    "NEVER":            { "vulkan": "VK_COMPARE_OP_NEVER", "webgpu": "" },
+    "LESS":             { "vulkan": "VK_COMPARE_OP_LESS", "webgpu": "" },
+    "EQUAL":            { "vulkan": "VK_COMPARE_OP_EQUAL", "webgpu": "" },
+    "LESS_OR_EQUAL":    { "vulkan": "VK_COMPARE_OP_LESS_OR_EQUAL", "webgpu": "" },
+    "GREATER":          { "vulkan": "VK_COMPARE_OP_GREATER", "webgpu": "" },
+    "NOT_EQUAL":        { "vulkan": "VK_COMPARE_OP_NOT_EQUAL", "webgpu": "" },
+    "GREATER_OR_EQUAL": { "vulkan": "VK_COMPARE_OP_GREATER_OR_EQUAL", "webgpu": "" },
+    "ALWAYS":           { "vulkan": "VK_COMPARE_OP_ALWAYS", "webgpu": "" }
+    }
+  },
+  "Filter": {
+    "flag": false,
+    "type": "u32",
+    "vktype": "VkFilter",
+    "values": {
+    "NEAREST":   { "vulkan": "VK_FILTER_NEAREST", "webgpu": "" },
+    "LINEAR":    { "vulkan": "VK_FILTER_LINEAR", "webgpu": "" },
+    "CUBIC_IMG": { "vulkan": "VK_FILTER_CUBIC_IMG", "webgpu": "" }
+    }
+  },
+  "SamplerAddressMode": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkSamplerAddressMode",
+    "values": {
+    "REPEAT":               { "vulkan": "VK_SAMPLER_ADDRESS_MODE_REPEAT", "webgpu": "" },
+    "MIRRORED_REPEAT":      { "vulkan": "VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT", "webgpu": "" },
+    "CLAMP_TO_EDGE":        { "vulkan": "VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE", "webgpu": "" },
+    "CLAMP_TO_BORDER":      { "vulkan": "VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER", "webgpu": "" },
+    "MIRROR_CLAMP_TO_EDGE": { "vulkan": "VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE", "webgpu": "" }
+    }
+  },
+  "BorderColor": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkBorderColor",
+    "values": {
+    "FLOAT_TRANSPARENT_BLACK": { "vulkan": "VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK", "webgpu": "" },
+    "INT_TRANSPARENT_BLACK":   { "vulkan": "VK_BORDER_COLOR_INT_TRANSPARENT_BLACK", "webgpu": "" },
+    "FLOAT_OPAQUE_BLACK":      { "vulkan": "VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK", "webgpu": "" },
+    "INT_OPAQUE_BLACK":        { "vulkan": "VK_BORDER_COLOR_INT_OPAQUE_BLACK", "webgpu": "" },
+    "FLOAT_OPAQUE_WHITE":      { "vulkan": "VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE", "webgpu": "" },
+    "INT_OPAQUE_WHITE":        { "vulkan": "VK_BORDER_COLOR_INT_OPAQUE_WHITE", "webgpu": "" }
+    }
+  },
+  "SamplerMipmapMode": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkSamplerMipmapMode",
+    "values": {
+    "NEAREST": { "vulkan": "VK_SAMPLER_MIPMAP_MODE_NEAREST", "webgpu": "" },
+    "LINEAR":  { "vulkan": "VK_SAMPLER_MIPMAP_MODE_LINEAR", "webgpu": "" }
+    }
+  },
+  "Result": {
+    "flag": false,
+    "type": "i32",
+    "vktype": "VkResult",
+    "values": {
+    "SUCCESS":                              { "vulkan": "VK_SUCCESS", "webgpu": "" },
+    "NOT_READY":                            { "vulkan": "VK_NOT_READY", "webgpu": "" },
+    "TIMEOUT":                              { "vulkan": "VK_TIMEOUT", "webgpu": "" },
+    "EVENT_SET":                            { "vulkan": "VK_EVENT_SET", "webgpu": "" },
+    "EVENT_RESET":                          { "vulkan": "VK_EVENT_RESET", "webgpu": "" },
+    "INCOMPLETE":                           { "vulkan": "VK_INCOMPLETE", "webgpu": "" },
+    "ERROR_OUT_OF_HOST_MEMORY":             { "vulkan": "VK_ERROR_OUT_OF_HOST_MEMORY", "webgpu": "" },
+    "ERROR_OUT_OF_DEVICE_MEMORY":           { "vulkan": "VK_ERROR_OUT_OF_DEVICE_MEMORY", "webgpu": "" },
+    "ERROR_INITIALIZATION_FAILED":          { "vulkan": "VK_ERROR_INITIALIZATION_FAILED", "webgpu": "" },
+    "ERROR_DEVICE_LOST":                    { "vulkan": "VK_ERROR_DEVICE_LOST", "webgpu": "" },
+    "ERROR_MEMORY_MAP_FAILED":              { "vulkan": "VK_ERROR_MEMORY_MAP_FAILED", "webgpu": "" },
+    "ERROR_LAYER_NOT_PRESENT":              { "vulkan": "VK_ERROR_LAYER_NOT_PRESENT", "webgpu": "" },
+    "ERROR_EXTENSION_NOT_PRESENT":          { "vulkan": "VK_ERROR_EXTENSION_NOT_PRESENT", "webgpu": "" },
+    "ERROR_FEATURE_NOT_PRESENT":            { "vulkan": "VK_ERROR_FEATURE_NOT_PRESENT", "webgpu": "" },
+    "ERROR_INCOMPATIBLE_DRIVER":            { "vulkan": "VK_ERROR_INCOMPATIBLE_DRIVER", "webgpu": "" },
+    "ERROR_TOO_MANY_OBJECTS":               { "vulkan": "VK_ERROR_TOO_MANY_OBJECTS", "webgpu": "" },
+    "ERROR_FORMAT_NOT_SUPPORTED":           { "vulkan": "VK_ERROR_FORMAT_NOT_SUPPORTED", "webgpu": "" },
+    "ERROR_FRAGMENTED_POOL":                { "vulkan": "VK_ERROR_FRAGMENTED_POOL", "webgpu": "" },
+    "ERROR_UNKNOWN":                        { "vulkan": "VK_ERROR_UNKNOWN", "webgpu": "" },
+    "ERROR_OUT_OF_POOL_MEMORY":             { "vulkan": "VK_ERROR_OUT_OF_POOL_MEMORY", "webgpu": "" },
+    "ERROR_INVALID_EXTERNAL_HANDLE":        { "vulkan": "VK_ERROR_INVALID_EXTERNAL_HANDLE", "webgpu": "" },
+    "ERROR_FRAGMENTATION":                  { "vulkan": "VK_ERROR_FRAGMENTATION", "webgpu": "" },
+    "ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS": { "vulkan": "VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS", "webgpu": "" },
+    "ERROR_SURFACE_LOST":                   { "vulkan": "VK_ERROR_SURFACE_LOST_KHR", "webgpu": "" },
+    "ERROR_NATIVE_WINDOW_IN_USE":           { "vulkan": "VK_ERROR_NATIVE_WINDOW_IN_USE_KHR", "webgpu": "" },
+    "SUBOPTIMAL":                           { "vulkan": "VK_SUBOPTIMAL_KHR", "webgpu": "" },
+    "ERROR_OUT_OF_DATE":                    { "vulkan": "VK_ERROR_OUT_OF_DATE_KHR", "webgpu": "" },
+    "ERROR_INCOMPATIBLE_DISPLAY":           { "vulkan": "VK_ERROR_INCOMPATIBLE_DISPLAY_KHR", "webgpu": "" },
+    "ERROR_VALIDATION_FAILED":              { "vulkan": "VK_ERROR_VALIDATION_FAILED_EXT", "webgpu": "" },
+    "ERROR_NOT_PERMITTED":                  { "vulkan": "VK_ERROR_NOT_PERMITTED", "webgpu": "" },
+    "ERROR_FULLSCREEN_EXCLUSIVE_MODE_LOST": { "vulkan": "VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT", "webgpu": "" },
+    "THREAD_IDLE":                          { "vulkan": "VK_THREAD_IDLE_KHR", "webgpu": "" },
+    "THREAD_DONE":               { "vulkan": "VK_THREAD_DONE_KHR", "webgpu": "" },
+    "OPERATION_DEFERRED":        { "vulkan": "VK_OPERATION_DEFERRED_KHR", "webgpu": "" },
+    "OPERATION_NOT_DEFERRED":    { "vulkan": "VK_OPERATION_NOT_DEFERRED_KHR", "webgpu": "" },
+    "PIPELINE_COMPILE_REQUIRED": { "vulkan": "VK_PIPELINE_COMPILE_REQUIRED", "webgpu": "" }
+    }
+  },
+  "ImageType": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkImageType",
+    "values": {
+    "T1D": { "vulkan": "VK_IMAGE_TYPE_1D", "webgpu": ""},
+    "T2D": { "vulkan": "VK_IMAGE_TYPE_2D", "webgpu": ""},
+    "T3D": { "vulkan": "VK_IMAGE_TYPE_3D", "webgpu": ""}
+    }
+  },
+  "ImageViewType": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkImageViewType",
+    "values": {
+    "T1D": { "vulkan": "VK_IMAGE_VIEW_TYPE_1D", "webgpu": "" },
+    "T2D": { "vulkan": "VK_IMAGE_VIEW_TYPE_2D", "webgpu": "" },
+    "T3D": { "vulkan": "VK_IMAGE_VIEW_TYPE_3D", "webgpu": "" },
+    "CUBE": { "vulkan": "VK_IMAGE_VIEW_TYPE_CUBE", "webgpu": "" },
+    "T1D_ARRAY": { "vulkan": "VK_IMAGE_VIEW_TYPE_1D_ARRAY", "webgpu": "" },
+    "T2D_ARRAY": { "vulkan": "VK_IMAGE_VIEW_TYPE_2D_ARRAY", "webgpu": "" },
+    "CUBE_ARRAY": { "vulkan": "VK_IMAGE_VIEW_TYPE_CUBE_ARRAY", "webgpu": "" }
+    }
+  },
+  "DebugObjectType": {
+    "flag": false,
+    "type": "u32",
+    "vktype": "VkObjectType",
+    "values": {
+    "UNKNOWN":                { "vulkan": "VK_OBJECT_TYPE_UNKNOWN", "webgpu": "" },
+    "INSTANCE":               { "vulkan": "VK_OBJECT_TYPE_INSTANCE", "webgpu": "" },
+    "PHYSICAL_DEVICE":        { "vulkan": "VK_OBJECT_TYPE_PHYSICAL_DEVICE", "webgpu": "" },
+    "DEVICE":                 { "vulkan": "VK_OBJECT_TYPE_DEVICE", "webgpu": "" },
+    "QUEUE":                  { "vulkan": "VK_OBJECT_TYPE_QUEUE", "webgpu": "" },
+    "SEMAPHORE":              { "vulkan": "VK_OBJECT_TYPE_SEMAPHORE", "webgpu": "" },
+    "COMMAND_BUFFER":         { "vulkan": "VK_OBJECT_TYPE_COMMAND_BUFFER", "webgpu": "" },
+    "FENCE":                  { "vulkan": "VK_OBJECT_TYPE_FENCE", "webgpu": "" },
+    "DEVICE_MEMORY":          { "vulkan": "VK_OBJECT_TYPE_DEVICE_MEMORY", "webgpu": "" },
+    "BUFFER":                 { "vulkan": "VK_OBJECT_TYPE_BUFFER", "webgpu": "" },
+    "IMAGE":                  { "vulkan": "VK_OBJECT_TYPE_IMAGE", "webgpu": "" },
+    "EVENT":                  { "vulkan": "VK_OBJECT_TYPE_EVENT", "webgpu": "" },
+    "QUERY_POOL":             { "vulkan": "VK_OBJECT_TYPE_QUERY_POOL", "webgpu": "" },
+    "BUFFER_VIEW":            { "vulkan": "VK_OBJECT_TYPE_BUFFER_VIEW", "webgpu": "" },
+    "IMAGE_VIEW":             { "vulkan": "VK_OBJECT_TYPE_IMAGE_VIEW", "webgpu": "" },
+    "SHADER_MODULE":          { "vulkan": "VK_OBJECT_TYPE_SHADER_MODULE", "webgpu": "" },
+    "PIPELINE_CACHE":         { "vulkan": "VK_OBJECT_TYPE_PIPELINE_CACHE", "webgpu": "" },
+    "PIPELINE_LAYOUT":        { "vulkan": "VK_OBJECT_TYPE_PIPELINE_LAYOUT", "webgpu": "" },
+    "RENDER_PASS":            { "vulkan": "VK_OBJECT_TYPE_RENDER_PASS", "webgpu": "" },
+    "PIPELINE":               { "vulkan": "VK_OBJECT_TYPE_PIPELINE", "webgpu": "" },
+    "DESCRIPTOR_SET_LAYOUT":  { "vulkan": "VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT", "webgpu": "" },
+    "SAMPLER":                { "vulkan": "VK_OBJECT_TYPE_SAMPLER", "webgpu": "" },
+    "DESCRIPTOR_POOL":        { "vulkan": "VK_OBJECT_TYPE_DESCRIPTOR_POOL", "webgpu": "" },
+    "DESCRIPTOR_SET":         { "vulkan": "VK_OBJECT_TYPE_DESCRIPTOR_SET", "webgpu": "" },
+    "FRAMEBUFFER":            { "vulkan": "VK_OBJECT_TYPE_FRAMEBUFFER", "webgpu": "" },
+    "COMMAND_POOL":           { "vulkan": "VK_OBJECT_TYPE_COMMAND_POOL", "webgpu": "" },
+    "SURFACE":                { "vulkan": "VK_OBJECT_TYPE_SURFACE_KHR", "webgpu": "" },
+    "SWAPCHAIN":              { "vulkan": "VK_OBJECT_TYPE_SWAPCHAIN_KHR", "webgpu": "" },
+    "DEBUG_REPORT_CALLBACK":  { "vulkan": "VK_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT", "webgpu": "" },
+    "DISPLAY":                { "vulkan": "VK_OBJECT_TYPE_DISPLAY_KHR", "webgpu": "" }
+    }
+  },
+  "AccessFlag": {
+    "flag": true,
+    "type": "u32",
+    "vktype": "VkAccessFlagBits",
+    "values": {
+    "NONE": {"vulkan": "0", "webgpu": "" },
+    "INDIRECT_COMMAND_READ":          { "vulkan": "VK_ACCESS_INDIRECT_COMMAND_READ_BIT", "webgpu": "" },
+    "VERTEX_ATTRIBUTE_READ":          { "vulkan": "VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT", "webgpu": "" },
+    "UNIFORM_READ":                   { "vulkan": "VK_ACCESS_UNIFORM_READ_BIT", "webgpu": "" },
+    "INPUT_ATTACHMENT_READ":          { "vulkan": "VK_ACCESS_INPUT_ATTACHMENT_READ_BIT", "webgpu": "" },
+    "SHADER_READ":                    { "vulkan": "VK_ACCESS_SHADER_READ_BIT", "webgpu": "" },
+    "SHADER_WRITE":                   { "vulkan": "VK_ACCESS_SHADER_WRITE_BIT", "webgpu": "" },
+    "COLOR_ATTACHMENT_READ":          { "vulkan": "VK_ACCESS_COLOR_ATTACHMENT_READ_BIT", "webgpu": "" },
+    "COLOR_ATTACHMENT_WRITE":         { "vulkan": "VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT", "webgpu": "" },
+    "DEPTH_STENCIL_ATTACHMENT_READ":  { "vulkan": "VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT", "webgpu": "" },
+    "DEPTH_STENCIL_ATTACHMENT_WRITE": { "vulkan": "VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT", "webgpu": "" },
+    "TRANSFER_READ":                  { "vulkan": "VK_ACCESS_TRANSFER_READ_BIT", "webgpu": "" },
+    "TRANSFER_WRITE":                 { "vulkan": "VK_ACCESS_TRANSFER_WRITE_BIT", "webgpu": "" },
+    "HOST_READ":                      { "vulkan": "VK_ACCESS_HOST_READ_BIT", "webgpu": "" },
+    "HOST_WRITE":                     { "vulkan": "VK_ACCESS_HOST_WRITE_BIT", "webgpu": "" },
+    "MEMORY_READ":                    { "vulkan": "VK_ACCESS_MEMORY_READ_BIT", "webgpu": "" },
+    "MEMORY_WRITE":                   { "vulkan": "VK_ACCESS_MEMORY_WRITE_BIT", "webgpu": "" }
+    }
+  },
+  "PipelineStageFlag": {
+    "flag": true,
+    "type": "u32",
+    "vktype": "VkPipelineStageFlagBits",
+    "values": {
+    "TOP_OF_PIPE":                    { "vulkan": "VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT", "webgpu": ""},
+    "DRAW_INDIRECT":                  { "vulkan": "VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT", "webgpu": ""},
+    "VERTEX_INPUT":                   { "vulkan": "VK_PIPELINE_STAGE_VERTEX_INPUT_BIT", "webgpu": ""},
+    "VERTEX_SHADER":                  { "vulkan": "VK_PIPELINE_STAGE_VERTEX_SHADER_BIT", "webgpu": ""},
+    "TESSELLATION_CONTROL_SHADER":    { "vulkan": "VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT", "webgpu": ""},
+    "TESSELLATION_EVALUATION_SHADER": { "vulkan": "VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT", "webgpu": ""},
+    "GEOMETRY_SHADER":                { "vulkan": "VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT", "webgpu": ""},
+    "FRAGMENT_SHADER":                { "vulkan": "VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT", "webgpu": ""},
+    "EARLY_FRAGMENT_TESTS":           { "vulkan": "VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT", "webgpu": ""},
+    "LATE_FRAGMENT_TESTS":            { "vulkan": "VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT", "webgpu": ""},
+    "COLOR_ATTACHMENT_OUTPUT":        { "vulkan": "VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT", "webgpu": ""},
+    "COMPUTE_SHADER":                 { "vulkan": "VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT", "webgpu": ""},
+    "TRANSFER":                       { "vulkan": "VK_PIPELINE_STAGE_TRANSFER_BIT", "webgpu": ""},
+    "BOTTOM_OF_PIPE":                 { "vulkan": "VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT", "webgpu": ""},
+    "HOST":                           { "vulkan": "VK_PIPELINE_STAGE_HOST_BIT", "webgpu": ""},
+    "ALL_GRAPHICS":                   { "vulkan": "VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT", "webgpu": ""},
+    "ALL_COMMANDS":                   { "vulkan": "VK_PIPELINE_STAGE_ALL_COMMANDS_BIT", "webgpu": ""}
+    }
+  },
+  "DependencyFlag": {
+    "flag": true,
+    "type": "u8",
+    "vktype": "VkDependencyFlagBits",
+    "values": {
+    "NONE":         { "vulkan": "0", "webgpu": "" },
+    "BY_REGION":    { "vulkan": "VK_DEPENDENCY_BY_REGION_BIT", "webgpu": "" },
+    "DEVICE_GROUP": { "vulkan": "VK_DEPENDENCY_DEVICE_GROUP_BIT", "webgpu": "" },
+    "VIEW_LOCAL":   { "vulkan": "VK_DEPENDENCY_VIEW_LOCAL_BIT", "webgpu": "" }
+    }
+  },
+  "DynamicState": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkDynamicState",
+    "values": {
+    "VIEWPORT":             { "vulkan": "VK_DYNAMIC_STATE_VIEWPORT", "webgpu": "" },
+    "SCISSOR":              { "vulkan": "VK_DYNAMIC_STATE_SCISSOR", "webgpu": "" },
+    "LINE_WIDTH":           { "vulkan": "VK_DYNAMIC_STATE_LINE_WIDTH", "webgpu": "" },
+    "DEPTH_BIAS":           { "vulkan": "VK_DYNAMIC_STATE_DEPTH_BIAS", "webgpu": "" },
+    "BLEND_CONSTANTS":      { "vulkan": "VK_DYNAMIC_STATE_BLEND_CONSTANTS", "webgpu": "" },
+    "DEPTH_BOUNDS":         { "vulkan": "VK_DYNAMIC_STATE_DEPTH_BOUNDS", "webgpu": "" },
+    "STENCIL_COMPARE_MASK": { "vulkan": "VK_DYNAMIC_STATE_STENCIL_COMPARE_MASK", "webgpu": "" },
+    "STENCIL_WRITE_MASK":   { "vulkan": "VK_DYNAMIC_STATE_STENCIL_WRITE_MASK", "webgpu": "" },
+    "STENCIL_REFERENCE":    { "vulkan": "VK_DYNAMIC_STATE_STENCIL_REFERENCE", "webgpu": "" }
+    }
+  },
+  "ImageTiling": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkImageTiling",
+    "values": {
+    "OPTIMAL": { "vulkan": "VK_IMAGE_TILING_OPTIMAL", "webgpu": "" },
+    "LINEAR":  { "vulkan": "VK_IMAGE_TILING_LINEAR", "webgpu": "" }
+    }
+  },
+  "StencilFaceFlag": {
+    "flag": true,
+    "type": "u8",
+    "vktype": "VkStencilFaceFlagBits",
+    "values": {
+    "FRONT": { "vulkan": "VK_STENCIL_FACE_FRONT_BIT", "webgpu": "" },
+    "BACK":  { "vulkan": "VK_STENCIL_FACE_BACK_BIT", "webgpu": "" },
+    "FRONT_AND_BACK":  { "vulkan": "FRONT | BACK", "webgpu": "" }
+    }
+  },
+  "GeometryType": {
+    "flag": false,
+    "type": "u8",
+    "vktype": "VkGeometryTypeKHR",
+    "values": {
+    "TRIANGLES": { "vulkan": "VK_GEOMETRY_TYPE_TRIANGLES_KHR", "webgpu": "" },
+    "AABBS":     { "vulkan": "VK_GEOMETRY_TYPE_AABBS_KHR", "webgpu": "" },
+    "INSTANCES": { "vulkan": "VK_GEOMETRY_TYPE_INSTANCES_KHR", "webgpu": "" }
+    }
+  },
+  "GeometryFlag": {
+    "flag": true,
+    "type": "u8",
+    "vktype": "VkGeometryFlagBitsKHR",
+    "values": {
+    "OPAQUE":                          { "vulkan": "VK_GEOMETRY_OPAQUE_BIT_KHR", "webgpu": "" },
+    "NO_DUPLICATE_ANY_HIT_INVOCATION": { "vulkan": "VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_KHR", "webgpu": "" }
+    }
+  },
+  "ColorSpace": {
+    "flag": false,
+    "type": "u32",
+    "vktype": "VkColorSpaceKHR",
+    "values": {
+    "SRGB_NONLINEAR":          { "vulkan": "VK_COLOR_SPACE_SRGB_NONLINEAR_KHR", "webgpu": "" },
+    "DISPLAY_P3_NONLINEAR":    { "vulkan": "VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT", "webgpu": "" },
+    "EXTENDED_SRGB_LINEAR":    { "vulkan": "VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT", "webgpu": "" },
+    "DCI_P3_NONLINEAR":        { "vulkan": "VK_COLOR_SPACE_DCI_P3_NONLINEAR_EXT", "webgpu": "" },
+    "BT709_LINEAR":            { "vulkan": "VK_COLOR_SPACE_BT709_LINEAR_EXT", "webgpu": "" },
+    "BT709_NONLINEAR":         { "vulkan": "VK_COLOR_SPACE_BT709_NONLINEAR_EXT", "webgpu": "" },
+    "BT2020_LINEAR":           { "vulkan": "VK_COLOR_SPACE_BT2020_LINEAR_EXT", "webgpu": "" },
+    "HDR10_ST2084":            { "vulkan": "VK_COLOR_SPACE_HDR10_ST2084_EXT", "webgpu": "" },
+    "DOLBYVISION":             { "vulkan": "VK_COLOR_SPACE_DOLBYVISION_EXT", "webgpu": "" },
+    "HDR10_HLG":               { "vulkan": "VK_COLOR_SPACE_HDR10_HLG_EXT", "webgpu": "" },
+    "ADOBERGB_LINEAR":         { "vulkan": "VK_COLOR_SPACE_ADOBERGB_LINEAR_EXT", "webgpu": "" },
+    "ADOBERGB_NONLINEAR":      { "vulkan": "VK_COLOR_SPACE_ADOBERGB_NONLINEAR_EXT", "webgpu": "" },
+    "PASS_THROUGH":            { "vulkan": "VK_COLOR_SPACE_PASS_THROUGH_EXT", "webgpu": "" },
+    "EXTENDED_SRGB_NONLINEAR": { "vulkan": "VK_COLOR_SPACE_EXTENDED_SRGB_NONLINEAR_EXT", "webgpu": "" },
+    "DISPLAY_NATIVE_AMD":      { "vulkan": "VK_COLOR_SPACE_DISPLAY_NATIVE_AMD", "webgpu": "" },
+    "DISPLAY_P3_LINEAR":       { "vulkan": "VK_COLOR_SPACE_DISPLAY_P3_LINEAR_EXT", "webgpu": "" }
+    }
+  },
+  "PresentMode": {
+    "flag": false,
+    "type": "u32",
+    "vktype": "VkPresentModeKHR",
+    "values": {
+    "IMMEDIATE":                 { "vulkan": "VK_PRESENT_MODE_IMMEDIATE_KHR", "webgpu": "" },
+    "MAILBOX":                   { "vulkan": "VK_PRESENT_MODE_MAILBOX_KHR", "webgpu": "" },
+    "FIFO":                      { "vulkan": "VK_PRESENT_MODE_FIFO_KHR", "webgpu": "" },
+    "FIFO_RELAXED":              { "vulkan": "VK_PRESENT_MODE_FIFO_RELAXED_KHR", "webgpu": "" },
+    "SHARED_DEMAND_REFRESH":     { "vulkan": "VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR", "webgpu": "" },
+    "SHARED_CONTINUOUS_REFRESH": { "vulkan": "VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR", "webgpu": "" }
+    }
+  },
+  "FormatFeatureFlag": {
+    "flag": true,
+    "type": "u32",
+    "vktype": "VkFormatFeatureFlagBits",
+    "values": {
+        "SAMPLED_IMAGE": { "vulkan": "VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT", "webgpu": ""},
+        "STORAGE_IMAGE": { "vulkan": "VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT", "webgpu": ""},
+        "STORAGE_IMAGE_ATOMIC": { "vulkan": "VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT", "webgpu": ""},
+        "UNIFORM_TEXEL_BUFFER": { "vulkan": "VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT", "webgpu": ""},
+        "STORAGE_TEXEL_BUFFER": { "vulkan": "VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT", "webgpu": ""},
+        "STORAGE_TEXEL_BUFFER_ATOMIC": { "vulkan": "VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_ATOMIC_BIT", "webgpu": ""},
+        "VERTEX_BUFFER": { "vulkan": "VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT", "webgpu": ""},
+        "COLOR_ATTACHMENT": { "vulkan": "VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT", "webgpu": ""},
+        "COLOR_ATTACHMENT_BLEND": { "vulkan": "VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT", "webgpu": ""},
+        "DEPTH_STENCIL_ATTACHMENT": { "vulkan": "VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT", "webgpu": ""},
+        "BLIT_SRC": { "vulkan": "VK_FORMAT_FEATURE_BLIT_SRC_BIT", "webgpu": ""},
+        "BLIT_DST": { "vulkan": "VK_FORMAT_FEATURE_BLIT_DST_BIT", "webgpu": ""},
+        "SAMPLED_IMAGE_FILTER_LINEAR": { "vulkan": "VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT", "webgpu": ""},
+        "TRANSFER_SRC": { "vulkan": "VK_FORMAT_FEATURE_TRANSFER_SRC_BIT", "webgpu": ""},
+        "TRANSFER_DST": { "vulkan": "VK_FORMAT_FEATURE_TRANSFER_DST_BIT", "webgpu": ""},
+        "MIDPOINT_CHROMA_SAMPLES": { "vulkan": "VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT", "webgpu": ""},
+        "SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER": { "vulkan": "VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT", "webgpu": ""},
+        "SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER": { "vulkan": "VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT", "webgpu": ""},
+        "SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT": { "vulkan": "VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT", "webgpu": ""},
+        "SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE": { "vulkan": "VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT", "webgpu": ""},
+        "DISJOINT": { "vulkan": "VK_FORMAT_FEATURE_DISJOINT_BIT", "webgpu": ""},
+        "COSITED_CHROMA_SAMPLES": { "vulkan": "VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT", "webgpu": ""},
+        "SAMPLED_IMAGE_FILTER_MINMAX": { "vulkan": "VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_MINMAX_BIT", "webgpu": ""}
+    }
+  }
+}

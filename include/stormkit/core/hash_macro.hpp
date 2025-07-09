@@ -10,7 +10,7 @@
 /// \brief `HASH_FUNC` declare hash func and define an operator== for a given `x` type
 #define HASH_FUNC(x, ...)                                                    \
     template<>                                                               \
-    struct STORMKIT_API std::hash<x> {                                       \
+    struct std::hash<x> {                                                    \
         [[nodiscard]]                                                        \
         auto operator()(const x& value) const noexcept -> stormkit::Hash64 { \
             auto hash = stormkit::Hash64 { 0 };                              \
@@ -21,7 +21,7 @@
 
 #define CONSTRAINED_HASH_FUNC(x, ...)                                        \
     template<x T>                                                            \
-    struct STORMKIT_API std::hash<T> {                                       \
+    struct std::hash<T> {                                                    \
         [[nodiscard]]                                                        \
         auto operator()(const T& value) const noexcept -> stormkit::Hash64 { \
             auto hash = stormkit::Hash64 { 0 };                              \
@@ -32,7 +32,7 @@
 
 #define TEMPLATED_HASH_FUNC(x, z, y, ...)                                       \
     template<z y>                                                               \
-    struct STORMKIT_API std::hash<x<y>> {                                       \
+    struct std::hash<x<y>> {                                                    \
         [[nodiscard]]                                                           \
         auto operator()(const x<y>& value) const noexcept -> stormkit::Hash64 { \
             auto hash = stormkit::Hash64 { 0 };                                 \

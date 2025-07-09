@@ -5,7 +5,10 @@
 module;
 
 #include <stormkit/core/memory_macro.hpp>
+
 #include <stormkit/core/platform_macro.hpp>
+
+#include <stormkit/core/contract_macro.hpp>
 
 export module stormkit.core:containers.tree;
 
@@ -18,7 +21,7 @@ export namespace stormkit { inline namespace core {
     class STORMKIT_API TreeNode {
       public:
         using IndexType    = Handle32<TreeNode>;
-        using DirtyBitType = UInt32;
+        using DirtyBitType = u32;
 
         static constexpr auto INVALID_INDEX = IndexType { IndexType::INVALID_HANDLE_VALUE };
 
@@ -53,7 +56,7 @@ export namespace stormkit { inline namespace core {
     template<class TreeNodeClass = TreeNode>
     class Tree {
       public:
-        static constexpr auto DEFAULT_PREALLOCATED_TREE_SIZE = RangeExtent { 1000 };
+        static constexpr auto DEFAULT_PREALLOCATED_TREE_SIZE = usize { 1000 };
 
         using TreeNodeType         = TreeNodeClass;
         using TreeNodeIndexType    = typename TreeNodeType::IndexType;
@@ -81,7 +84,7 @@ export namespace stormkit { inline namespace core {
         auto operator[](TreeNodeIndexType index) const noexcept -> const TreeNodeType&;
 
         [[nodiscard]]
-        auto size() const noexcept -> RangeExtent;
+        auto size() const noexcept -> usize;
 
         [[nodiscard]]
         auto begin() noexcept;
@@ -103,12 +106,12 @@ export namespace stormkit { inline namespace core {
 
         auto genDotFile(std::filesystem::path                             filepath,
                         std::function<std::string_view(std::string_view)> colorize_node) const
-            -> void;
+          -> void;
 
         auto genDotFile(std::filesystem::path                             filepath,
-                        core::UInt32                                      highlight,
+                        core::u32                                         highlight,
                         std::function<std::string_view(std::string_view)> colorize_node) const
-            -> void;
+          -> void;
 
       private:
         TreeNodeIndexType              m_first_free_index = 0;
@@ -235,7 +238,7 @@ namespace stormkit { inline namespace core {
             const auto size      = as<float>(std::size(m_tree));
             const auto first_new = as<TreeNodeIndexType>(size);
 
-            m_tree.resize(as<RangeExtent>(size * 1.5f));
+            m_tree.resize(as<usize>(size * 1.5f));
             const auto new_size = std::size(m_tree);
 
             // generate a new chain of free objects, with the last one pointing to
@@ -340,7 +343,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<class TreeNodeClass>
     auto Tree<TreeNodeClass>::markDirty(TreeNodeIndexType index, TreeNodeDirtyBitType bits)
-        -> void {
+      -> void {
         auto& node = m_tree[index];
         if (not node.dirty_bits()) {
             m_dirties.emplace_back(index);
@@ -355,7 +358,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<class TreeNodeClass>
     auto Tree<TreeNodeClass>::operator[](TreeNodeIndexType index) noexcept -> TreeNodeType& {
-        expects(index < std::size(m_tree));
+        EXPECTS(index < std::size(m_tree));
 
         return m_tree[index];
     }
@@ -364,8 +367,8 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<class TreeNodeClass>
     auto Tree<TreeNodeClass>::operator[](TreeNodeIndexType index) const noexcept
-        -> const TreeNodeType& {
-        expects(index < std::size(m_tree));
+      -> const TreeNodeType& {
+        EXPECTS(index < std::size(m_tree));
 
         return m_tree[index];
     }
@@ -373,7 +376,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class TreeNodeClass>
-    auto Tree<TreeNodeClass>::size() const noexcept -> RangeExtent {
+    auto Tree<TreeNodeClass>::size() const noexcept -> usize {
         return std::size(m_tree);
     }
 
@@ -440,34 +443,34 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class TreeNodeClass>
-    auto Tree<TreeNodeClass>::genDotFile(
-        std::filesystem::path                             filepath,
-        std::function<std::string_view(std::string_view)> colorize_node) const -> void {
+    auto Tree<TreeNodeClass>::genDotFile(std::filesystem::path filepath,
+                                         std::function<std::string_view(std::string_view)>
+                                           colorize_node) const -> void {
         auto stream = std::fstream(filepath, std::ios::out);
 
         stream
-            << "digraph G { \n"
-            << "    rankdir = LR\n"
-            << "    bgcolor = black\n\n"
-            << "    node [shape=box, fontname=\"helvetica\", fontsize=12];\n\n";
+          << "digraph G { \n"
+          << "    rankdir = LR\n"
+          << "    bgcolor = black\n\n"
+          << "    node [shape=box, fontname=\"helvetica\", fontsize=12];\n\n";
 
         for (auto i : range(m_first_free_index)) {
             const auto name  = operator[](i).name();
             const auto dirty = bool(operator[](i).dirty_bits());
 
             stream
-                << "    \"node"
-                << i
-                << "\" [label=\"id: "
-                << i
-                << " type: "
-                << name
-                << " dirty: "
-                << std::boolalpha
-                << dirty
-                << "\", style=filled,color=\""
-                << colorize_node(name)
-                << "\"];\n";
+              << "    \"node"
+              << i
+              << "\" [label=\"id: "
+              << i
+              << " type: "
+              << name
+              << " dirty: "
+              << std::boolalpha
+              << dirty
+              << "\", style=filled,color=\""
+              << colorize_node(name)
+              << "\"];\n";
         }
 
         for (auto i : range(m_first_free_index)) {
@@ -477,11 +480,11 @@ namespace stormkit { inline namespace core {
                  current != TreeNodeClass::INVALID_INDEX;
                  current = operator[](current).next_sibling()) {
                 stream
-                    << "    \"node"
-                    << i
-                    << "\" -> \"node"
-                    << current
-                    << "\" [color=seagreen] ;\n";
+                  << "    \"node"
+                  << i
+                  << "\" -> \"node"
+                  << current
+                  << "\" [color=seagreen] ;\n";
             }
         }
 
@@ -493,49 +496,49 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class TreeNodeClass>
-    auto Tree<TreeNodeClass>::genDotFile(
-        std::filesystem::path                             filepath,
-        core::UInt32                                      highlight,
-        std::function<std::string_view(std::string_view)> colorize_node) const -> void {
+    auto Tree<TreeNodeClass>::genDotFile(std::filesystem::path filepath,
+                                         core::u32             highlight,
+                                         std::function<std::string_view(std::string_view)>
+                                           colorize_node) const -> void {
         std::fstream stream(filepath.string(), std::ios::out);
 
         stream
-            << "digraph G { \n"
-            << "    rankdir = LR\n"
-            << "    bgcolor = black\n\n"
-            << "    node [shape=box, fontname=\"helvetica\", fontsize=12];\n\n";
+          << "digraph G { \n"
+          << "    rankdir = LR\n"
+          << "    bgcolor = black\n\n"
+          << "    node [shape=box, fontname=\"helvetica\", fontsize=12];\n\n";
 
         for (auto i : range(m_first_free_index)) {
             const auto name  = operator[](i).name();
             const auto dirty = bool(operator[](i).dirty_bits());
             if (i != highlight)
                 stream
-                    << "    \"node"
-                    << i
-                    << "\" [label=\"id: "
-                    << i
-                    << " type: "
-                    << name
-                    << " dirty: "
-                    << std::boolalpha
-                    << dirty
-                    << "\", style=filled,color=\""
-                    << colorize_node(name)
-                    << "\"];\n";
+                  << "    \"node"
+                  << i
+                  << "\" [label=\"id: "
+                  << i
+                  << " type: "
+                  << name
+                  << " dirty: "
+                  << std::boolalpha
+                  << dirty
+                  << "\", style=filled,color=\""
+                  << colorize_node(name)
+                  << "\"];\n";
             else
                 stream
-                    << "    \"node"
-                    << i
-                    << "\" [shape=polygon,sides=5,peripheries=3, label=\"id: "
-                    << i
-                    << " type: "
-                    << name
-                    << " dirty: "
-                    << std::boolalpha
-                    << dirty
-                    << "\", style=filled,color=\""
-                    << colorize_node(name)
-                    << "\"];\n";
+                  << "    \"node"
+                  << i
+                  << "\" [shape=polygon,sides=5,peripheries=3, label=\"id: "
+                  << i
+                  << " type: "
+                  << name
+                  << " dirty: "
+                  << std::boolalpha
+                  << dirty
+                  << "\", style=filled,color=\""
+                  << colorize_node(name)
+                  << "\"];\n";
         }
 
         for (auto i : range(m_first_free_index)) {
@@ -545,11 +548,11 @@ namespace stormkit { inline namespace core {
                  current != TreeNodeClass::INVALID_INDEX;
                  current = operator[](current).next_sibling()) {
                 stream
-                    << "    \"node"
-                    << i
-                    << "\" -> \"nodeNode"
-                    << current
-                    << "\" [color=seagreen] ;\n";
+                  << "    \"node"
+                  << i
+                  << "\" -> \"nodeNode"
+                  << current
+                  << "\" [color=seagreen] ;\n";
             }
         }
 

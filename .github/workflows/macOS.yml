@@ -49,7 +49,7 @@ jobs:
       - name: Install build tools
         uses: tecolicom/actions-use-homebrew-tools@v1
         with:
-          tools: llvm ninja meson mold
+          tools: llvm ninja meson mold nasm pkgconf
           verbose: true
 
       - name: Checkout
@@ -78,7 +78,7 @@ jobs:
       - name: Setup XMake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: Arthapz/xmake#branch@improve-jobgraph-support2
+          xmake-version: branch@dev
           actions-cache-folder: .xmake-cache
 
       - name: Cache XMake

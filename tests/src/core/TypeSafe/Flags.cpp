@@ -70,10 +70,10 @@ namespace {
                     }
                 },
             }, {
-                "Flags.enum_class.checkFlag",
+                "Flags.enum_class.check_flag_bit",
                 [] static noexcept {
                     auto foo = Flag::A | Flag::B;
-                    expects(checkFlag(foo, Flag::A));
+                    expects(check_flag_bit(foo, Flag::A));
                 },
             }, {
                 "Flags.enum_class.next_value",
@@ -118,10 +118,10 @@ namespace {
                     }
                 },
             }, {
-                "Flags.enum.checkFlag",
+                "Flags.enum.check_flag_bit",
                 [] static noexcept {
                     auto foo = Flag2::A | Flag2::B;
-                    expects(checkFlag(foo, Flag2::A));
+                    expects(check_flag_bit(foo, Flag2::A));
                 },
             }, {
                 "Flags.enum.next_value",

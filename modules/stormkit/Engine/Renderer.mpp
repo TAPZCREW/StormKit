@@ -12,7 +12,7 @@ import std;
 
 import stormkit.core;
 import stormkit.wsi;
-import stormkit.Gpu;
+import stormkit.gpu;
 
 export import :Renderer.FrameGraph;
 export import :Renderer.RenderSurface;
@@ -59,11 +59,11 @@ export namespace stormkit::engine {
         auto mainCommandPool() const noexcept -> const gpu::CommandPool&;
 
       private:
-        auto doInit(std::string_view, std::optional<Ref<const wsi::Window>>) noexcept
+        auto do_init(std::string_view, std::optional<Ref<const wsi::Window>>) noexcept
             -> gpu::Expected<void>;
-        auto doInitInstance(std::string_view) noexcept -> gpu::Expected<void>;
-        auto doInitDevice() noexcept -> gpu::Expected<void>;
-        auto doInitRenderSurface(std::optional<Ref<const wsi::Window>>) noexcept
+        auto do_init_instance(std::string_view) noexcept -> gpu::Expected<void>;
+        auto do_initDevice() noexcept -> gpu::Expected<void>;
+        auto do_initRenderSurface(std::optional<Ref<const wsi::Window>>) noexcept
             -> gpu::Expected<void>;
 
         auto threadLoop(std::mutex&, std::atomic_bool&, std::stop_token) noexcept -> void;
@@ -96,7 +96,7 @@ namespace stormkit::engine {
     STORMKIT_FORCE_INLINE Renderer::Renderer(std::string_view                      application_name,
                                              std::optional<Ref<const wsi::Window>> window,
                                              Tag) {
-        doInit(application_name, std::move(window)).transform_error(monadic::throw_as_exception());
+        do_init(application_name, std::move(window)).transform_error(monadic::throw_as_exception());
     }
 
     /////////////////////////////////////
@@ -144,7 +144,7 @@ namespace stormkit::engine {
     STORMKIT_FORCE_INLINE auto Renderer::startRendering(std::mutex&       framegraph_mutex,
                                                         std::atomic_bool& rebuild_graph) noexcept
         -> void {
-        m_render_thread = std::jthread { bindFront(&Renderer::threadLoop,
+        m_render_thread = std::jthread { bind_front(&Renderer::threadLoop,
                                                    this,
                                                    std::ref(framegraph_mutex),
                                                    std::ref(rebuild_graph)) };

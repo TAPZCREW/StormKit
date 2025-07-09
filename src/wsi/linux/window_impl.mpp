@@ -21,7 +21,7 @@ export namespace stormkit::wsi::linux {
     class WindowImpl: public ::stormkit::wsi::common::WindowImplBase {
       public:
         explicit WindowImpl(WM wm);
-        WindowImpl(WM wm, std::string title, const math::ExtentU& size, WindowStyle style);
+        WindowImpl(WM wm, std::string title, const math::Extent2<u32>& size, WindowStyle style);
         ~WindowImpl();
 
         WindowImpl(const WindowImpl&) noexcept                    = delete;
@@ -30,7 +30,7 @@ export namespace stormkit::wsi::linux {
         WindowImpl(WindowImpl&&) noexcept;
         auto operator=(WindowImpl&&) noexcept -> WindowImpl&;
 
-        auto create(std::string title, const math::ExtentU& size, WindowStyle style) -> void;
+        auto create(std::string title, const math::Extent2<u32>& size, WindowStyle style) -> void;
         auto close() noexcept -> void;
 
         [[nodiscard]]
@@ -39,7 +39,7 @@ export namespace stormkit::wsi::linux {
         auto wait_event(Event& event) noexcept -> bool;
 
         auto set_title(std::string title) noexcept -> void;
-        auto set_extent(const math::ExtentU& size) noexcept -> void;
+        auto set_extent(const math::Extent2<u32>& size) noexcept -> void;
         auto toggle_fullscreen(bool enabled) noexcept -> void;
 
         auto lock_mouse() noexcept -> void;
@@ -49,7 +49,7 @@ export namespace stormkit::wsi::linux {
         auto unhide_mouse() noexcept -> void;
 
         [[nodiscard]]
-        auto extent() const noexcept -> const math::ExtentU&;
+        auto extent() const noexcept -> const math::Extent2<u32>&;
         [[nodiscard]]
         auto title() const noexcept -> const std::string&;
 
@@ -118,7 +118,7 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     inline WindowImpl::WindowImpl(WM                   wm,
                                   std::string          title,
-                                  const math::ExtentU& extent,
+                                  const math::Extent2<u32>& extent,
                                   WindowStyle          style)
         : m_wm { wm } {
         if (m_wm == WM::X11) m_impl = x11::WindowImpl { std::move(title), extent, style };
@@ -137,7 +137,7 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     inline auto WindowImpl::create(std::string          title,
-                                   const math::ExtentU& extent,
+                                   const math::Extent2<u32>& extent,
                                    WindowStyle          style) -> void {
         switch (m_wm) {
             CASE_DO (WM::X11, x11, create(std::move(title), extent, style))
@@ -207,7 +207,7 @@ namespace stormkit::wsi::linux {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto WindowImpl::set_extent(const math::ExtentU& extent) noexcept -> void {
+    inline auto WindowImpl::set_extent(const math::Extent2<u32>& extent) noexcept -> void {
         switch (m_wm) {
             CASE_DO (WM::X11, x11, set_extent(extent))
                 ;
@@ -285,7 +285,7 @@ namespace stormkit::wsi::linux {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto WindowImpl::extent() const noexcept -> const stormkit::math::ExtentU& {
+    inline auto WindowImpl::extent() const noexcept -> const stormkit::math::Extent2<u32>& {
         switch (m_wm) {
             CASE_DO_RETURN (WM::X11, x11, extent())
                 ;
@@ -295,7 +295,7 @@ namespace stormkit::wsi::linux {
             default: break;
         }
 
-        constinit static const auto empty = math::ExtentU {};
+        constinit static const auto empty = math::Extent2<u32> {};
         return empty;
     }
 

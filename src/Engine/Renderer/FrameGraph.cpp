@@ -7,7 +7,7 @@ module stormkit.Engine;
 import std;
 
 import stormkit.core;
-import stormkit.Gpu;
+import stormkit.gpu;
 
 import :Renderer.FrameGraph;
 
@@ -151,7 +151,7 @@ namespace stormkit::engine {
                      const auto& description = resource.description();
 
                      const auto usages = [&description] noexcept {
-                         if (gpu::isDepthStencilFormat(description.format))
+                         if (gpu::is_depth_stencil_format(description.format))
                              return gpu::ImageUsageFlag::Depth_Stencil_Attachment
                                     | gpu::ImageUsageFlag::Transfert_Src;
 
@@ -160,7 +160,7 @@ namespace stormkit::engine {
                      }();
 
                      const auto clear_value = [&description] noexcept -> gpu::ClearValue {
-                         if (gpu::isDepthStencilFormat(description.format))
+                         if (gpu::is_depth_stencil_format(description.format))
                              return gpu::ClearDepthStencil {};
 
                          return gpu::ClearColor {};
@@ -243,7 +243,7 @@ namespace stormkit::engine {
                         .destination_layout = gpu::ImageLayout::Color_Attachment_Optimal
                     };
 
-                    if (isDepthStencilFormat(description.format)) [[unlikely]] {
+                    if (is_depth_stencil_format(description.format)) [[unlikely]] {
                         std::swap(attachment_description.load_op,
                                   attachment_description.stencil_load_op);
                         std::swap(attachment_description.store_op,
@@ -277,7 +277,7 @@ namespace stormkit::engine {
                                       .destination_layout = layouts.at(id)
                                   };
 
-                                  if (isDepthStencilFormat(description.format)) [[unlikely]] {
+                                  if (is_depth_stencil_format(description.format)) [[unlikely]] {
                                       std::swap(attachment_description.load_op,
                                                 attachment_description.stencil_load_op);
                                       std::swap(attachment_description.store_op,
@@ -317,7 +317,7 @@ namespace stormkit::engine {
                                          = gpu::AttachmentStoreOperation::Store;
                                  }
 
-                                 if (isDepthStencilFormat(description.format)) [[unlikely]] {
+                                 if (is_depth_stencil_format(description.format)) [[unlikely]] {
                                      std::swap(attachment_description.load_op,
                                                attachment_description.stencil_load_op);
                                      std::swap(attachment_description.store_op,
@@ -341,13 +341,13 @@ namespace stormkit::engine {
 
         auto depth_attachment_ref = std::optional<gpu::Subpass::Ref> {};
         for (auto&& [i, attachment] : output.description.attachments | std::views::enumerate) {
-            if (isDepthFormat(attachment.format))
+            if (is_depth_format(attachment.format))
                 depth_attachment_ref
-                    = gpu::Subpass::Ref { .attachment_id = as<UInt32>(i),
+                    = gpu::Subpass::Ref { .attachment_id = as<u32>(i),
                                           .layout        = attachment.destination_layout };
             else
                 color_refs.emplace_back(
-                    gpu::Subpass::Ref { .attachment_id = as<UInt32>(i),
+                    gpu::Subpass::Ref { .attachment_id = as<u32>(i),
                                         .layout        = attachment.destination_layout });
         }
 
@@ -364,14 +364,14 @@ namespace stormkit::engine {
     auto FmameGraph::allocatePhysicalResources(const gpu::CommandPool& command_pool,
                                                const gpu::Device&      device) -> void {
         auto output = BakedFrameGraph {};
-        output.cmb  = command_pool.createCommandBuffer(device);
-        device.setObjectName(*output.cmb, "FrameGraph:CommandBuffer:Main");
+        output.cmb  = command_pool.create_command_buffer(device);
+        device.set_object_name(*output.cmb, "FrameGraph:CommandBuffer:Main");
 
         output.semaphore = *gpu::Semaphore::create(device);
-        device.setObjectName(*output.semaphore, "FrameGraph:Semaphore:Main");
+        device.set_object_name(*output.semaphore, "FrameGraph:Semaphore:Main");
 
-        output.fence = *gpu::Fence::createSignaled(device);
-        device.setObjectName(*output.fence, "FrameGraph:Fence:Main");
+        output.fence = *gpu::Fence::create_signaled(device);
+        device.set_object_name(*output.fence, "FrameGraph:Fence:Main");
 
         output.tasks.reserve(std::size(m_preprocessed_framegraph));
 
@@ -386,7 +386,7 @@ namespace stormkit::engine {
                     = output.buffers.emplace_back(gpu::Buffer::create(device, buffer.create_info)
                                                       .transform_error(expects())
                                                       .value());
-                device.setObjectName(gpu_buffer, std::format("FrameGraph:Buffer:{}", buffer.name));
+                device.set_object_name(gpu_buffer, std::format("FrameGraph:Buffer:{}", buffer.name));
             }
 
             auto extent       = math::ExtentU {};
@@ -401,13 +401,13 @@ namespace stormkit::engine {
                     = output.images.emplace_back(gpu::Image::create(device, image.create_info)
                                                      .transform_error(expects())
                                                      .value());
-                device.setObjectName(gpu_image, std::format("FrameGraph:Image:{}", image.name));
+                device.set_object_name(gpu_image, std::format("FrameGraph:Image:{}", image.name));
 
                 if (image.id == m_final_resource) output.backbuffer = as_ref(gpu_image);
 
                 auto& gpu_image_view = output.image_views.emplace_back(
                     gpu::ImageView::create(device, gpu_image).transform_error(expects()).value());
-                device.setObjectName(gpu_image_view,
+                device.set_object_name(gpu_image_view,
                                      std::format("FrameGraph:ImageView:{}", image.name));
 
                 attachments.emplace_back(gpu_image_view);
@@ -416,13 +416,13 @@ namespace stormkit::engine {
             expects(backbuffer != std::nullopt, "No final resource set !");
 
             auto renderpass = *gpu::RenderPass::create(device, pass.renderpass.description);
-            device.setObjectName(renderpass, std::format("FrameGraph:RenderPass:{}", pass.name));
+            device.set_object_name(renderpass, std::format("FrameGraph:RenderPass:{}", pass.name));
 
             auto framebuffer = *gpu::FrameBuffer::create(device, renderpass, extent, attachments);
-            device.setObjectName(framebuffer, std::format("FrameGraph:FrameBuffer:{}", pass.name));
+            device.set_object_name(framebuffer, std::format("FrameGraph:FrameBuffer:{}", pass.name));
 
-            auto cmb = command_pool.createCommandBuffer(device, gpu::CommandBufferLevel::Secondary);
-            device.setObjectName(cmb, std::format("FrameGraph:CommandBuffer:{}", pass.name));
+            auto cmb = command_pool.create_command_buffer(device, gpu::CommandBufferLevel::Secondary);
+            device.set_object_name(cmb, std::format("FrameGraph:CommandBuffer:{}", pass.name));
 
             cmb.begin(false, gpu::InheritanceInfo { &renderpass, 0, &framebuffer });
             auto&& graph_task = getTask(pass.id);
@@ -440,18 +440,18 @@ namespace stormkit::engine {
         output.cmb->begin();
         const auto visitors
             = Overloaded { [&output](const BakedFrameGraphBuilder::Data::RasterTask& task) {
-                              output.cmb->beginRenderPass(task.renderpass,
+                              output.cmb->begin_render_pass(task.renderpass,
                                                           task.framebuffer,
                                                           task.clear_values,
                                                           true);
 
                               const auto command_buffers = as_refs<std::array>(task.cmb);
-                              output.cmb->executeSubCommandBuffers(command_buffers);
-                              output.cmb->endRenderPass();
+                              output.cmb->execute_sub_command_buffers(command_buffers);
+                              output.cmb->end_render_pass();
                           },
                            [&output](const BakedFrameGraphBuilder::Data::ComputeTask& task) {
                                const auto command_buffers = as_refs<std::array>(task.cmb);
-                               output.cmb->executeSubCommandBuffers(command_buffers);
+                               output.cmb->execute_sub_command_buffers(command_buffers);
                            } };
         for (auto&& task : output.tasks) std::visit(visitors, task);
         output.cmb->end();

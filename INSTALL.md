@@ -7,7 +7,6 @@ A C++23 compliant compiler with std module support and XMake is needed to build 
 - [glm](https://github.com/g-truc/glm)
 - [frozen](https://github.com/serge-sans-paille/frozen)
 - [unordered_dense](github.com/martinus/unordered_dense)
-- [magic_enum](https://github.com/Neargye/magic_enum)
 
 ### StormKit-image module
 - [gli](https://github.com/g-truc/gli)
@@ -17,7 +16,6 @@ A C++23 compliant compiler with std module support and XMake is needed to build 
 ### stormkit-gpu module
 - [Vulkan](https://vulkan.lunarg.com)
 - [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
-- [VulkanMemoryAllocator-hpp](https://github.com/YaaZ/VulkanMemoryAllocator-Hpp)
 
 ## Building
 ```

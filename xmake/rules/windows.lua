@@ -1,0 +1,11 @@
+rule("platform.windows.subsystem.windows")
+    add_deps("platform.windows.subsystem")
+    on_load(function(target)
+       target:values_set("windows.subsystem", "windows")
+    end)
+
+rule("platform.windows.subsystem.console")
+    add_deps("platform.windows.subsystem")
+    on_load(function(target)
+       target:values_set("windows.subsystem", "console")
+    end)

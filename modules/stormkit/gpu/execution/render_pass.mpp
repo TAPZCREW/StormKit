@@ -1,0 +1,400 @@
+// Copyright (C) 2023 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/hash_macro.hpp>
+
+#include <stormkit/core/platform_macro.hpp>
+
+#include <stormkit/core/contract_macro.hpp>
+
+#include <volk.h>
+
+export module stormkit.gpu.execution:render_pass;
+
+import std;
+
+import stormkit.core;
+import stormkit.gpu.core;
+import stormkit.gpu.resource;
+
+export {
+    namespace stormkit::gpu {
+        class RenderPass;
+
+        class STORMKIT_API FrameBuffer {
+            struct PrivateFuncTag {};
+
+          public:
+            static constexpr auto DEBUG_TYPE = DebugObjectType::FRAMEBUFFER;
+
+            static auto create(const Device&                     device,
+                               const RenderPass&                 render_pass,
+                               const math::Extent2<u32>&         extent,
+                               std::vector<Ref<const ImageView>> attachments) noexcept
+              -> Expected<FrameBuffer>;
+            static auto allocate(const Device&                     device,
+                                 const RenderPass&                 render_pass,
+                                 const math::Extent2<u32>&         extent,
+                                 std::vector<Ref<const ImageView>> attachments) noexcept
+              -> Expected<Heap<FrameBuffer>>;
+            ~FrameBuffer() noexcept;
+
+            FrameBuffer(const FrameBuffer&)                    = delete;
+            auto operator=(const FrameBuffer&) -> FrameBuffer& = delete;
+
+            FrameBuffer(FrameBuffer&&) noexcept;
+            auto operator=(FrameBuffer&&) noexcept -> FrameBuffer&;
+
+            [[nodiscard]]
+            auto extent() const noexcept -> const math::Extent2<u32>&;
+            [[nodiscard]]
+            auto attachments() const noexcept -> const std::vector<Ref<const ImageView>>&;
+
+            [[nodiscard]]
+            auto native_handle() const noexcept -> VkFramebuffer;
+
+            FrameBuffer(const Device&,
+                        const math::Extent2<u32>&,
+                        std::vector<Ref<const ImageView>>,
+                        PrivateFuncTag) noexcept;
+
+          private:
+            auto do_init(const RenderPass&) noexcept -> Expected<void>;
+
+            math::Extent2<u32>                m_extent = { 0, 0 };
+            std::vector<Ref<const ImageView>> m_attachments;
+
+            VkDevice                    m_vk_device = nullptr;
+            Ref<const VolkDeviceTable>  m_vk_device_table;
+            VkRAIIHandle<VkFramebuffer> m_vk_handle;
+        };
+
+        struct AttachmentDescription {
+            PixelFormat     format;
+            SampleCountFlag samples = SampleCountFlag::C1;
+
+            AttachmentLoadOperation  load_op  = AttachmentLoadOperation::CLEAR;
+            AttachmentStoreOperation store_op = AttachmentStoreOperation::STORE;
+
+            AttachmentLoadOperation  stencil_load_op  = AttachmentLoadOperation::DONT_CARE;
+            AttachmentStoreOperation stencil_store_op = AttachmentStoreOperation::DONT_CARE;
+
+            ImageLayout source_layout      = ImageLayout::UNDEFINED;
+            ImageLayout destination_layout = ImageLayout::PRESENT_SRC;
+
+            bool resolve = false;
+        };
+
+        using AttachmentDescriptions = std::vector<AttachmentDescription>;
+
+        struct Subpass {
+            struct Ref {
+                u32 attachment_id;
+
+                ImageLayout layout = ImageLayout::COLOR_ATTACHMENT_OPTIMAL;
+            };
+
+            PipelineBindPoint  bind_point;
+            std::vector<Ref>   color_attachment_refs   = {};
+            std::vector<Ref>   resolve_attachment_refs = {};
+            std::optional<Ref> depth_attachment_ref    = {};
+        };
+
+        using Subpasses = std::vector<Subpass>;
+
+        struct RenderPassDescription {
+            AttachmentDescriptions attachments;
+            Subpasses              subpasses;
+
+            auto is_compatible(const RenderPassDescription& description) const noexcept -> bool;
+        };
+
+        class STORMKIT_API RenderPass {
+            struct PrivateFuncTag {};
+
+          public:
+            static constexpr auto DEBUG_TYPE = DebugObjectType::RENDER_PASS;
+
+            static auto create(const Device&                device,
+                               const RenderPassDescription& description) noexcept
+              -> Expected<RenderPass>;
+            static auto allocate(const Device&                device,
+                                 const RenderPassDescription& description) noexcept
+              -> Expected<Heap<RenderPass>>;
+            ~RenderPass() noexcept;
+
+            RenderPass(const RenderPass&)                    = delete;
+            auto operator=(const RenderPass&) -> RenderPass& = delete;
+
+            RenderPass(RenderPass&&) noexcept;
+            auto operator=(RenderPass&&) noexcept -> RenderPass&;
+
+            auto create_frame_buffer(const Device&                     device,
+                                     const math::Extent2<u32>&         extent,
+                                     std::vector<Ref<const ImageView>> attachments) const noexcept
+              -> Expected<FrameBuffer>;
+            auto allocate_frame_buffer(const Device&                     device,
+                                       const math::Extent2<u32>&         extent,
+                                       std::vector<Ref<const ImageView>> attachments) const noexcept
+              -> Expected<Heap<FrameBuffer>>;
+
+            [[nodiscard]]
+            auto is_compatible(const RenderPass& render_pass) const noexcept -> bool;
+            [[nodiscard]]
+            auto is_compatible(const RenderPassDescription& description) const noexcept -> bool;
+
+            [[nodiscard]]
+            auto description() const noexcept -> const RenderPassDescription&;
+
+            [[nodiscard]]
+            auto native_handle() const noexcept -> VkRenderPass;
+
+            RenderPass(const Device&                device,
+                       const RenderPassDescription& description,
+                       PrivateFuncTag) noexcept;
+
+          private:
+            auto do_init() noexcept -> Expected<void>;
+
+            RenderPassDescription m_description = {};
+
+            VkDevice                   m_vk_device = nullptr;
+            Ref<const VolkDeviceTable> m_vk_device_table;
+            VkRAIIHandle<VkRenderPass> m_vk_handle;
+        };
+    } // namespace stormkit::gpu
+
+    HASH_FUNC(stormkit::gpu::AttachmentDescription,
+              value.format,
+              value.samples,
+              value.load_op,
+              value.store_op,
+              value.stencil_load_op,
+              value.stencil_store_op,
+              value.source_layout,
+              value.destination_layout,
+              value.resolve)
+    HASH_FUNC(stormkit::gpu::Subpass::Ref, value.attachment_id, value.layout)
+    HASH_FUNC(stormkit::gpu::Subpass,
+              value.bind_point,
+              value.color_attachment_refs,
+              value.depth_attachment_ref,
+              value.resolve_attachment_refs)
+    HASH_FUNC(stormkit::gpu::RenderPassDescription, value.attachments, value.subpasses)
+}
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit::gpu {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline FrameBuffer::FrameBuffer(const Device&                     device,
+                                    const math::Extent2<u32>&         extent,
+                                    std::vector<Ref<const ImageView>> attachments,
+                                    PrivateFuncTag) noexcept
+        : m_extent { extent }, m_attachments { std::move(attachments) },
+          m_vk_device { device.native_handle() },
+          m_vk_device_table { as_ref(device.device_table()) },
+          m_vk_handle { { [vk_device_table = *m_vk_device_table,
+                           vk_device       = m_vk_device](auto handle) noexcept {
+              vk_device_table.vkDestroyFramebuffer(vk_device, handle, nullptr);
+          } } } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto FrameBuffer::create(const Device&                     device,
+                                    const RenderPass&                 render_pass,
+                                    const math::Extent2<u32>&         extent,
+                                    std::vector<Ref<const ImageView>> attachments) noexcept
+      -> Expected<FrameBuffer> {
+        auto frame_buffer = FrameBuffer { device,
+                                          extent,
+                                          std::move(attachments),
+                                          PrivateFuncTag {} };
+        return frame_buffer.do_init(render_pass).transform(core::monadic::consume(frame_buffer));
+    }
+
+    ////////////////////////////////////p/
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto FrameBuffer::allocate(const Device&                     device,
+                                      const RenderPass&                 render_pass,
+                                      const math::Extent2<u32>&         extent,
+                                      std::vector<Ref<const ImageView>> attachments) noexcept
+      -> Expected<Heap<FrameBuffer>> {
+        auto frame_buffer = allocate_unsafe<FrameBuffer>(device,
+                                                         extent,
+                                                         std::move(attachments),
+                                                         PrivateFuncTag {});
+        return frame_buffer->do_init(render_pass).transform(core::monadic::consume(frame_buffer));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline FrameBuffer::~FrameBuffer() noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline FrameBuffer::FrameBuffer(FrameBuffer&& other) noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto FrameBuffer::operator=(FrameBuffer&& other) noexcept -> FrameBuffer& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto FrameBuffer::extent() const noexcept -> const math::Extent2<u32>& {
+        return m_extent;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto FrameBuffer::attachments() const noexcept
+      -> const std::vector<Ref<const ImageView>>& {
+        return m_attachments;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto FrameBuffer::native_handle() const noexcept -> VkFramebuffer {
+        return m_vk_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto FrameBuffer::do_init(const RenderPass& render_pass) noexcept -> Expected<void> {
+        const auto vk_attachments = m_attachments
+                                    | std::views::transform(core::monadic::unref())
+                                    | std::views::transform(monadic::to_vk())
+                                    | std::ranges::to<std::vector>();
+
+        const auto create_info = VkFramebufferCreateInfo {
+            .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+            .pNext           = nullptr,
+            .flags           = 0,
+            .renderPass      = to_vk(render_pass),
+            .attachmentCount = as<u32>(std::ranges::size(vk_attachments)),
+            .pAttachments    = std::ranges::data(vk_attachments),
+            .width           = m_extent.width,
+            .height          = m_extent.height,
+            .layers          = 1,
+        };
+
+        return vk_call<VkFramebuffer>(m_vk_device_table->vkCreateFramebuffer,
+                                      m_vk_device,
+                                      &create_info,
+                                      nullptr)
+          .transform(core::monadic::set(m_vk_handle))
+          .transform_error(monadic::from_vk<Result>());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline RenderPass::RenderPass(const Device&                device,
+                                  const RenderPassDescription& description,
+                                  PrivateFuncTag) noexcept
+        : m_description { description }, m_vk_device { device.native_handle() },
+          m_vk_device_table { as_ref(device.device_table()) },
+          m_vk_handle { { [vk_device_table = *m_vk_device_table,
+                           vk_device       = m_vk_device](auto handle) noexcept {
+              vk_device_table.vkDestroyRenderPass(vk_device, handle, nullptr);
+          } } } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    auto RenderPass::create(const Device& device, const RenderPassDescription& description) noexcept
+      -> Expected<RenderPass> {
+        auto render_pass = RenderPass { device, description, PrivateFuncTag {} };
+        return render_pass.do_init().transform(core::monadic::consume(render_pass));
+    }
+
+    ////////////////////////////////////p/
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto RenderPass::allocate(const Device&                device,
+                                     const RenderPassDescription& description) noexcept
+      -> Expected<Heap<RenderPass>> {
+        auto render_pass = allocate_unsafe<RenderPass>(device, description, PrivateFuncTag {});
+        return render_pass->do_init().transform(core::monadic::consume(render_pass));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline RenderPass::~RenderPass() noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline RenderPass::RenderPass(RenderPass&& other) noexcept
+      = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto RenderPass::operator=(RenderPass&& other) noexcept -> RenderPass& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto RenderPass::create_frame_buffer(const Device&                     device,
+                                                const math::Extent2<u32>&         extent,
+                                                std::vector<Ref<const ImageView>> attachments)
+      const noexcept -> Expected<FrameBuffer> {
+        return FrameBuffer::create(device, *this, extent, std::move(attachments));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto RenderPass::allocate_frame_buffer(const Device&                     device,
+                                                  const math::Extent2<u32>&         extent,
+                                                  std::vector<Ref<const ImageView>> attachments)
+      const noexcept -> Expected<Heap<FrameBuffer>> {
+        return FrameBuffer::allocate(device, *this, extent, std::move(attachments));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto RenderPass::is_compatible(const RenderPass& render_pass) const noexcept -> bool {
+        // TODO implement proper compatibility check
+        // https://www.khronos.org/registry/vulkan/specs/1.1-extensions/html/chap7.html#renderpass-compatibility
+
+        return &render_pass == this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto RenderPass::description() const noexcept -> const RenderPassDescription& {
+        return m_description;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto RenderPass::native_handle() const noexcept -> VkRenderPass {
+        return m_vk_handle;
+    }
+} // namespace stormkit::gpu

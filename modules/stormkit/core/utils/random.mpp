@@ -14,7 +14,7 @@ import :typesafe;
 import :meta.concepts;
 
 export namespace stormkit { inline namespace core {
-    auto seed(Int seed) noexcept -> void;
+    auto seed(u32 seed) noexcept -> void;
 
     template<std::floating_point T>
     [[nodiscard]]
@@ -36,20 +36,23 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto random_generator() noexcept -> std::default_random_engine& {
+    STORMKIT_FORCE_INLINE
+    auto random_generator() noexcept -> std::default_random_engine& {
         return generator;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto seed(Int seed) noexcept -> void {
+    STORMKIT_FORCE_INLINE
+    auto seed(u32 seed) noexcept -> void {
         random_generator().seed(seed);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<std::floating_point T>
-    STORMKIT_FORCE_INLINE auto rand(T min, T max) noexcept -> T {
+    STORMKIT_FORCE_INLINE
+    auto rand(T min, T max) noexcept -> T {
         std::uniform_real_distribution<T> dis(min, max);
         return dis(random_generator());
     }
@@ -57,7 +60,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<std::integral T>
-    STORMKIT_FORCE_INLINE auto rand(T min, T max) noexcept -> T {
+    STORMKIT_FORCE_INLINE
+    auto rand(T min, T max) noexcept -> T {
         std::uniform_int_distribution<T> dis(min, max);
         return dis(random_generator());
     }

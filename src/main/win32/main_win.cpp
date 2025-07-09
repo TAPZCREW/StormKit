@@ -20,6 +20,8 @@ namespace {
 
 extern auto user_main(std::span<const std::string_view>) -> int;
 
+using namespace stormkit;
+
 auto __stdcall main(int argc, char** argv) -> int {
     std::locale::global(std::locale { "" });
     SetConsoleOutputCP(CP_UTF8);
@@ -35,7 +37,7 @@ auto __stdcall main(int argc, char** argv) -> int {
     stormkit::set_current_thread_name("MainThread");
 
     auto args = std::vector<std::string_view> {};
-    args.reserve(argc);
+    args.reserve(as<usize>(argc));
 
     for (auto&& i : stormkit::range(argc)) args.emplace_back(argv[i]);
 
@@ -60,7 +62,7 @@ auto __stdcall WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) -> int {
     stormkit::set_current_thread_name("MainThread");
 
     auto args = std::vector<std::string_view> {};
-    args.reserve(argc);
+    args.reserve(as<usize>(argc));
 
     for (auto&& i : stormkit::range(argc)) args.emplace_back(argv[i]);
 

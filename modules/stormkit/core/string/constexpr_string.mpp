@@ -1,0 +1,92 @@
+// Copyright (C) 2023 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+export module stormkit.core:string.constexpr_string;
+
+import std;
+
+namespace stdr = std::ranges;
+
+export namespace stormkit { inline namespace core {
+    template<std::size_t N>
+    struct ConstexprString {
+        consteval ConstexprString() noexcept = default;
+        consteval ConstexprString(const char (&new_str)[N]) noexcept;
+
+        [[nodiscard]]
+        constexpr auto begin() const noexcept -> const char*;
+        [[nodiscard]]
+        constexpr auto end() const noexcept -> const char*;
+        [[nodiscard]]
+        constexpr auto size() const noexcept -> std::size_t;
+
+        [[nodiscard]]
+        constexpr auto view() const noexcept -> std::string_view;
+
+        [[nodiscard]]
+        constexpr operator std::string_view() const noexcept;
+
+        static constexpr auto STATIC_SIZE = N - 1u;
+
+        std::array<char, N> data = {};
+    };
+}} // namespace stormkit::core
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit { inline namespace core {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<std::size_t N>
+    STORMKIT_FORCE_INLINE
+    consteval ConstexprString<N>::ConstexprString(const char (&new_str)[N]) noexcept {
+        std::copy_n(new_str, STATIC_SIZE, std::data(data));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<std::size_t N>
+        STORMKIT_FORCE_INLINE
+    constexpr auto ConstexprString<N>::begin() const noexcept -> const char* {
+        return stdr::begin(data);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<std::size_t N>
+        STORMKIT_FORCE_INLINE
+    constexpr auto ConstexprString<N>::end() const noexcept -> const char* {
+        return stdr::begin(data) + size();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<std::size_t N>
+        STORMKIT_FORCE_INLINE
+    constexpr auto ConstexprString<N>::size() const noexcept -> std::size_t {
+        return std::char_traits<char>::length(stdr::data(data));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<std::size_t N>
+        STORMKIT_FORCE_INLINE
+    constexpr auto ConstexprString<N>::view() const noexcept -> std::string_view {
+        return std::string_view { begin(), end() };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<std::size_t N>
+        STORMKIT_FORCE_INLINE
+    constexpr ConstexprString<N>::operator std::string_view() const noexcept {
+        return view();
+    }
+}} // namespace stormkit::core

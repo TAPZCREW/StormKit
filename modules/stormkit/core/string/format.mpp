@@ -9,17 +9,17 @@ module;
 export module stormkit.core:string.format;
 
 import std;
-import magic_enum;
 
 import :meta;
 import :typesafe.integer;
 import :typesafe.integer_casts;
 import :utils.time;
-import :utils.math;
+import :math.arithmetic;
+import :string.operations;
 
-template<stormkit::math::meta::IsExtentLike T>
-using ExtentToArrayType
-    = std::array<typename T::value_type, sizeof(typename T::value_type) / sizeof(std::byte)>;
+// template<stormkit::math::meta::IsExtent T>
+// using ExtentToArrayType = std::array<typename T::value_type,
+//                                      sizeof(typename T::value_type) / sizeof(std::byte)>;
 
 export {
     namespace stormkit { inline namespace core { namespace meta {
@@ -30,13 +30,41 @@ export {
     FORMATTER_INHERIT_DECLARE(int, stormkit::meta::IsStrict<std::byte>)
     FORMATTER_INHERIT_DECLARE(float, stormkit::meta::IsStrict<stormkit::Secondf>)
     FORMATTER_DECLARE(stormkit::math::meta::IsVectorLike)
-    FORMATTER_DECLARE(stormkit::math::meta::IsExtentLike)
 
     template<stormkit::meta::IsEnumeration T, typename CharT>
-        requires(not stormkit::meta::DISABLE_DEFAULT_FORMATTER_FOR_ENUM<T>)
-    struct std::formatter<T, CharT>: public std::formatter<basic_string_view<CharT>, CharT> {
+        requires(not stormkit::meta::Is<T, std::byte>
+                 and not meta::DISABLE_DEFAULT_FORMATTER_FOR_ENUM<T>)
+    struct std::formatter<T, CharT> {
+        template<class ParseContext>
+        [[nodiscard]]
+        constexpr auto parse(ParseContext& ctx) noexcept -> ParseContext::iterator;
+
         template<class FormatContext>
+        [[nodiscard]]
         auto format(const T& data, FormatContext& ctx) const -> decltype(ctx.out());
+    };
+
+    template<stormkit::meta::IsPointer T, typename CharT>
+    struct std::formatter<T, CharT>: public std::formatter<std::uintptr_t, CharT> {
+        template<class FormatContext>
+        [[nodiscard]]
+        auto format(const T& data, FormatContext& ctx) const -> decltype(ctx.out());
+    };
+
+    template<typename CharT>
+    struct std::formatter<std::error_code, CharT>
+        : public std::formatter<basic_string_view<CharT>, CharT> {
+        template<class FormatContext>
+        [[nodiscard]]
+        auto format(const std::error_code& code, FormatContext& ctx) const -> decltype(ctx.out());
+    };
+
+    template<typename CharT>
+    struct std::formatter<std::errc, CharT>
+        : public std::formatter<basic_string_view<CharT>, CharT> {
+        template<class FormatContext>
+        [[nodiscard]]
+        auto format(const std::errc& code, FormatContext& ctx) const -> decltype(ctx.out());
     };
 } // namespace stormkit::core::meta
 
@@ -62,14 +90,59 @@ FORMATTER_DEFINE_FORMAT_AS_STRING(stormkit::math::meta::IsVectorLike)
 
 /////////////////////////////////////
 /////////////////////////////////////
-FORMATTER_DEFINE_FORMAT_AS_STRING(stormkit::math::meta::IsExtentLike)
+template<stormkit::meta::IsEnumeration T, typename CharT>
+    requires(not stormkit::meta::Is<T, std::byte>
+             and not meta::DISABLE_DEFAULT_FORMATTER_FOR_ENUM<T>)
+template<class ParseContext>
+constexpr auto std::formatter<T, CharT>::parse(ParseContext& ctx) noexcept
+  -> ParseContext::iterator {
+    return ctx.begin();
+}
 
 /////////////////////////////////////
 /////////////////////////////////////
 template<stormkit::meta::IsEnumeration T, typename CharT>
-    requires(not stormkit::meta::DISABLE_DEFAULT_FORMATTER_FOR_ENUM<T>)
+    requires(not stormkit::meta::Is<T, std::byte>
+             and not meta::DISABLE_DEFAULT_FORMATTER_FOR_ENUM<T>)
+template<class FormatContext>
+auto std::formatter<T, CharT>::format(const T& value, FormatContext& ctx) const
+  -> decltype(ctx.out()) {
+    auto&& out = ctx.out();
+    if constexpr (requires { stormkit::core::as_string(value); })
+        return format_to(out, "{}", stormkit::core::as_string(value));
+    else if constexpr (requires { stormkit::core::to_string(value); })
+        return format_to(out, "{}", stormkit::core::to_string(value));
+    else
+        return format_to(out, "{}", static_cast<std::underlying_type_t<T>>(value));
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+template<stormkit::meta::IsPointer T, typename CharT>
 template<class FormatContext>
 auto std::formatter<T, CharT>::format(const T& data, FormatContext& ctx) const
-    -> decltype(ctx.out()) {
-    return formatter<basic_string_view<CharT>, CharT>::format(magic_enum::enum_name(data), ctx);
+  -> decltype(ctx.out()) {
+    auto&& out = ctx.out();
+    return format_to(out, "{:#0x}", std::bit_cast<std::uintptr_t>(std::to_address(data)));
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+template<typename CharT>
+template<class FormatContext>
+auto std::formatter<std::error_code, CharT>::format(const std::error_code& code,
+                                                    FormatContext&         ctx) const
+  -> decltype(ctx.out()) {
+    auto&& out = ctx.out();
+    return format_to(out, "{}", code.message());
+}
+
+/////////////////////////////////////
+/////////////////////////////////////
+template<typename CharT>
+template<class FormatContext>
+auto std::formatter<std::errc, CharT>::format(const std::errc& code, FormatContext& ctx) const
+  -> decltype(ctx.out()) {
+    auto&& out = ctx.out();
+    return format_to(out, "{}", make_error_code(code).message());
 }
