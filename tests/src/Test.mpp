@@ -67,20 +67,20 @@ namespace test {
 
     namespace {
         constexpr auto StyleMap = frozen::make_unordered_map<Status, stormkit::ConsoleStyle>({
-            { Status::Passed,
-             stormkit::ConsoleStyle { .fg = stormkit::ConsoleColor::BLACK,
-                                       .bg = stormkit::ConsoleColor::GREEN } },
-            { Status::NotPassed,
-             stormkit::ConsoleStyle { .fg = stormkit::ConsoleColor::BLACK,
-                                       .bg = stormkit::ConsoleColor::RED }   },
-            { Status::CheckMark,
-             stormkit::ConsoleStyle {
-                  .fg = stormkit::ConsoleColor::GREEN,
-              }                                                              },
-            { Status::CrossMark,
-             stormkit::ConsoleStyle {
-                  .fg = stormkit::ConsoleColor::RED,
-              }                                                              },
+          { Status::Passed,
+           stormkit::ConsoleStyle { .fg = stormkit::ConsoleColor::BLACK,
+                                     .bg = stormkit::ConsoleColor::GREEN } },
+          { Status::NotPassed,
+           stormkit::ConsoleStyle { .fg = stormkit::ConsoleColor::BLACK,
+                                     .bg = stormkit::ConsoleColor::RED }   },
+          { Status::CheckMark,
+           stormkit::ConsoleStyle {
+              .fg = stormkit::ConsoleColor::GREEN,
+            }                                                              },
+          { Status::CrossMark,
+           stormkit::ConsoleStyle {
+              .fg = stormkit::ConsoleColor::RED,
+            }                                                              },
         });
 
         constexpr auto passed     = StyleMap.at(Status::Passed) | "Passed"sv;
@@ -91,17 +91,17 @@ namespace test {
 
     auto state = TestState {};
 
-    auto TestSuiteHolder::hasTest(std::string_view name) noexcept {
+    auto TestSuiteHolder::hasTest(std::string_view _name) noexcept {
         for (auto&& test : tests) {
-            if (test.name == name) return true;
+            if (test.name == _name) return true;
         }
 
         return false;
     }
 
-    auto TestSuiteHolder::runTest(std::string_view name) noexcept {
+    auto TestSuiteHolder::runTest(std::string_view _name) noexcept {
         for (auto&& test : tests) {
-            if (test.name == name) {
+            if (test.name == _name) {
                 if (state.verbose) std::println("     running test {}", test.name);
                 test.func();
                 std::println("     {}", (state.failed) ? not_passed : passed);
@@ -140,11 +140,12 @@ namespace test {
         return failed_tests == 0;
     }
 
-    TestSuite::TestSuite(std::string&&               name,
+    TestSuite::TestSuite(std::string&&               _name,
                          std::vector<TestFunc>&&     tests,
                          const std::source_location& location) noexcept {
-        state.test_suites.emplace_back(
-            std::make_unique<TestSuiteHolder>(std::move(name), std::move(tests), location));
+        state.test_suites.emplace_back(std::make_unique<TestSuiteHolder>(std::move(_name),
+                                                                         std::move(tests),
+                                                                         location));
     }
 
     auto expects(bool                        cond,

@@ -98,6 +98,7 @@ rule("stormkit.flags", function()
                     "-fstrict-aliasing",
                     "-Wno-error=unknown-attributes",
                     "-Wstrict-aliasing",
+                    "-Wno-error=sign-conversion",
                     "-Wconversion",
                     "-Wshadow",
                     "-Wno-c23-extensions",
@@ -123,7 +124,7 @@ rule("stormkit.flags", function()
             target_add(target, "ldflags", flags.clang.ld or {}, { tools = { "clang", "clangxx", "lld" } })
             target_add(target, "shflags", flags.clang.sh or {}, { tools = { "clang", "clangxx", "lld" } })
             target_add(target, "arflags", flags.clang.ar or {}, { tools = { "clang", "clangxx", "llvm-ar" } })
-            if (is_plat("linux") or is_plat("mingw")) and not has_runtime("c++_shared", "c++_static") then
+            if (is_plat("linux") or is_plat("mingw")) and not target:has_runtime("c++_shared", "c++_static") then
                 target_add(target, "syslinks", "stdc++exp", "stdc++fs")
             end
         end
