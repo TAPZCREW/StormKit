@@ -65,8 +65,8 @@ namespace {
                 }
 
                 {
-                    auto foo = ~Flag::B;
-                    expects(foo == ~Flag::B);
+                    auto foo = ~(Flag::B);
+                    expects(foo == ~(Flag::B));
                 }
             },
           }, {
@@ -113,8 +113,8 @@ namespace {
                 }
 
                 {
-                    auto foo = ~Flag2::B;
-                    expects(foo == ~Flag2::B);
+                    auto foo = (~Flag2::B);
+                    expects(foo == (~Flag2::B));
                 }
             },
           }, {
