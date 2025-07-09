@@ -32,7 +32,7 @@ namespace stormkit::wsi::macos {
         struct Monitor {
             enum class Flags {
                 NONE    = 0,
-                PRIMARY = 1
+                PRIMARY = 1,
             };
 
             Flags       flags = Flags::NONE;
@@ -155,37 +155,43 @@ namespace stormkit::wsi::macos {
 namespace stormkit::wsi::macos {
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto macOSWindow::title() const noexcept -> const std::string& {
+    STORMKIT_FORCE_INLINE
+    inline auto macOSWindow::title() const noexcept -> const std::string& {
         return m_title;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto macOSWindow::visible() const noexcept -> bool {
+    STORMKIT_FORCE_INLINE
+    inline auto macOSWindow::visible() const noexcept -> bool {
         return m_visible;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto macOSWindow::is_mouse_locked() const noexcept -> bool {
+    STORMKIT_FORCE_INLINE
+    inline auto macOSWindow::is_mouse_locked() const noexcept -> bool {
         return m_is_mouse_locked;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto macOSWindow::is_mouse_hided() const noexcept -> bool {
+    STORMKIT_FORCE_INLINE
+    inline auto macOSWindow::is_mouse_hided() const noexcept -> bool {
         return m_mouse_hided;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto macOSWindow::fullscreen() const noexcept -> bool {
+    STORMKIT_FORCE_INLINE
+    inline auto macOSWindow::fullscreen() const noexcept -> bool {
         return m_fullscreen;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto macOSWindow::is_key_repeat_enabled() const noexcept -> bool {
+    STORMKIT_FORCE_INLINE
+    inline auto macOSWindow::is_key_repeat_enabled() const noexcept -> bool {
         return m_key_repeat_enabled;
     }
 } // namespace stormkit::wsi::macos

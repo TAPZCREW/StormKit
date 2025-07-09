@@ -82,6 +82,8 @@ rule("stormkit.flags", function()
                 cx = table.join({
                     "-fstrict-aliasing",
                     "-Wno-error=unknown-attributes",
+                    "-Wno-error=sign-conversion",
+                    "-Wno-error=shadow",
                     "-Wstrict-aliasing",
                     "-fanalyzer",
                     "-Wconversion",
@@ -99,6 +101,7 @@ rule("stormkit.flags", function()
                     "-Wno-error=unknown-attributes",
                     "-Wstrict-aliasing",
                     "-Wno-error=sign-conversion",
+                    "-Wno-error=shadow",
                     "-Wconversion",
                     "-Wshadow",
                     "-Wno-c23-extensions",
