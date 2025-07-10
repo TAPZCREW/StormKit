@@ -1,10 +1,6 @@
-add_requires("luau")
-
 target("terra", function()
     set_kind("binary")
     set_languages("cxxlatest", "clatest")
-
-    add_packages("luau")
 
     add_rules("stormkit.flags")
     add_rules("platform.windows.subsystem.console")

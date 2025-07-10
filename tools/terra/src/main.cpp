@@ -4,8 +4,6 @@ import stormkit.core;
 
 #include <stormkit/main/main_macro.hpp>
 
-#include <lua.hpp>
-
 namespace stdr  = std::ranges;
 namespace stdfs = std::filesystem;
 
