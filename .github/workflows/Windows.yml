@@ -142,7 +142,7 @@ jobs:
                -k ${{ matrix.kind }} `
                --examples=y `
                --tests=y `
-               --gpu=n `
+               --gpu=y `
                --engine=n `
                --on_ci=y `
                --toolchain=llvm `
@@ -161,7 +161,7 @@ jobs:
                -k ${{ matrix.kind }} `
                --examples=y `
                --tests=y `
-               --gpu=n `
+               --gpu=y `
                --engine=n `
                --on_ci=y `
                --toolchain=llvm `
@@ -180,7 +180,7 @@ jobs:
                -k ${{ matrix.kind }} `
                --examples=y `
                --tests=y `
-               --gpu=n `
+               --gpu=y `
                --engine=n `
                --sanitizers=yes `
                --on_ci=y `
