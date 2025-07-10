@@ -246,8 +246,8 @@ auto main(std::span<const std::string_view> args) -> int {
           .transform_error(monadic::assert("Failed to create pipeline layout"))
           .value();
 
-    const auto window_extent = window.extent();
-    const auto swapchain     = gpu::SwapChain::create(device, surface, window_extent.to<3>())
+    const auto& window_extent = window.extent();
+    const auto  swapchain     = gpu::SwapChain::create(device, surface, window_extent.to<3>())
                              .transform_error(monadic::assert("Failed to create swapchain"))
                              .value();
 
@@ -462,15 +462,15 @@ auto main(std::span<const std::string_view> args) -> int {
     swapchain_image_resources.reserve(stdr::size(images));
 
     auto image_index = 0u;
-    for (const auto& image : images) {
-        auto view = gpu::ImageView::create(device, image)
+    for (const auto& swap_image : images) {
+        auto view = gpu::ImageView::create(device, swap_image)
                       .transform_error(core::monadic::
                                          assert("Failed to create swapchain image view"))
                       .value();
 
         auto depth_image = gpu::Image::create(device,
                                               gpu::Image::CreateInfo {
-                                                .extent = image.extent(),
+                                                .extent = swap_image.extent(),
                                                 .format = depth_format,
                                                 .usages = gpu::ImageUsageFlag::
                                                   DEPTH_STENCIL_ATTACHMENT,
@@ -494,7 +494,7 @@ auto main(std::span<const std::string_view> args) -> int {
                              .value();
 
         swapchain_image_resources.push_back({
-          .image           = as_ref(image),
+          .image           = as_ref(swap_image),
           .view            = std::move(view),
           .depth_image     = std::move(depth_image),
           .depth_view      = std::move(depth_view),
@@ -511,7 +511,7 @@ auto main(std::span<const std::string_view> args) -> int {
         transition_cmb.begin(true);
 
         transition_cmb.begin_debug_region(std::format("transition image {}", image_index))
-          .transition_image_layout(image,
+          .transition_image_layout(swap_image,
                                    gpu::ImageLayout::UNDEFINED,
                                    gpu::ImageLayout::PRESENT_SRC)
           .transition_image_layout(resources.depth_image,
@@ -631,8 +631,8 @@ auto main(std::span<const std::string_view> args) -> int {
                                                    100ms,
                                                    std::cref(wait));
         const auto extract_index      = [](auto&& _result) static noexcept {
-            auto&& [result, image_index] = _result;
-            return image_index;
+            auto&& [result, _image_index] = _result;
+            return _image_index;
         };
 
         image_index = in_flight.wait()
