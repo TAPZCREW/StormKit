@@ -8,7 +8,7 @@ export module stormkit.core:coroutines;
 export import std;
 
 #if not defined(__cpp_lib_generator) \
-    or (defined(__cpp_lib_generator) and (__cpp_lib_generator < 202207L))
+  or (defined(__cpp_lib_generator) and (__cpp_lib_generator < 202207L))
 export namespace std {
     struct use_allocator_arg {};
 
@@ -21,8 +21,7 @@ export namespace std {
         template<class _T, typename _U, typename _Alloc>
         inline constexpr bool enable_view<generator<_T, _U, _Alloc>> = true;
 
-        template<class _Rng,
-                 typename _Allocator = use_allocator_arg>
+        template<class _Rng, typename _Allocator = use_allocator_arg>
         struct elements_of;
     } // namespace ranges
 } // namespace std
@@ -117,7 +116,7 @@ namespace std {
             constexpr _Allocator get_allocator() const noexcept { return __alloc; }
 
           private:
-            [[no_unique_address]]
+            [[no_unique_address, msvc::no_unique_address]]
             _Allocator __alloc; // \expos
             _Rng&&     __range; // \expos
         };
@@ -130,9 +129,10 @@ namespace std {
     } // namespace ranges
 
     template<class _Alloc>
-    static constexpr bool __allocator_needs_to_be_stored
-        = !std::allocator_traits<_Alloc>::is_always_equal::value
-          || !std::is_default_constructible_v<_Alloc>;
+    static constexpr bool __allocator_needs_to_be_stored = !std::allocator_traits<
+                                                             _Alloc>::is_always_equal::value
+                                                           || !std::is_default_constructible_v<
+                                                             _Alloc>;
 
     // Round s up to next multiple of a.
     constexpr size_t __aligned_allocation_size(size_t s, size_t a) {
@@ -156,15 +156,17 @@ namespace std {
 
       public:
         template<class... _Args>
-        static void*
-            operator new(std::size_t __frameSize, std::allocator_arg_t, _Alloc __alloc, _Args&...) {
+        static void* operator new(std::size_t __frameSize,
+                                  std::allocator_arg_t,
+                                  _Alloc __alloc,
+                                  _Args&...) {
             void* __frame = __alloc.allocate(__padded_frame_size(__frameSize));
 
             // Store allocator at end of the coroutine frame.
             // Assuming the allocator's move constructor is non-throwing (a requirement for
             // allocators)
             ::new (static_cast<void*>(std::addressof(__get_allocator(__frame, __frameSize))))
-                _Alloc(std::move(__alloc));
+              _Alloc(std::move(__alloc));
 
             return __frame;
         }
@@ -184,8 +186,8 @@ namespace std {
             _Alloc& __alloc = __get_allocator(__ptr, __frameSize);
             _Alloc  __localAlloc(std::move(__alloc));
             __alloc.~Alloc();
-            __localAlloc.deallocate(static_cast<std::byte*>(__ptr),
-                                    __padded_frame_size(__frameSize));
+            __localAlloc
+              .deallocate(static_cast<std::byte*>(__ptr), __padded_frame_size(__frameSize));
         }
     };
 
@@ -264,16 +266,16 @@ namespace std {
 
         __final_awaiter final_suspend() noexcept { return {}; }
 
-        std::suspend_always
-            yield_value(_Ref&& __x) noexcept(std::is_nothrow_move_constructible_v<_Ref>) {
+        std::suspend_always yield_value(_Ref&& __x) noexcept(std::is_nothrow_move_constructible_v<
+                                                             _Ref>) {
             __root_->__value_.construct((_Ref&&)__x);
             return {};
         }
 
         template<class _T>
             requires(!std::is_reference_v<_Ref>) && std::is_convertible_v<_T, _Ref>
-        std::suspend_always
-            yield_value(_T&& __x) noexcept(std::is_nothrow_constructible_v<_Ref, _T>) {
+        std::suspend_always yield_value(_T&&
+                                          __x) noexcept(std::is_nothrow_constructible_v<_Ref, _T>) {
             __root_->__value_.construct((_T&&)__x);
             return {};
         }
@@ -320,13 +322,13 @@ namespace std {
 
         template<class _OValue, typename _OAlloc>
         __yield_sequence_awaiter<generator<_Ref, _OValue, _OAlloc>>
-            yield_value(std::ranges::elements_of<generator<_Ref, _OValue, _OAlloc>> __g) noexcept {
+          yield_value(std::ranges::elements_of<generator<_Ref, _OValue, _OAlloc>> __g) noexcept {
             return std::move(__g).get();
         }
 
         template<std::ranges::range _Rng, typename _Allocator>
         __yield_sequence_awaiter<generator<_Ref, std::remove_cvref_t<_Ref>, _Allocator>>
-            yield_value(std::ranges::elements_of<_Rng, _Allocator>&& __x) {
+          yield_value(std::ranges::elements_of<_Rng, _Allocator>&& __x) {
             return [](allocator_arg_t,
                       [[maybe_unused]]
                       _Allocator alloc,
@@ -350,10 +352,10 @@ namespace std {
              typename _ByteAllocator,
              bool _ExplicitAllocator>
     struct __generator_promise<generator<_Ref, _Value, _Alloc>, _ByteAllocator, _ExplicitAllocator>
-        final: public __generator_promise_base<_Ref>, public __promise_base_alloc<_ByteAllocator> {
+      final: public __generator_promise_base<_Ref>, public __promise_base_alloc<_ByteAllocator> {
         __generator_promise() noexcept
-            : __generator_promise_base<_Ref>(
-                  std::coroutine_handle<__generator_promise>::from_promise(*this)) {}
+            : __generator_promise_base<
+                _Ref>(std::coroutine_handle<__generator_promise>::from_promise(*this)) {}
 
         generator<_Ref, _Value, _Alloc> get_return_object() noexcept {
             return generator<_Ref, _Value, _Alloc> {
@@ -365,8 +367,8 @@ namespace std {
 
         template<std::ranges::range _Rng>
         typename __generator_promise_base<_Ref>::template __yield_sequence_awaiter<
-            generator<_Ref, _Value, _Alloc>>
-            yield_value(std::ranges::elements_of<_Rng>&& __x) {
+          generator<_Ref, _Value, _Alloc>>
+          yield_value(std::ranges::elements_of<_Rng>&& __x) {
             static_assert(!_ExplicitAllocator,
                           "This coroutine has an explicit allocator specified with "
                           "std::allocator_arg so an allocator needs to be passed "
@@ -379,13 +381,13 @@ namespace std {
 
     template<class _Alloc>
     using __byte_allocator_t = typename std::allocator_traits<
-        std::remove_cvref_t<_Alloc>>::template rebind_alloc<std::byte>;
+      std::remove_cvref_t<_Alloc>>::template rebind_alloc<std::byte>;
 
     // Type-erased allocator with default allocator behaviour.
     template<class _Ref, typename _Value, typename... _Args>
     struct coroutine_traits<generator<_Ref, _Value>, _Args...> {
-        using promise_type
-            = __generator_promise<generator<_Ref, _Value>, std::allocator<std::byte>>;
+        using promise_type = __generator_promise<generator<_Ref, _Value>,
+                                                 std::allocator<std::byte>>;
     };
 
     // Type-erased allocator with std::allocator_arg parameter
