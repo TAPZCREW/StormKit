@@ -68,7 +68,6 @@ namespace stormkit::log {
         state                  = std::mbstate_t {};
         std::string out_string = std::string { MB_LEN_MAX };
         for (const auto &c : string) { std::c8rtomb(std::data(out_string), c, &state); }*/
-
         std::println(output, "{} {}", StyleMap.at(severity) | str, string);
     }
 
