@@ -15,6 +15,7 @@ import :meta.traits;
 import :meta.concepts;
 import :typesafe.integer;
 import :string.czstring;
+import :typesafe.integer_casts;
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;
@@ -185,7 +186,7 @@ namespace stormkit { inline namespace core {
             out = std::unexpected<std::errc> { std::in_place, std::move(errc) };
         else {
             const auto size = std::distance(stdr::data(*out), ptr);
-            out->resize(size);
+            out->resize(as<usize>(size));
         }
 
         return out;
