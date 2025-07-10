@@ -32,6 +32,7 @@
     #define STORMKIT_PRIVATE
     #define STORMKIT_FORCE_INLINE_IMPL [[msvc::forceinline]]
     #define STORMKIT_INTRINSIC         [[msvc::intrinsic]]
+    #define STORMKIT_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
     #define STORMKIT_PUSH_WARNINGS     _Pragma("warning(push)")
     #define STORMKIT_POP_WARNINGS      _Pragma("warning(pop))")
 #elif defined(_MSC_VER) and defined(__clang__)
@@ -48,6 +49,7 @@
     #define STORMKIT_RESTRICT          __restrict
     #define STORMKIT_FORCE_INLINE_IMPL [[gnu::always_inline]]
     #define STORMKIT_INTRINSIC
+    #define STORMKIT_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
 #elif defined(__MINGW32__)
     #if defined(_LIBCPP_VERSION)
         #define STORMKIT_COMPILER_LIBCPP "libc++"
@@ -62,6 +64,7 @@
     #define STORMKIT_RESTRICT          __restrict
     #define STORMKIT_FORCE_INLINE_IMPL [[gnu::always_inline]]
     #define STORMKIT_INTRINSIC
+    #define STORMKIT_NO_UNIQUE_ADDRESS [[no_unique_address]]
 #else
     #if defined(_LIBCPP_VERSION)
         #define STORMKIT_COMPILER_LIBCPP "libc++"
@@ -76,6 +79,7 @@
     #define STORMKIT_RESTRICT          __restrict
     #define STORMKIT_FORCE_INLINE_IMPL [[gnu::always_inline]]
     #define STORMKIT_INTRINSIC
+    #define STORMKIT_NO_UNIQUE_ADDRESS [[no_unique_address]]
 #endif
 
 #if __has_cpp_attribute(lifetimebound)

@@ -3,6 +3,8 @@ module;
 #include <cassert>
 #include <version>
 
+#include <stormkit/core/platform_macro.hpp>
+
 export module stormkit.core:coroutines;
 
 export import std;
@@ -116,7 +118,7 @@ namespace std {
             constexpr _Allocator get_allocator() const noexcept { return __alloc; }
 
           private:
-            [[no_unique_address, msvc::no_unique_address]]
+            STORMKIT_NO_UNIQUE_ADDRESS
             _Allocator __alloc; // \expos
             _Rng&&     __range; // \expos
         };
