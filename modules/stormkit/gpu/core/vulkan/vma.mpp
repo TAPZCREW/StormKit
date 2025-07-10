@@ -5,9 +5,10 @@ module;
 
 #include <volk.h>
 
-export module stormkit.gpu.core:vulkan.vma;
+#define VMA_CALL_PRE STORMKIT_API
+#include <vk_mem_alloc.h>
 
-import stormkit.core;
+export module stormkit.gpu.core:vulkan.vma;
 
 STORMKIT_PUSH_WARNINGS
 #ifdef STORMKIT_COMPILER_CLANG
@@ -16,9 +17,22 @@ STORMKIT_PUSH_WARNINGS
     #pragma warning(disable: 5244)
 #endif
 export extern "C" {
-#define VMA_CALL_PRE STORMKIT_API
-#define VMA_ASSERT   ASSERT(expr)
-#include <vk_mem_alloc.h>
+    using ::VMA_MEMORY_USAGE_UNKNOWN;
+    using ::vmaAllocateMemoryForBuffer;
+    using ::vmaAllocateMemoryForImage;
+    using ::VmaAllocation;
+    using ::VmaAllocationCreateInfo;
+    using ::VmaAllocator;
+    using ::VmaAllocatorCreateInfo;
+    using ::vmaBindBufferMemory;
+    using ::vmaBindImageMemory;
+    using ::vmaCreateAllocator;
+    using ::vmaDestroyAllocator;
+    using ::vmaFlushAllocation;
+    using ::vmaFreeMemory;
+    using ::vmaMapMemory;
+    using ::vmaUnmapMemory;
+    using ::VmaVulkanFunctions;
 }
 
 STORMKIT_POP_WARNINGS
