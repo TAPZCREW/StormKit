@@ -271,7 +271,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     inline auto DescriptorSet::update(std::span<const Descriptor> descriptors) -> void {
-        auto&& [buffers, images, writes] = [this, &descriptors] noexcept -> decltype(auto) {
+        auto&& [_, _, _writes] = [this, &descriptors] noexcept -> decltype(auto) {
             auto buffers = std::vector<VkDescriptorBufferInfo> {};
             auto images  = std::vector<VkDescriptorImageInfo> {};
             auto writes  = std::vector<VkWriteDescriptorSet> {};
@@ -339,8 +339,8 @@ namespace stormkit::gpu {
 
         vk_call(m_vk_device_table->vkUpdateDescriptorSets,
                 m_vk_device,
-                stdr::size(writes),
-                stdr::data(writes),
+                stdr::size(_writes),
+                stdr::data(_writes),
                 0,
                 nullptr);
     }
@@ -449,8 +449,7 @@ namespace stormkit::gpu {
                                            .binding         = binding.binding,
                                            .descriptorType  = to_vk<VkDescriptorType>(binding.type),
                                            .descriptorCount = as<u32>(binding.descriptor_count),
-                                           .stageFlags      = to_vk<VkShaderStageFlagBits>(binding
-                                                                                        .stages),
+                                           .stageFlags = to_vk<VkShaderStageFlags>(binding.stages),
                                            .pImmutableSamplers = nullptr,
                                        };
                                    })

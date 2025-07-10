@@ -328,8 +328,8 @@ namespace stormkit::gpu {
                                                                  push_constant_range) noexcept {
                                                 return VkPushConstantRange {
                                                     .stageFlags = to_vk<
-                                                      VkShaderStageFlagBits>(push_constant_range
-                                                                               .stages),
+                                                      VkShaderStageFlags>(push_constant_range
+                                                                            .stages),
                                                     .offset = push_constant_range.offset,
                                                     .size   = as<u32>(push_constant_range.size),
                                                 };
