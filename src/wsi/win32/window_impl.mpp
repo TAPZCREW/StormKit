@@ -195,8 +195,8 @@ namespace stormkit::wsi::win32 {
                                           _style,
                                           CW_USEDEFAULT,
                                           CW_USEDEFAULT,
-                                          size.width,
-                                          size.height,
+                                          as<i32>(size.width),
+                                          as<i32>(size.height),
                                           nullptr,
                                           nullptr,
                                           h_instance,
@@ -333,8 +333,8 @@ namespace stormkit::wsi::win32 {
                      HWND_TOP,
                      0,
                      0,
-                     extent.width,
-                     extent.height,
+                     as<i32>(extent.width),
+                     as<i32>(extent.height),
                      SWP_NOMOVE | SWP_FRAMECHANGED);
     }
 
@@ -369,8 +369,8 @@ namespace stormkit::wsi::win32 {
                          nullptr,
                          0,
                          0,
-                         m_current_size.width,
-                         m_current_size.height,
+                         as<i32>(m_current_size.width),
+                         as<i32>(m_current_size.height),
                          SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
 
             m_is_fullscreen = true;
@@ -380,10 +380,10 @@ namespace stormkit::wsi::win32 {
 
             SetWindowPos(m_window_handle,
                          nullptr,
-                         m_last_position.x,
-                         m_last_position.y,
-                         m_last_size.width,
-                         m_last_size.height,
+                         as<i32>(m_last_position.x),
+                         as<i32>(m_last_position.y),
+                         as<i32>(m_last_size.width),
+                         as<i32>(m_last_size.height),
                          SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
 
             m_is_fullscreen = false;
@@ -457,7 +457,7 @@ namespace stormkit::wsi::win32 {
     /////////////////////////////////////
     auto WindowImpl::set_mouse_position_on_desktop(WM, const math::Vector2U& position) noexcept
       -> void {
-        SetCursorPos(position.x, position.y);
+        SetCursorPos(as<i32>(position.x), as<i32>(position.y));
     }
 
     /////////////////////////////////////
@@ -467,8 +467,7 @@ namespace stormkit::wsi::win32 {
 
         auto& monitors = *reinterpret_cast<std::vector<Monitor>*>(data);
 
-        auto monitor_info = MONITORINFOEX {};
-        ZeroMemory(&monitor_info, sizeof(MONITORINFOEX));
+        auto monitor_info   = zeroed<MONITORINFOEX>();
         monitor_info.cbSize = sizeof(MONITORINFOEX);
 
         GetMonitorInfo(_monitor, &monitor_info);
@@ -480,8 +479,7 @@ namespace stormkit::wsi::win32 {
 
         monitor.name = std::string { monitor_info.szDevice };
 
-        auto dm = DEVMODE {};
-        ZeroMemory(&dm, sizeof(DEVMODE));
+        auto dm = zeroed<DEVMODE>();
 
         for (auto i = 0; EnumDisplaySettings(monitor_info.szDevice, i, &dm) != 0; ++i) {
             monitor.extents.emplace_back(as<u32>(dm.dmPelsWidth), as<u32>(dm.dmPelsHeight));

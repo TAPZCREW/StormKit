@@ -87,13 +87,21 @@ export {
         } // namespace meta
 
         /// @output_section Publics operators members
-        /// @brief ValueType the equality with an other extent.
+        /// @brief ValueType the ordering with an other extent.
         /// @param other ValueType extent to test
         /// @returns true if this extent is equal to `other`, otherwise returns false.
         template<meta::IsExtent Extent>
         [[nodiscard]]
         constexpr auto operator<=>(const Extent& first, const Extent& second) noexcept ->
           typename Extent::OrderingType;
+
+        /// @output_section Publics operators members
+        /// @brief ValueType the equality with an other extent.
+        /// @param other ValueType extent to test
+        /// @returns true if this extent is equal to `other`, otherwise returns false.
+        template<meta::IsExtent Extent>
+        [[nodiscard]]
+        constexpr auto operator==(const Extent& first, const Extent& second) noexcept -> bool;
 
         /// @brief Multiply an extent with a factor.
         /// @param factor ElementType factor to multiply
@@ -234,10 +242,26 @@ namespace stormkit { inline namespace core { namespace math {
         const auto& values       = *std::bit_cast<Array*>(&first);
         const auto& other_values = *std::bit_cast<Array*>(&second);
 
-        for (auto i = 0; i < RANK; ++i)
+        for (auto i = 0uz; i < RANK; ++i)
             if (auto ret = values[i] <=> other_values[i]; ret != 0) return ret;
 
         return OrderingType::equivalent;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::IsExtent Extent>
+    constexpr auto operator==(const Extent& first, const Extent& second) noexcept -> bool {
+        using Array                = std::array<typename Extent::ElementType, Extent::RANK>;
+        static constexpr auto RANK = Extent::RANK;
+
+        const auto& values       = *std::bit_cast<Array*>(&first);
+        const auto& other_values = *std::bit_cast<Array*>(&second);
+
+        for (auto i = 0uz; i < RANK; ++i)
+            if (values[i] != other_values[i]) return false;
+
+        return true;
     }
 
     /////////////////////////////////////

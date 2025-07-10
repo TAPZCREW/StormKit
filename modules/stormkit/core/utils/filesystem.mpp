@@ -108,7 +108,7 @@ namespace stormkit { inline namespace core { namespace io {
     inline auto readfile(TextFile, const stdfs::path& path, std::span<char> output)
       -> Expected<void> {
         EXPECTS(stdfs::file_size(path) <= stdr::size(output));
-        auto handle = FileHandle { path.c_str(), "r" };
+        auto handle = FileHandle { path.string().c_str(), "r" };
         if (not handle) return std::unexpected { std::make_error_code(std::errc(errno)) };
 
         std::fread(stdr::data(output), sizeof(char), stdr::size(output), handle);
@@ -130,7 +130,7 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     inline auto readfile(const stdfs::path& path, std::span<Byte> output) -> Expected<void> {
         EXPECTS(stdfs::file_size(path) <= stdr::size(output));
-        auto handle = FileHandle { path.c_str(), "rb" };
+        auto handle = FileHandle { path.string().c_str(), "rb" };
         if (not handle) return std::unexpected { std::make_error_code(std::errc(errno)) };
 
         std::fread(stdr::data(output), sizeof(Byte), stdr::size(output), handle);
