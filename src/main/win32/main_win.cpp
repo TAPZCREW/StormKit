@@ -18,66 +18,65 @@ import stormkit.core;
 #include <version>
 
 using namespace std::string_view_literals;
+using namespace stormkit;
 
 namespace {
-    constexpr auto BUF_SIZE          = 1024;
+    // constexpr auto BUF_SIZE          = 1024;
     constexpr auto MAX_CONSOLE_LINES = WORD { 500 };
 
     // https://stackoverflow.com/questions/191842/how-do-i-get-console-output-in-c-with-a-windows-program
-    auto redirect_io_to_console(bool alloc_console) -> void {
-        const auto has_console = ::AttachConsole(ATTACH_PARENT_PROCESS) == TRUE and alloc_console;
-        if (!has_console) {
+    auto redirect_io_to_console(bool alloc_console) -> bool {
+        auto has_console = ::AttachConsole(ATTACH_PARENT_PROCESS) == TRUE;
+        auto allocated   = false;
+        if (!has_console and alloc_console) {
             // We weren't launched from a console, so make one.
-            AllocConsole();
-
-            // set the screen buffer to be big enough to let us scroll text
-            auto coninfo = stormkit::zeroed<CONSOLE_SCREEN_BUFFER_INFO>();
-
-            ::GetConsoleScreenBufferInfo(stormkit::get_stdout(), &coninfo);
-            coninfo.dwSize.Y = MAX_CONSOLE_LINES;
-            ::SetConsoleScreenBufferSize(stormkit::get_stdout(), coninfo.dwSize);
+            has_console = ::AllocConsole() == TRUE;
+            allocated   = has_console;
         }
 
-        const auto handles = std::array<std::tuple<DWORD, std::FILE*, stormkit::CZString>, 3> {
-            std::tuple { STD_OUTPUT_HANDLE, stdout, "w" },
-            { STD_ERROR_HANDLE,  stderr, "w" },
-            { STD_INPUT_HANDLE,  stdin,  "r" },
-        };
+        if (has_console) {
+            // redirect unbuffered STDOUT / STDERR /STDIN handles to the console
+            auto std_handle = ::GetStdHandle(STD_INPUT_HANDLE);
+            auto fd         = _open_osfhandle(std::bit_cast<std::intptr_t>(std_handle), _O_TEXT);
+            auto fp         = _fdopen(fd, "r");
+            _dup2(_fileno(fp), _fileno(stdin));
+            // ::setvbuf(stdin, nullptr, _IONBF, 0);
 
-        // redirect unbuffered STDOUT / STDERR /STDIN handles to the console
-        std::FILE* fp = nullptr;
-        if (alloc_console) {
-            for (const auto& [handle, std_file_handle, access] : handles) {
-                const auto std_handle         = ::GetStdHandle(handle);
-                const auto std_handle_address = std::bit_cast<std::intptr_t>(std_handle);
-                const auto con_handle         = ::_open_osfhandle(std_handle_address, _O_TEXT);
-                fp                            = ::_fdopen(con_handle, access);
-                *std_file_handle              = *fp;
+            std_handle = ::GetStdHandle(STD_OUTPUT_HANDLE);
+            fd         = _open_osfhandle(std::bit_cast<std::intptr_t>(std_handle), _O_TEXT);
+            fp         = _fdopen(fd, "w");
+            _dup2(_fileno(fp), _fileno(stdout));
+            // ::setvbuf(stdout, nullptr, _IONBF, 0);
+
+            std_handle = ::GetStdHandle(STD_ERROR_HANDLE);
+            fd         = _open_osfhandle(std::bit_cast<std::intptr_t>(std_handle), _O_TEXT);
+            fp         = _fdopen(fd, "w");
+            _dup2(_fileno(fp), _fileno(stderr));
+            // ::setvbuf(stderr, nullptr, _IONBF, 0);
+
+            if (alloc_console) {
+                // set the screen buffer to be big enough to let us scroll text
+                auto coninfo = zeroed<CONSOLE_SCREEN_BUFFER_INFO>();
+
+                ::GetConsoleScreenBufferInfo(std_handle, &coninfo);
+                coninfo.dwSize.Y = MAX_CONSOLE_LINES;
+                ::SetConsoleScreenBufferSize(std_handle, coninfo.dwSize);
             }
-        } else {
-            // ::freopen_s(&fp, "CONIN$", "r", stdin);
-            // ::freopen_s(&fp, "CONOUT$", "w", stdout);
-            // ::freopen_s(&fp, "CONOUT$", "w", stderr);
+
+            std::locale::global(std::locale { "" });
+            ::SetConsoleOutputCP(CP_UTF8);
+            ::SetConsoleCP(CP_UTF8);
+
+            // make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog
+            // point to console as well
+            std::ios::sync_with_stdio(true);
         }
 
-        // make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog
-        // point to console as well
-        std::ios::sync_with_stdio(true);
-
-        // Clear the error state for each of the C++ standard streams.
-        // std::wcout.clear();
-        // std::cout.clear();
-        // std::wcerr.clear();
-        // std::cerr.clear();
-        // std::wcin.clear();
-        // std::cin.clear();
+        return allocated;
     }
-
 } // namespace
 
 extern auto user_main(std::span<const std::string_view>) -> int;
-
-using namespace stormkit;
 
 auto __stdcall main(int argc, char** argv) -> int {
     auto args = std::vector<std::string_view> {};
@@ -87,18 +86,8 @@ auto __stdcall main(int argc, char** argv) -> int {
 
     redirect_io_to_console(false);
 
-    std::locale::global(std::locale { "" });
-    ::SetConsoleOutputCP(CP_UTF8);
-    ::SetConsoleCP(CP_UTF8);
-
-    // on Windows 10+ we need buffering or console will get 1 byte at a time (screwing up utf-8
-    // encoding)
-    ::setvbuf(stderr, nullptr, _IOFBF, BUF_SIZE);
-    ::setvbuf(stdout, nullptr, _IOFBF, BUF_SIZE);
-    ::setvbuf(stdin, nullptr, _IOFBF, BUF_SIZE);
-
-    stormkit::setup_signal_handler();
-    stormkit::set_current_thread_name("MainThread");
+    setup_signal_handler();
+    set_current_thread_name("MainThread");
 
     return user_main(args);
 }
@@ -116,24 +105,17 @@ auto __stdcall WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) -> int {
         args.emplace_back(argv[i]);
     }
 
-    redirect_io_to_console(alloc_console);
+    const auto has_allocated = redirect_io_to_console(alloc_console);
 
-    std::locale::global(std::locale { "" });
-    ::SetConsoleOutputCP(CP_UTF8);
-    ::SetConsoleCP(CP_UTF8);
+    setup_signal_handler();
+    set_current_thread_name("MainThread");
 
-    // on Windows 10+ we need buffering or console will get 1 byte at a time (screwing up utf-8
-    // encoding)
-    ::setvbuf(stderr, nullptr, _IOFBF, BUF_SIZE);
-    ::setvbuf(stdout, nullptr, _IOFBF, BUF_SIZE);
-    ::setvbuf(stdin, nullptr, _IOFBF, BUF_SIZE);
+    std::println("AAAAAAAAAAAAAAAAAAAAAA");
+    std::cout << "BBBBBBBBBBBBBBBBBBBBBB" << std::endl;
+    printf("CCCCCCCCCCCCCCCCCC");
 
-    stormkit::setup_signal_handler();
-    stormkit::set_current_thread_name("MainThread");
+    const auto ret_value = user_main(args);
+    if (has_allocated) ::FreeConsole();
 
-    std::println(stdout, "ZEAAZOIEUAUZEOIUOIAUZEIOUIAZ");
-    std::cout << "DJLKQJLKDKQLJDLJQSKJDJ" << std::endl;
-    printf("DJLQSDLJCWXJCOQOIDUQOFQHFLJQDPQO");
-
-    return user_main(args);
+    return ret_value;
 }
