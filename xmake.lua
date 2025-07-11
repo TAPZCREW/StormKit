@@ -1,171 +1,5 @@
+---------------------------- bootstrap ----------------------------
 set_policy("compatibility.version", "3.0")
-
-modules = {
-    core = {
-        public_packages = { "glm", "frozen", "unordered_dense", "tl_function_ref" },
-        modulename = "core",
-        has_headers = true,
-        custom = function()
-            if is_plat("windows") then add_packages("wil") end
-
-            set_configdir("$(builddir)/.gens/include/")
-            add_configfiles("include/(stormkit/core/**.hpp.in)")
-            add_headerfiles("$(builddir)/.gens/include/(stormkit/core/**.hpp)")
-
-            add_files("modules/stormkit/core.mpp")
-            add_includedirs("$(builddir)/.gens/include", { public = true })
-            add_cxflags("clang::-Wno-language-extension-token")
-
-            on_load(function(target)
-                local has_stacktrace = target:check_cxxsnippets({
-                    test = [[
-             void test() {
-                 std::stacktrace::current();
-             }
-         ]],
-                }, { configs = { languages = "c++23" }, includes = { "stacktrace" } })
-
-                if not has_stacktrace then
-                    print("No std C++23 stacktrace, falling back to cpptrace")
-                    target:add("packages", "cpptrace")
-                    if not target:is_plat("windows") then target:add("packages", "libdwarf") end
-                end
-            end)
-            on_config(function(target)
-                local output, errors = os.iorunv("git", { "rev-parse", "--abbrev-ref", "HEAD" })
-
-                if not errors == "" then
-                    print("Failed to get git hash and branch, reason: ", errors, output)
-                    target:set("configvar", "STORMKIT_GIT_BRANCH", " ")
-                    target:set("configvar", "STORMKIT_GIT_COMMIT_HASH", " ")
-                    return
-                end
-
-                target:set("configvar", "STORMKIT_GIT_BRANCH", output:trim())
-                output, errors = os.iorunv("git", { "rev-parse", "--verify", "HEAD" })
-
-                target:set("configvar", "STORMKIT_GIT_COMMIT_HASH", output:trim())
-            end)
-        end,
-    },
-    log = {
-        modulename = "log",
-        public_deps = { "stormkit-core" },
-        has_headers = true,
-    },
-    entities = {
-        modulename = "entities",
-        public_deps = { "stormkit-core" },
-    },
-    image = {
-        packages = { "libktx", "libpng", "libjpeg-turbo" },
-        modulename = "image",
-        public_deps = { "stormkit-core" },
-    },
-    main = {
-        modulename = "main",
-        has_headers = true,
-        deps = { "stormkit-core" },
-        custom = function()
-            add_cxflags("-Wno-main")
-            set_strip("debug")
-        end,
-        frameworks = is_plat("macosx") and { "CoreFoundation" } or nil,
-    },
-    wsi = {
-        modulename = "wsi",
-        public_deps = { "stormkit-core" },
-        deps = { "stormkit-log" },
-        packages = is_plat("linux") and {
-            "libxcb",
-            "xcb-util-keysyms",
-            "xcb-util",
-            "xcb-util-wm",
-            "xcb-util-errors",
-            "wayland",
-            "wayland-protocols",
-            "libxkbcommon",
-        } or nil,
-        frameworks = is_plat("macosx") and { "CoreFoundation", "Foundation", "AppKit", "Metal", "IOKit", "QuartzCore" }
-            or nil,
-        custom = function()
-            if is_plat("macosx") then
-            elseif is_plat("linux") then
-                add_rules("wayland.protocols")
-
-                on_load(function(target)
-                    assert(target:pkg("wayland-protocols"))
-                    local wayland_protocols_dir =
-                        path.join(target:pkg("wayland-protocols"):installdir() or "/usr", "share", "wayland-protocols")
-                    assert(wayland_protocols_dir, "wayland protocols directory not found")
-
-                    local protocols = {
-                        path.join("stable", "xdg-shell", "xdg-shell.xml"),
-                        path.join("unstable", "xdg-decoration", "xdg-decoration-unstable-v1.xml"),
-                        path.join("unstable", "pointer-constraints", "pointer-constraints-unstable-v1.xml"),
-                        path.join("unstable", "relative-pointer", "relative-pointer-unstable-v1.xml"),
-                    }
-
-                    for _, protocol in ipairs(protocols) do
-                        target:add("files", path.join(wayland_protocols_dir, protocol))
-                    end
-                end)
-            elseif is_plat("mingw") then
-                add_syslinks("user32", "shell32")
-            elseif is_plat("windows") then
-                add_syslinks("user32", "shell32")
-            end
-        end,
-    },
-    engine = {
-        modulename = "Engine",
-        has_headers = true,
-        public_deps = {
-            "stormkit-core",
-            "stormkit-log",
-            "stormkit-wsi",
-            "stormkit-image",
-            "stormkit-entities",
-            "stormkit-gpu",
-        },
-        packages = { "nzsl" },
-        custom = function()
-            add_rules("compile.shaders")
-            add_files("shaders/Engine/**.nzsl")
-        end,
-    },
-    gpu = {
-        modulename = "gpu",
-        has_headers = true,
-        public_packages = {
-            "frozen",
-            "volk",
-            "vulkan-headers v1.4.309",
-            "vulkan-memory-allocator v3.2.1",
-        },
-        public_deps = { "stormkit-core", "stormkit-log", "stormkit-wsi", "stormkit-image" },
-        packages = is_plat("linux") and {
-            "libxcb",
-            "wayland",
-        } or nil,
-        public_defines = {
-            "VMA_DYNAMIC_VULKAN_FUNCTIONS=0",
-            "VMA_STATIC_VULKAN_FUNCTIONS=0",
-            "STORMKIT_GPU_VULKAN",
-        },
-        custom = function()
-            if is_plat("linux") then
-                add_defines("VK_USE_PLATFORM_XCB_KHR", { public = true })
-                add_defines("VK_USE_PLATFORM_WAYLAND_KHR", { public = true })
-            elseif is_plat("macosx") then
-                add_defines("VK_USE_PLATFORM_MACOS_MVK", { public = true })
-            elseif is_plat("windows") then
-                add_defines("VK_USE_PLATFORM_WIN32_KHR", { public = true })
-            end
-            add_cxflags("clang::-Wno-missing-declarations")
-        end,
-    },
-}
 
 local allowedmodes = {
     "debug",
@@ -186,7 +20,6 @@ set_project("StormKit")
 set_version("0.1.0", { build = "%Y%m%d%H%M" })
 
 includes("xmake/rules/*.lua")
-includes("xmake/*.lua")
 
 ---------------------------- global rules ----------------------------
 if get_config("vsxmake") then add_rules("plugin.vsxmake.autoupdate") end
@@ -215,97 +48,7 @@ add_vectorexts("avx", "avx2")
 add_vectorexts("sse", "sse2", "sse3", "ssse3", "sse4.2")
 
 ---------------------------- options ----------------------------
-option("examples_engine", {
-    default = false,
-    category = "root menu/others",
-    deps = { "examples" },
-    after_check = function(option)
-        if option:dep("examples"):enabled() then option:enable(true) end
-    end,
-})
-option("examples_gpu", {
-    default = false,
-    category = "root menu/others",
-    deps = { "examples" },
-    after_check = function(option)
-        if option:dep("examples"):enabled() then option:enable(true) end
-    end,
-})
-option("examples_wsi", {
-    default = false,
-    category = "root menu/others",
-    deps = { "examples" },
-    after_check = function(option)
-        if option:dep("examples"):enabled() then option:enable(true) end
-    end,
-})
-option("examples_log", {
-    default = false,
-    category = "root menu/others",
-    deps = { "examples" },
-    after_check = function(option)
-        if option:dep("examples"):enabled() then option:enable(true) end
-    end,
-})
-option("examples_entities", {
-    default = false,
-    category = "root menu/others",
-    deps = { "examples" },
-    after_check = function(option)
-        if option:dep("examples"):enabled() then
-        end
-    end,
-}) --option:enable(true) end end })
-option("examples", { default = false, category = "root menu/others" })
-option("tools", {
-    default = false,
-    category = "root menu/others",
-})
-option("tests", { default = false, category = "root menu/others" })
-option("tests_core", {
-    default = false,
-    category = "root menu/others",
-    deps = { "tests" },
-    after_check = function(option)
-        if option:dep("tests"):enabled() then option:enable(true) end
-    end,
-})
-
-option("sanitizers", { default = false, category = "root menu/build" })
-option("mold", { default = false, category = "root menu/build" })
-option("lto", { default = false, category = "root menu/build" })
-option("shared_deps", { default = false, category = "root menu/build" })
-option("on_ci", { default = false, category = "root menu/build" })
-
----------------------------- module options ----------------------------
-option("log", { default = true, category = "root menu/modules" })
-option("entities", { default = true, category = "root menu/modules" })
-option("image", { default = true, category = "root menu/modules" })
-option("main", { default = true, category = "root menu/modules" })
-option("wsi", { default = true, category = "root menu/modules" })
-option("gpu", { default = true, category = "root menu/modules", deps = { "log", "image", "wsi" } })
-option("engine", {
-    default = true,
-    category = "root menu/modules",
-    deps = { "log", "entities", "image", "wsi", "gpu" },
-})
-option("compile_commands", { default = false, category = "root menu/support" })
-option("vsxmake", { default = false, category = "root menu/support" })
-
-option("devmode", {
-    category = "root menu/others",
-    deps = { "tests", "examples", "compile_commands", "mold", "sanitizers", "engine", "mode" },
-    after_check = function(option)
-        if option:enabled() then
-            for _, name in ipairs({ "tests", "examples", "compile_commands", "mold", "sanitizers" }) do
-                option:dep(name):enable(true)
-            end
-            for _, name in ipairs({ "engine" }) do
-                option:dep(name):enable(false)
-            end
-        end
-    end,
-})
+includes("xmake/options.lua")
 
 if get_config("devmode") then
     set_policy("build.c++.modules.incremental.bmicheck", true)
@@ -322,36 +65,17 @@ set_allowedmodes(allowedmodes)
 set_allowedplats("windows", "mingw", "linux", "macosx", "wasm")
 set_allowedarchs("windows|x64", "mingw|x86_64", "linux|x86_64", "linux|aarch64", "macosx|x86_64", "macosx|arm64")
 
-add_defines("FROZEN_USE_STD_MODULE")
+includes("xmake/dependencies.lua")
+includes("xmake/targets.lua")
 
-if not is_plat("wasm") then
-    add_requireconfs("vulkan-headers", { system = false })
-    add_requireconfs("vulkan-memory-allocator", { system = false })
-end
-
-if get_config("toolchain") == "llvm" then
-    add_requireconfs("libktx", { configs = { cxflags = "-Wno-overriding-option" } })
-end
-
-add_requireconfs("frozen", { system = false })
-
-add_requires("cpptrace")
-if not is_plat("windows") then add_requires("libdwarf") end
-
-local package_configs = {
-    configs = {
-        shared = get_config("shared_deps"),
-        ["x11"] = true,
-        wayland = true,
-        modules = true,
-        std_import = true,
-        cpp = "latest",
-    },
-}
-if get_config("on_ci") then package_configs.system = false end
-
-if is_plat("windows") then
-    add_requireconfs("volk", { configs = { header_only = true } })
+---------------------------- dependencies ----------------------------
+for _, module in pairs(modules) do
+    for _, package in ipairs(module.public_packages) do
+        add_requires_with_conf_transitive(package)
+    end
+    for _, package in ipairs(module.packages) do
+        add_requires_with_conf(package)
+    end
 end
 
 ---------------------------- targets ----------------------------
@@ -359,16 +83,6 @@ for name, module in pairs(modules) do
     local modulename = module.modulename
 
     if name == "core" or name == "main" or get_config(name) then
-        local packages = table.join(module.packages or {}, module.public_packages or {})
-        for _, package in ipairs(packages) do
-            add_requires(package, package_configs)
-            add_requireconfs(package .. ".**", package_configs)
-        end
-
-        local _packages = {}
-        for _, package in ipairs(_packages) do
-            table.insert(packages, package:split(" ")[1])
-        end
         target("stormkit-" .. name, function()
             set_group("libraries")
 
