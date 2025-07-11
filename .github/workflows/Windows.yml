@@ -82,7 +82,7 @@ jobs:
         if: ${{ !steps.restore-xmakecache.outputs.cache-hit }}
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: branch@dev
+          xmake-version: Arthapz/xmake#branch@fix-cmake-clang-windows
           actions-cache-folder: '.xmake-cache'
 
       - name: Cache XMake

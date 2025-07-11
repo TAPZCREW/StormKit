@@ -3,6 +3,9 @@ modules = {
         public_packages = { "glm", "frozen", "unordered_dense", "tl_function_ref" },
         modulename = "core",
         has_headers = true,
+        public_defines = {
+        "FROZEN_USE_STD_MODULE",
+        },
         custom = function()
             if is_plat("windows") then add_packages("wil") end
 
