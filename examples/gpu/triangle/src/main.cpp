@@ -284,8 +284,8 @@ auto main(std::span<const std::string_view> args) -> int {
                                                    100ms,
                                                    std::cref(wait));
         const auto extract_index      = [](auto&& _result) static noexcept {
-            auto&& [result, image_index] = _result;
-            return image_index;
+            auto&& [result, _image_index] = _result;
+            return _image_index;
         };
 
         image_index = in_flight.wait()

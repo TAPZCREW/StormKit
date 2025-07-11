@@ -128,7 +128,7 @@ modules = {
             "stormkit-entities",
             "stormkit-gpu",
         },
-        packages = {"nzsl"},
+        packages = { "nzsl" },
         custom = function()
             add_rules("compile.shaders")
             add_files("shaders/Engine/**.nzsl")
@@ -151,7 +151,7 @@ modules = {
         public_defines = {
             "VMA_DYNAMIC_VULKAN_FUNCTIONS=0",
             "VMA_STATIC_VULKAN_FUNCTIONS=0",
-            "STORMKIT_GPU_VULKAN"
+            "STORMKIT_GPU_VULKAN",
         },
         custom = function()
             if is_plat("linux") then
@@ -259,7 +259,7 @@ option("examples_entities", {
 option("examples", { default = false, category = "root menu/others" })
 option("tools", {
     default = false,
-    category = "root menu/others"
+    category = "root menu/others",
 })
 option("tests", { default = false, category = "root menu/others" })
 option("tests_core", {
@@ -297,10 +297,10 @@ option("devmode", {
     deps = { "tests", "examples", "compile_commands", "mold", "sanitizers", "engine", "mode" },
     after_check = function(option)
         if option:enabled() then
-            for _, name in ipairs({"tests", "examples", "compile_commands", "mold", "sanitizers"}) do
+            for _, name in ipairs({ "tests", "examples", "compile_commands", "mold", "sanitizers" }) do
                 option:dep(name):enable(true)
             end
-            for _, name in ipairs({"engine"}) do
+            for _, name in ipairs({ "engine" }) do
                 option:dep(name):enable(false)
             end
         end
@@ -338,9 +338,20 @@ add_requireconfs("frozen", { system = false })
 add_requires("cpptrace")
 if not is_plat("windows") then add_requires("libdwarf") end
 
-local package_configs = {configs = {shared = get_config("shared_deps"), ["x11"] = true, wayland = true, modules = true, std_import = true, cpp = "latest"}}
-if get_config("on_ci") then
-    package_configs.system = false
+local package_configs = {
+    configs = {
+        shared = get_config("shared_deps"),
+        ["x11"] = true,
+        wayland = true,
+        modules = true,
+        std_import = true,
+        cpp = "latest",
+    },
+}
+if get_config("on_ci") then package_configs.system = false end
+
+if is_plat("windows") then
+    add_requireconfs("volk", { configs = { header_only = true } })
 end
 
 ---------------------------- targets ----------------------------
@@ -465,7 +476,7 @@ for name, module in pairs(modules) do
                     table.insert(packages, package:split(" ")[1])
                 end
 
-                add_packages(packages, {public = is_kind("static")})
+                add_packages(packages, { public = is_kind("static") })
             end
 
             if module.public_packages then
@@ -483,16 +494,14 @@ for name, module in pairs(modules) do
     end
 end
 
-if not is_host("windows") then
-    add_requireconfs("**.pkg-config", { override = true, system = true })
-end
+if not is_host("windows") then add_requireconfs("**.pkg-config", { override = true, system = true }) end
 add_requireconfs("**.bison", { override = true, system = true })
 add_requireconfs("**.m4", { override = true, system = true })
 add_requireconfs("**.python", { override = true, system = true })
 add_requireconfs("**.meson", { override = true, system = true })
 add_requireconfs("**.autoconf", { override = true, system = true })
-add_requireconfs("**.cmake",  { override = true, system = true })
-add_requireconfs("**.nasm",  { override = true, system = true })
+add_requireconfs("**.cmake", { override = true, system = true })
+add_requireconfs("**.nasm", { override = true, system = true })
 
 for name, _ in pairs(modules) do
     if get_config("examples_" .. name) then

@@ -93,9 +93,9 @@ namespace stormkit::gpu {
             .depthClampEnable        = state.rasterization_state.depth_clamp_enable,
             .rasterizerDiscardEnable = state.rasterization_state.rasterizer_discard_enable,
             .polygonMode             = to_vk<VkPolygonMode>(state.rasterization_state.polygon_mode),
-            .cullMode        = to_vk<VkCullModeFlagBits>(state.rasterization_state.cull_mode),
-            .frontFace       = to_vk<VkFrontFace>(state.rasterization_state.front_face),
-            .depthBiasEnable = state.rasterization_state.depth_bias_enable,
+            .cullMode                = to_vk<VkCullModeFlags>(state.rasterization_state.cull_mode),
+            .frontFace               = to_vk<VkFrontFace>(state.rasterization_state.front_face),
+            .depthBiasEnable         = state.rasterization_state.depth_bias_enable,
             .depthBiasConstantFactor = state.rasterization_state.depth_bias_constant_factor,
             .depthBiasClamp          = state.rasterization_state.depth_bias_clamp,
             .depthBiasSlopeFactor    = state.rasterization_state.depth_bias_slope_factor,
@@ -130,7 +130,7 @@ namespace stormkit::gpu {
                       .dstAlphaBlendFactor = to_vk<VkBlendFactor>(attachment
                                                                     .dst_alpha_blend_factor),
                       .alphaBlendOp        = to_vk<VkBlendOp>(attachment.alpha_blend_operation),
-                      .colorWriteMask = to_vk<VkColorComponentFlagBits>(attachment.color_write_mask)
+                      .colorWriteMask = to_vk<VkColorComponentFlags>(attachment.color_write_mask)
                   };
               })
             | stdr::to<std::vector>();

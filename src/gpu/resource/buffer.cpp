@@ -23,7 +23,7 @@ namespace stormkit::gpu {
             .pNext                 = nullptr,
             .flags                 = 0,
             .size                  = m_size,
-            .usage                 = to_vk<VkBufferUsageFlagBits>(m_usages),
+            .usage                 = to_vk<VkBufferUsageFlags>(m_usages),
             .sharingMode           = VK_SHARING_MODE_EXCLUSIVE,
             .queueFamilyIndexCount = 0,
             .pQueueFamilyIndices   = nullptr,
@@ -37,7 +37,7 @@ namespace stormkit::gpu {
               const auto create_info = VmaAllocationCreateInfo {
                   .flags          = 0,
                   .usage          = VMA_MEMORY_USAGE_UNKNOWN,
-                  .requiredFlags  = to_vk<VkMemoryPropertyFlagBits>(memory_properties),
+                  .requiredFlags  = to_vk<VkMemoryPropertyFlags>(memory_properties),
                   .preferredFlags = 0,
                   .memoryTypeBits = 0,
                   .pool           = nullptr,

@@ -13,7 +13,6 @@ import std;
 import stormkit.core;
 
 import stormkit.gpu.core;
-;
 
 namespace stormkit::gpu {
     namespace {
@@ -92,7 +91,7 @@ namespace stormkit::gpu {
               const auto create_info = VmaAllocationCreateInfo {
                   .flags          = 0,
                   .usage          = VMA_MEMORY_USAGE_UNKNOWN,
-                  .requiredFlags  = to_vk<VkMemoryPropertyFlagBits>(memory_properties),
+                  .requiredFlags  = to_vk<VkMemoryPropertyFlags>(memory_properties),
                   .preferredFlags = 0,
                   .memoryTypeBits = 0,
                   .pool           = nullptr,

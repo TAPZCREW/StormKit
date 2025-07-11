@@ -328,7 +328,7 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto ImageView::do_init(const Image& image) noexcept -> Expected<void> {
         const auto vk_subresource_range = VkImageSubresourceRange {
-            .aspectMask     = to_vk<VkImageAspectFlagBits>(m_subresource_range.aspect_mask),
+            .aspectMask     = to_vk<VkImageAspectFlags>(m_subresource_range.aspect_mask),
             .baseMipLevel   = m_subresource_range.base_mip_level,
             .levelCount     = m_subresource_range.level_count,
             .baseArrayLayer = m_subresource_range.base_array_layer,
@@ -574,7 +574,7 @@ namespace stormkit::gpu {
         const auto create_info = VkImageCreateInfo {
             .sType                 = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
             .pNext                 = nullptr,
-            .flags                 = to_vk<VkImageCreateFlagBits>(m_flags),
+            .flags                 = to_vk<VkImageCreateFlags>(m_flags),
             .imageType             = to_vk<VkImageType>(m_type),
             .format                = to_vk<VkFormat>(m_format),
             .extent                = { m_extent.width, m_extent.height, m_extent.depth },
@@ -582,7 +582,7 @@ namespace stormkit::gpu {
             .arrayLayers           = m_layers * m_faces,
             .samples               = to_vk<VkSampleCountFlagBits>(m_samples),
             .tiling                = to_vk<VkImageTiling>(info.tiling),
-            .usage                 = to_vk<VkImageUsageFlagBits>(m_usages),
+            .usage                 = to_vk<VkImageUsageFlags>(m_usages),
             .sharingMode           = VK_SHARING_MODE_EXCLUSIVE,
             .queueFamilyIndexCount = 0, // TODO CHECK IF VALID VALUE
             .pQueueFamilyIndices   = nullptr,

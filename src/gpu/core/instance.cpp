@@ -53,7 +53,7 @@ namespace stormkit::gpu {
         constexpr auto SURFACE_EXTENSIONS = std::array {
             VK_KHR_SURFACE_EXTENSION_NAME,
             VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME,
-            VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME,
+            // VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME,
         };
 
         constexpr auto WSI_SURFACE_EXTENSIONS = std::array {
