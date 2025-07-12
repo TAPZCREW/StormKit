@@ -29,7 +29,6 @@ export {
 
     FORMATTER_INHERIT_DECLARE(int, stormkit::meta::IsStrict<std::byte>)
     FORMATTER_INHERIT_DECLARE(float, stormkit::meta::IsStrict<stormkit::Secondf>)
-    FORMATTER_DECLARE(stormkit::math::meta::IsVectorLike)
 
     template<stormkit::meta::IsEnumeration T, typename CharT>
         requires(not stormkit::meta::Is<T, std::byte>
@@ -83,10 +82,6 @@ FORMATTER_INHERIT_DEFINE_FORMAT(stormkit::meta::IsStrict<std::byte>) {
 FORMATTER_INHERIT_DEFINE_FORMAT(stormkit::meta::IsStrict<stormkit::Secondf>) {
     return formatter<float, CharT>::format(data.count(), ctx);
 }
-
-/////////////////////////////////////
-/////////////////////////////////////
-FORMATTER_DEFINE_FORMAT_AS_STRING(stormkit::math::meta::IsVectorLike)
 
 /////////////////////////////////////
 /////////////////////////////////////
