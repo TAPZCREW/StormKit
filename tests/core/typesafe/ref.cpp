@@ -87,6 +87,9 @@ namespace {
 
                 auto i = 0;
                 for (auto&& ref : refs) EXPECTS(*ref == i++);
+
+                delete d;
+                delete e;
             } },
           { "Ref.as_refs.default.all_ptr",
             [] static noexcept {
@@ -101,6 +104,9 @@ namespace {
 
                 auto i = 0;
                 for (auto&& ref : refs) EXPECTS(*ref == i++);
+
+                delete d;
+                delete e;
             } },
           { "Ref.to_refs.std_set",
             [] static noexcept {

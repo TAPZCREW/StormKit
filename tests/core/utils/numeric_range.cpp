@@ -19,8 +19,9 @@ namespace {
             [] {
                 auto rng     = range(10);
                 auto success = true;
-                for (auto i = 0; i < 10; ++i) {
-                    if (rng[i] != i) {
+                auto j       = 0;
+                for (auto i : rng) {
+                    if (i != j++) {
                         success = false;
                         break;
                     }
@@ -31,8 +32,9 @@ namespace {
             [] {
                 auto rng     = range(2, 10);
                 auto success = true;
-                for (auto i = 2; i < 10; ++i) {
-                    if (rng[i - 2] != i) {
+                auto j       = 2;
+                for (auto i : rng) {
+                    if (i != j++) {
                         success = false;
                         break;
                     }
@@ -43,8 +45,9 @@ namespace {
             [] {
                 auto rng     = range(-5, 10);
                 auto success = true;
-                for (auto i = -5; i < 10; ++i) {
-                    if (rng[i + 5] != i) {
+                auto j       = -5;
+                for (auto i : rng) {
+                    if (i != j++) {
                         success = false;
                         break;
                     }
