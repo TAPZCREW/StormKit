@@ -339,11 +339,15 @@ namespace std {
     auto formatter<stormkit::math::vec2<T>, CharT>::format(const stormkit::math::vec2<T>& vec,
                                                            FormatContext&                 ctx) const
       -> decltype(ctx.out()) {
-        auto&& out = ctx.out();
+        auto out = ctx.out();
 
-        out = formatter<T, CharT>::format_to(out, "[vec2: .x = {}, .y = {}]", vec.x, vec.y);
+        stdr::copy("[vec2: .x = "sv, out);
+        formatter<T, CharT>::format(vec.x, ctx);
+        stdr::copy(".y = "sv, out);
+        formatter<T, CharT>::format(vec.y, ctx);
+        stdr::copy("]"sv, out);
 
-        return out;
+        return std::move(out);
     }
 
     template<typename T>
@@ -363,15 +367,17 @@ namespace std {
     auto formatter<stormkit::math::vec3<T>, CharT>::format(const stormkit::math::vec3<T>& vec,
                                                            FormatContext&                 ctx) const
       -> decltype(ctx.out()) {
-        auto&& out = ctx.out();
+        auto out = ctx.out();
 
-        out = formatter<T, CharT>::format_to(out,
-                                             "[vec3: .x = {}, .y = {}, .z = {}]",
-                                             vec.x,
-                                             vec.y,
-                                             vec.z);
+        stdr::copy("[vec2: .x = "sv, out);
+        formatter<T, CharT>::format(vec.x, ctx);
+        stdr::copy(".y = "sv, out);
+        formatter<T, CharT>::format(vec.y, ctx);
+        stdr::copy(".z = "sv, out);
+        formatter<T, CharT>::format(vec.z, ctx);
+        stdr::copy("]"sv, out);
 
-        return out;
+        return std::move(out);
     }
 
     template<typename T>
@@ -392,15 +398,18 @@ namespace std {
     auto formatter<stormkit::math::vec4<T>, CharT>::format(const stormkit::math::vec4<T>& vec,
                                                            FormatContext&                 ctx) const
       -> decltype(ctx.out()) {
-        auto&& out = ctx.out();
+        auto out = ctx.out();
 
-        out = formatter<T, CharT>::format_to(out,
-                                             "[vec3: .x = {}, .y = {}, .z = {}, .w = {}]",
-                                             vec.x,
-                                             vec.y,
-                                             vec.z,
-                                             vec.w);
+        stdr::copy("[vec2: .x = "sv, out);
+        formatter<T, CharT>::format(vec.x, ctx);
+        stdr::copy(".y = "sv, out);
+        formatter<T, CharT>::format(vec.y, ctx);
+        stdr::copy(".z = "sv, out);
+        formatter<T, CharT>::format(vec.z, ctx);
+        stdr::copy(".w = "sv, out);
+        formatter<T, CharT>::format(vec.w, ctx);
+        stdr::copy("]"sv, out);
 
-        return out;
+        return std::move(out);
     }
 } // namespace std
