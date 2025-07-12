@@ -38,25 +38,25 @@ bool InputHandlerImpl::isMouseButtonPressed(MouseButton button) {
 
 /////////////////////////////////////
 /////////////////////////////////////
-void InputHandlerImpl::set_mouse_position(core::math::Vector2U position) {
+void InputHandlerImpl::set_mouse_position(core::math::vec2u position) {
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-void InputHandlerImpl::set_mouse_position(core::math::Vector2U position,
+void InputHandlerImpl::set_mouse_position(core::math::vec2u position,
                                           const Window &relative_to) {
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-core::math::Vector2U InputHandlerImpl::getMousePosition() {
-    return core::makeNamed<core::math::Vector2U>(core::math::Vector2U { 0u, 0u });
+core::math::vec2u InputHandlerImpl::getMousePosition() {
+    return core::makeNamed<core::math::vec2u>(core::math::vec2u { 0u, 0u });
 }
 
 /////////////////////////////////////
 /////////////////////////////////////
-core::math::Vector2U InputHandlerImpl::getMousePosition(const Window &relative_to) {
-    return core::makeNamed<core::math::Vector2U>(core::math::Vector2U { 0u, 0u });
+core::math::vec2u InputHandlerImpl::getMousePosition(const Window &relative_to) {
+    return core::makeNamed<core::math::vec2u>(core::math::vec2u { 0u, 0u });
 }
 
 /////////////////////////////////////

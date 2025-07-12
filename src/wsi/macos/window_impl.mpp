@@ -76,8 +76,8 @@ export namespace stormkit::wsi::macos {
 
         auto toggle_virtual_keyboard_visibility(bool visible) noexcept -> void;
 
-        auto        set_mouse_position(const math::Vector2I& position) noexcept -> void;
-        static auto set_mouse_position_on_desktop(WM wm, const math::Vector2U& position) noexcept
+        auto        set_mouse_position(const math::vec2i& position) noexcept -> void;
+        static auto set_mouse_position_on_desktop(WM wm, const math::vec2u& position) noexcept
             -> void;
 
         [[nodiscard]]
@@ -250,7 +250,7 @@ namespace stormkit::wsi::macos {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto
-        WindowImpl::set_mouse_position(const math::Vector2I& position) noexcept -> void {
+        WindowImpl::set_mouse_position(const math::vec2i& position) noexcept -> void {
         expects(m_window != nullptr);
         m_window->set_mouse_position(position.x, position.y);
     }
@@ -258,7 +258,7 @@ namespace stormkit::wsi::macos {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE auto
-        WindowImpl::set_mouse_position_on_desktop(WM _, const math::Vector2U& position) noexcept
+        WindowImpl::set_mouse_position_on_desktop(WM _, const math::vec2u& position) noexcept
         -> void {
         macOSWindow::set_mouse_position_on_desktop(position.x, position.y);
     }

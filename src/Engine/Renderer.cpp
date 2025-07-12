@@ -271,10 +271,10 @@ namespace stormkit::engine {
                                gpu::BlitRegion {
                                                 .src        = {},
                                                 .dst        = {},
-                                                .src_offset = { math::Vector3F { 0.f, 0.f, 0.f },
-                                                   as<math::Vector3F>(backbuffer.extent()) },
-                                                .dst_offset = { math::Vector3F { 0.f, 0.f, 0.f },
-                                                   as<math::Vector3F>(present_image.extent()) } }
+                                                .src_offset = { math::vec3f { 0.f, 0.f, 0.f },
+                                                   as<math::vec3f>(backbuffer.extent()) },
+                                                .dst_offset = { math::vec3f { 0.f, 0.f, 0.f },
+                                                   as<math::vec3f>(present_image.extent()) } }
         },
                            gpu::Filter::Linear);
         blit_cmb.transition_image_layout(backbuffer,

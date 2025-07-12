@@ -114,8 +114,8 @@ export namespace stormkit::wsi::linux::x11 {
 
         auto toggle_virtual_keyboard_visibility(bool visible) noexcept -> void;
 
-        auto        set_mouse_position(const math::Vector2I& position) noexcept -> void;
-        static auto set_mouse_position_on_desktop(const math::Vector2U& position) noexcept -> void;
+        auto        set_mouse_position(const math::vec2i& position) noexcept -> void;
+        static auto set_mouse_position_on_desktop(const math::vec2u& position) noexcept -> void;
 
         [[nodiscard]]
         static auto get_monitor_settings() -> std::vector<Monitor>;
@@ -159,8 +159,8 @@ export namespace stormkit::wsi::linux::x11 {
 
         Handles m_handles;
 
-        math::Vector2I         m_locked_mouse_position;
-        mutable math::Vector2I m_mouse_position;
+        math::vec2i         m_locked_mouse_position;
+        mutable math::vec2i m_mouse_position;
     };
 } // namespace stormkit::wsi::linux::x11
 
@@ -738,7 +738,7 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::set_mouse_position(const math::Vector2I& position) noexcept -> void {
+    auto WindowImpl::set_mouse_position(const math::vec2i& position) noexcept -> void {
         auto connection = get_xcb_connection();
 
         xcb_warp_pointer(connection,
@@ -756,7 +756,7 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::set_mouse_position_on_desktop(const math::Vector2U& position) noexcept
+    auto WindowImpl::set_mouse_position_on_desktop(const math::vec2u& position) noexcept
       -> void {
         auto connection = get_xcb_connection();
 

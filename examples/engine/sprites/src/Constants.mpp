@@ -15,8 +15,8 @@ import stormkit.log;
 
 export {
     struct Vertex {
-        stormkit::math::Vector2F position;
-        stormkit::math::Vector3F color;
+        stormkit::math::vec2f position;
+        stormkit::math::vec3f color;
     };
 
     inline constexpr auto VERTEX_SIZE = sizeof(Vertex);

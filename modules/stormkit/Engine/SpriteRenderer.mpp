@@ -18,8 +18,8 @@ import :Renderer;
 
 export namespace stormkit::engine {
     struct SpriteVertex {
-        math::Vector2F position;
-        math::Vector2F uv;
+        math::vec2f position;
+        math::vec2f uv;
     };
 
     struct Sprite {
@@ -75,7 +75,7 @@ export namespace stormkit::engine {
         std::unique_ptr<RenderData> m_render_data;
 
         math::ExtentF m_viewport;
-        math::MatrixF m_projection_matrix;
+        math::mat4f m_projection_matrix;
 
         u32                      m_next_sprite_id = 0;
         DeferInit<gpu::Buffer>      m_vertex_buffer;

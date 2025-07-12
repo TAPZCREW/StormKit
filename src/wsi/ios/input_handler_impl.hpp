@@ -23,10 +23,10 @@ namespace storm::window {
 
         static bool isKeyPressed(Key key);
         static bool isMouseButtonPressed(MouseButton button);
-        static void set_mouse_position(core::math::Vector2U position);
-        static void set_mouse_position(core::math::Vector2U position, const Window& relative_to);
-        static core::math::Vector2U getMousePosition();
-        static core::math::Vector2U getMousePosition(const Window& relative_to);
+        static void set_mouse_position(core::math::vec2u position);
+        static void set_mouse_position(core::math::vec2u position, const Window& relative_to);
+        static core::math::vec2u getMousePosition();
+        static core::math::vec2u getMousePosition(const Window& relative_to);
 
         static void toggle_virtual_keyboard_visibility(bool visible);
 

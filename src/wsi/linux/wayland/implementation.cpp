@@ -643,7 +643,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::set_mouse_position(const math::Vector2I& position) noexcept -> void {
+    auto WindowImpl::set_mouse_position(const math::vec2i& position) noexcept -> void {
         if (!m_open) return;
         if (m_is_mouse_locked) {
             zwp_locked_pointer_v1_set_cursor_position_hint(m_locked_pointer.get(),
@@ -655,7 +655,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::set_mouse_position_on_desktop(const math::Vector2U&) noexcept -> void {
+    auto WindowImpl::set_mouse_position_on_desktop(const math::vec2u&) noexcept -> void {
         elog("wayland::WindowImpl::set_mouse_position_on_desktop isn't yet implemented");
     }
 
