@@ -8,6 +8,8 @@ export module stormkit.core:math;
 
 // export import :math.arithmetic;
 export import :math.linear;
+export import :math.linear.vector;
+export import :math.linear.matrix;
 export import :math.trigonometry;
 export import :math.hypercomplex;
 export import :math.extent;
