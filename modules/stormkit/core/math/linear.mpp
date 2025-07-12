@@ -9,6 +9,6 @@ import std;
 import :typesafe.integer;
 
 export namespace stormkit { inline namespace core { namespace math {
-    template<typename T, usize... Sizes>
+    template<core::meta::IsArithmetic T, usize... Sizes>
     using TensorSpan = std::mdspan<T, std::extents<u8, Sizes...>, std::layout_right>;
 }}} // namespace stormkit::core::math
