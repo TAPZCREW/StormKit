@@ -1,0 +1,277 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+export module stormkit.core:math.linear.vector;
+
+import std;
+
+import :meta.traits;
+import :meta.concepts;
+
+import :typesafe.integer;
+import :typesafe.floating_point;
+
+import :math.linear;
+
+export {
+    namespace stormkit { inline namespace core { namespace math {
+        template<typename T, usize N>
+        using VectorSpan = TensorSpan<T, N>;
+
+        template<typename T, usize N>
+        [[nodiscard]]
+        constexpr auto dot(VectorSpan<const T, N> a, VectorSpan<const T, N> b) noexcept -> T;
+
+        template<typename T>
+        constexpr auto cross(VectorSpan<const T, 3> a,
+                             VectorSpan<const T, 3> b,
+                             VectorSpan<T, 3>       out) noexcept -> void;
+
+        template<typename T>
+        struct alignas(std::array<T, 2>) vec2 {
+            using value_type  = T;
+            using size_type   = usize;
+            using extent_type = u8;
+
+            static constexpr auto EXTENT = std::array<extent_type, 1> { 2uz };
+
+            T x;
+            T y;
+
+            template<typename Self>
+            constexpr auto operator[](this Self& self, usize i) noexcept
+              -> meta::ForwardConst<Self, value_type&>;
+        };
+
+        using vec2f32 = vec2<f32>;
+        using vec2f64 = vec2<f64>;
+        using vec2f   = vec2f32;
+
+        using vec2i32 = vec2<i32>;
+        using vec2i64 = vec2<i64>;
+        using vec2i   = vec2i32;
+
+        using vec2u32 = vec2<u32>;
+        using vec2u64 = vec2<u64>;
+        using vec2u   = vec2u32;
+
+        template<typename T>
+        struct alignas(std::array<T, 3>) vec3 {
+            using value_type  = T;
+            using size_type   = usize;
+            using extent_type = u8;
+
+            static constexpr auto EXTENT = std::array<extent_type, 1> { 3uz };
+
+            T x;
+            T y;
+            T z;
+
+            template<typename Self>
+            constexpr auto operator[](this Self& self, usize i) noexcept
+              -> meta::ForwardConst<Self, value_type&>;
+        };
+
+        using vec3f32 = vec3<f32>;
+        using vec3f64 = vec3<f64>;
+        using vec3f   = vec3f32;
+
+        using vec3i32 = vec3<i32>;
+        using vec3i64 = vec3<i64>;
+        using vec3i   = vec3i32;
+
+        using vec3u32 = vec3<u32>;
+        using vec3u64 = vec3<u64>;
+        using vec3u   = vec3u32;
+
+        template<typename T>
+        struct alignas(std::array<T, 4>) vec4 {
+            using value_type  = T;
+            using size_type   = usize;
+            using extent_type = u8;
+
+            static constexpr auto EXTENT = std::array<extent_type, 1> { 4uz };
+
+            T x;
+            T y;
+            T z;
+            T w;
+
+            template<typename Self>
+            constexpr auto operator[](this Self& self, usize i) noexcept
+              -> meta::ForwardConst<Self, value_type&>;
+        };
+
+        using vec4f32 = vec4<f32>;
+        using vec4f64 = vec4<f64>;
+        using vec4f   = vec4f32;
+
+        using vec4i32 = vec4<i32>;
+        using vec4i64 = vec4<i64>;
+        using vec4i   = vec4i32;
+
+        using vec4u32 = vec4<u32>;
+        using vec4u64 = vec4<u64>;
+        using vec4u   = vec4u32;
+
+        namespace meta {
+            template<typename T>
+            concept IsVec2 = core::meta::IsSpecializationOf<T, vec2>;
+            template<typename T>
+            concept IsVec3 = core::meta::IsSpecializationOf<T, vec3>;
+
+            template<typename T>
+            concept IsVec = IsVec2<T> || IsVec3<T>;
+
+            template<typename T, typename U>
+            concept HasOneVecType = not(core::meta::IsMdspanType<T> and core::meta::IsMdspanType<U>)
+                                    or meta::IsVec<T>
+                                    or meta::IsVec<U>;
+        } // namespace meta
+
+        template<meta::IsVec T>
+        [[nodiscard]]
+        constexpr auto as_mdspan(T& value) noexcept
+          -> VectorSpan<core::meta::ForwardConst<T, typename T::value_type>, T::EXTENT[0]>;
+
+        template<meta::IsVec T>
+        [[nodiscard]]
+        constexpr auto dot(const T& a, const T& b) noexcept -> decltype(auto);
+
+        template<typename T, typename U = T>
+            requires(meta::HasOneVecType<T, U> and (meta::IsVec3<T> or meta::IsVec3<U>))
+        [[nodiscard]]
+        constexpr auto cross(const T& a, const U& b) noexcept -> decltype(auto);
+    }}} // namespace stormkit::core::math
+} // namespace stormkit::core::math
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit { inline namespace core { namespace math {
+    static_assert(sizeof(vec2u32) == sizeof(u32) * 2);
+    static_assert(sizeof(vec2u64) == sizeof(u64) * 2);
+    static_assert(sizeof(vec2i32) == sizeof(i32) * 2);
+    static_assert(sizeof(vec2i64) == sizeof(i64) * 2);
+    static_assert(sizeof(vec2f32) == sizeof(f32) * 2);
+    static_assert(sizeof(vec2f64) == sizeof(f64) * 2);
+
+    static_assert(sizeof(vec3u32) == sizeof(u32) * 3);
+    static_assert(sizeof(vec3u64) == sizeof(u64) * 3);
+    static_assert(sizeof(vec3i32) == sizeof(i32) * 3);
+    static_assert(sizeof(vec3i64) == sizeof(i64) * 3);
+    static_assert(sizeof(vec3f32) == sizeof(f32) * 3);
+    static_assert(sizeof(vec3f64) == sizeof(f64) * 3);
+
+    static_assert(sizeof(vec4u32) == sizeof(u32) * 4);
+    static_assert(sizeof(vec4u64) == sizeof(u64) * 4);
+    static_assert(sizeof(vec4i32) == sizeof(i32) * 4);
+    static_assert(sizeof(vec4i64) == sizeof(i64) * 4);
+    static_assert(sizeof(vec4f32) == sizeof(f32) * 4);
+    static_assert(sizeof(vec4f64) == sizeof(f64) * 4);
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T, usize N>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto dot(VectorSpan<const T, N> a, VectorSpan<const T, N> b) noexcept -> T {
+        auto out = T { 0 };
+        for (auto i = 0u; i < N; ++i) out += (a[i] * b[i]);
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T>
+    STORMKIT_FORCE_INLINE
+    constexpr auto cross(VectorSpan<const T, 3> a,
+                         VectorSpan<const T, 3> b,
+                         VectorSpan<T, 3>       out) noexcept -> void {
+        out[0] = a[1] * b[2] - a[2] * b[1];
+        out[1] = a[2] * b[0] - a[0] * b[2];
+        out[2] = a[0] * b[1] - a[1] * b[0];
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T>
+    template<typename Self>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto vec2<T>::operator[](this Self& self, usize i) noexcept
+      -> core::meta::ForwardConst<Self, value_type&> {
+        static constexpr auto* members = { &vec2::x, &vec2::y };
+
+        return std::forward_like<Self>(self->*members[i]);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T>
+    template<typename Self>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto vec3<T>::operator[](this Self& self, usize i) noexcept
+      -> core::meta::ForwardConst<Self, value_type&> {
+        static constexpr auto* members = { &vec3::x, &vec3::y, &vec3::z };
+
+        return std::forward_like<Self>(self->*members[i]);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T>
+    template<typename Self>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto vec4<T>::operator[](this Self& self, usize i) noexcept
+      -> core::meta::ForwardConst<Self, value_type&> {
+        static constexpr auto* members = { &vec4::x, &vec4::y, &vec4::z, &vec4::w };
+
+        return std::forward_like<Self>(self->*members[i]);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsVec T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto as_mdspan(T& value) noexcept
+      -> VectorSpan<core::meta::ForwardConst<T, typename T::value_type>, T::EXTENT[0]> {
+        return VectorSpan<core::meta::ForwardConst<T, typename T::value_type>, T::EXTENT[0]> {
+            &value.x,
+            T::EXTENT
+        };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsVec T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto dot(const T& a, const T& b) noexcept -> decltype(auto) {
+        return dot(as_mdspan(a), as_mdspan(b));
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T, typename U = T>
+        requires(meta::HasOneVecType<T, U> and (meta::IsVec3<T> or meta::IsVec3<U>))
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto cross(const T& a, const U& b) noexcept -> decltype(auto) {
+        using OutType = std::conditional_t<meta::IsVec3<T>, T, U>;
+        auto out      = OutType {};
+
+        if constexpr (meta::IsVec3<T> and meta::IsVec3<U>)
+            cross(as_mdspan(a), as_mdspan(b), as_mdspan(out));
+        else if constexpr (meta::IsVec3<T>)
+            cross(as_mdspan(a), b, as_mdspan(out));
+        else if constexpr (meta::IsVec3<U>)
+            cross(a, as_mdspan(b), as_mdspan(out));
+        else
+            std::unreachable();
+
+        return out;
+    }
+}}} // namespace stormkit::core::math

@@ -17,7 +17,7 @@ namespace {
         "core.math.linear",
         {
           {
-            "linear.dot",
+            "linear.vector.dot",
             [] static {
                 const auto a = math::vec2i { 2, 3 };
                 const auto b = math::vec2i { 3, 2 };
@@ -25,7 +25,7 @@ namespace {
                 EXPECTS(math::dot(a, b) == 12);
             },
           }, {
-            "linear.cross",
+            "linear.vector.cross",
             [] static {
                 const auto a = math::vec3i { 2, 3, 2 };
                 const auto b = math::vec3i { 3, 2, 3 };
