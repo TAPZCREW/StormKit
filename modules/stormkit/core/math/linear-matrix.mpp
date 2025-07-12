@@ -21,6 +21,83 @@ import :math.linear;
 export namespace stormkit { inline namespace core { namespace math {
     template<typename T, usize M, usize N>
     using MatrixSpan = TensorSpan<T, M, N>;
+
+    template<typename T, usize M, usize N>
+    struct alignas(std::array<T, 2>) mat {
+        using value_type  = T;
+        using size_type   = usize;
+        using extent_type = u8;
+
+        static constexpr auto EXTENT = std::array<extent_type, 2> { M, N };
+
+        std::array<T, M * N> data;
+
+        template<typename Self>
+        constexpr auto operator[](this Self& self, usize i, usize j) noexcept
+          -> meta::ForwardConst<Self, value_type&>;
+    };
+
+    template<typename T>
+    using mat2x2 = mat<T, 2, 2>;
+
+    using mat2x2f32 = mat2x2<f32>;
+    using mat2x2f63 = mat2x2<f64>;
+    using mat2x2f   = mat2x2f32;
+
+    using mat2x2i32 = mat2x2<i32>;
+    using mat2x2i63 = mat2x2<i64>;
+    using mat2x2i   = mat2x2i32;
+
+    using mat2x2u32 = mat2x2<u32>;
+    using mat2x2u63 = mat2x2<u64>;
+    using mat2x2u   = mat2x2u32;
+
+    template<typename T>
+    using mat3x3 = mat<T, 3, 3>;
+
+    using mat3x3f32 = mat3x3<f32>;
+    using mat3x3f63 = mat3x3<f64>;
+    using mat3x3f   = mat3x3f32;
+
+    using mat3x3i32 = mat3x3<i32>;
+    using mat3x3i63 = mat3x3<i64>;
+    using mat3x3i   = mat3x3i32;
+
+    using mat3x3u32 = mat3x3<u32>;
+    using mat3x3u63 = mat3x3<u64>;
+    using mat3x3u   = mat3x3u32;
+
+    template<typename T>
+    using mat4x4 = mat<T, 4, 4>;
+
+    using mat4x4f32 = mat4x4<f32>;
+    using mat4x4f63 = mat4x4<f64>;
+    using mat4x4f   = mat4x4f32;
+
+    using mat4x4i32 = mat4x4<i32>;
+    using mat4x4i63 = mat4x4<i64>;
+    using mat4x4i   = mat4x4i32;
+
+    using mat4x4u32 = mat4x4<u32>;
+    using mat4x4u63 = mat4x4<u64>;
+    using mat4x4u   = mat4x4u32;
+
+    namespace meta {
+        template<typename T>
+        concept IsMat = core::meta::IsSpecializationWithNTTPOf<T, mat>;
+
+        template<typename T, typename U>
+        concept HasOneMatType = not(core::meta::IsMdspanType<T> and core::meta::IsMdspanType<U>)
+                                or meta::IsMat<T>
+                                or meta::IsMat<U>;
+    } // namespace meta
+
+    template<meta::IsMat T>
+    [[nodiscard]]
+    constexpr auto as_mdspan(T& value) noexcept
+      -> MatrixSpan<core::meta::ForwardConst<T, typename T::value_type>,
+                    T::EXTENT[0],
+                    T::EXTENT[1]>;
 }}} // namespace stormkit::core::math
 
 ////////////////////////////////////////////////////////////////////
@@ -28,4 +105,16 @@ export namespace stormkit { inline namespace core { namespace math {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit { inline namespace core { namespace math {
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsMat T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto as_mdspan(T& value) noexcept
+      -> MatrixSpan<core::meta::ForwardConst<T, typename T::value_type>,
+                    T::EXTENT[0],
+                    T::EXTENT[1]> {
+        return MatrixSpan<core::meta::ForwardConst<T, typename T::value_type>,
+                          T::EXTENT[0],
+                          T::EXTENT[1]> { &value.x, T::EXTENT };
+    }
 }}} // namespace stormkit::core::math
