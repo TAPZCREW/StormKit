@@ -61,11 +61,11 @@ export namespace stormkit::gpu {
     [[nodiscard]]
     constexpr auto to_vk(const Extent& extent) noexcept -> VkExtent3D;
 
-    template<math::meta::IsExtent2 Extent = math::Vector3<u32>>
+    template<math::meta::IsExtent2 Extent = math::vec3<u32>>
     [[nodiscard]]
     constexpr auto from_vk(const VkExtent2D& viewport) noexcept -> Extent;
 
-    template<math::meta::IsExtent3 Extent = math::Vector3<u32>>
+    template<math::meta::IsExtent3 Extent = math::vec3<u32>>
     [[nodiscard]]
     constexpr auto from_vk(const VkExtent3D& viewport) noexcept -> Extent;
 } // namespace stormkit::gpu
