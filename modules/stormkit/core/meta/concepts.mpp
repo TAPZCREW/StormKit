@@ -202,6 +202,9 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsVariantType = IsSpecializationOf<T, std::variant>;
 
     template<class T>
+    concept IsMdspanType = IsSpecializationOf<T, std::mdspan>;
+
+    template<class T>
     concept IsArrayType = IsSpecializationWithNTTPOf<T, std::array>;
 
     template<class T, class... Args>
