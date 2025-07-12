@@ -59,7 +59,7 @@ export {
     struct std::hash<stormkit::core::Handle<T, _ID>> {
         [[nodiscard]]
         constexpr auto operator()(stormkit::core::Handle<T, _ID> handle) const noexcept
-            -> stormkit::core::Hash64;
+            -> stormkit::core::hash64;
     };
 }
 
@@ -128,7 +128,7 @@ namespace stormkit { inline namespace core {
 /////////////////////////////////////
 /////////////////////////////////////
 template<class T, std::integral _ID>
-constexpr stormkit::core::Hash64 std::hash<stormkit::core::Handle<T, _ID>>::operator()(
+constexpr stormkit::core::hash64 std::hash<stormkit::core::Handle<T, _ID>>::operator()(
     stormkit::core::Handle<T, _ID> handle) const noexcept {
-    return stormkit::core::as<stormkit::core::Hash64>(handle.id);
+    return stormkit::core::as<stormkit::core::hash64>(handle.id);
 }

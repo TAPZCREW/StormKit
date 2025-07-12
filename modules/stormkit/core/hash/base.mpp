@@ -9,13 +9,13 @@ import std;
 import :meta;
 
 export namespace stormkit { inline namespace core {
-    using Hash32 = std::uint32_t;
-    using Hash64 = std::uint64_t;
+    using hash32 = std::uint32_t;
+    using hash64 = std::uint64_t;
 
     template<class T>
-    concept HashValue = meta::IsOneOf<T, Hash32, Hash64>;
+    concept HashValue = meta::IsOneOf<T, hash32, hash64>;
 
-    template<HashValue OutputType = Hash32>
+    template<HashValue OutputType = hash32>
     constexpr auto hash_combine(auto&& value) -> OutputType;
 
     constexpr auto hash_combine(HashValue auto& hash, meta::IsHashable auto&& v) noexcept;

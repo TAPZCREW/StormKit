@@ -112,7 +112,7 @@ export {
             auto operator=(DescriptorSetLayout&&) noexcept -> DescriptorSetLayout&;
 
             [[nodiscard]]
-            auto hash() const noexcept -> Hash64;
+            auto hash() const noexcept -> hash64;
             [[nodiscard]]
             auto bindings() const noexcept -> const std::vector<DescriptorSetLayoutBinding>&;
 
@@ -131,7 +131,7 @@ export {
 
             std::vector<DescriptorSetLayoutBinding> m_bindings;
 
-            Hash64                              m_hash      = 0;
+            hash64                              m_hash      = 0;
             VkDevice                            m_vk_device = nullptr;
             Ref<const VolkDeviceTable>          m_vk_device_table;
             VkRAIIHandle<VkDescriptorSetLayout> m_vk_handle;
@@ -196,7 +196,7 @@ export {
     struct STORMKIT_API std::hash<stormkit::gpu::DescriptorSetLayout> {
         [[nodiscard]]
         auto operator()(const stormkit::gpu::DescriptorSetLayout& value) const noexcept
-          -> stormkit::Hash64 {
+          -> stormkit::hash64 {
             return value.hash();
         }
     };
@@ -222,8 +222,8 @@ export {
     template<>
     struct STORMKIT_API std::hash<stormkit::gpu::Descriptor> {
         [[nodiscard]]
-        auto operator()(const stormkit::gpu::Descriptor& value) const noexcept -> stormkit::Hash64 {
-            auto hash = stormkit::Hash64 { 0 };
+        auto operator()(const stormkit::gpu::Descriptor& value) const noexcept -> stormkit::hash64 {
+            auto hash = stormkit::hash64 { 0 };
 
             std::visit([&hash](auto& descriptor) { stormkit::hash_combine(hash, descriptor); },
                        value);
@@ -411,7 +411,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto DescriptorSetLayout::hash() const noexcept -> Hash64 {
+    inline auto DescriptorSetLayout::hash() const noexcept -> hash64 {
         return m_hash;
     }
 
