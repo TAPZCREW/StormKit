@@ -356,7 +356,7 @@ auto std::formatter<math::Extent<T, 3>>::format(const math::Extent<T, 3>& extent
 template<meta::IsArithmetic T>
 constexpr auto std::hash<math::Extent<T, 2>>::operator()(const math::Extent<T, 2>&
                                                            extent) noexcept {
-    auto hash = Hash64 { 0 };
+    auto hash = hash64 { 0 };
 
     hash_combine(hash, extent.width);
     hash_combine(hash, extent.height);
@@ -369,7 +369,7 @@ constexpr auto std::hash<math::Extent<T, 2>>::operator()(const math::Extent<T, 2
 template<meta::IsArithmetic T>
 constexpr auto std::hash<math::Extent<T, 3>>::operator()(const math::Extent<T, 3>&
                                                            extent) noexcept {
-    auto hash = Hash64 { 0 };
+    auto hash = hash64 { 0 };
 
     hash_combine(hash, extent.width);
     hash_combine(hash, extent.height);
