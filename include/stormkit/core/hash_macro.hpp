@@ -12,8 +12,8 @@
     template<>                                                               \
     struct std::hash<x> {                                                    \
         [[nodiscard]]                                                        \
-        auto operator()(const x& value) const noexcept -> stormkit::Hash64 { \
-            auto hash = stormkit::Hash64 { 0 };                              \
+        auto operator()(const x& value) const noexcept -> stormkit::hash64 { \
+            auto hash = stormkit::hash64 { 0 };                              \
             stormkit::hash_combine(hash, __VA_ARGS__);                       \
             return hash;                                                     \
         }                                                                    \
@@ -23,8 +23,8 @@
     template<x T>                                                            \
     struct std::hash<T> {                                                    \
         [[nodiscard]]                                                        \
-        auto operator()(const T& value) const noexcept -> stormkit::Hash64 { \
-            auto hash = stormkit::Hash64 { 0 };                              \
+        auto operator()(const T& value) const noexcept -> stormkit::hash64 { \
+            auto hash = stormkit::hash64 { 0 };                              \
             stormkit::hash_combine(hash, __VA_ARGS__);                       \
             return hash;                                                     \
         }                                                                    \
@@ -34,8 +34,8 @@
     template<z y>                                                               \
     struct std::hash<x<y>> {                                                    \
         [[nodiscard]]                                                           \
-        auto operator()(const x<y>& value) const noexcept -> stormkit::Hash64 { \
-            auto hash = stormkit::Hash64 { 0 };                                 \
+        auto operator()(const x<y>& value) const noexcept -> stormkit::hash64 { \
+            auto hash = stormkit::hash64 { 0 };                                 \
             stormkit::hash_combine(hash, __VA_ARGS__);                          \
             return hash;                                                        \
         }                                                                       \
