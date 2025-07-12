@@ -3,12 +3,6 @@
 // found in the top-level of this distribution
 
 module;
-
-#include <glm/glm.hpp>
-
-#include <glm/gtc/quaternion.hpp>
-#include <glm/integer.hpp>
-
 #include <stormkit/core/contract_macro.hpp>
 
 export module stormkit.image:ktx;
