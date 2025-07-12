@@ -18,6 +18,8 @@ import :typesafe.floating_point;
 
 import :math.linear;
 
+import :hash.base;
+
 export {
     namespace stormkit { inline namespace core { namespace math {
         template<typename T, usize N>
@@ -148,6 +150,50 @@ export {
         [[nodiscard]]
         constexpr auto cross(const T& a, const U& b) noexcept -> decltype(auto);
     }}} // namespace stormkit::core::math
+
+    namespace std {
+        template<typename T>
+        struct hash<stormkit::math::vec2<T>> {
+            [[nodiscard]]
+            auto operator()(const stormkit::math::vec2<T>&) const noexcept -> stormkit::u64;
+        };
+
+        template<typename T, class CharT>
+        struct formatter<stormkit::math::vec2<T>, CharT>: formatter<T, CharT> {
+            template<class FormatContext>
+            [[nodiscard]]
+            auto format(const stormkit::math::vec2<T>&, FormatContext& ctx) const
+              -> decltype(ctx.out());
+        };
+
+        template<typename T>
+        struct hash<stormkit::math::vec3<T>> {
+            [[nodiscard]]
+            auto operator()(const stormkit::math::vec3<T>&) const noexcept -> stormkit::u64;
+        };
+
+        template<typename T, class CharT>
+        struct formatter<stormkit::math::vec3<T>, CharT>: formatter<T, CharT> {
+            template<class FormatContext>
+            [[nodiscard]]
+            auto format(const stormkit::math::vec3<T>&, FormatContext& ctx) const
+              -> decltype(ctx.out());
+        };
+
+        template<typename T>
+        struct hash<stormkit::math::vec4<T>> {
+            [[nodiscard]]
+            auto operator()(const stormkit::math::vec4<T>&) const noexcept -> stormkit::u64;
+        };
+
+        template<typename T, class CharT>
+        struct formatter<stormkit::math::vec4<T>, CharT>: formatter<T, CharT> {
+            template<class FormatContext>
+            [[nodiscard]]
+            auto format(const stormkit::math::vec4<T>&, FormatContext& ctx) const
+              -> decltype(ctx.out());
+        };
+    } // namespace std
 } // namespace stormkit::core::math
 
 ////////////////////////////////////////////////////////////////////
@@ -275,3 +321,86 @@ namespace stormkit { inline namespace core { namespace math {
         return out;
     }
 }}} // namespace stormkit::core::math
+
+namespace std {
+    template<typename T>
+    auto hash<stormkit::math::vec2<T>>::operator()(const stormkit::math::vec2<T>& vec)
+      const noexcept -> stormkit::u64 {
+        auto hash = stormkit::hash64 { 0 };
+
+        stormkit::hash_combine(hash, vec.x);
+        stormkit::hash_combine(hash, vec.y);
+
+        return hash;
+    }
+
+    template<typename T, class CharT>
+    template<class FormatContext>
+    auto formatter<stormkit::math::vec2<T>, CharT>::format(const stormkit::math::vec2<T>& vec,
+                                                           FormatContext&                 ctx) const
+      -> decltype(ctx.out()) {
+        auto&& out = ctx.out();
+
+        out = formatter<T, CharT>::format_to(out, "[vec2: .x = {}, .y = {}]", vec.x, vec.y);
+
+        return out;
+    }
+
+    template<typename T>
+    auto hash<stormkit::math::vec3<T>>::operator()(const stormkit::math::vec3<T>& vec)
+      const noexcept -> stormkit::u64 {
+        auto hash = stormkit::hash64 { 0 };
+
+        stormkit::hash_combine(hash, vec.x);
+        stormkit::hash_combine(hash, vec.y);
+        stormkit::hash_combine(hash, vec.z);
+
+        return hash;
+    }
+
+    template<typename T, class CharT>
+    template<class FormatContext>
+    auto formatter<stormkit::math::vec3<T>, CharT>::format(const stormkit::math::vec3<T>& vec,
+                                                           FormatContext&                 ctx) const
+      -> decltype(ctx.out()) {
+        auto&& out = ctx.out();
+
+        out = formatter<T, CharT>::format_to(out,
+                                             "[vec3: .x = {}, .y = {}, .z = {}]",
+                                             vec.x,
+                                             vec.y,
+                                             vec.z);
+
+        return out;
+    }
+
+    template<typename T>
+    auto hash<stormkit::math::vec4<T>>::operator()(const stormkit::math::vec4<T>& vec)
+      const noexcept -> stormkit::u64 {
+        auto hash = stormkit::hash64 { 0 };
+
+        stormkit::hash_combine(hash, vec.x);
+        stormkit::hash_combine(hash, vec.y);
+        stormkit::hash_combine(hash, vec.z);
+        stormkit::hash_combine(hash, vec.w);
+
+        return hash;
+    }
+
+    template<typename T, class CharT>
+    template<class FormatContext>
+    auto formatter<stormkit::math::vec4<T>, CharT>::format(const stormkit::math::vec4<T>& vec,
+                                                           FormatContext&                 ctx) const
+      -> decltype(ctx.out()) {
+        auto&& out = ctx.out();
+
+        out = formatter<T, CharT>::format_to(out,
+                                             "[vec3: .x = {}, .y = {}, .z = {}, .w = {}]",
+                                             vec.x,
+                                             vec.y,
+                                             vec.z,
+                                             vec.w);
+
+        return out;
+    }
+} // namespace std
