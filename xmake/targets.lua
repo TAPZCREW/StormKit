@@ -49,6 +49,11 @@ modules = {
             end)
         end,
     },
+    test = {
+        modulename = "test",
+        public_deps = { "stormkit-core" },
+        has_headers = true
+    },
     log = {
         modulename = "log",
         public_deps = { "stormkit-core" },
