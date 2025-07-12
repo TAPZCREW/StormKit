@@ -46,15 +46,6 @@ option("tools", {
     category = "root menu/others",
 })
 option("tests", { default = false, category = "root menu/others" })
-option("tests_core", {
-    default = false,
-    category = "root menu/others",
-    deps = { "tests" },
-    after_check = function(option)
-        if option:dep("tests"):enabled() then option:enable(true) end
-    end,
-})
-
 option("sanitizers", { default = false, category = "root menu/build" })
 option("mold", { default = false, category = "root menu/build" })
 option("lto", { default = false, category = "root menu/build" })

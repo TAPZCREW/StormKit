@@ -1,20 +1,10 @@
-target("test-base", function()
-    set_group("tests")
-    set_kind("object")
-    set_languages("cxxlatest", "clatest")
-    add_rules("stormkit.flags")
-    add_rules("platform.windows.subsystem.console")
-    add_files("src/main.cpp")
-    add_files("src/Test.mpp", { public = true })
-    add_options("sanitizers")
-    add_packages("frozen")
-    add_deps("stormkit-main")
-end)
+includes("targets.lua")
 
 for name, _ in pairs(modules) do
-    if has_config("tests_" .. name) then
-        for _, file in ipairs(os.files(path.join("src", name, "**.cpp"))) do
+    if name ~= "test" then
+        for _, file in ipairs(os.files(path.join(os.projectdir(), "tests", name, "**.cpp"))) do
             local testname = path.basename(file)
+
             target(name .. "-" .. testname .. "-tests", function()
                 set_group("tests")
                 set_kind("binary")
@@ -22,7 +12,7 @@ for name, _ in pairs(modules) do
 
                 on_config(function(target)
                     function parseTestFile()
-                        local code = io.readfile(path.join("tests", file))
+                        local code = io.readfile(file)
 
                         local suite_name_regex = [[TestSuite%s-{.-"(.-)",]]
                         local test_name_regex = [[{%s-"(.-)"%s-,]]
@@ -54,12 +44,10 @@ for name, _ in pairs(modules) do
                 add_files(file)
 
                 add_packages("frozen")
-                add_deps("stormkit-main")
+                add_deps("stormkit-main", "stormkit-test")
                 add_deps("stormkit-" .. name)
 
                 add_options("sanitizers")
-
-                add_deps("test-base")
             end)
         end
     end

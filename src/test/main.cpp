@@ -3,10 +3,9 @@
 // found in the top-level of this distribution
 
 import stormkit.core;
+import stormkit.test;
 
 import std;
-
-import Test;
 
 #include <stormkit/main/main_macro.hpp>
 

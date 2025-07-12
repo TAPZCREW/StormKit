@@ -5,12 +5,11 @@
 import std;
 
 import stormkit.core;
+import stormkit.test;
 
-import Test;
+#include <stormkit/test/test_macro.hpp>
 
 using namespace stormkit::core;
-
-#define expects(x) test::expects(x, #x)
 
 namespace {
 
@@ -20,37 +19,40 @@ namespace {
             [] {
                 auto rng     = range(10);
                 auto success = true;
-                for (auto i = 0; i < 10; ++i) {
-                    if (rng[i] != i) {
+                auto j       = 0;
+                for (auto i : rng) {
+                    if (i != j++) {
                         success = false;
                         break;
                     }
                 }
-                expects(success);
+                EXPECTS(success);
             } },
           { "Numerics.range.custom_start",
             [] {
                 auto rng     = range(2, 10);
                 auto success = true;
-                for (auto i = 2; i < 10; ++i) {
-                    if (rng[i - 2] != i) {
+                auto j       = 2;
+                for (auto i : rng) {
+                    if (i != j++) {
                         success = false;
                         break;
                     }
                 }
-                expects(success);
+                EXPECTS(success);
             } },
           { "Numerics.range.custom_negative_start",
             [] {
                 auto rng     = range(-5, 10);
                 auto success = true;
-                for (auto i = -5; i < 10; ++i) {
-                    if (rng[i + 5] != i) {
+                auto j       = -5;
+                for (auto i : rng) {
+                    if (i != j++) {
                         success = false;
                         break;
                     }
                 }
-                expects(success);
+                EXPECTS(success);
             } },
           { "Numerics.range.custom_step",
             [] {
@@ -64,7 +66,7 @@ namespace {
                     }
                     j += 2;
                 }
-                expects(success);
+                EXPECTS(success);
             } },
           { "Numerics.range.custom_numeric_range",
             [] {
@@ -78,7 +80,7 @@ namespace {
                     }
                     j += 2;
                 }
-                expects(success);
+                EXPECTS(success);
             } },
           { "Numerics.multirange.simple",
             [] {
@@ -99,7 +101,7 @@ namespace {
                     }
                 }
 
-                expects(success);
+                EXPECTS(success);
             } },
           { "Numerics.multirange.different_types",
             [] {
@@ -120,7 +122,7 @@ namespace {
                     }
                 }
 
-                expects(success);
+                EXPECTS(success);
             } },
           { "Numerics.multirange.custom_start",
             [] {
@@ -142,7 +144,7 @@ namespace {
                     }
                 }
 
-                expects(success);
+                EXPECTS(success);
             } },
           { "Numerics.multirange.custom_step",
             [] {
@@ -164,7 +166,7 @@ namespace {
                     }
                 }
 
-                expects(success);
+                EXPECTS(success);
             } } }
     };
 } // namespace

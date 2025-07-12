@@ -10,7 +10,7 @@ module;
     #include <windows.h>
 #endif
 
-export module Test;
+export module stormkit.test;
 
 import stormkit.core;
 import std;

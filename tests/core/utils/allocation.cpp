@@ -5,12 +5,11 @@
 import std;
 
 import stormkit.core;
+import stormkit.test;
 
-import Test;
+#include <stormkit/test/test_macro.hpp>
 
 using namespace stormkit::core;
-
-#define expects(x) test::expects(x, #x)
 
 namespace {
     auto _ = test::TestSuite {
@@ -18,13 +17,13 @@ namespace {
         { { "Allocation.safe",
             [] static noexcept {
                 auto allocation = allocate<int>(5);
-                expects(allocation.has_value());
-                expects(*allocation.value() == 5);
+                EXPECTS(allocation.has_value());
+                EXPECTS(*allocation.value() == 5);
             } },
           { "Allocation.unsafe",
             [] static noexcept {
                 auto allocation = allocate_unsafe<int>(5);
-                expects(*allocation == 5);
+                EXPECTS(*allocation == 5);
             } } }
     };
 } // namespace
