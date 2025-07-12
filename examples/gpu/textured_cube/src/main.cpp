@@ -49,8 +49,8 @@ struct SwapchainImageResource {
 };
 
 struct Vertex {
-    math::Vector3F position;
-    math::Vector2F uv;
+    math::vec3f position;
+    math::vec2f uv;
 
     static constexpr auto attribute_descriptions() noexcept
       -> std::array<gpu::VertexInputAttributeDescription, 2> {
@@ -116,9 +116,9 @@ static constexpr auto VERTICES = std::array<Vertex, 36> {
 };
 
 struct ViewerData {
-    alignas(16) math::MatrixF proj;
-    alignas(16) math::MatrixF view;
-    alignas(16) math::MatrixF model;
+    math::mat4f proj;
+    math::mat4f view;
+    math::mat4f model;
 
     static constexpr auto layout_binding() -> gpu::DescriptorSetLayoutBinding {
         return { 0, gpu::DescriptorType::UNIFORM_BUFFER, gpu::ShaderStageFlag::VERTEX, 1 };
@@ -587,14 +587,12 @@ auto main(std::span<const std::string_view> args) -> int {
 
     const auto window_extent_f32 = window_extent.to<f32>();
     auto       viewer_data       = ViewerData {
-                    .proj  = math::perspective(math::radians(45.f),
+                    .proj = math::perspective(math::radians(45.f),
                                   window_extent_f32.width / window_extent_f32.height,
                                   0.1f,
                                   100.f),
-                    .view  = math::lookAt(math::Vector3F { 0.f, 3.f, 5.f },
-                                          { 0.f, 0.f, 0.f },
-                                          { 0.f, 1.f, 0.f }),
-                    .model = math::MatrixF { 1.f },
+                    .view = math::lookAt(math::vec3f { 0.f, 3.f, 5.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f }),
+                    .model = math::mat4f { 1.f },
     };
     viewer_data.proj[1][1] *= -1.f;
 
@@ -648,9 +646,9 @@ auto main(std::span<const std::string_view> args) -> int {
 
         // update viewer data and upload
         const auto time     = stdc::duration_cast<SecondF>(current_time - start_time).count();
-        viewer_data.model   = math::rotate(math::MatrixF { 1.f },
+        viewer_data.model   = math::rotate(math::mat4f { 1.f },
                                          time * math::radians(90.f),
-                                         math::Vector3F { 0.f, 1.f, 0.f });
+                                         math::vec3f { 0.f, 1.f, 0.f });
         auto& viewer_buffer = submission_resource.viewer_buffer;
         viewer_buffer.upload(viewer_data);
 

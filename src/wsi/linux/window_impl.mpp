@@ -74,8 +74,8 @@ export namespace stormkit::wsi::linux {
 
         auto toggle_virtual_keyboard_visibility(bool visible) noexcept -> void;
 
-        auto        set_mouse_position(const math::Vector2I& position) noexcept -> void;
-        static auto set_mouse_position_on_desktop(WM wm, const math::Vector2U& position) noexcept
+        auto        set_mouse_position(const math::vec2i& position) noexcept -> void;
+        static auto set_mouse_position_on_desktop(WM wm, const math::vec2u& position) noexcept
             -> void;
 
         [[nodiscard]]
@@ -448,7 +448,7 @@ namespace stormkit::wsi::linux {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto WindowImpl::set_mouse_position(const math::Vector2I& position) noexcept -> void {
+    inline auto WindowImpl::set_mouse_position(const math::vec2i& position) noexcept -> void {
         switch (m_wm) {
             CASE_DO (WM::X11, x11, set_mouse_position(position))
                 ;
@@ -462,7 +462,7 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     inline auto WindowImpl::set_mouse_position_on_desktop(WM                    wm,
-                                                          const math::Vector2U& position) noexcept
+                                                          const math::vec2u& position) noexcept
         -> void {
         switch (wm) {
             case WM::X11: x11::WindowImpl::set_mouse_position_on_desktop(position); break;

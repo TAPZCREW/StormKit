@@ -24,25 +24,25 @@ export namespace stormkit::gpu {
 
     template<typename Out>
     [[nodiscard]]
-    constexpr auto to_vk(const math::Vector2I& vector) noexcept -> Out;
+    constexpr auto to_vk(const math::vec2i& vector) noexcept -> Out;
 
     template<typename Out>
     [[nodiscard]]
-    constexpr auto to_vk(const math::Vector3I& vector) noexcept -> Out;
+    constexpr auto to_vk(const math::vec3i& vector) noexcept -> Out;
 
     // template<>
     // [[nodiscard]]
-    // constexpr auto to_vk<VkOffset2D, math::Vector2I>(const math::Vector2I& vector) noexcept
+    // constexpr auto to_vk<VkOffset2D, math::vec2i>(const math::vec2i& vector) noexcept
     //   -> VkOffset2D;
 
     [[nodiscard]]
     constexpr auto from_vk(const VkFormatProperties& properties) noexcept -> FormatProperties;
 
     [[nodiscard]]
-    constexpr auto from_vk(const VkOffset2D& vector) noexcept -> math::Vector2I;
+    constexpr auto from_vk(const VkOffset2D& vector) noexcept -> math::vec2i;
 
     [[nodiscard]]
-    constexpr auto from_vk(const VkOffset3D& vector) noexcept -> math::Vector3I;
+    constexpr auto from_vk(const VkOffset3D& vector) noexcept -> math::vec3i;
 
     [[nodiscard]]
     constexpr auto to_vk(const Viewport& viewport) noexcept -> VkViewport;
@@ -126,7 +126,7 @@ namespace stormkit::gpu {
     template<typename Out>
         STORMKIT_FORCE_INLINE
         STORMKIT_CONST
-    constexpr auto to_vk(const math::Vector2I& vector) noexcept -> Out {
+    constexpr auto to_vk(const math::vec2i& vector) noexcept -> Out {
         return Out { .x = vector.x, .y = vector.y };
     }
 
@@ -135,7 +135,7 @@ namespace stormkit::gpu {
     template<typename Out>
         STORMKIT_FORCE_INLINE
         STORMKIT_CONST
-    constexpr auto to_vk(const math::Vector3I& vector) noexcept -> Out {
+    constexpr auto to_vk(const math::vec3i& vector) noexcept -> Out {
         return Out { .x = vector.x, .y = vector.y, .z = vector.z };
     }
 
@@ -153,15 +153,15 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto from_vk(const VkOffset2D& offset) noexcept -> math::Vector2I {
-        return math::Vector2I { offset.x, offset.y };
+    constexpr auto from_vk(const VkOffset2D& offset) noexcept -> math::vec2i {
+        return math::vec2i { offset.x, offset.y };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto from_vk(const VkOffset3D& offset) noexcept -> math::Vector3I {
-        return math::Vector3I { offset.x, offset.y, offset.z };
+    constexpr auto from_vk(const VkOffset3D& offset) noexcept -> math::vec3i {
+        return math::vec3i { offset.x, offset.y, offset.z };
     }
 
     /////////////////////////////////////

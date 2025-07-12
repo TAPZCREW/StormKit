@@ -22,7 +22,7 @@ using namespace stormkit::entities::literals;
 export namespace stormkit::engine {
     struct PositionComponent: entities::Component {
         static constexpr Type TYPE     = "PositionComponent"_component_type;
-        math::Vector2F        position = { 0.f, 0.f };
+        math::vec2f        position = { 0.f, 0.f };
     };
 
     struct SpriteComponent: entities::Component {
@@ -32,7 +32,7 @@ export namespace stormkit::engine {
 
     auto makeSprite(entities::EntityManager& world,
                     const gpu::ImageView&    texture,
-                    const math::Vector2F&    size) noexcept -> entities::Entity;
+                    const math::vec2f&    size) noexcept -> entities::Entity;
 
     class SpriteRenderSystem final: public entities::System {
       public:
@@ -69,7 +69,7 @@ namespace stormkit::engine {
     //////////////////////////////////////
     inline auto makeSprite(entities::EntityManager& world,
                            const gpu::ImageView&    texture,
-                           const math::Vector2F&    size) noexcept -> entities::Entity {
+                           const math::vec2f&    size) noexcept -> entities::Entity {
         const auto e = world.make_entity();
 
         auto& sprite_component          = world.add_component<SpriteComponent>(e);

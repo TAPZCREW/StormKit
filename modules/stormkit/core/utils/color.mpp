@@ -16,7 +16,7 @@ import std;
 
 import :hash;
 import :typesafe.integer;
-import :math.arithmetic;
+import :math.linear.vector;
 import :meta;
 
 export {
@@ -38,9 +38,9 @@ export {
                                ValueType blue,
                                ValueType alpha = max_color_component_value<ValueType>()) noexcept;
 
-            constexpr explicit RGBColor(const math::Vector3<ValueType>& vector) noexcept;
+            constexpr explicit RGBColor(const math::vec3<ValueType>& vector) noexcept;
 
-            constexpr explicit RGBColor(const math::Vector4<ValueType>& vector) noexcept;
+            constexpr explicit RGBColor(const math::vec4<ValueType>& vector) noexcept;
 
             constexpr RGBColor(const RGBColor<ValueType>& other) noexcept;
             constexpr auto operator=(const RGBColor<ValueType>& other) noexcept -> RGBColor&;
@@ -54,11 +54,11 @@ export {
             template<meta::IsColorComponent U>
             constexpr auto operator=(const RGBColor<U>& other) noexcept -> RGBColor&;
 
-            constexpr auto toVector3() const noexcept -> math::Vector3<ValueType>;
-            constexpr auto toVector4() const noexcept -> math::Vector4<ValueType>;
+            constexpr auto to_vec3() const noexcept -> math::vec3<ValueType>;
+            constexpr auto to_vec4() const noexcept -> math::vec4<ValueType>;
 
-            constexpr operator math::Vector3<ValueType>() const noexcept;
-            constexpr operator math::Vector4<ValueType>() const noexcept;
+            constexpr operator math::vec3<ValueType>() const noexcept;
+            constexpr operator math::vec4<ValueType>() const noexcept;
             constexpr operator std::array<ValueType, 4>() const noexcept;
 
             ValueType red;
@@ -264,7 +264,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsColorComponent T>
-    constexpr RGBColor<T>::RGBColor(const math::Vector3<ValueType>& vector) noexcept
+    constexpr RGBColor<T>::RGBColor(const math::vec3<ValueType>& vector) noexcept
         : red { vector.r }, green { vector.g }, blue { vector.b },
           alpha(max_color_component_value<T>()) {
     }
@@ -272,7 +272,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsColorComponent T>
-    constexpr RGBColor<T>::RGBColor(const math::Vector4<ValueType>& vector) noexcept
+    constexpr RGBColor<T>::RGBColor(const math::vec4<ValueType>& vector) noexcept
         : red { vector.r }, green { vector.g }, blue { vector.b }, alpha { vector.a } {
     }
 
@@ -321,29 +321,29 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsColorComponent T>
-    constexpr auto RGBColor<T>::toVector3() const noexcept -> math::Vector3<ValueType> {
+    constexpr auto RGBColor<T>::to_vec3() const noexcept -> math::vec3<ValueType> {
         return { red, green, blue };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsColorComponent T>
-    constexpr auto RGBColor<T>::toVector4() const noexcept -> math::Vector4<ValueType> {
+    constexpr auto RGBColor<T>::to_vec4() const noexcept -> math::vec4<ValueType> {
         return { red, green, blue, alpha };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsColorComponent T>
-    constexpr RGBColor<T>::operator math::Vector3<ValueType>() const noexcept {
-        return toVector3();
+    constexpr RGBColor<T>::operator math::vec3<ValueType>() const noexcept {
+        return to_vec3();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::IsColorComponent T>
-    constexpr RGBColor<T>::operator math::Vector4<ValueType>() const noexcept {
-        return toVector4();
+    constexpr RGBColor<T>::operator math::vec4<ValueType>() const noexcept {
+        return to_vec4();
     }
 
     /////////////////////////////////////

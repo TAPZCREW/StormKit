@@ -81,8 +81,8 @@ export namespace stormkit::wsi::win32 {
 
         auto toggle_virtual_keyboard_visibility(bool visible) noexcept -> void;
 
-        auto        set_mouse_position(const math::Vector2I& position) noexcept -> void;
-        static auto set_mouse_position_on_desktop(WM wm, const math::Vector2U& position) noexcept
+        auto        set_mouse_position(const math::vec2i& position) noexcept -> void;
+        static auto set_mouse_position_on_desktop(WM wm, const math::vec2u& position) noexcept
           -> void;
 
         [[nodiscard]]
@@ -107,7 +107,7 @@ export namespace stormkit::wsi::win32 {
         LONG                       m_last_style_ex;
         mutable math::Extent2<u32> m_current_size  = { 0u, 0u };
         math::Extent2<u32>         m_last_size     = { 0u, 0u };
-        math::Vector2U             m_last_position = { 0u, 0u };
+        math::vec2u             m_last_position = { 0u, 0u };
 
         HWND m_window_handle = nullptr;
 
@@ -447,7 +447,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::set_mouse_position(const math::Vector2I& position) noexcept -> void {
+    auto WindowImpl::set_mouse_position(const math::vec2i& position) noexcept -> void {
         auto point = POINT { as<long>(position.x), as<long>(position.y) };
         ClientToScreen(m_window_handle, &point);
         SetCursorPos(point.x, point.y);
@@ -455,7 +455,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::set_mouse_position_on_desktop(WM, const math::Vector2U& position) noexcept
+    auto WindowImpl::set_mouse_position_on_desktop(WM, const math::vec2u& position) noexcept
       -> void {
         SetCursorPos(as<i32>(position.x), as<i32>(position.y));
     }

@@ -226,13 +226,13 @@ export {
         };
 
         struct Viewport {
-            math::Vector2F     position;
+            math::vec2f     position;
             math::Extent2<f32> extent;
-            math::Vector2F     depth;
+            math::vec2f     depth;
         };
 
         struct Scissor {
-            math::Vector2I     offset;
+            math::vec2i     offset;
             math::Extent2<u32> extent;
         };
 
@@ -254,7 +254,7 @@ export {
 
             ImageSubresourceLayers subresource_layers;
 
-            math::Vector3I     offset;
+            math::vec3i     offset;
             math::Extent3<u32> extent;
         };
 
@@ -262,8 +262,8 @@ export {
             ImageSubresourceLayers src;
             ImageSubresourceLayers dst;
 
-            std::array<math::Vector3I, 2> src_offset;
-            std::array<math::Vector3I, 2> dst_offset;
+            std::array<math::vec3i, 2> src_offset;
+            std::array<math::vec3i, 2> dst_offset;
         };
 
         struct PushConstantRange {
