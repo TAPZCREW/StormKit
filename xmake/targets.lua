@@ -1,6 +1,6 @@
 modules = {
     core = {
-        public_packages = { "glm", "frozen", "unordered_dense", "tl_function_ref" },
+        public_packages = { "frozen", "unordered_dense", "tl_function_ref" },
         modulename = "core",
         has_headers = true,
         public_defines = {
