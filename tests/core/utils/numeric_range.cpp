@@ -5,12 +5,11 @@
 import std;
 
 import stormkit.core;
+import stormkit.test;
 
-import Test;
+#include <stormkit/test/test_macro.hpp>
 
 using namespace stormkit::core;
-
-#define expects(x) test::expects(x, #x)
 
 namespace {
 
@@ -26,7 +25,7 @@ namespace {
                         break;
                     }
                 }
-                expects(success);
+                EXPECTS(success);
             } },
           { "Numerics.range.custom_start",
             [] {
@@ -38,7 +37,7 @@ namespace {
                         break;
                     }
                 }
-                expects(success);
+                EXPECTS(success);
             } },
           { "Numerics.range.custom_negative_start",
             [] {
@@ -50,7 +49,7 @@ namespace {
                         break;
                     }
                 }
-                expects(success);
+                EXPECTS(success);
             } },
           { "Numerics.range.custom_step",
             [] {
@@ -64,7 +63,7 @@ namespace {
                     }
                     j += 2;
                 }
-                expects(success);
+                EXPECTS(success);
             } },
           { "Numerics.range.custom_numeric_range",
             [] {
@@ -78,7 +77,7 @@ namespace {
                     }
                     j += 2;
                 }
-                expects(success);
+                EXPECTS(success);
             } },
           { "Numerics.multirange.simple",
             [] {
@@ -99,7 +98,7 @@ namespace {
                     }
                 }
 
-                expects(success);
+                EXPECTS(success);
             } },
           { "Numerics.multirange.different_types",
             [] {
@@ -120,7 +119,7 @@ namespace {
                     }
                 }
 
-                expects(success);
+                EXPECTS(success);
             } },
           { "Numerics.multirange.custom_start",
             [] {
@@ -142,7 +141,7 @@ namespace {
                     }
                 }
 
-                expects(success);
+                EXPECTS(success);
             } },
           { "Numerics.multirange.custom_step",
             [] {
@@ -164,7 +163,7 @@ namespace {
                     }
                 }
 
-                expects(success);
+                EXPECTS(success);
             } } }
     };
 } // namespace

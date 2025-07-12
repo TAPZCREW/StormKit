@@ -82,13 +82,13 @@ end
 for name, module in pairs(modules) do
     local modulename = module.modulename
 
-    if name == "core" or name == "main" or get_config(name) then
+    if name == "core" or name == "main" or name == "test" or get_config(name) then
         target("stormkit-" .. name, function()
             set_group("libraries")
 
             if module.custom then module.custom() end
 
-            if name == "main" then
+            if name == "main" or name == "test" then
                 set_kind("static")
             else
                 set_kind("$(kind)")
@@ -226,5 +226,5 @@ for name, _ in pairs(modules) do
     end
 end
 
-if get_config("tests") then includes("tests/xmake.lua") end
+if get_config("tests") then includes("xmake/tests.lua") end
 if get_config("tools") then includes("tools/**.lua") end

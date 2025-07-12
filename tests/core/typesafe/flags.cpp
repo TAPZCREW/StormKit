@@ -5,14 +5,12 @@
 import std;
 
 import stormkit.core;
-
-import Test;
+import stormkit.test;
 
 #include <stormkit/core/flags_macro.hpp>
+#include <stormkit/test/test_macro.hpp>
 
 using namespace stormkit::core;
-
-#define expects(x) test::expects(x, #x)
 
 enum class Flag {
     A = 1,
@@ -38,96 +36,96 @@ namespace {
             [] static noexcept {
                 {
                     auto foo = Flag::A | Flag::B;
-                    expects(foo == (Flag::A | Flag::B));
+                    EXPECTS(foo == (Flag::A | Flag::B));
                 }
 
                 {
                     auto foo = (Flag::A ^ Flag::A | Flag::B);
-                    expects(foo == Flag::B);
+                    EXPECTS(foo == Flag::B);
                 }
 
                 {
                     auto foo = (Flag::A | Flag::B);
                     foo ^= Flag::A;
-                    expects(foo == Flag::B);
+                    EXPECTS(foo == Flag::B);
                 }
 
                 {
                     auto foo = (Flag::A | Flag::B);
                     foo      = foo & Flag::B;
-                    expects(foo == Flag::B);
+                    EXPECTS(foo == Flag::B);
                 }
 
                 {
                     auto foo = (Flag::A | Flag::B);
                     foo &= Flag::B;
-                    expects(foo == Flag::B);
+                    EXPECTS(foo == Flag::B);
                 }
 
                 {
                     auto foo = ~(Flag::B);
-                    expects(foo == ~(Flag::B));
+                    EXPECTS(foo == ~(Flag::B));
                 }
             },
           }, {
             "Flags.enum_class.check_flag_bit",
             [] static noexcept {
                 auto foo = Flag::A | Flag::B;
-                expects(check_flag_bit(foo, Flag::A));
+                EXPECTS(check_flag_bit(foo, Flag::A));
             },
           }, {
             "Flags.enum_class.next_value",
             [] static noexcept {
                 auto foo = Flag::A;
-                expects(next_value(foo) == Flag::B);
+                EXPECTS(next_value(foo) == Flag::B);
             },
           }, {
             "Flags.enum.operators",
             [] static noexcept {
                 {
                     auto foo = Flag2::A | Flag2::B;
-                    expects(foo == (Flag2::A | Flag2::B));
+                    EXPECTS(foo == (Flag2::A | Flag2::B));
                 }
 
                 {
                     auto foo = (Flag2::A ^ Flag2::A | Flag2::B);
-                    expects(foo == Flag2::B);
+                    EXPECTS(foo == Flag2::B);
                 }
 
                 {
                     auto foo = (Flag2::A | Flag2::B);
                     foo ^= Flag2::A;
-                    expects(foo == Flag2::B);
+                    EXPECTS(foo == Flag2::B);
                 }
 
                 {
                     auto foo = (Flag2::A | Flag2::B);
                     foo      = foo & Flag2::B;
-                    expects(foo == Flag2::B);
+                    EXPECTS(foo == Flag2::B);
                 }
 
                 {
                     auto foo = (Flag2::A | Flag2::B);
                     foo &= Flag2::B;
-                    expects(foo == Flag2::B);
+                    EXPECTS(foo == Flag2::B);
                 }
 
                 {
                     auto foo = (~Flag2::B);
-                    expects(foo == (~Flag2::B));
+                    EXPECTS(foo == (~Flag2::B));
                 }
             },
           }, {
             "Flags.enum.check_flag_bit",
             [] static noexcept {
                 auto foo = Flag2::A | Flag2::B;
-                expects(check_flag_bit(foo, Flag2::A));
+                EXPECTS(check_flag_bit(foo, Flag2::A));
             },
           }, {
             "Flags.enum.next_value",
             [] static noexcept {
                 auto foo = Flag2::A;
-                expects(next_value(foo) == Flag2::B);
+                EXPECTS(next_value(foo) == Flag2::B);
             },
           }, }
     };
