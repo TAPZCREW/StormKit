@@ -16,7 +16,7 @@ namespace stormkit { inline namespace core { namespace meta::details {
     }
 
     template<template<typename, auto...> class T, typename T2, auto... Args>
-    constexpr auto is_specialization_of_with_helper(const T<T2, Args...>&) noexcept
+    constexpr auto is_specialization_of_with_nttp_helper(const T<T2, Args...>&) noexcept
       -> std::true_type {
         return {};
     }
@@ -189,7 +189,9 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     template<typename S, template<typename, auto...> class T>
     concept IsSpecializationWithNTTPOf = requires(S&& s) {
-        { details::is_specialization_of_helper<T>(std::forward<S>(s)) } -> IsStrict<std::true_type>;
+        {
+            details::is_specialization_of_with_nttp_helper<T>(std::forward<S>(s))
+        } -> IsStrict<std::true_type>;
     };
 
     template<class T>
