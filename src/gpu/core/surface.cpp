@@ -60,7 +60,7 @@ namespace stormkit::gpu {
                 .flags = 0,
                 .pView = window.native_handle()
             };
-            return vk_call<VkSurfaceKHR>(vkCreateMacOSSurfaceCreateMVK,
+            return vk_call<VkSurfaceKHR>(vkCreateMacOSSurfaceMVK,
                                          instance.native_handle(),
                                          &create_info,
                                          nullptr);
