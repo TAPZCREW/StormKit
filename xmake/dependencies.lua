@@ -14,6 +14,7 @@ local global_package_configs = {
 if get_config("on_ci") then global_package_configs.system = false end
 
 add_requires("cpptrace")
+add_requireconfs("nzsl.fmt", { version = "master", override = true, system = false })
 if not is_plat("windows") then add_requires("libdwarf") end
 
 local package_configs = {
