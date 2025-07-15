@@ -112,7 +112,7 @@ jobs:
            -k ${{ matrix.kind }} \
            --examples=y \
            --tests=y \
-           --gpu=n \
+           --gpu=y \
            --engine=n \
            --mold=y \
            --on_ci=y \
