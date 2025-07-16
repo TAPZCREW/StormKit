@@ -272,4 +272,43 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept EnableCtor = sizeof...(Args) != 1
                          || (sizeof...(Args) == 1
                              && !Is<T, typename std::remove_cvref<Args...>::type>);
+
+    template<typename T>
+    concept IsNoexceptDefaultConstructible = std::is_nothrow_default_constructible_v<T>;
+
+    template<typename T, typename... Args>
+    concept IsNoexceptConstructible = std::is_nothrow_constructible_v<T, Args...>;
+
+    template<typename T>
+    concept IsNoexceptCopyConstructible = std::is_nothrow_copy_constructible_v<T>;
+
+    template<typename T>
+    concept IsNoexceptMoveConstructible = std::is_nothrow_move_constructible_v<T>;
+
+    template<typename T>
+    concept IsNoexceptCopyAssignable = std::is_nothrow_copy_assignable_v<T>;
+
+    template<typename T>
+    concept IsNoexceptMoveAssignable = std::is_nothrow_move_assignable_v<T>;
+
+    template<typename T>
+    concept IsNoexceptDestructible = std::is_nothrow_destructible_v<T>;
+
+    template<typename T>
+    concept IsDefaultConstructible = std::is_default_constructible_v<T>;
+
+    template<typename T, typename... Args>
+    concept IsConstructible = std::is_constructible_v<T, Args...>;
+
+    template<typename T>
+    concept IsCopyConstructible = std::is_copy_constructible_v<T>;
+
+    template<typename T>
+    concept IsMoveConstructible = std::is_move_constructible_v<T>;
+
+    template<typename T>
+    concept IsCopyAssignable = std::is_copy_assignable_v<T>;
+
+    template<typename T>
+    concept IsMoveAssignable = std::is_move_assignable_v<T>;
 }}} // namespace stormkit::core::meta
