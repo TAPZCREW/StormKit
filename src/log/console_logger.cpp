@@ -15,6 +15,8 @@ import stormkit.core;
 
 using namespace std::literals;
 
+namespace stdr = std::ranges;
+
 namespace stormkit::log {
     namespace {
         constexpr auto StyleMap = frozen::make_unordered_map<Severity, ConsoleStyle>({
@@ -59,6 +61,11 @@ namespace stormkit::log {
         const auto is_error = severity == Severity::ERROR or severity == Severity::FATAL;
         const auto output   = (is_error) ? get_stderr() : get_stdout();
 
+        const auto header_length = stdr::size(str) + 1;
+        auto       prefix        = std::string {};
+        prefix.resize(header_length + 1, ' ');
+        prefix.front()             = '\n';
+        const auto prefixed_string = core::replace(string, "\n", prefix);
         // not yet
         /*
         auto state          = std::mbstate_t {};
@@ -68,7 +75,8 @@ namespace stormkit::log {
         state                  = std::mbstate_t {};
         std::string out_string = std::string { MB_LEN_MAX };
         for (const auto &c : string) { std::c8rtomb(std::data(out_string), c, &state); }*/
-        std::println(output, "{} {}", StyleMap.at(severity) | str, string);
+        const auto header = std::format("{} ", StyleMap.at(severity) | str);
+        std::println(output, "{}{}", header, prefixed_string);
     }
 
     ////////////////////////////////////////
