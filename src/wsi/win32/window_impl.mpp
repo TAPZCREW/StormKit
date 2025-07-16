@@ -107,7 +107,7 @@ export namespace stormkit::wsi::win32 {
         LONG                       m_last_style_ex;
         mutable math::Extent2<u32> m_current_size  = { 0u, 0u };
         math::Extent2<u32>         m_last_size     = { 0u, 0u };
-        math::vec2u             m_last_position = { 0u, 0u };
+        math::vec2u                m_last_position = { 0u, 0u };
 
         HWND m_window_handle = nullptr;
 
@@ -351,7 +351,7 @@ namespace stormkit::wsi::win32 {
 
                 GetWindowRect(m_window_handle, &rect);
 
-                m_last_position = { rect.left, rect.top };
+                m_last_position = { as<u32>(rect.left), as<u32>(rect.top) };
             }
 
             SetWindowLongW(m_window_handle,
