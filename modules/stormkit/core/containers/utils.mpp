@@ -20,14 +20,15 @@ export namespace stormkit { inline namespace core {
     constexpr auto merge(Out& output, const Inputs&... ranges) noexcept -> void;
 
     template<template<class...> typename Out = std::vector, stdr::input_range... Inputs>
-    constexpr auto concat(const Inputs&... inputs) noexcept -> Out<meta::RangeType<Inputs...[0]>>;
+    constexpr auto concat(const Inputs&... inputs) noexcept
+      -> Out<meta::CanonicalType<meta::RangeType<Inputs...[0]>>>;
 
     template<stdr::range Out, stdr::input_range... Inputs>
     constexpr auto move_and_merge(Out& output, Inputs&&... ranges) noexcept -> void;
 
     template<template<class...> typename Out = std::vector, stdr::input_range... Inputs>
     constexpr auto move_and_concat(Inputs&&... inputs) noexcept
-      -> Out<meta::RangeType<Inputs...[0]>>;
+      -> Out<meta::CanonicalType<meta::RangeType<Inputs...[0]>>>;
 
     using std::to_array;
 
@@ -88,8 +89,9 @@ namespace stormkit { inline namespace core {
     template<template<class...> typename Out = std::vector, stdr::input_range... Inputs>
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
-    constexpr auto concat(const Inputs&... inputs) noexcept -> Out<meta::RangeType<Inputs...[0]>> {
-        auto output = Out<meta::RangeType<Inputs...[0]>> {};
+    constexpr auto concat(const Inputs&... inputs) noexcept
+      -> Out<meta::CanonicalType<meta::RangeType<Inputs...[0]>>> {
+        auto output = Out<meta::CanonicalType<meta::RangeType<Inputs...[0]>>> {};
         merge(output, inputs...);
 
         return output;
@@ -111,8 +113,8 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST
     constexpr auto move_and_concat(Inputs&&... inputs) noexcept
-      -> Out<meta::RangeType<Inputs...[0]>> {
-        auto output = Out<meta::RangeType<Inputs...[0]>> {};
+      -> Out<meta::CanonicalType<meta::RangeType<Inputs...[0]>>> {
+        auto output = Out<meta::CanonicalType<meta::RangeType<Inputs...[0]>>> {};
         move_and_merge(output, std::forward<Inputs>(inputs)...);
 
         return output;
