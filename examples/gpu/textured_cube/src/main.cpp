@@ -591,10 +591,9 @@ auto main(std::span<const std::string_view> args) -> int {
                                   window_extent_f32.width / window_extent_f32.height,
                                   0.1f,
                                   100.f),
-                    .view = math::lookAt(math::vec3f { 0.f, 3.f, 5.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f }),
-                    .model = math::mat4f { 1.f },
+                    .view = math::look_at(math::vec3f { 0.f, 3.f, 5.f }, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f }),
+                    .model = math::mat4f::identity(),
     };
-    viewer_data.proj[1][1] *= -1.f;
 
     // wait for transition to be done
     fence.wait().transform_error(monadic::assert());
@@ -645,10 +644,11 @@ auto main(std::span<const std::string_view> args) -> int {
         const auto& signal                   = swapchain_image_resource.render_finished;
 
         // update viewer data and upload
-        const auto time     = stdc::duration_cast<SecondF>(current_time - start_time).count();
-        viewer_data.model   = math::rotate(math::mat4f { 1.f },
+        const auto time   = stdc::duration_cast<SecondF>(current_time - start_time).count();
+        viewer_data.model = math::rotate(math::mat4f::identity(),
                                          time * math::radians(90.f),
                                          math::vec3f { 0.f, 1.f, 0.f });
+
         auto& viewer_buffer = submission_resource.viewer_buffer;
         viewer_buffer.upload(viewer_data);
 
@@ -658,7 +658,7 @@ auto main(std::span<const std::string_view> args) -> int {
         render_cmb.reset();
         render_cmb.begin();
 
-        render_cmb.begin_debug_region("Render triangle")
+        render_cmb.begin_debug_region("Render textured cube")
           .begin_render_pass(render_pass,
                              framebuffer,
                              { { gpu::ClearColor { .color = RGBColorDef::SILVER<float> } },
