@@ -356,7 +356,7 @@ namespace stormkit { inline namespace core { namespace math {
                        TensorSpan<T, Sizes...>              out) noexcept -> void {
         const auto a_linear   = as_span(a);
         auto       out_linear = as_span_mut(out);
-        for (auto i = 0u; i < (Sizes * ...); ++i) out_linear[i] = a_linear[i] * b;
+        for (auto i = 0u; i < (Sizes * ...); ++i) out_linear[i] = a_linear[i] / b;
     }
 
     ////////////////////////////////////////
