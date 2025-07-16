@@ -2,13 +2,662 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
+module;
+
+#include <stormkit/core/contract_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
+
 export module stormkit.core:math.linear;
 
 import std;
 
+import :math.arithmetic;
+
+import :meta.traits;
+import :meta.concepts;
+import :meta.strong_type;
+
+import :utils.contract;
 import :typesafe.integer;
+import :typesafe.floating_point;
+
+// TODO improve template deduction
 
 export namespace stormkit { inline namespace core { namespace math {
+    template<core::meta::IsArithmetic T>
+    using Euler = core::meta::StrongType<T, struct EulerAngleTag>;
+
+    template<core::meta::IsArithmetic T>
+    using Radian = core::meta::StrongType<T, struct RadianAngleTag>;
+
     template<core::meta::IsArithmetic T, usize... Sizes>
-    using TensorSpan = std::mdspan<T, std::extents<u8, Sizes...>, std::layout_right>;
+        requires(sizeof...(Sizes) >= 1)
+    using TensorSpan = std::mdspan<T, std::extents<u8, Sizes...>>;
+
+    template<typename T, usize N>
+    using VectorSpan = TensorSpan<T, N>;
+
+    template<typename T, usize M, usize N>
+    using MatrixSpan = TensorSpan<T, M, N>;
+
+    template<typename T, usize N>
+    using SquareMatrixSpan = MatrixSpan<T, N, N>;
+
+    namespace meta {
+        template<typename T>
+        concept IsTensorSpan = core::meta::IsSpecializationWithNTTPOf<T, TensorSpan>;
+    }
+
+    // template<core::meta::IsArithmetic T, usize... Sizes>
+    // [[nodiscard]]
+    // constexpr auto as_span(TensorSpan<T, Sizes...>& tensor) noexcept -> std::span<T, (Sizes *
+    // ...)>;
+
+    template<typename T, usize... Sizes>
+    [[nodiscard]]
+    constexpr auto as_span(const TensorSpan<const T, Sizes...>& tensor) noexcept
+      -> std::span<const T, (Sizes * ...)>;
+
+    template<typename T, usize... Sizes>
+        requires(not core::meta::IsConst<T>)
+    [[nodiscard]]
+    constexpr auto as_span_mut(TensorSpan<T, Sizes...> tensor) noexcept
+      -> std::span<T, (Sizes * ...)>;
+
+    template<usize... Sizes, stdr::contiguous_range T>
+        requires(core::meta::IsArithmetic<core::meta::RangeType<T>>)
+    [[nodiscard]]
+    constexpr auto as_mdspan(const T& data) noexcept
+      -> TensorSpan<const core::meta::RangeType<T>, Sizes...>;
+
+    template<usize... Sizes, stdr::contiguous_range T>
+        requires(core::meta::IsArithmetic<core::meta::RangeType<T>>
+                 and not core::meta::IsConst<core::meta::RangeType<T>>)
+    [[nodiscard]]
+    constexpr auto as_mdspan_mut(T& data) noexcept
+      -> TensorSpan<core::meta::RangeType<T>, Sizes...>;
+
+    template<meta::IsTensorSpan To, meta::IsTensorSpan From>
+    [[nodiscard]]
+    constexpr auto as(const From& data) noexcept -> To;
+
+    template<core::meta::IsArithmetic T>
+    [[nodiscard]]
+    constexpr auto radians(T degres) noexcept -> Radian<T>;
+
+    template<typename T, usize... Sizes>
+        requires(not core::meta::IsConst<T>)
+    constexpr auto add(const TensorSpan<const T, Sizes...>& a,
+                       const TensorSpan<const T, Sizes...>& b,
+                       STORMKIT_RESTRICT TensorSpan<T, Sizes...> out) noexcept -> void;
+
+    template<typename T, usize... Sizes>
+        requires(not core::meta::IsConst<T>)
+    constexpr auto sub(const TensorSpan<const T, Sizes...>& a,
+                       const TensorSpan<const T, Sizes...>& b,
+                       STORMKIT_RESTRICT TensorSpan<T, Sizes...> out) noexcept -> void;
+
+    template<core::meta::IsArithmetic T, usize... Sizes>
+        requires(not core::meta::IsConst<T>)
+    constexpr auto mul(const TensorSpan<const T, Sizes...>& a,
+                       T                                    b,
+                       STORMKIT_RESTRICT TensorSpan<T, Sizes...> out) noexcept -> void;
+
+    template<core::meta::IsArithmetic T, usize... Sizes>
+        requires(not core::meta::IsConst<T>)
+    constexpr auto div(const TensorSpan<const T, Sizes...>& a,
+                       T                                    b,
+                       STORMKIT_RESTRICT TensorSpan<T, Sizes...> out) noexcept -> void;
+    // TODO WAIT FOR SUBMDSPAN
+    // template<core::meta::IsArithmetic T, usize... Sizes>
+    // constexpr auto normalize(TensorSpan<const T, Sizes...> a,
+    //                          STORMKIT_RESTRICT TensorSpan<T, Sizes...> out) noexcept -> void;
+
+    /* vector */
+    template<typename T, usize N>
+        requires(not core::meta::IsConst<T>)
+    constexpr auto normalize(const VectorSpan<const T, N>& a,
+                             STORMKIT_RESTRICT VectorSpan<T, N> out) noexcept -> void;
+
+    template<typename T, usize N>
+    [[nodiscard]]
+    constexpr auto dot(const VectorSpan<const T, N>& a, const VectorSpan<const T, N>& b) noexcept
+      -> T;
+
+    template<typename T>
+        requires(not core::meta::IsConst<T>)
+    constexpr auto cross(const VectorSpan<const T, 3>& a,
+                         const VectorSpan<const T, 3>& b,
+                         STORMKIT_RESTRICT VectorSpan<T, 3> out) noexcept -> void;
+
+    /* matrix */
+    template<typename T, usize M, usize N, usize K>
+        requires(not core::meta::IsConst<T>)
+    constexpr auto mul(const MatrixSpan<T, M, N>& a,
+                       const MatrixSpan<T, N, K>& b,
+                       STORMKIT_RESTRICT MatrixSpan<T, M, K> out) noexcept -> void;
+
+    template<typename T, usize N>
+        requires(not core::meta::IsConst<T>)
+    constexpr auto transpose(const VectorSpan<T, N>& a,
+                             STORMKIT_RESTRICT VectorSpan<T, N> out) noexcept -> void;
+
+    template<typename T, usize N>
+    [[nodiscard]]
+    constexpr auto is_orthogonal(const SquareMatrixSpan<T, N>& mat) noexcept -> bool;
+
+    template<typename T>
+    constexpr auto translate(const SquareMatrixSpan<const T, 4>& mat,
+                             const VectorSpan<const T, 3>&       translation,
+                             SquareMatrixSpan<T, 4>              out) noexcept -> void;
+
+    template<typename T>
+    constexpr auto scale(const SquareMatrixSpan<const T, 4>& mat,
+                         const VectorSpan<const T, 3>&       translation,
+                         SquareMatrixSpan<T, 4>              out) noexcept -> void;
+
+    template<core::meta::IsArithmetic T>
+        requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
+    constexpr auto rotate(const SquareMatrixSpan<T, 4>& mat,
+                          T                             angle,
+                          const VectorSpan<T, 3>&       axis,
+                          STORMKIT_RESTRICT SquareMatrixSpan<T, 4> out) noexcept -> void;
+
+    /* graphics */
+    template<core::meta::IsArithmetic T>
+        requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
+    constexpr auto orthographique(T                 left,
+                                  T                 right,
+                                  T                 bottom,
+                                  T                 top,
+                                  T                 near,
+                                  T                 far,
+                                  STORMKIT_RESTRICT SquareMatrixSpan<T, 4> out) noexcept -> void;
+
+    template<core::meta::IsArithmetic T>
+        requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
+    constexpr auto orthographique(T                 left,
+                                  T                 right,
+                                  T                 bottom,
+                                  T                 top,
+                                  STORMKIT_RESTRICT SquareMatrixSpan<T, 4> out) noexcept -> void;
+
+    template<core::meta::IsArithmetic T>
+        requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
+    constexpr auto perspective(Radian<T>         fov_y,
+                               T                 aspect,
+                               T                 near,
+                               T                 far,
+                               STORMKIT_RESTRICT SquareMatrixSpan<T, 4> out) noexcept -> void;
+
+    template<typename T>
+        requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
+    constexpr auto look_at(VectorSpan<T, 3>  eye,
+                           VectorSpan<T, 3>  center,
+                           VectorSpan<T, 3>  up,
+                           STORMKIT_RESTRICT SquareMatrixSpan<T, 4> out) noexcept -> void;
+
+    template<core::meta::IsArithmetic T, core::meta::IsArithmetic U>
+        requires core::meta::IsSameSigneness<T, U>
+    auto add_tag(Euler<T>, U) -> Euler<T>;
+
+    template<core::meta::IsArithmetic T, core::meta::IsArithmetic U>
+        requires core::meta::IsSameSigneness<T, U>
+    auto sub_tag(Euler<T>, U) -> Euler<T>;
+
+    template<core::meta::IsArithmetic T, core::meta::IsArithmetic U>
+        requires core::meta::IsSameSigneness<T, U>
+    auto mul_tag(Euler<T>, U) -> Euler<T>;
+
+    template<core::meta::IsArithmetic T, core::meta::IsArithmetic U>
+        requires core::meta::IsSameSigneness<T, U>
+    auto div_tag(Euler<T>, U) -> Euler<T>;
+
+    template<core::meta::IsArithmetic T, core::meta::IsArithmetic U>
+        requires core::meta::IsSameSigneness<T, U>
+    auto add_tag(Radian<T>, U) -> Radian<T>;
+
+    template<core::meta::IsArithmetic T, core::meta::IsArithmetic U>
+        requires core::meta::IsSameSigneness<T, U>
+    auto sub_tag(Radian<T>, U) -> Radian<T>;
+
+    template<core::meta::IsArithmetic T, core::meta::IsArithmetic U>
+        requires core::meta::IsSameSigneness<T, U>
+    auto mul_tag(Radian<T>, U) -> Radian<T>;
+
+    template<core::meta::IsArithmetic T, core::meta::IsArithmetic U>
+        requires core::meta::IsSameSigneness<T, U>
+    auto div_tag(Radian<T>, U) -> Radian<T>;
+}}} // namespace stormkit::core::math
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stdr = std::ranges;
+
+namespace stormkit { inline namespace core { namespace math {
+    // ////////////////////////////////////////
+    // ////////////////////////////////////////
+    // template<core::meta::IsArithmetic T, usize... Sizes>
+    // [[nodiscard]]
+    // constexpr auto as_span(const TensorSpan<T, Sizes...>& tensor) noexcept
+    //   -> std::span<T, (Sizes * ...)> {
+    //     return std::span<T, (Sizes * ...)> { tensor.data_handle(), (Sizes * ...) };
+    // }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T, usize... Sizes>
+    [[nodiscard]]
+    constexpr auto as_span(const TensorSpan<const T, Sizes...>& tensor) noexcept
+      -> std::span<const T, (Sizes * ...)> {
+        return std::span<const T, (Sizes * ...)> { tensor.data_handle(), (Sizes * ...) };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T, usize... Sizes>
+        requires(not core::meta::IsConst<T>)
+    [[nodiscard]]
+    constexpr auto as_span_mut(TensorSpan<T, Sizes...> tensor) noexcept
+      -> std::span<T, (Sizes * ...)> {
+        return std::span<T, (Sizes * ...)> { tensor.data_handle(), (Sizes * ...) };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<usize... Sizes, stdr::contiguous_range T>
+        requires(core::meta::IsArithmetic<core::meta::RangeType<T>>)
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto as_mdspan(const T& data) noexcept
+      -> TensorSpan<const core::meta::RangeType<T>, Sizes...> {
+        EXPECTS(stdr::size(data) == (Sizes * ...));
+        return TensorSpan<const core::meta::RangeType<T>, Sizes...> { stdr::data(data), Sizes... };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<usize... Sizes, stdr::contiguous_range T>
+        requires(core::meta::IsArithmetic<core::meta::RangeType<T>>
+                 and not core::meta::IsConst<core::meta::RangeType<T>>)
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto as_mdspan_mut(T& data) noexcept
+      -> TensorSpan<core::meta::RangeType<T>, Sizes...> {
+        EXPECTS(stdr::size(data) == (Sizes * ...));
+        return TensorSpan<core::meta::RangeType<T>, Sizes...> { stdr::data(data), Sizes... };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsTensorSpan To, meta::IsTensorSpan From>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto as(const From& data) noexcept -> To {
+        return To { data };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto radians(T degres) noexcept -> Radian<T> {
+        static constexpr auto one_rad = std::numbers::pi_v<T> / T { 180 };
+        return core::meta::make_named<Radian<T>>(degres * one_rad);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T, usize... Sizes>
+        requires(not core::meta::IsConst<T>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto add(const TensorSpan<const T, Sizes...>& a,
+                       const TensorSpan<const T, Sizes...>& b,
+                       TensorSpan<T, Sizes...>              out) noexcept -> void {
+        const auto a_linear   = as_span(a);
+        const auto b_linear   = as_span(b);
+        auto       out_linear = as_span_mut(out);
+        for (auto i = 0u; i < (Sizes * ...); ++i) out_linear[i] = a_linear[i] + b_linear[i];
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T, usize... Sizes>
+        requires(not core::meta::IsConst<T>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto sub(TensorSpan<const T, Sizes...> a,
+                       TensorSpan<const T, Sizes...> b,
+                       TensorSpan<T, Sizes...>       out) noexcept -> void {
+        const auto a_linear   = as_span(a);
+        const auto b_linear   = as_span(b);
+        auto       out_linear = as_span_mut(out);
+        for (auto i = 0u; i < (Sizes * ...); ++i) out_linear[i] = a_linear[i] - b_linear[i];
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T, usize... Sizes>
+        requires(not core::meta::IsConst<T>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto mul(const TensorSpan<const T, Sizes...>& a,
+                       T                                    b,
+                       TensorSpan<T, Sizes...>              out) noexcept -> void {
+        const auto a_linear   = as_span(a);
+        auto       out_linear = as_span_mut(out);
+        for (auto i = 0u; i < (Sizes * ...); ++i) out_linear[i] = a_linear[i] * b;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T, usize... Sizes>
+        requires(not core::meta::IsConst<T>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto div(const TensorSpan<const T, Sizes...>& a,
+                       T                                    b,
+                       TensorSpan<T, Sizes...>              out) noexcept -> void {
+        const auto a_linear   = as_span(a);
+        auto       out_linear = as_span_mut(out);
+        for (auto i = 0u; i < (Sizes * ...); ++i) out_linear[i] = a_linear[i] * b;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T, usize N>
+        requires(not core::meta::IsConst<T>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto normalize(const VectorSpan<const T, N>& a, VectorSpan<T, N> out) noexcept
+      -> void {
+        const auto sum = [&a] noexcept {
+            auto sum = T { 0 };
+            for (auto i = 0u; i < N; ++i) sum += (a[i] * a[i]);
+            sum = std::sqrt(sum);
+            return sum;
+        }();
+
+        for (auto i = 0u; i < N; ++i) out[i] = a[i] / sum;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T, usize N>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto dot(const VectorSpan<const T, N>& a, const VectorSpan<const T, N>& b) noexcept
+      -> T {
+        auto out = T { 0 };
+        for (auto i = 0u; i < N; ++i) out += (a[i] * b[i]);
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T>
+        requires(not core::meta::IsConst<T>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto cross(const VectorSpan<const T, 3>& a,
+                         const VectorSpan<const T, 3>& b,
+                         VectorSpan<T, 3>              out) noexcept -> void {
+        out[0] = a[1] * b[2] - a[2] * b[1];
+        out[1] = a[2] * b[0] - a[0] * b[2];
+        out[2] = a[0] * b[1] - a[1] * b[0];
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T, usize M, usize N, usize K>
+        requires(not core::meta::IsConst<T>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto mul(const MatrixSpan<const T, M, N>& a,
+                       const MatrixSpan<const T, N, K>& b,
+                       MatrixSpan<T, M, K>              out) noexcept -> void {
+        stdr::fill(as_span_mut(out), T { 0 });
+        for (auto i = 0u; i < M; ++i)
+            for (auto j = 0u; j < K; ++j)
+                for (auto k = 0u; k < N; ++k) out[i, j] += a[i, k] * b[k, j];
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T, usize N>
+    STORMKIT_FORCE_INLINE
+    constexpr auto is_orthogonal(const SquareMatrixSpan<const T, N>& mat) noexcept -> bool {
+        static constexpr auto IDENTITY = [] static consteval noexcept {
+            auto matrix = std::array<T, N * N> {};
+            auto write  = as_mdspan_mut(matrix);
+
+            for (auto j = 0u, i = 0u; j < N; ++j, ++i) { write[i, i] = T { 1 }; }
+
+            return matrix;
+        }();
+
+        const auto transposed = std::mdspan<const T, std::extents<u8, N, N>, std::layout_left> {
+            mat.data_handle(),
+            N * N
+        };
+
+        const auto result = [&mat] {
+            auto matrix = std::array<T, N * N> {};
+            mul(mat, transposed, as_mdspan_mut<N, N>(matrix));
+            return matrix;
+        };
+        return result == IDENTITY;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T>
+    constexpr auto translate(const SquareMatrixSpan<const T, 4>& mat,
+                             const VectorSpan<const T, 3>&       translation,
+                             SquareMatrixSpan<T, 4>              out) noexcept -> void {
+        for (auto i = 0u; i < 3; ++i)
+            for (auto j = 0u; j < 3; ++j) out[i, j] = mat[i, j];
+
+        out[3, 0] = mat[0, 0] * translation[0]
+                    + mat[1, 0] * translation[1]
+                    + mat[2, 0] * translation[2]
+                    + mat[3, 0];
+        out[3, 1] = mat[0, 1] * translation[0]
+                    + mat[1, 1] * translation[1]
+                    + mat[2, 1] * translation[2]
+                    + mat[3, 1];
+        out[3, 2] = mat[0, 2] * translation[0]
+                    + mat[1, 2] * translation[1]
+                    + mat[2, 2] * translation[2]
+                    + mat[3, 2];
+        out[3, 3] = mat[0, 3] * translation[0]
+                    + mat[1, 3] * translation[1]
+                    + mat[2, 3] * translation[2]
+                    + mat[3, 3];
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T>
+    constexpr auto scale(const SquareMatrixSpan<const T, 4>& mat,
+                         const VectorSpan<const T, 3>&       scale,
+                         SquareMatrixSpan<T, 4>              out) noexcept -> void {
+        out[0, 0] = mat[0, 0] * scale[0];
+        out[0, 1] = mat[0, 1] * scale[0];
+        out[0, 2] = mat[0, 2] * scale[0];
+        out[0, 3] = mat[0, 3] * scale[0];
+
+        out[1, 0] = mat[1, 0] * scale[1];
+        out[1, 1] = mat[1, 1] * scale[1];
+        out[1, 2] = mat[1, 2] * scale[1];
+        out[1, 3] = mat[1, 3] * scale[1];
+
+        out[2, 0] = mat[2, 0] * scale[2];
+        out[2, 1] = mat[2, 1] * scale[2];
+        out[2, 2] = mat[2, 2] * scale[2];
+        out[2, 3] = mat[2, 3] * scale[2];
+
+        out[3, 0] = mat[3, 0];
+        out[3, 1] = mat[3, 1];
+        out[3, 2] = mat[3, 2];
+        out[3, 3] = mat[3, 3];
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T>
+        requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto rotate(const SquareMatrixSpan<const T, 4>& mat,
+                          Radian<T>                           angle,
+                          const VectorSpan<const T, 3>&       axis,
+                          SquareMatrixSpan<T, 4>              out) noexcept -> void {
+        const auto cos = std::cos(angle.get());
+        const auto sin = std::sin(angle.get());
+
+        const auto axis_norm = [&axis] noexcept {
+            auto axis_norm = std::array<T, 3> {};
+            normalize(axis, as_mdspan_mut<3>(axis_norm));
+            return axis_norm;
+        }();
+
+        const auto temp = [&axis_norm, &cos] noexcept {
+            auto temp = std::array<T, 3> {};
+            mul(as_mdspan<3>(axis_norm), T { 1 } - cos, as_mdspan_mut<3>(temp));
+            return temp;
+        }();
+
+        auto rotation_matrix = std::array<T, 4 * 4> {};
+        stdr::fill(rotation_matrix, 0);
+        auto rotation_matrix_ = as_mdspan_mut<4, 4>(rotation_matrix);
+
+        rotation_matrix_[0, 0] = cos + temp[0] * axis_norm[0];
+        rotation_matrix_[0, 1] = temp[0] * axis_norm[1] + sin * axis_norm[2];
+        rotation_matrix_[0, 2] = temp[0] * axis_norm[2] - sin * axis_norm[1];
+
+        rotation_matrix_[1, 0] = temp[1] * axis_norm[0] - sin * axis_norm[2];
+        rotation_matrix_[1, 1] = cos + temp[1] * axis_norm[1];
+        rotation_matrix_[1, 2] = temp[1] * axis_norm[2] + sin * axis_norm[0];
+
+        rotation_matrix_[2, 0] = temp[2] * axis_norm[0] + sin * axis_norm[1];
+        rotation_matrix_[2, 1] = temp[2] * axis_norm[1] - sin * axis_norm[0];
+        rotation_matrix_[2, 2] = cos + temp[2] * axis_norm[2];
+
+        // TODO replace by mul when submdspan is available
+        for (auto i = 0u; i < 3; ++i)
+            for (auto j = 0u; j < 3; ++j)
+                for (auto k = 0u; k < 3; ++k) out[i, j] += mat[i, k] * rotation_matrix_[k, j];
+
+        out[3, 0] = mat[3, 0];
+        out[3, 1] = mat[3, 1];
+        out[3, 2] = mat[3, 2];
+        out[3, 3] = mat[3, 3];
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T>
+        requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto orthographique(T                      left,
+                                  T                      right,
+                                  T                      bottom,
+                                  T                      top,
+                                  T                      near,
+                                  T                      far,
+                                  SquareMatrixSpan<T, 4> out) noexcept -> void {
+        (void)left;
+        (void)right;
+        (void)bottom;
+        (void)top;
+        (void)near;
+        (void)far;
+        (void)out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T>
+        requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto orthographique(T                      left,
+                                  T                      right,
+                                  T                      bottom,
+                                  T                      top,
+                                  SquareMatrixSpan<T, 4> out) noexcept -> void {
+        (void)left;
+        (void)right;
+        (void)bottom;
+        (void)top;
+        (void)out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T>
+        requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto perspective(Radian<T>              fov_y,
+                               T                      aspect,
+                               T                      near,
+                               T                      far,
+                               SquareMatrixSpan<T, 4> out) noexcept -> void {
+        // EXPECTS(not is(aspect, 0));
+        // EXPECTS(not is(near, far));
+
+        const auto half_fov_y = std::tan(fov_y.get() / T { 2 });
+
+        stdr::fill(as_span_mut(out), T { 0 });
+        out[0, 0] = T { 1 } / (aspect * half_fov_y);
+        out[1, 1] = T { -1 } / half_fov_y;
+        out[2, 2] = far / (far - near);
+        out[2, 3] = T { 1 };
+        out[3, 2] = -(far * near) / (far - near);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T>
+        requires(std::is_signed_v<T> and not core::meta::IsConst<T>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto look_at(const VectorSpan<const T, 3>& eye,
+                           const VectorSpan<const T, 3>& center,
+                           const VectorSpan<const T, 3>& up,
+                           SquareMatrixSpan<T, 4>        out) noexcept -> void {
+        const auto z = [&eye, &center] noexcept {
+            auto z = std::array<T, 3> {};
+            sub(center, eye, as_mdspan_mut<3>(z));
+            auto z_norm = std::array<T, 3> {};
+            normalize(as_mdspan<3>(z), as_mdspan_mut<3>(z_norm));
+            return z_norm;
+        }();
+
+        const auto x = [&up, &z] noexcept {
+            auto x = std::array<T, 3> {};
+            cross(up, as_mdspan<3>(z), as_mdspan_mut<3>(x));
+            auto x_norm = std::array<T, 3> {};
+            normalize(as_mdspan<3>(x), as_mdspan_mut<3>(x_norm));
+            return x_norm;
+        }();
+
+        const auto y = [&z, &x] noexcept {
+            auto y = std::array<T, 3> {};
+            cross(as_mdspan<3>(z), as_mdspan<3>(x), as_mdspan_mut<3>(y));
+            auto y_norm = std::array<T, 3> {};
+            normalize(as_mdspan<3>(y), as_mdspan_mut<3>(y_norm));
+            return y_norm;
+        }();
+
+        out[0, 0] = x[0];
+        out[0, 1] = y[0];
+        out[0, 2] = z[0];
+        out[0, 3] = 0;
+
+        out[1, 0] = x[1];
+        out[1, 1] = y[1];
+        out[1, 2] = z[1];
+        out[1, 3] = 0;
+
+        out[2, 0] = x[2];
+        out[2, 1] = y[2];
+        out[2, 2] = z[2];
+        out[2, 3] = 0;
+
+        out[3, 0] = -dot(as_mdspan<3>(x), eye);
+        out[3, 1] = -dot(as_mdspan<3>(y), eye);
+        out[3, 2] = -dot(as_mdspan<3>(z), eye);
+        out[3, 3] = 1;
+    }
 }}} // namespace stormkit::core::math
