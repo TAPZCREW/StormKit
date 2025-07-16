@@ -4,50 +4,53 @@
 
 module;
 
-#include <stormkit/core/hash_macro.hpp>
-
-#include <stormkit/core/memory_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.core:meta.strong_type;
 
 import std;
 
-// import :hash;
 import :typesafe.integer;
+
+import :meta.concepts;
+import :meta.traits;
 
 export {
     namespace stormkit { inline namespace core { namespace meta {
-        class NamedTypeBase {};
-
-        template<class T, class Tag> //, class... Skills>
-        class NamedType final: public NamedTypeBase {
+        template<class T, class Tag>
+        class StrongType final {
           public:
-            using ElementType = T;
-            using RefType     = NamedType<T&, Tag>;
+            using UnderlyingType = T;
+            using RefType        = StrongType<T&, Tag>;
 
-            using underlying_type = ElementType;
+            using underlying_type = UnderlyingType;
             using reference_type  = RefType;
 
-            constexpr NamedType() noexcept(std::is_nothrow_default_constructible_v<ElementType>);
-            constexpr ~NamedType() noexcept(std::is_nothrow_destructible_v<ElementType>);
+            constexpr StrongType() noexcept(IsNoexceptDefaultConstructible<UnderlyingType>)
+                requires(IsDefaultConstructible<UnderlyingType>);
+            constexpr ~StrongType() noexcept(IsNoexceptDestructible<UnderlyingType>);
 
             template<class... Args>
             constexpr explicit(sizeof...(Args) == 1)
-              NamedType(Args&&... args) noexcept(std::is_nothrow_constructible_v<ElementType,
-                                                                                 Args...>)
-                : m_value { std::forward<Args>(args)... } {}
+              StrongType(Args&&... args) noexcept(IsNoexceptConstructible<UnderlyingType, Args...>)
+                requires(IsConstructible<UnderlyingType, Args...>);
 
-            constexpr NamedType(const NamedType&) noexcept(std::is_nothrow_copy_constructible_v<
-                                                           ElementType>);
+            constexpr StrongType(const StrongType&) noexcept(IsNoexceptCopyConstructible<
+                                                             UnderlyingType>)
+                requires(IsCopyConstructible<UnderlyingType>);
 
-            constexpr auto operator=(const NamedType&) noexcept(std::is_nothrow_copy_assignable_v<
-                                                                ElementType>) -> NamedType&;
+            constexpr auto operator=(const StrongType&) noexcept(IsNoexceptCopyAssignable<
+                                                                 UnderlyingType>)
 
-            constexpr NamedType(NamedType&&) noexcept(std::is_nothrow_move_constructible_v<
-                                                      ElementType>);
+              -> StrongType&
+                requires(IsCopyAssignable<UnderlyingType>);
 
-            constexpr auto operator=(NamedType&&) noexcept(std::is_nothrow_move_assignable_v<
-                                                           ElementType>) -> NamedType&;
+            constexpr StrongType(StrongType&&) noexcept(IsNoexceptMoveConstructible<UnderlyingType>)
+                requires(IsMoveConstructible<UnderlyingType>);
+
+            constexpr auto operator=(StrongType&&) noexcept(IsNoexceptMoveAssignable<
+                                                            UnderlyingType>) -> StrongType&
+                requires(IsMoveAssignable<UnderlyingType>);
 
             [[nodiscard]]
             constexpr auto get(this auto&& self) noexcept -> decltype(auto);
@@ -56,17 +59,65 @@ export {
             constexpr operator RefType() noexcept;
 
           private:
-            ElementType m_value;
+            UnderlyingType m_value;
         };
 
-        template<class T>
-        concept IsNamedType = std::derived_from<T, NamedTypeBase>;
+        template<typename Left, typename Right>
+        concept Addable = requires(Left x, Right y) { add_tag(x, y); };
 
-        template<class T, class... Args>
-        constexpr auto makeNamed(Args&&... args) noexcept -> T;
+        template<typename Left, typename Right>
+        concept Substractable = requires(Left x, Right y) { sub_tag(x, y); };
+
+        template<typename Left, typename Right>
+        concept Multipliable = requires(Left x, Right y) { mul_tag(x, y); };
+
+        template<typename Left, typename Right>
+        concept Dividable = requires(Left x, Right y) { div_tag(x, y); };
+
+        template<typename Left, typename Right>
+            requires(stormkit::meta::Addable<Left, Right> or stormkit::meta::Addable<Right, Left>)
+        [[nodiscard]]
+        constexpr auto operator+(Left x, Right y) noexcept -> decltype(auto);
+
+        template<typename Left, typename Right>
+            requires(stormkit::meta::Substractable<Left, Right>
+                     or stormkit::meta::Substractable<Right, Left>)
+        [[nodiscard]]
+        constexpr auto operator-(Left x, Right y) noexcept -> decltype(auto);
+
+        template<typename Left, typename Right>
+            requires(stormkit::meta::Multipliable<Left, Right>
+                     or stormkit::meta::Multipliable<Right, Left>)
+        [[nodiscard]]
+        constexpr auto operator*(Left x, Right y) noexcept -> decltype(auto);
+
+        template<typename Left, typename Right>
+            requires(stormkit::meta::Dividable<Left, Right>
+                     or stormkit::meta::Dividable<Right, Left>)
+        [[nodiscard]]
+        constexpr auto operator/(Left x, Right y) noexcept -> decltype(auto);
+
+        template<class T>
+        concept IsStrongType = IsSpecializationOf<T, StrongType>;
+
+        template<typename T>
+        constexpr auto value_of(T&& value) noexcept -> decltype(auto);
+
+        template<meta::IsStrongType T, class... Args>
+        constexpr auto make_named(Args&&... args) noexcept -> T;
     }}} // namespace stormkit::core::meta
 
-    // CONSTRAINED_HASH_FUNC(stormkit::core::IsNamedType)
+    template<stormkit::meta::IsStrongType T>
+    struct std::hash<T> {
+        [[nodiscard]]
+        auto operator()(const T& value) const noexcept -> stormkit::u64;
+    };
+
+    template<stormkit::meta::IsStrongType T, typename CharT>
+    struct std::formatter<T, CharT>: std::formatter<stormkit::meta::UnderlyingType<T>, CharT> {
+        template<class FormatContext>
+        auto format(const T& data, FormatContext& ctx) const noexcept -> decltype(ctx.out());
+    };
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -77,70 +128,170 @@ namespace stormkit { inline namespace core { namespace meta {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T, class Tag>
-    constexpr NamedType<T, Tag>::NamedType() noexcept(std::is_nothrow_default_constructible_v<
-                                                      ElementType>)
+    STORMKIT_FORCE_INLINE constexpr StrongType<T, Tag>::
+      StrongType() noexcept(IsNoexceptDefaultConstructible<UnderlyingType>)
+        requires(IsDefaultConstructible<UnderlyingType>)
+    = default;
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class T, class Tag>
+    STORMKIT_FORCE_INLINE constexpr StrongType<T, Tag>::~StrongType() noexcept(IsNoexceptDestructible<
+                                                                          UnderlyingType>)
       = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T, class Tag>
-    constexpr NamedType<T, Tag>::~NamedType() noexcept(std::is_nothrow_destructible_v<ElementType>)
-      = default;
+    STORMKIT_FORCE_INLINE constexpr StrongType<T, Tag>::
+      StrongType(const StrongType&) noexcept(IsNoexceptCopyConstructible<UnderlyingType>)
+        requires(IsCopyConstructible<UnderlyingType>)
+    = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T, class Tag>
-    constexpr NamedType<T, Tag>::
-      NamedType(const NamedType&) noexcept(std::is_nothrow_copy_constructible_v<ElementType>)
-      = default;
+    STORMKIT_FORCE_INLINE
+    constexpr auto StrongType<T, Tag>::
+      operator=(const StrongType&) noexcept(IsNoexceptCopyAssignable<UnderlyingType>) -> StrongType&
+        requires(IsCopyAssignable<UnderlyingType>)
+    = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T, class Tag>
-    constexpr auto NamedType<T, Tag>::
-      operator=(const NamedType&) noexcept(std::is_nothrow_copy_assignable_v<ElementType>)
-        -> NamedType& = default;
+    STORMKIT_FORCE_INLINE constexpr StrongType<T, Tag>::
+      StrongType(StrongType&&) noexcept(IsNoexceptMoveConstructible<UnderlyingType>)
+        requires(IsMoveConstructible<UnderlyingType>)
+    = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T, class Tag>
-    constexpr NamedType<T, Tag>::
-      NamedType(NamedType&&) noexcept(std::is_nothrow_move_constructible_v<ElementType>)
-      = default;
-
-    // clang-format off
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<class T, class Tag>
-    constexpr auto NamedType<T, Tag>::operator=(NamedType &&) noexcept(
-        std::is_nothrow_move_assignable_v<ElementType>) -> NamedType & = default;
-
-    // clang-format on
-
-    // template<class T, class Tag>
-    // template<class... Args>
-    // constexpr NamedType<T, Tag>::NamedType(Args &&...args) noexcept(
-    // std::is_nothrow_constructible_v<ElementType, Args...>)
-    // : m_value { std::forward<Args>(args)... } {}
+    STORMKIT_FORCE_INLINE
+    constexpr auto StrongType<T, Tag>::operator=(StrongType&&) noexcept(IsNoexceptMoveAssignable<
+                                                                        UnderlyingType>)
+      -> StrongType&
+        requires(IsMoveAssignable<UnderlyingType>)
+    = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T, class Tag>
-    constexpr auto NamedType<T, Tag>::get(this auto&& self) noexcept -> decltype(auto) {
+    template<class... Args>
+    STORMKIT_FORCE_INLINE constexpr StrongType<T, Tag>::
+      StrongType(Args&&... args) noexcept(IsNoexceptConstructible<UnderlyingType, Args...>)
+        requires(IsConstructible<UnderlyingType, Args...>)
+        : m_value { std::forward<Args>(args)... } {
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<class T, class Tag>
+  STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto StrongType<T, Tag>::get(this auto&& self) noexcept -> decltype(auto) {
         return std::forward<decltype(self)>(self).m_value;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class T, class Tag>
-    constexpr NamedType<T, Tag>::operator RefType() noexcept {
+  STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr StrongType<T, Tag>::operator RefType() noexcept {
         return RefType { get() };
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<class T, class... Args>
-    constexpr auto makeNamed(Args&&... args) noexcept -> decltype(auto) {
+    template<typename T>
+  STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto value_of(T&& value) noexcept -> decltype(auto) {
+        if constexpr (IsStrongType<T>) return std::forward<T>(value).get();
+        else
+            return std::forward<T>(value);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsStrongType T, class... Args>
+  STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto make_named(Args&&... args) noexcept -> T {
         return T { std::forward<Args>(args)... };
     }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename Left, typename Right>
+        requires(stormkit::meta::Addable<Left, Right> or stormkit::meta::Addable<Right, Left>)
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto operator+(Left x, Right y) noexcept -> decltype(auto) {
+        if constexpr (stormkit::meta::Addable<Left, Right>)
+            return decltype(add_tag(x, y)) { stormkit::meta::value_of(x)
+                                             + stormkit::meta::value_of(y) };
+        else if constexpr (stormkit::meta::Addable<Right, Left>)
+            return decltype(add_tag(y, x)) { stormkit::meta::value_of(x)
+                                             + stormkit::meta::value_of(y) };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename Left, typename Right>
+        requires(stormkit::meta::Substractable<Left, Right>
+                 or stormkit::meta::Substractable<Right, Left>)
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto operator-(Left x, Right y) noexcept -> decltype(auto) {
+        if constexpr (stormkit::meta::Substractable<Left, Right>)
+            return decltype(sub_tag(x, y)) { stormkit::meta::value_of(x)
+                                             + stormkit::meta::value_of(y) };
+        else if constexpr (stormkit::meta::Substractable<Right, Left>)
+            return decltype(sub_tag(y, x)) { stormkit::meta::value_of(x)
+                                             + stormkit::meta::value_of(y) };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename Left, typename Right>
+        requires(stormkit::meta::Multipliable<Left, Right>
+                 or stormkit::meta::Multipliable<Right, Left>)
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto operator*(Left x, Right y) noexcept -> decltype(auto) {
+        if constexpr (stormkit::meta::Multipliable<Left, Right>)
+            return decltype(mul_tag(x, y)) { stormkit::meta::value_of(x)
+                                             + stormkit::meta::value_of(y) };
+        else if constexpr (stormkit::meta::Multipliable<Right, Left>)
+            return decltype(mul_tag(y, x)) { stormkit::meta::value_of(x)
+                                             + stormkit::meta::value_of(y) };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename Left, typename Right>
+        requires(stormkit::meta::Dividable<Left, Right> or stormkit::meta::Dividable<Right, Left>)
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto operator/(Left x, Right y) noexcept -> decltype(auto) {
+        if constexpr (stormkit::meta::Dividable<Left, Right>)
+            return decltype(div_tag(x, y)) { stormkit::meta::value_of(x)
+                                             + stormkit::meta::value_of(y) };
+        else if constexpr (stormkit::meta::Dividable<Right, Left>)
+            return decltype(div_tag(y, x)) { stormkit::meta::value_of(x)
+                                             + stormkit::meta::value_of(y) };
+    }
 }}} // namespace stormkit::core::meta
+
+////////////////////////////////////////
+////////////////////////////////////////
+template<stormkit::meta::IsStrongType T>
+STORMKIT_FORCE_INLINE
+inline auto std::hash<T>::operator()(const T& value) const noexcept -> stormkit::u64 {
+    return std::hash<stormkit::meta::UnderlyingType<T>> {}(value.get());
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
+template<stormkit::meta::IsStrongType T, typename CharT>
+template<class FormatContext>
+STORMKIT_FORCE_INLINE
+auto std::formatter<T, CharT>::format(const T& data, FormatContext& ctx) const noexcept
+  -> decltype(ctx.out()) {
+    return format_to(std::move(ctx.out()), "{}", data.get());
+}
