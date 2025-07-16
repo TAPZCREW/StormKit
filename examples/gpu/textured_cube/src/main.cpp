@@ -168,7 +168,7 @@ auto main(std::span<const std::string_view> args) -> int {
     // pick the best physical device
     const auto& physical_devices = instance.physical_devices();
     if (stdr::empty(physical_devices)) {
-        std::println("No render physical device found!");
+        elog("No render physical device found!");
         return 0;
     }
     ilog("Physical devices: {}", physical_devices);
