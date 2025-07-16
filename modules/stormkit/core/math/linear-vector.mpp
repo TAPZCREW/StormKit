@@ -22,19 +22,7 @@ import :hash.base;
 
 export {
     namespace stormkit { inline namespace core { namespace math {
-        template<typename T, usize N>
-        using VectorSpan = TensorSpan<T, N>;
-
-        template<typename T, usize N>
-        [[nodiscard]]
-        constexpr auto dot(VectorSpan<const T, N> a, VectorSpan<const T, N> b) noexcept -> T;
-
-        template<typename T>
-        constexpr auto cross(VectorSpan<const T, 3> a,
-                             VectorSpan<const T, 3> b,
-                             VectorSpan<T, 3>       out) noexcept -> void;
-
-        template<typename T>
+        template<core::meta::IsArithmetic T>
         struct alignas(std::array<T, 2>) vec2 {
             using value_type  = T;
             using size_type   = usize;
@@ -47,7 +35,7 @@ export {
 
             template<typename Self>
             constexpr auto operator[](this Self& self, usize i) noexcept
-              -> meta::ForwardConst<Self, value_type&>;
+              -> core::meta::ForwardConst<Self, value_type&>;
         };
 
         using vec2f32 = vec2<f32>;
@@ -62,7 +50,7 @@ export {
         using vec2u64 = vec2<u64>;
         using vec2u   = vec2u32;
 
-        template<typename T>
+        template<core::meta::IsArithmetic T>
         struct alignas(std::array<T, 3>) vec3 {
             using value_type  = T;
             using size_type   = usize;
@@ -76,7 +64,7 @@ export {
 
             template<typename Self>
             constexpr auto operator[](this Self& self, usize i) noexcept
-              -> meta::ForwardConst<Self, value_type&>;
+              -> core::meta::ForwardConst<Self, value_type&>;
         };
 
         using vec3f32 = vec3<f32>;
@@ -91,7 +79,7 @@ export {
         using vec3u64 = vec3<u64>;
         using vec3u   = vec3u32;
 
-        template<typename T>
+        template<core::meta::IsArithmetic T>
         struct alignas(std::array<T, 4>) vec4 {
             using value_type  = T;
             using size_type   = usize;
@@ -106,7 +94,7 @@ export {
 
             template<typename Self>
             constexpr auto operator[](this Self& self, usize i) noexcept
-              -> meta::ForwardConst<Self, value_type&>;
+              -> core::meta::ForwardConst<Self, value_type&>;
         };
 
         using vec4f32 = vec4<f32>;
@@ -138,27 +126,52 @@ export {
 
         template<meta::IsVec T>
         [[nodiscard]]
-        constexpr auto as_mdspan(T& value) noexcept
-          -> VectorSpan<core::meta::ForwardConst<T, typename T::value_type>, T::EXTENT[0]>;
+        constexpr auto add(const T& a, const T& b) noexcept -> T;
 
         template<meta::IsVec T>
         [[nodiscard]]
-        constexpr auto dot(const T& a, const T& b) noexcept -> decltype(auto);
+        constexpr auto sub(const T& a, const T& b) noexcept -> T;
 
-        template<typename T, typename U = T>
-            requires(meta::HasOneVecType<T, U> and (meta::IsVec3<T> or meta::IsVec3<U>))
+        template<meta::IsVec T>
         [[nodiscard]]
-        constexpr auto cross(const T& a, const U& b) noexcept -> decltype(auto);
+        constexpr auto mul(const T& a, typename T::value_type b) noexcept -> T;
+
+        template<meta::IsVec T>
+        [[nodiscard]]
+        constexpr auto div(const T& a, typename T::value_type b) noexcept -> T;
+
+        template<meta::IsVec T>
+        [[nodiscard]]
+        constexpr auto dot(const T& a, const T& b) noexcept -> typename T::value_type;
+
+        template<typename T>
+        [[nodiscard]]
+        constexpr auto cross(const vec3<T>& a, const vec3<T>& b) noexcept -> vec3<T>;
+
+        template<meta::IsVec T>
+        [[nodiscard]]
+        constexpr auto normalize(const T& a) noexcept -> T;
+
+        template<meta::IsVec T>
+        [[nodiscard]]
+        constexpr auto as_mdspan(const T& value) noexcept
+          -> VectorSpan<const typename T::value_type, T::EXTENT[0]>;
+
+        template<meta::IsVec T>
+            requires(not core::meta::IsConst<T>)
+        [[nodiscard]]
+        constexpr auto as_mdspan_mut(T& value) noexcept
+          -> VectorSpan<typename T::value_type, T::EXTENT[0]>;
     }}} // namespace stormkit::core::math
 
     namespace std {
-        template<typename T>
+        template<stormkit::core::meta::IsArithmetic T>
         struct hash<stormkit::math::vec2<T>> {
             [[nodiscard]]
             auto operator()(const stormkit::math::vec2<T>&) const noexcept -> stormkit::u64;
         };
 
-        template<typename T, class CharT>
+        template<stormkit::core::meta::IsArithmetic T, class CharT>
         struct formatter<stormkit::math::vec2<T>, CharT>: formatter<T, CharT> {
             template<class FormatContext>
             [[nodiscard]]
@@ -166,13 +179,13 @@ export {
               -> decltype(ctx.out());
         };
 
-        template<typename T>
+        template<stormkit::core::meta::IsArithmetic T>
         struct hash<stormkit::math::vec3<T>> {
             [[nodiscard]]
             auto operator()(const stormkit::math::vec3<T>&) const noexcept -> stormkit::u64;
         };
 
-        template<typename T, class CharT>
+        template<stormkit::core::meta::IsArithmetic T, class CharT>
         struct formatter<stormkit::math::vec3<T>, CharT>: formatter<T, CharT> {
             template<class FormatContext>
             [[nodiscard]]
@@ -180,13 +193,13 @@ export {
               -> decltype(ctx.out());
         };
 
-        template<typename T>
+        template<stormkit::core::meta::IsArithmetic T>
         struct hash<stormkit::math::vec4<T>> {
             [[nodiscard]]
             auto operator()(const stormkit::math::vec4<T>&) const noexcept -> stormkit::u64;
         };
 
-        template<typename T, class CharT>
+        template<stormkit::core::meta::IsArithmetic T, class CharT>
         struct formatter<stormkit::math::vec4<T>, CharT>: formatter<T, CharT> {
             template<class FormatContext>
             [[nodiscard]]
@@ -199,6 +212,8 @@ export {
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
+
+namespace stdr = std::ranges;
 
 namespace stormkit { inline namespace core { namespace math {
     static_assert(sizeof(vec2u32) == sizeof(u32) * 2);
@@ -224,29 +239,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<typename T, usize N>
-    STORMKIT_CONST STORMKIT_FORCE_INLINE
-    constexpr auto dot(VectorSpan<const T, N> a, VectorSpan<const T, N> b) noexcept -> T {
-        auto out = T { 0 };
-        for (auto i = 0u; i < N; ++i) out += (a[i] * b[i]);
-        return out;
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE
-    constexpr auto cross(VectorSpan<const T, 3> a,
-                         VectorSpan<const T, 3> b,
-                         VectorSpan<T, 3>       out) noexcept -> void {
-        out[0] = a[1] * b[2] - a[2] * b[1];
-        out[1] = a[2] * b[0] - a[0] * b[2];
-        out[2] = a[0] * b[1] - a[1] * b[0];
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<typename T>
+    template<core::meta::IsArithmetic T>
     template<typename Self>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto vec2<T>::operator[](this Self& self, usize i) noexcept
@@ -258,7 +251,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<typename T>
+    template<core::meta::IsArithmetic T>
     template<typename Self>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto vec3<T>::operator[](this Self& self, usize i) noexcept
@@ -270,7 +263,7 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<typename T>
+    template<core::meta::IsArithmetic T>
     template<typename Self>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto vec4<T>::operator[](this Self& self, usize i) noexcept
@@ -284,46 +277,105 @@ namespace stormkit { inline namespace core { namespace math {
     ////////////////////////////////////////
     template<meta::IsVec T>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
-    constexpr auto as_mdspan(T& value) noexcept
-      -> VectorSpan<core::meta::ForwardConst<T, typename T::value_type>, T::EXTENT[0]> {
-        return VectorSpan<core::meta::ForwardConst<T, typename T::value_type>, T::EXTENT[0]> {
-            &value.x,
-            T::EXTENT
-        };
+    constexpr auto normalize(const T& a) noexcept -> T {
+        auto out = T {};
+
+        normalize(as_mdspan(a), as_mdspan_mut(out));
+
+        return out;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::IsVec T>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
-    constexpr auto dot(const T& a, const T& b) noexcept -> decltype(auto) {
+    constexpr auto add(const T& a, const T& b) noexcept -> T {
+        auto out = T {};
+
+        add(as_mdspan(a), as_mdspan(b), as_mdspan_mut(out));
+
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsVec T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto sub(const T& a, const T& b) noexcept -> T {
+        auto out = T {};
+
+        sub(as_mdspan(a), as_mdspan(b), as_mdspan_mut(out));
+
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsVec T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto mul(const T& a, typename T::value_type b) noexcept -> T {
+        auto out = T {};
+
+        mul(as_mdspan(a), b, as_mdspan_mut(out));
+
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsVec T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto div(const T& a, typename T::value_type b) noexcept -> T {
+        auto out = T {};
+
+        div(as_mdspan(a), b, as_mdspan_mut(out));
+
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsVec T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto dot(const T& a, const T& b) noexcept -> typename T::value_type {
         return dot(as_mdspan(a), as_mdspan(b));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<typename T, typename U = T>
-        requires(meta::HasOneVecType<T, U> and (meta::IsVec3<T> or meta::IsVec3<U>))
+    template<typename T>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
-    constexpr auto cross(const T& a, const U& b) noexcept -> decltype(auto) {
-        using OutType = std::conditional_t<meta::IsVec3<T>, T, U>;
-        auto out      = OutType {};
+    constexpr auto cross(const vec3<T>& a, const vec3<T>& b) noexcept -> vec3<T> {
+        auto out = vec3<T> {};
 
-        if constexpr (meta::IsVec3<T> and meta::IsVec3<U>)
-            cross(as_mdspan(a), as_mdspan(b), as_mdspan(out));
-        else if constexpr (meta::IsVec3<T>)
-            cross(as_mdspan(a), b, as_mdspan(out));
-        else if constexpr (meta::IsVec3<U>)
-            cross(a, as_mdspan(b), as_mdspan(out));
-        else
-            std::unreachable();
+        cross(as_mdspan(a), as_mdspan(b), as_mdspan_mut(out));
 
         return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsVec T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto as_mdspan(const T& value) noexcept
+      -> VectorSpan<const typename T::value_type, T::EXTENT[0]> {
+        return VectorSpan<const typename T::value_type, T::EXTENT[0]> { &value.x, T::EXTENT };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsVec T>
+        requires(not core::meta::IsConst<T>)
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto as_mdspan_mut(T& value) noexcept
+      -> VectorSpan<typename T::value_type, T::EXTENT[0]> {
+        return VectorSpan<typename T::value_type, T::EXTENT[0]> { &value.x, T::EXTENT };
     }
 }}} // namespace stormkit::core::math
 
 namespace std {
-    template<typename T>
+    template<stormkit::core::meta::IsArithmetic T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
     auto hash<stormkit::math::vec2<T>>::operator()(const stormkit::math::vec2<T>& vec)
       const noexcept -> stormkit::u64 {
         auto hash = stormkit::hash64 { 0 };
@@ -334,11 +386,11 @@ namespace std {
         return hash;
     }
 
-    template<typename T, class CharT>
+    template<stormkit::core::meta::IsArithmetic T, class CharT>
     template<class FormatContext>
-    auto formatter<stormkit::math::vec2<T>, CharT>::format(const stormkit::math::vec2<T>& vec,
-                                                           FormatContext&                 ctx) const
-      -> decltype(ctx.out()) {
+    inline auto formatter<stormkit::math::vec2<T>,
+                          CharT>::format(const stormkit::math::vec2<T>& vec,
+                                         FormatContext& ctx) const -> decltype(ctx.out()) {
         auto out = ctx.out();
 
         stdr::copy("[vec2: .x = "sv, out);
@@ -350,7 +402,8 @@ namespace std {
         return std::move(out);
     }
 
-    template<typename T>
+    template<stormkit::core::meta::IsArithmetic T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
     auto hash<stormkit::math::vec3<T>>::operator()(const stormkit::math::vec3<T>& vec)
       const noexcept -> stormkit::u64 {
         auto hash = stormkit::hash64 { 0 };
@@ -362,11 +415,11 @@ namespace std {
         return hash;
     }
 
-    template<typename T, class CharT>
+    template<stormkit::core::meta::IsArithmetic T, class CharT>
     template<class FormatContext>
-    auto formatter<stormkit::math::vec3<T>, CharT>::format(const stormkit::math::vec3<T>& vec,
-                                                           FormatContext&                 ctx) const
-      -> decltype(ctx.out()) {
+    inline auto formatter<stormkit::math::vec3<T>,
+                          CharT>::format(const stormkit::math::vec3<T>& vec,
+                                         FormatContext& ctx) const -> decltype(ctx.out()) {
         auto out = ctx.out();
 
         stdr::copy("[vec2: .x = "sv, out);
@@ -380,7 +433,8 @@ namespace std {
         return std::move(out);
     }
 
-    template<typename T>
+    template<stormkit::core::meta::IsArithmetic T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
     auto hash<stormkit::math::vec4<T>>::operator()(const stormkit::math::vec4<T>& vec)
       const noexcept -> stormkit::u64 {
         auto hash = stormkit::hash64 { 0 };
@@ -393,11 +447,11 @@ namespace std {
         return hash;
     }
 
-    template<typename T, class CharT>
+    template<stormkit::core::meta::IsArithmetic T, class CharT>
     template<class FormatContext>
-    auto formatter<stormkit::math::vec4<T>, CharT>::format(const stormkit::math::vec4<T>& vec,
-                                                           FormatContext&                 ctx) const
-      -> decltype(ctx.out()) {
+    inline auto formatter<stormkit::math::vec4<T>,
+                          CharT>::format(const stormkit::math::vec4<T>& vec,
+                                         FormatContext& ctx) const -> decltype(ctx.out()) {
         auto out = ctx.out();
 
         stdr::copy("[vec2: .x = "sv, out);

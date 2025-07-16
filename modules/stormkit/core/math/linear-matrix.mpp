@@ -17,101 +17,187 @@ import :typesafe.integer;
 import :typesafe.floating_point;
 
 import :math.linear;
+import :math.linear.vector;
 
-export namespace stormkit { inline namespace core { namespace math {
-    template<typename T, usize M, usize N>
-    using MatrixSpan = TensorSpan<T, M, N>;
+export {
+    namespace stormkit { inline namespace core { namespace math {
+        template<core::meta::IsArithmetic T, usize M, usize N>
+        struct alignas(std::array<T, M * N>) mat {
+            using value_type   = T;
+            using storage_type = std::array<T, M * N>;
+            using size_type    = usize;
+            using extent_type  = u8;
 
-    template<typename T, usize M, usize N>
-    struct alignas(std::array<T, M * N>) mat {
-        using value_type  = T;
-        using size_type   = usize;
-        using extent_type = u8;
+            static constexpr auto EXTENT = std::array<extent_type, 2> { M, N };
 
-        static constexpr auto EXTENT = std::array<extent_type, 2> { M, N };
+            storage_type data;
 
-        std::array<T, M * N> data;
+            template<typename Self>
+            constexpr auto operator[](this Self& self, usize i, usize j) noexcept
+              -> core::meta::ForwardConst<Self, value_type&>;
 
-        template<typename Self>
-        constexpr auto operator[](this Self& self, usize i, usize j) noexcept
-          -> meta::ForwardConst<Self, value_type&>;
-    };
+            static consteval auto identity() noexcept -> mat<T, M, N>
+                requires(M == N);
+        };
 
-    template<typename T>
-    using mat2x2 = mat<T, 2, 2>;
-
-    using mat2x2f32 = mat2x2<f32>;
-    using mat2x2f64 = mat2x2<f64>;
-    using mat2x2f   = mat2x2f32;
-    using mat2f     = mat2x2f;
-
-    using mat2x2i32 = mat2x2<i32>;
-    using mat2x2i64 = mat2x2<i64>;
-    using mat2x2i   = mat2x2i32;
-    using mat2i     = mat2x2i;
-
-    using mat2x2u32 = mat2x2<u32>;
-    using mat2x2u64 = mat2x2<u64>;
-    using mat2x2u   = mat2x2u32;
-    using mat2u     = mat2x2u;
-
-    template<typename T>
-    using mat3x3 = mat<T, 3, 3>;
-
-    using mat3x3f32 = mat3x3<f32>;
-    using mat3x3f64 = mat3x3<f64>;
-    using mat3x3f   = mat3x3f32;
-    using mat2f     = mat2x2f;
-
-    using mat3x3i32 = mat3x3<i32>;
-    using mat3x3i64 = mat3x3<i64>;
-    using mat3x3i   = mat3x3i32;
-    using mat3i     = mat3x3i;
-
-    using mat3x3u32 = mat3x3<u32>;
-    using mat3x3u64 = mat3x3<u64>;
-    using mat3x3u   = mat3x3u32;
-    using mat3u     = mat3x3u;
-
-    template<typename T>
-    using mat4x4 = mat<T, 4, 4>;
-
-    using mat4x4f32 = mat4x4<f32>;
-    using mat4x4f64 = mat4x4<f64>;
-    using mat4x4f   = mat4x4f32;
-    using mat4f     = mat4x4f;
-
-    using mat4x4i32 = mat4x4<i32>;
-    using mat4x4i64 = mat4x4<i64>;
-    using mat4x4i   = mat4x4i32;
-    using mat4i     = mat4x4i;
-
-    using mat4x4u32 = mat4x4<u32>;
-    using mat4x4u64 = mat4x4<u64>;
-    using mat4x4u   = mat4x4u32;
-    using mat4u     = mat4x4u;
-
-    namespace meta {
         template<typename T>
-        concept IsMat = core::meta::IsSpecializationWithNTTPOf<T, mat>;
+        using mat2x2 = mat<T, 2, 2>;
 
-        template<typename T, typename U>
-        concept HasOneMatType = not(core::meta::IsMdspanType<T> and core::meta::IsMdspanType<U>)
-                                or meta::IsMat<T>
-                                or meta::IsMat<U>;
-    } // namespace meta
+        using mat2x2f32 = mat2x2<f32>;
+        using mat2x2f64 = mat2x2<f64>;
+        using mat2x2f   = mat2x2f32;
+        using mat2f     = mat2x2f;
 
-    template<meta::IsMat T>
-    [[nodiscard]]
-    constexpr auto as_mdspan(T& value) noexcept
-      -> MatrixSpan<core::meta::ForwardConst<T, typename T::value_type>,
-                    T::EXTENT[0],
-                    T::EXTENT[1]>;
-}}} // namespace stormkit::core::math
+        using mat2x2i32 = mat2x2<i32>;
+        using mat2x2i64 = mat2x2<i64>;
+        using mat2x2i   = mat2x2i32;
+        using mat2i     = mat2x2i;
+
+        using mat2x2u32 = mat2x2<u32>;
+        using mat2x2u64 = mat2x2<u64>;
+        using mat2x2u   = mat2x2u32;
+        using mat2u     = mat2x2u;
+
+        template<typename T>
+        using mat3x3 = mat<T, 3, 3>;
+
+        using mat3x3f32 = mat3x3<f32>;
+        using mat3x3f64 = mat3x3<f64>;
+        using mat3x3f   = mat3x3f32;
+        using mat2f     = mat2x2f;
+
+        using mat3x3i32 = mat3x3<i32>;
+        using mat3x3i64 = mat3x3<i64>;
+        using mat3x3i   = mat3x3i32;
+        using mat3i     = mat3x3i;
+
+        using mat3x3u32 = mat3x3<u32>;
+        using mat3x3u64 = mat3x3<u64>;
+        using mat3x3u   = mat3x3u32;
+        using mat3u     = mat3x3u;
+
+        template<typename T>
+        using mat4x4 = mat<T, 4, 4>;
+
+        using mat4x4f32 = mat4x4<f32>;
+        using mat4x4f64 = mat4x4<f64>;
+        using mat4x4f   = mat4x4f32;
+        using mat4f     = mat4x4f;
+
+        using mat4x4i32 = mat4x4<i32>;
+        using mat4x4i64 = mat4x4<i64>;
+        using mat4x4i   = mat4x4i32;
+        using mat4i     = mat4x4i;
+
+        using mat4x4u32 = mat4x4<u32>;
+        using mat4x4u64 = mat4x4<u64>;
+        using mat4x4u   = mat4x4u32;
+        using mat4u     = mat4x4u;
+
+        namespace meta {
+            template<typename T>
+            concept IsMat2 = core::meta::IsSpecializationOf<T, mat2x2>;
+
+            template<typename T>
+            concept IsMat3 = core::meta::IsSpecializationOf<T, mat3x3>;
+
+            template<typename T>
+            concept IsMat4 = core::meta::IsSpecializationOf<T, mat4x4>;
+
+            template<typename T>
+            concept IsMat = core::meta::IsSpecializationWithNTTPOf<T, mat>;
+
+            template<typename T, typename U>
+            concept HasOneMatType = not(core::meta::IsMdspanType<T> and core::meta::IsMdspanType<U>)
+                                    or meta::IsMat<T>
+                                    or meta::IsMat<U>;
+        } // namespace meta
+
+        template<meta::IsMat T>
+        [[nodiscard]]
+        constexpr auto mul(const T& a, typename T::value_type b) noexcept -> T;
+
+        template<meta::IsMat T>
+        [[nodiscard]]
+        constexpr auto div(const T& a, typename T::value_type b) noexcept -> T;
+
+        template<meta::IsMat T>
+        [[nodiscard]]
+        constexpr auto mul(const T& a, const T& b) noexcept -> T;
+
+        template<typename T>
+        [[nodiscard]]
+        constexpr auto translate(const mat4x4<T>& mat, const vec3<T>& translation) noexcept
+          -> mat4x4<T>;
+
+        template<typename T>
+        [[nodiscard]]
+        constexpr auto scale(const mat4x4<T>& mat, const vec3<T>& scale) noexcept -> mat4x4<T>;
+
+        template<typename T>
+        [[nodiscard]]
+        constexpr auto rotate(const mat4x4<T>& mat, Radian<T> angle, const vec3<T>& axis) noexcept
+          -> mat4x4<T>;
+
+        template<core::meta::IsArithmetic T>
+        [[nodiscard]]
+        constexpr auto orthographique(T left, T right, T bottom, T top, T near, T far) noexcept
+          -> mat4x4<T>;
+
+        template<core::meta::IsArithmetic T>
+        [[nodiscard]]
+        constexpr auto orthographique(T left, T right, T bottom, T top) noexcept -> mat4x4<T>;
+
+        template<core::meta::IsArithmetic T>
+        [[nodiscard]]
+        constexpr auto perspective(Radian<T> fov_y, T aspect, T near, T far) noexcept -> mat4x4<T>;
+
+        template<typename T>
+        [[nodiscard]]
+        constexpr auto look_at(const vec3<T>& eye,
+                               const vec3<T>& center,
+                               const vec3<T>& up) noexcept -> mat4x4<T>;
+
+        template<meta::IsMat T>
+        [[nodiscard]]
+        constexpr auto as_span(T& value) noexcept
+          -> std::span<core::meta::ForwardConst<T, typename T::value_type>,
+                       T::EXTENT[0] * T::EXTENT[1]>;
+
+        template<meta::IsMat T>
+        [[nodiscard]]
+        constexpr auto as_mdspan(const T& value) noexcept
+          -> MatrixSpan<const typename T::value_type, T::EXTENT[0], T::EXTENT[1]>;
+
+        template<meta::IsMat T>
+            requires(not core::meta::IsConst<T>)
+        [[nodiscard]]
+        constexpr auto as_mdspan(T& value) noexcept
+          -> MatrixSpan<typename T::value_type, T::EXTENT[0], T::EXTENT[1]>;
+    }}} // namespace stormkit::core::math
+
+    namespace std {
+        template<stormkit::math::meta::IsMat T>
+        struct hash<T> {
+            [[nodiscard]]
+            auto operator()(const T&) const noexcept -> stormkit::u64;
+        };
+
+        template<stormkit::math::meta::IsMat T, class CharT>
+        struct formatter<T, CharT>: formatter<typename T::storage_type, CharT> {
+            template<class FormatContext>
+            [[nodiscard]]
+            auto format(const T&, FormatContext& ctx) const -> decltype(ctx.out());
+        };
+    } // namespace std
+}
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
+
+namespace stdr = std::ranges;
+namespace stdv = std::views;
 
 namespace stormkit { inline namespace core { namespace math {
     static_assert(sizeof(mat2x2i32) == sizeof(i32) * 2 * 2);
@@ -137,14 +223,229 @@ namespace stormkit { inline namespace core { namespace math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    template<core::meta::IsArithmetic T, usize M, usize N>
+    template<typename Self>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto mat<T, M, N>::operator[](this Self& self, usize i, usize j) noexcept
+      -> core::meta::ForwardConst<Self, value_type&> {
+        return std::forward<Self&>(self).data[i + j * M];
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T, usize M, usize N>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    consteval auto mat<T, M, N>::identity() noexcept -> mat<T, M, N>
+        requires(M == N)
+    {
+        auto matrix = mat<T, M, N> {};
+
+        for (auto i = 0u; i < M; ++i) { matrix[i, i] = T { 1 }; }
+
+        return matrix;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     template<meta::IsMat T>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
-    constexpr auto as_mdspan(T& value) noexcept
-      -> MatrixSpan<core::meta::ForwardConst<T, typename T::value_type>,
-                    T::EXTENT[0],
-                    T::EXTENT[1]> {
-        return MatrixSpan<core::meta::ForwardConst<T, typename T::value_type>,
-                          T::EXTENT[0],
-                          T::EXTENT[1]> { &value.x, T::EXTENT };
+    constexpr auto mul(const T& a, typename T::value_type b) noexcept -> T {
+        auto out = T {};
+
+        mul(as_mdspan(a), b, as_mdspan_mut(out));
+
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsMat T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto div(const T& a, typename T::value_type b) noexcept -> T {
+        auto out = T {};
+
+        div(as_mdspan(a), b, as_mdspan_mut(out));
+
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsMat T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto mul(const T& a, const T& b) noexcept -> T {
+        auto out = T {};
+
+        mul(as_mdspan(a), as_mdspan(b), as_mdspan_mut(out));
+
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto translate(const mat4x4<T>& mat, const vec3<T>& translation) noexcept
+      -> mat4x4<T> {
+        auto out = mat4x4<T> {};
+
+        translate(as_mdspan(mat), as_mdspan(translation), as_mdspan_mut(out));
+
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto scale(const mat4x4<T>& mat, const vec3<T>& scale_factors) noexcept -> mat4x4<T> {
+        auto out = mat4x4<T> {};
+
+        scale(as_mdspan(mat), as_mdspan(scale_factors), as_mdspan_mut(out));
+
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto rotate(const mat4x4<T>& mat, Radian<T> angle, const vec3<T>& axis) noexcept
+      -> mat4x4<T> {
+        auto out = mat4x4<T> {};
+
+        rotate(as_mdspan(mat), angle, as_mdspan(axis), as_mdspan_mut(out));
+
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto orthographique(T left, T right, T bottom, T top, T near, T far) noexcept
+      -> mat4x4<T> {
+        auto out = mat4x4<T> {};
+
+        orthographique(left, right, bottom, top, near, far, as_mdspan_mut(out));
+
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto orthographique(T left, T right, T bottom, T top) noexcept -> mat4x4<T> {
+        auto out = mat4x4<T> {};
+
+        orthographique(left, right, bottom, top, as_mdspan_mut(out));
+
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto perspective(Radian<T> fov_y, T aspect, T near, T far) noexcept -> mat4x4<T> {
+        auto out = mat4x4<T> {};
+
+        perspective(fov_y, aspect, near, far, as_mdspan_mut(out));
+
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto look_at(const vec3<T>& eye, const vec3<T>& center, const vec3<T>& up) noexcept
+      -> mat4x4<T> {
+        auto out = mat4x4<T> {};
+
+        look_at(as_mdspan(eye), as_mdspan(center), as_mdspan(up), as_mdspan_mut(out));
+
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsMat T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto as_span(T& value) noexcept
+      -> std::span<core::meta::ForwardConst<T, typename T::value_type>,
+                   T::EXTENT[0] * T::EXTENT[1]> {
+        return std::span<core::meta::ForwardConst<T, typename T::value_type>,
+                         T::EXTENT[0] * T::EXTENT[1]> { stdr::data(value.data),
+                                                        T::EXTENT[0] * T::EXTENT[1] };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsMat T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto as_mdspan(const T& value) noexcept
+      -> MatrixSpan<const typename T::value_type, T::EXTENT[0], T::EXTENT[1]> {
+        return MatrixSpan<const typename T::value_type, T::EXTENT[0], T::EXTENT[1]> {
+            stdr::data(value.data),
+            T::EXTENT
+        };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsMat T>
+        requires(not core::meta::IsConst<T>)
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto as_mdspan_mut(T& value) noexcept
+      -> MatrixSpan<typename T::value_type, T::EXTENT[0], T::EXTENT[1]> {
+        return MatrixSpan<typename T::value_type, T::EXTENT[0], T::EXTENT[1]> {
+            stdr::data(value.data),
+            T::EXTENT
+        };
     }
 }}} // namespace stormkit::core::math
+
+////////////////////////////////////////
+////////////////////////////////////////
+template<stormkit::math::meta::IsMat T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+auto std::hash<T>::operator()(const T& mat) const noexcept -> stormkit::u64 {
+    const auto span = as_span(mat);
+
+    auto hash = stormkit::u64 { 0 };
+    for (const auto v : span) stormkit::hash_combine(hash, v);
+
+    return hash;
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
+template<stormkit::math::meta::IsMat T, class CharT>
+template<class FormatContext>
+inline auto std::formatter<T, CharT>::format(const T& mat, FormatContext& ctx) const
+  -> decltype(ctx.out()) {
+    auto out = ctx.out();
+
+    auto i               = 0;
+    auto check_by_extent = [&i](auto, auto) mutable {
+        const auto insert = i++ < (T::EXTENT[0] - 1);
+        if (not insert) i = 0;
+
+        return insert;
+    };
+
+    format_to(out, "[mat:");
+    auto l = 0u;
+    for (auto&& slice : mat.data | stdv::chunk_by(check_by_extent)) {
+        format_to(out,
+                  "{}|{:n:<6}|{}",
+                  (l > 0) ? "      "sv : " "sv,
+                  slice,
+                  (l != (T::EXTENT[0] - 1)) ? "\n"sv : "]"sv);
+        ++l;
+    }
+
+    return out;
+}
