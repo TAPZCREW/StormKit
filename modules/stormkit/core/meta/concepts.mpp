@@ -32,6 +32,9 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept IsStrict = std::same_as<T, U>;
 
     template<class T, class U>
+    concept IsCanonical = IsStrict<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
+
+    template<class T, class U>
     concept Is = IsStrict<T, U> or std::derived_from<T, U> or std::derived_from<U, T>;
 
     template<class T, class... U>

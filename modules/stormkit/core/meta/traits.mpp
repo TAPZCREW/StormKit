@@ -8,6 +8,8 @@ import std;
 
 import :meta.concepts;
 
+namespace stdr = std::ranges;
+
 export namespace stormkit { inline namespace core { namespace meta {
     template<bool Cond, typename IfRes, typename ElseRes>
     using If = std::conditional_t<Cond, IfRes, ElseRes>;
@@ -22,6 +24,9 @@ export namespace stormkit { inline namespace core { namespace meta {
     using DecayType = std::decay_t<T>;
 
     template<class T>
+    using RemoveReferencesType = std::remove_reference_t<T>;
+
+    template<class T>
     using RemoveIndirectionsType = std::remove_pointer_t<std::remove_reference_t<T>>;
 
     template<class T>
@@ -30,14 +35,14 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<class T>
     using PointerType = typename std::pointer_traits<T>::pointer;
 
-    template<std::ranges::range Range>
-    using IteratorType = decltype(std::cbegin(std::declval<Range>()));
+    template<stdr::range Range>
+    using IteratorType = stdr::iterator_t<Range>;
 
-    template<std::ranges::range Range>
-    using SentinelType = decltype(std::cend(std::declval<Range>()));
+    template<stdr::range Range>
+    using SentinelType = stdr::sentinel_t<Range>;
 
-    template<std::ranges::range Range>
-    using RangeType = CanonicalType<decltype(*std::begin(std::declval<Range>()))>;
+    template<stdr::input_range Range>
+    using RangeType = RemoveReferencesType<stdr::range_reference_t<Range>>;
 
     template<IsArithmetic T, IsArithmetic V>
     constexpr auto is_greater() noexcept;
