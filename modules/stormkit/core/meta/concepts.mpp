@@ -260,6 +260,9 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<typename T>
     concept IsSigned = std::is_signed_v<T>;
 
+    template<typename T, typename U>
+    concept IsSameSigneness = (IsSigned<T> and IsSigned<U>) or (IsUnsigned<T> and IsUnsigned<U>);
+
     template<typename T1, typename T2>
     concept HasEqualityOperator = requires(const T1& first, const T2& second) {
         { first == second } -> IsBooleanTestable;
