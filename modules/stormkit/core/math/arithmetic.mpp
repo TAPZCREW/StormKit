@@ -57,8 +57,10 @@ export {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit { inline namespace core { namespace math {
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     template<core::meta::IsArithmetic T, core::meta::IsArithmetic U>
-        STORMKIT_FORCE_INLINE
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto scale(const U& x,
                          const U& rmin,
                          const U& rmax,
@@ -67,8 +69,10 @@ namespace stormkit { inline namespace core { namespace math {
         return scale(as<T>(x), as<T>(rmin), as<T>(rmax), tmin, tmax);
     }
 
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     template<core::meta::IsIntegral T>
-       STORMKIT_FORCE_INLINE
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto scale(const T& x,
                          const T& rmin,
                          const T& rmax,
@@ -77,8 +81,10 @@ namespace stormkit { inline namespace core { namespace math {
         return (x - rmin) * (tmax - tmin) / (rmax - rmin) + tmin;
     }
 
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     template<core::meta::IsFloatingPoint T>
-       STORMKIT_FORCE_INLINE
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto scale(const T& x,
                          const T& rmin,
                          const T& rmax,
@@ -88,4 +94,5 @@ namespace stormkit { inline namespace core { namespace math {
         if (x > rmax) return rmax;
         return ((x - rmin) * (tmax - tmin) / (rmax - rmin)) + tmin;
     }
+
 }}} // namespace stormkit::core::math
