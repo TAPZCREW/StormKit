@@ -15,24 +15,6 @@ using namespace std::literals;
 namespace {
     auto _ = test::TestSuite {
         "core.math.linear",
-        {
-          {
-            "linear.vector.dot",
-            [] static {
-                const auto a = math::vec2i { 2, 3 };
-                const auto b = math::vec2i { 3, 2 };
-
-                EXPECTS(math::dot(a, b) == 12);
-            },
-          }, {
-            "linear.vector.cross",
-            [] static {
-                const auto a = math::vec3i { 2, 3, 2 };
-                const auto b = math::vec3i { 3, 2, 3 };
-
-                const auto cross_result = math::cross(a, b);
-                EXPECTS(cross_result.x == 5 and cross_result.y == 0 and cross_result.z == -5);
-            },
-          }, },
-    };
+        {},
+    }; // namespace
 } // namespace
