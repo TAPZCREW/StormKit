@@ -49,7 +49,8 @@ namespace {
           }, {
             "linear.matrix.inverse",
             [] static {
-                const auto a      = math::mat3f { 1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 8.f };
+                const auto a = math::mat3f { 1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 8.f };
+
                 const auto result = math::inverse(a);
                 EXPECTS(is(result[0, 0], -8.f / 3.f));
                 EXPECTS(is(result[0, 1], 8.f / 3.f));
@@ -110,7 +111,6 @@ namespace {
                 const auto b = math::mat2f { 1, 2, 3, 4 };
 
                 const auto result = math::div(a, b);
-
                 EXPECTS(is(result[0], 3.f / 2.f));
                 EXPECTS(is(result[1], -1.f / 2.f));
                 EXPECTS(is(result[2], 1.f / 2.f));
@@ -146,16 +146,3 @@ namespace {
           }, },
     };
 } // namespace
-  // const auto a = math::mat4i {
-  //     .data = { 22, 0, 0, 0, 0, 4, 0, 0, 0, 0, 8, 0, 0, 0, 0, 26 }
-  // };
-  // const auto b = math::mat4i {
-  //     .data = { 2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 12 }
-  // };
-
-// const auto result      = math::div(a, b);
-// std::println("{}", result);
-// EXPECTS((result[0, 0] == 11
-//          and result[1, 1] == 4
-//          and result[2, 2] == 4
-//          and result[3, 3] == 2));
