@@ -28,15 +28,46 @@ export {
             using size_type    = usize;
             using extent_type  = u8;
 
-            static constexpr auto EXTENT = std::array<extent_type, 2> { M, N };
+            static constexpr auto EXTENTS = std::array<extent_type, 2> { M, N };
 
-            storage_type data;
+            storage_type values;
 
             template<typename Self>
-            constexpr auto operator[](this Self& self, usize i, usize j) noexcept
-              -> core::meta::ForwardConst<Self, value_type&>;
+            [[nodiscard]]
+            constexpr auto operator[](this Self&& self, size_type i) noexcept
+              -> core::meta::ForwardLike<Self, value_type>;
 
-            static consteval auto identity() noexcept -> mat<T, M, N>
+            template<typename Self>
+            [[nodiscard]]
+            constexpr auto operator[](this Self&& self, size_type i, size_type j) noexcept
+              -> core::meta::ForwardLike<Self, value_type>;
+
+            template<typename Self>
+            [[nodiscard]]
+            constexpr auto begin(this Self& self) noexcept
+              -> core::meta::ForwardConst<Self, value_type>*;
+            [[nodiscard]]
+            constexpr auto cbegin() const noexcept -> const value_type*;
+
+            template<typename Self>
+            [[nodiscard]]
+            constexpr auto end(this Self& self) noexcept
+              -> core::meta::ForwardConst<Self, value_type>*;
+            [[nodiscard]]
+            constexpr auto cend() const noexcept -> const value_type*;
+
+            template<typename Self>
+            [[nodiscard]]
+            constexpr auto data(this Self& self) noexcept
+              -> core::meta::ForwardConst<Self, value_type>*;
+
+            [[nodiscard]]
+            constexpr auto size() const noexcept -> size_type;
+            [[nodiscard]]
+            static consteval auto max_size() noexcept -> size_type;
+
+            [[nodiscard]]
+            static consteval auto identity() noexcept -> mat<value_type, M, N>
                 requires(M == N);
         };
 
@@ -64,7 +95,7 @@ export {
         using mat3x3f32 = mat3x3<f32>;
         using mat3x3f64 = mat3x3<f64>;
         using mat3x3f   = mat3x3f32;
-        using mat2f     = mat2x2f;
+        using mat3f     = mat3x3f;
 
         using mat3x3i32 = mat3x3<i32>;
         using mat3x3i64 = mat3x3<i64>;
@@ -94,6 +125,96 @@ export {
         using mat4x4u   = mat4x4u32;
         using mat4u     = mat4x4u;
 
+        template<typename T>
+        using mat2x3 = mat<T, 2, 3>;
+
+        using mat2x3f32 = mat2x3<f32>;
+        using mat2x3f64 = mat2x3<f64>;
+        using mat2x3f   = mat2x3f32;
+
+        using mat2x3i32 = mat2x3<i32>;
+        using mat2x3i64 = mat2x3<i64>;
+        using mat2x3i   = mat2x3i32;
+
+        using mat2x3u32 = mat2x3<u32>;
+        using mat2x3u64 = mat2x3<u64>;
+        using mat2x3u   = mat2x3u32;
+
+        template<typename T>
+        using mat3x2 = mat<T, 3, 2>;
+
+        using mat3x2f32 = mat3x2<f32>;
+        using mat3x2f64 = mat3x2<f64>;
+        using mat3x2f   = mat3x2f32;
+
+        using mat3x2i32 = mat3x2<i32>;
+        using mat3x2i64 = mat3x2<i64>;
+        using mat3x2i   = mat3x2i32;
+
+        using mat3x2u32 = mat3x2<u32>;
+        using mat3x2u64 = mat3x2<u64>;
+        using mat3x2u   = mat3x2u32;
+
+        template<typename T>
+        using mat4x3 = mat<T, 4, 3>;
+
+        using mat4x3f32 = mat4x3<f32>;
+        using mat4x3f64 = mat4x3<f64>;
+        using mat4x3f   = mat4x3f32;
+
+        using mat4x3i32 = mat4x3<i32>;
+        using mat4x3i64 = mat4x3<i64>;
+        using mat4x3i   = mat4x3i32;
+
+        using mat4x3u32 = mat4x3<u32>;
+        using mat4x3u64 = mat4x3<u64>;
+        using mat4x3u   = mat4x3u32;
+
+        template<typename T>
+        using mat3x4 = mat<T, 3, 4>;
+
+        using mat3x4f32 = mat3x4<f32>;
+        using mat3x4f64 = mat3x4<f64>;
+        using mat3x4f   = mat3x4f32;
+
+        using mat3x4i32 = mat3x4<i32>;
+        using mat3x4i64 = mat3x4<i64>;
+        using mat3x4i   = mat3x4i32;
+
+        using mat3x4u32 = mat3x4<u32>;
+        using mat3x4u64 = mat3x4<u64>;
+        using mat3x4u   = mat3x4u32;
+
+        template<typename T>
+        using mat4x2 = mat<T, 4, 2>;
+
+        using mat4x2f32 = mat4x2<f32>;
+        using mat4x2f64 = mat4x2<f64>;
+        using mat4x2f   = mat4x2f32;
+
+        using mat4x2i32 = mat4x2<i32>;
+        using mat4x2i64 = mat4x2<i64>;
+        using mat4x2i   = mat4x2i32;
+
+        using mat4x2u32 = mat4x2<u32>;
+        using mat4x2u64 = mat4x2<u64>;
+        using mat4x2u   = mat4x2u32;
+
+        template<typename T>
+        using mat2x4 = mat<T, 2, 4>;
+
+        using mat2x4f32 = mat2x4<f32>;
+        using mat2x4f64 = mat2x4<f64>;
+        using mat2x4f   = mat2x4f32;
+
+        using mat2x4i32 = mat2x4<i32>;
+        using mat2x4i64 = mat2x4<i64>;
+        using mat2x4i   = mat2x4i32;
+
+        using mat2x4u32 = mat2x4<u32>;
+        using mat2x4u64 = mat2x4<u64>;
+        using mat2x4u   = mat2x4u32;
+
         namespace meta {
             template<typename T>
             concept IsMat2 = core::meta::IsSpecializationOf<T, mat2x2>;
@@ -107,11 +228,32 @@ export {
             template<typename T>
             concept IsMat = core::meta::IsSpecializationWithNTTPOf<T, mat>;
 
+            template<typename T>
+            concept IsSquareMat = IsMat<T> and T::EXTENTS[0] == T::EXTENTS[1];
+
             template<typename T, typename U>
             concept HasOneMatType = not(core::meta::IsMdspanType<T> and core::meta::IsMdspanType<U>)
                                     or meta::IsMat<T>
                                     or meta::IsMat<U>;
         } // namespace meta
+
+        template<meta::IsSquareMat T>
+        [[nodiscard]]
+        constexpr auto determinant(const T& mat) noexcept -> typename T::value_type;
+
+        template<meta::IsSquareMat T>
+        constexpr auto transpose(const T& mat) noexcept -> T;
+
+        template<meta::IsMat T>
+        [[nodiscard]]
+        constexpr auto is_inversible(const T& mat) noexcept -> bool;
+
+        template<meta::IsSquareMat T>
+        constexpr auto inverse(const T& mat) noexcept -> T;
+
+        template<meta::IsMat T>
+        [[nodiscard]]
+        constexpr auto is_orthogonal(const T& mat) noexcept -> bool;
 
         template<meta::IsMat T>
         [[nodiscard]]
@@ -124,6 +266,11 @@ export {
         template<meta::IsMat T>
         [[nodiscard]]
         constexpr auto mul(const T& a, const T& b) noexcept -> T;
+
+        template<meta::IsMat T, meta::IsSquareMat U>
+            requires(core::meta::IsStrict<typename T::value_type, typename U::value_type>)
+        [[nodiscard]]
+        constexpr auto div(const T& a, const U& b) noexcept -> U;
 
         template<typename T>
         [[nodiscard]]
@@ -162,18 +309,18 @@ export {
         [[nodiscard]]
         constexpr auto as_span(T& value) noexcept
           -> std::span<core::meta::ForwardConst<T, typename T::value_type>,
-                       T::EXTENT[0] * T::EXTENT[1]>;
+                       T::EXTENTS[0] * T::EXTENTS[1]>;
 
         template<meta::IsMat T>
         [[nodiscard]]
         constexpr auto as_mdspan(const T& value) noexcept
-          -> MatrixSpan<const typename T::value_type, T::EXTENT[0], T::EXTENT[1]>;
+          -> MatrixSpan<const typename T::value_type, T::EXTENTS[0], T::EXTENTS[1]>;
 
         template<meta::IsMat T>
             requires(not core::meta::IsConst<T>)
         [[nodiscard]]
         constexpr auto as_mdspan(T& value) noexcept
-          -> MatrixSpan<typename T::value_type, T::EXTENT[0], T::EXTENT[1]>;
+          -> MatrixSpan<typename T::value_type, T::EXTENTS[0], T::EXTENTS[1]>;
     }}} // namespace stormkit::core::math
 
     namespace std {
@@ -184,11 +331,17 @@ export {
         };
 
         template<stormkit::math::meta::IsMat T, class CharT>
-        struct formatter<T, CharT>: formatter<typename T::storage_type, CharT> {
+        struct formatter<T, CharT> {
+            template<class ParseContext>
+            constexpr auto parse(ParseContext& ctx) noexcept -> decltype(ctx.begin());
+
             template<class FormatContext>
             [[nodiscard]]
             auto format(const T&, FormatContext& ctx) const -> decltype(ctx.out());
         };
+
+        template<stormkit::math::meta::IsMat T>
+        constexpr range_format format_kind<T> = range_format::disabled;
     } // namespace std
 }
 
@@ -226,23 +379,139 @@ namespace stormkit { inline namespace core { namespace math {
     template<core::meta::IsArithmetic T, usize M, usize N>
     template<typename Self>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
-    constexpr auto mat<T, M, N>::operator[](this Self& self, usize i, usize j) noexcept
-      -> core::meta::ForwardConst<Self, value_type&> {
-        return std::forward<Self&>(self).data[i + j * M];
+    constexpr auto mat<T, M, N>::operator[](this Self&& self, size_type i) noexcept
+      -> core::meta::ForwardLike<Self, value_type> {
+        return std::forward<Self>(self).values[i];
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T, usize M, usize N>
+    template<typename Self>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto mat<T, M, N>::operator[](this Self&& self, size_type i, size_type j) noexcept
+      -> core::meta::ForwardLike<Self, value_type> {
+        return std::forward_like<Self>(self.operator[](j + i * M));
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T, usize M, usize N>
+    template<typename Self>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto mat<T, M, N>::begin(this Self& self) noexcept
+      -> core::meta::ForwardConst<Self, value_type>* {
+        return stdr::begin(self.values);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<core::meta::IsArithmetic T, usize M, usize N>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
-    consteval auto mat<T, M, N>::identity() noexcept -> mat<T, M, N>
+    constexpr auto mat<T, M, N>::cbegin() const noexcept -> const value_type* {
+        return stdr::cbegin(values);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T, usize M, usize N>
+    template<typename Self>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto mat<T, M, N>::end(this Self& self) noexcept
+      -> core::meta::ForwardConst<Self, value_type>* {
+        return stdr::end(self.values);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T, usize M, usize N>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto mat<T, M, N>::cend() const noexcept -> const value_type* {
+        return stdr::cend(values);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T, usize M, usize N>
+    template<typename Self>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto mat<T, M, N>::data(this Self& self) noexcept
+      -> core::meta::ForwardConst<Self, value_type>* {
+        return stdr::data(self.values);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T, usize M, usize N>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto mat<T, M, N>::size() const noexcept -> size_type {
+        return stdr::size(values);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T, usize M, usize N>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    consteval auto mat<T, M, N>::max_size() noexcept -> size_type {
+        return M * N;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<core::meta::IsArithmetic T, usize M, usize N>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    consteval auto mat<T, M, N>::identity() noexcept -> mat<value_type, M, N>
         requires(M == N)
     {
-        auto matrix = mat<T, M, N> {};
+        auto matrix = mat<value_type, M, N> {};
 
         for (auto i = 0u; i < M; ++i) { matrix[i, i] = T { 1 }; }
 
         return matrix;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsSquareMat T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto determinant(const T& mat) noexcept -> typename T::value_type {
+        return determinant(as_mdspan(mat));
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsSquareMat T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto transpose(const T& mat) noexcept -> T {
+        auto out = T {};
+        transpose(as_mdspan(mat), as_mdspan_mut(out));
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsMat T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto is_inversible(const T& mat) noexcept -> bool {
+        return is_inversible(as_mdspan(mat));
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsSquareMat T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto inverse(const T& mat) noexcept -> T {
+        auto out = T {};
+        inverse(as_mdspan(mat), as_mdspan_mut(out));
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsMat T>
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto is_orthogonal(const T& mat) noexcept -> bool {
+        return is_orthogonal(as_mdspan(mat));
     }
 
     ////////////////////////////////////////
@@ -277,6 +546,19 @@ namespace stormkit { inline namespace core { namespace math {
         auto out = T {};
 
         mul(as_mdspan(a), as_mdspan(b), as_mdspan_mut(out));
+
+        return out;
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<meta::IsMat T, meta::IsSquareMat U>
+        requires(core::meta::IsStrict<typename T::value_type, typename U::value_type>)
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    constexpr auto div(const T& a, const U& b) noexcept -> U {
+        auto out = T {};
+
+        div(as_mdspan(a), as_mdspan(b), as_mdspan_mut(out));
 
         return out;
     }
@@ -375,10 +657,10 @@ namespace stormkit { inline namespace core { namespace math {
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto as_span(T& value) noexcept
       -> std::span<core::meta::ForwardConst<T, typename T::value_type>,
-                   T::EXTENT[0] * T::EXTENT[1]> {
+                   T::EXTENTS[0] * T::EXTENTS[1]> {
         return std::span<core::meta::ForwardConst<T, typename T::value_type>,
-                         T::EXTENT[0] * T::EXTENT[1]> { stdr::data(value.data),
-                                                        T::EXTENT[0] * T::EXTENT[1] };
+                         T::EXTENTS[0] * T::EXTENTS[1]> { stdr::data(value),
+                                                          T::EXTENTS[0] * T::EXTENTS[1] };
     }
 
     ////////////////////////////////////////
@@ -386,10 +668,10 @@ namespace stormkit { inline namespace core { namespace math {
     template<meta::IsMat T>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto as_mdspan(const T& value) noexcept
-      -> MatrixSpan<const typename T::value_type, T::EXTENT[0], T::EXTENT[1]> {
-        return MatrixSpan<const typename T::value_type, T::EXTENT[0], T::EXTENT[1]> {
-            stdr::data(value.data),
-            T::EXTENT
+      -> MatrixSpan<const typename T::value_type, T::EXTENTS[0], T::EXTENTS[1]> {
+        return MatrixSpan<const typename T::value_type, T::EXTENTS[0], T::EXTENTS[1]> {
+            stdr::data(value),
+            T::EXTENTS
         };
     }
 
@@ -399,11 +681,9 @@ namespace stormkit { inline namespace core { namespace math {
         requires(not core::meta::IsConst<T>)
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto as_mdspan_mut(T& value) noexcept
-      -> MatrixSpan<typename T::value_type, T::EXTENT[0], T::EXTENT[1]> {
-        return MatrixSpan<typename T::value_type, T::EXTENT[0], T::EXTENT[1]> {
-            stdr::data(value.data),
-            T::EXTENT
-        };
+      -> MatrixSpan<typename T::value_type, T::EXTENTS[0], T::EXTENTS[1]> {
+        return MatrixSpan<typename T::value_type, T::EXTENTS[0], T::EXTENTS[1]> { stdr::data(value),
+                                                                                  T::EXTENTS };
     }
 }}} // namespace stormkit::core::math
 
@@ -423,6 +703,15 @@ auto std::hash<T>::operator()(const T& mat) const noexcept -> stormkit::u64 {
 ////////////////////////////////////////
 ////////////////////////////////////////
 template<stormkit::math::meta::IsMat T, class CharT>
+template<class ParseContext>
+constexpr auto std::formatter<T, CharT>::parse(ParseContext& ctx) noexcept
+  -> decltype(ctx.begin()) {
+    return ctx.begin();
+}
+
+////////////////////////////////////////
+////////////////////////////////////////
+template<stormkit::math::meta::IsMat T, class CharT>
 template<class FormatContext>
 inline auto std::formatter<T, CharT>::format(const T& mat, FormatContext& ctx) const
   -> decltype(ctx.out()) {
@@ -430,7 +719,7 @@ inline auto std::formatter<T, CharT>::format(const T& mat, FormatContext& ctx) c
 
     auto i               = 0;
     auto check_by_extent = [&i](auto, auto) mutable {
-        const auto insert = i++ < (T::EXTENT[0] - 1);
+        const auto insert = i++ < (T::EXTENTS[0] - 1);
         if (not insert) i = 0;
 
         return insert;
@@ -438,13 +727,33 @@ inline auto std::formatter<T, CharT>::format(const T& mat, FormatContext& ctx) c
 
     format_to(out, "[mat:");
     auto l = 0u;
-    for (auto&& slice : mat.data | stdv::chunk_by(check_by_extent)) {
-        format_to(out,
-                  "{}|{:n:<6}|{}",
-                  (l > 0) ? "      "sv : " "sv,
-                  slice,
-                  (l != (T::EXTENT[0] - 1)) ? "\n"sv : "]"sv);
-        ++l;
+    if constexpr (stormkit::meta::IsIntegral<typename T::value_type>) {
+        auto max_digit = 0u;
+        for (auto v : as_span(mat))
+            max_digit = std::max(max_digit, v == 0 ? 2 : narrow<u32>(std::log10(v) + 2));
+        for (auto&& slice : mat | stdv::chunk_by(check_by_extent)) {
+            format_to(out,
+                      "{}|{:n:>{}}|{}",
+                      (l > 0) ? "      "sv : " "sv,
+                      slice,
+                      max_digit,
+                      (l != (T::EXTENTS[0] - 1)) ? "\n"sv : "]"sv);
+            ++l;
+        }
+    } else {
+        auto max_digit = 0u;
+        for (auto v : as_span(mat))
+            max_digit = std::max(max_digit,
+                                 narrow<i64>(v) == 0 ? 2 : narrow<u32>(std::log10(v) + 2));
+        for (auto&& slice : mat | stdv::chunk_by(check_by_extent)) {
+            format_to(out,
+                      "{}| {:n:>{}.5f}|{}",
+                      (l > 0) ? "      "sv : " "sv,
+                      slice,
+                      max_digit,
+                      (l != (T::EXTENTS[0] - 1)) ? "\n"sv : "]"sv);
+            ++l;
+        }
     }
 
     return out;
