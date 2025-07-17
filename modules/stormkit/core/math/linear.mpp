@@ -417,7 +417,7 @@ namespace stormkit { inline namespace core { namespace math {
         EXPECTS(a.data_handle() != out.data_handle());
         const auto sum = init<T>([&a](auto& out) noexcept {
             for (auto i = 0u; i < N; ++i) out += (a[i] * a[i]);
-            out = std::sqrt(out);
+            out = narrow<T>(std::sqrt(out));
         });
 
         for (auto i = 0u; i < N; ++i) out[i] = a[i] / sum;
@@ -473,7 +473,8 @@ namespace stormkit { inline namespace core { namespace math {
                     }
                 });
 
-                out[i, j] = std::pow(T { -1 }, i + j) * determinant(as_mdspan<N, N>(submatrix));
+                out[i, j] = narrow<T>(std::pow(T { -1 }, i + j))
+                            * determinant(as_mdspan<N, N>(submatrix));
             }
     }
 
@@ -510,7 +511,7 @@ namespace stormkit { inline namespace core { namespace math {
 
                 const auto det = determinant(as_mdspan<N, N>(submatrix));
 
-                result += mat[i, j] * std::pow(T { -1 }, i + j) * det;
+                result += mat[i, j] * narrow<T>(std::pow(T { -1 }, i + j)) * det;
             }
             return result;
         }
