@@ -262,6 +262,23 @@ export namespace stormkit { inline namespace core { namespace math {
 namespace stdr = std::ranges;
 
 namespace stormkit { inline namespace core { namespace math {
+    template<typename T, usize M, usize N>
+    using MatData = std::array<T, M * N>;
+    template<typename T, usize M>
+    using SMatData = MatData<T, M, M>;
+
+    template<typename T, usize N>
+    using VecData = std::array<T, N>;
+
+    template<typename T>
+    using Vec2Data = VecData<T, 2>;
+
+    template<typename T>
+    using Vec3Data = VecData<T, 3>;
+
+    template<typename T>
+    using Vec4Data = VecData<T, 4>;
+
     // ////////////////////////////////////////
     // ////////////////////////////////////////
     // template<core::meta::IsArithmetic T, usize... Sizes>
@@ -398,12 +415,10 @@ namespace stormkit { inline namespace core { namespace math {
     constexpr auto normalize(const VectorSpan<const T, N>& a, VectorSpan<T, N> out) noexcept
       -> void {
         EXPECTS(a.data_handle() != out.data_handle());
-        const auto sum = [&a] noexcept {
-            auto sum = T { 0 };
-            for (auto i = 0u; i < N; ++i) sum += (a[i] * a[i]);
-            sum = std::sqrt(sum);
-            return sum;
-        }();
+        const auto sum = init<T>([&a](auto& out) noexcept {
+            for (auto i = 0u; i < N; ++i) out += (a[i] * a[i]);
+            out = std::sqrt(out);
+        });
 
         for (auto i = 0u; i < N; ++i) out[i] = a[i] / sum;
     }
@@ -429,6 +444,7 @@ namespace stormkit { inline namespace core { namespace math {
                          VectorSpan<T, 3>              out) noexcept -> void {
         EXPECTS(a.data_handle() != out.data_handle());
         EXPECTS(b.data_handle() != out.data_handle());
+
         out[0] = a[1] * b[2] - a[2] * b[1];
         out[1] = a[2] * b[0] - a[0] * b[2];
         out[2] = a[0] * b[1] - a[1] * b[0];
@@ -441,19 +457,21 @@ namespace stormkit { inline namespace core { namespace math {
     constexpr auto cofactor(const SquareMatrixSpan<const T, M>& mat,
                             SquareMatrixSpan<T, M>              out) noexcept -> void {
         static constexpr auto N = M - 1u;
+
         for (auto i = 0u; i < M; ++i)
             for (auto j = 0u; j < M; ++j) {
-                auto submatrix = std::array<T, N * N> {};
-                auto c         = 0u;
-                for (auto k = 0u; k < M; ++k) {
-                    for (auto l = 0u; l < M; ++l) {
-                        if (k == i or l == j) continue;
+                const auto submatrix = init<SMatData<T, N>>([&i, &j, &mat](auto& out) noexcept {
+                    auto c = 0u;
+                    for (auto k = 0u; k < M; ++k) {
+                        for (auto l = 0u; l < M; ++l) {
+                            if (k == i or l == j) continue;
 
-                        submatrix[c] = mat[k, l];
+                            out[c] = mat[k, l];
 
-                        ++c;
+                            ++c;
+                        }
                     }
-                }
+                });
 
                 out[i, j] = std::pow(T { -1 }, i + j) * determinant(as_mdspan<N, N>(submatrix));
             }
@@ -465,33 +483,34 @@ namespace stormkit { inline namespace core { namespace math {
     template<typename T, usize M>
         requires(not core::meta::IsConst<T>)
     STORMKIT_CONST
-    constexpr auto determinant(const SquareMatrixSpan<const T, M>& a) noexcept -> T {
+    constexpr auto determinant(const SquareMatrixSpan<const T, M>& mat) noexcept -> T {
         if constexpr (M == 0) return 1;
         else if constexpr (M == 1)
-            return a[0, 0];
+            return mat[0, 0];
         else if constexpr (M == 2)
-            return a[0, 0] * a[1, 1] - a[0, 1] * a[1, 0];
+            return mat[0, 0] * mat[1, 1] - mat[0, 1] * mat[1, 0];
         else {
             static constexpr auto N = M - 1u;
             static constexpr auto i = 0u;
 
             auto result = T { 0 };
             for (auto j = 0u; j < M; ++j) {
-                auto submatrix = std::array<T, N * N> {};
-                auto c         = 0u;
-                for (auto k = 0u; k < M; ++k) {
-                    for (auto l = 0u; l < M; ++l) {
-                        if (k == i or l == j) continue;
+                const auto submatrix = init<SMatData<T, N>>([&j, &mat](auto& out) noexcept {
+                    auto c = 0u;
+                    for (auto k = 0u; k < M; ++k) {
+                        for (auto l = 0u; l < M; ++l) {
+                            if (k == i or l == j) continue;
 
-                        submatrix[c] = a[k, l];
+                            out[c] = mat[k, l];
 
-                        ++c;
+                            ++c;
+                        }
                     }
-                }
+                });
 
                 const auto det = determinant(as_mdspan<N, N>(submatrix));
 
-                result += a[i, j] * std::pow(T { -1 }, i + j) * det;
+                result += mat[i, j] * std::pow(T { -1 }, i + j) * det;
             }
             return result;
         }
@@ -505,6 +524,7 @@ namespace stormkit { inline namespace core { namespace math {
     constexpr auto transpose(const SquareMatrixSpan<const T, N>& a,
                              SquareMatrixSpan<T, N>              out) noexcept -> void {
         EXPECTS(a.data_handle() != out.data_handle());
+
         for (auto i = 0u; i < N; ++i)
             for (auto j = 0u; j < N; ++j) { out[i, j] = a[j, i]; }
     }
@@ -532,11 +552,11 @@ namespace stormkit { inline namespace core { namespace math {
         EXPECTS(a.data_handle() != out.data_handle());
         EXPECTS(is_inversible(a));
 
-        const auto factor = init<std::array<T, N * N>>([&a](auto& out) noexcept {
+        const auto factor = init<SMatData<T, N>>([&a](auto& out) noexcept {
             cofactor(a, as_mdspan_mut<N, N>(out));
         });
 
-        const auto transposed = init<std::array<T, N * N>>([&factor](auto& out) noexcept {
+        const auto transposed = init<SMatData<T, N>>([&factor](auto& out) noexcept {
             transpose(as_mdspan<N, N>(factor), as_mdspan_mut<N, N>(out));
         });
 
@@ -560,7 +580,7 @@ namespace stormkit { inline namespace core { namespace math {
             if (not is_inversible(mat)) return false;
 
             static constexpr auto IDENTITY = [] static consteval noexcept {
-                auto matrix = std::array<T, M * N> {};
+                auto matrix = MatData<T, M, N> {};
                 auto write  = as_mdspan_mut<M, N>(matrix);
 
                 for (auto i = 0u; i < M; ++i) { write[i, i] = T { 1 }; }
@@ -568,11 +588,11 @@ namespace stormkit { inline namespace core { namespace math {
                 return matrix;
             }();
 
-            const auto transposed = init<std::array<T, N * N>>([&mat](auto& out) noexcept {
+            const auto transposed = init<SMatData<T, N>>([&mat](auto& out) noexcept {
                 transpose(mat, as_mdspan_mut<M, N>(out));
             });
 
-            const auto result = init<std::array<T, N * N>>([&mat, &transposed](auto& out) noexcept {
+            const auto result = init<SMatData<T, N>>([&mat, &transposed](auto& out) noexcept {
                 mul(mat, as_mdspan<M, N>(transposed), as_mdspan_mut<M, N>(out));
             });
 
@@ -605,7 +625,7 @@ namespace stormkit { inline namespace core { namespace math {
         EXPECTS(a.data_handle() != out.data_handle());
         EXPECTS(b.data_handle() != out.data_handle());
 
-        const auto inverted = init<std::array<T, N * N>>([&b](auto& out) noexcept {
+        const auto inverted = init<SMatData<T, N>>([&b](auto& out) noexcept {
             inverse(b, as_mdspan_mut<N, N>(out));
         });
 
@@ -620,6 +640,7 @@ namespace stormkit { inline namespace core { namespace math {
                              SquareMatrixSpan<T, 4>              out) noexcept -> void {
         EXPECTS(a.data_handle() != out.data_handle());
         EXPECTS(translation.data_handle() != out.data_handle());
+
         for (auto i = 0u; i < 3; ++i)
             for (auto j = 0u; j < 3; ++j) out[i, j] = a[i, j];
 
@@ -649,6 +670,7 @@ namespace stormkit { inline namespace core { namespace math {
                          SquareMatrixSpan<T, 4>              out) noexcept -> void {
         EXPECTS(a.data_handle() != out.data_handle());
         EXPECTS(scale.data_handle() != out.data_handle());
+
         out[0, 0] = a[0, 0] * scale[0];
         out[0, 1] = a[0, 1] * scale[0];
         out[0, 2] = a[0, 2] * scale[0];
@@ -681,22 +703,23 @@ namespace stormkit { inline namespace core { namespace math {
                           SquareMatrixSpan<T, 4>              out) noexcept -> void {
         EXPECTS(a.data_handle() != out.data_handle());
         EXPECTS(axis.data_handle() != out.data_handle());
+
         const auto cos = std::cos(angle.get());
         const auto sin = std::sin(angle.get());
 
         const auto axis_norm = [&axis] noexcept {
-            auto axis_norm = std::array<T, 3> {};
+            auto axis_norm = Vec3Data<T> {};
             normalize(axis, as_mdspan_mut<3>(axis_norm));
             return axis_norm;
         }();
 
         const auto temp = [&axis_norm, &cos] noexcept {
-            auto temp = std::array<T, 3> {};
+            auto temp = Vec3Data<T> {};
             mul(as_mdspan<3>(axis_norm), T { 1 } - cos, as_mdspan_mut<3>(temp));
             return temp;
         }();
 
-        auto rotation_matrix = std::array<T, 4 * 4> {};
+        auto rotation_matrix = SMatData<T, 4> {};
         stdr::fill(rotation_matrix, 0);
         auto rotation_matrix_ = as_mdspan_mut<4, 4>(rotation_matrix);
 
@@ -771,8 +794,8 @@ namespace stormkit { inline namespace core { namespace math {
                                T                      near,
                                T                      far,
                                SquareMatrixSpan<T, 4> out) noexcept -> void {
-        // EXPECTS(not is(aspect, 0));
-        // EXPECTS(not is(near, far));
+        EXPECTS(not is(aspect, T { 0 }));
+        EXPECTS(not is(near, far));
 
         const auto half_fov_y = std::tan(fov_y.get() / T { 2 });
 
@@ -796,29 +819,27 @@ namespace stormkit { inline namespace core { namespace math {
         EXPECTS(eye.data_handle() != out.data_handle());
         EXPECTS(center.data_handle() != out.data_handle());
         EXPECTS(up.data_handle() != out.data_handle());
-        const auto z = [&eye, &center] noexcept {
-            auto z = std::array<T, 3> {};
-            sub(center, eye, as_mdspan_mut<3>(z));
-            auto z_norm = std::array<T, 3> {};
-            normalize(as_mdspan<3>(z), as_mdspan_mut<3>(z_norm));
-            return z_norm;
-        }();
 
-        const auto x = [&up, &z] noexcept {
-            auto x = std::array<T, 3> {};
-            cross(up, as_mdspan<3>(z), as_mdspan_mut<3>(x));
-            auto x_norm = std::array<T, 3> {};
-            normalize(as_mdspan<3>(x), as_mdspan_mut<3>(x_norm));
-            return x_norm;
-        }();
+        const auto z_temp = init<Vec3Data<T>>([&eye, &center](auto& out) noexcept {
+            sub(center, eye, as_mdspan_mut<3>(out));
+        });
+        const auto z      = init<Vec3Data<T>>([&z_temp](auto& out) noexcept {
+            normalize(as_mdspan<3>(z_temp), as_mdspan_mut<3>(out));
+        });
 
-        const auto y = [&z, &x] noexcept {
-            auto y = std::array<T, 3> {};
-            cross(as_mdspan<3>(z), as_mdspan<3>(x), as_mdspan_mut<3>(y));
-            auto y_norm = std::array<T, 3> {};
-            normalize(as_mdspan<3>(y), as_mdspan_mut<3>(y_norm));
-            return y_norm;
-        }();
+        const auto x_temp = init<Vec3Data<T>>([&up, &z](auto& out) noexcept {
+            cross(up, as_mdspan<3>(z), as_mdspan_mut<3>(out));
+        });
+        const auto x      = init<Vec3Data<T>>([&x_temp](auto& out) noexcept {
+            normalize(as_mdspan<3>(x_temp), as_mdspan_mut<3>(out));
+        });
+
+        const auto y_temp = init<Vec3Data<T>>([&z, &x](auto& out) noexcept {
+            cross(as_mdspan<3>(z), as_mdspan<3>(x), as_mdspan_mut<3>(out));
+        });
+        const auto y      = init<Vec3Data<T>>([&y_temp](auto& out) noexcept {
+            normalize(as_mdspan<3>(y_temp), as_mdspan_mut<3>(out));
+        });
 
         out[0, 0] = x[0];
         out[0, 1] = y[0];
