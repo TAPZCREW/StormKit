@@ -28,11 +28,11 @@ namespace stormkit::gpu {
     namespace {
         constexpr auto VALIDATION_LAYERS = std::array {
             "VK_LAYER_KHRONOS_validation",
-            // "VK_LAYER_LUNARG_api_dump",
+            // "VK_LAYER_LUNARG_api_dup",
             "VK_LAYER_LUNARG_monitor",
-#ifdef STORMKIT_OS_LINUX
-        // "VK_LAYER_MESA_overlay",
-#endif
+        };
+        constexpr auto OPTIONAL_VALIDATION_LAYERS = std::array<CZString, 0> {
+            // "VK_LAYER_MESA_overlay",
         };
 
         [[maybe_unused]]
@@ -53,7 +53,7 @@ namespace stormkit::gpu {
         constexpr auto SURFACE_EXTENSIONS = std::array {
             VK_KHR_SURFACE_EXTENSION_NAME,
             VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME,
-            // VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME,
+            VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME,
         };
 
         constexpr auto WSI_SURFACE_EXTENSIONS = std::array {
@@ -88,36 +88,6 @@ namespace stormkit::gpu {
                 wlog("{}", message);
 
             return 0;
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        auto check_validation_layer_support(bool validation_layers_enabled) noexcept -> bool {
-            if (!validation_layers_enabled) return false;
-
-            const auto result = vk_enumerate<VkLayerProperties>(vkEnumerateInstanceLayerProperties);
-            if (not result) return false;
-            const auto layers = std::move(result).value();
-            dlog("Layers found: {}", layers | stdv::transform([](auto&& layer) static noexcept {
-                                         return std::string_view { layer.layerName };
-                                     }));
-            for (const auto& layer_name : std::as_const(VALIDATION_LAYERS)) {
-                auto layer_found = false;
-
-                for (const auto& layer_properties : layers) {
-                    if (std::strcmp(layer_name, layer_properties.layerName) == 0) {
-                        layer_found = true;
-                        break;
-                    }
-                }
-
-                if (!layer_found) {
-                    dlog("Failed to find validation layers, disabling...");
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         /////////////////////////////////////
@@ -157,16 +127,31 @@ namespace stormkit::gpu {
 
               dlog("Instance extensions: {}", m_extensions);
 
-              const auto validation_layers = [this]() noexcept {
-                  auto output = std::vector<CZString> {};
-                  m_validation_layers_enabled
-                    = check_validation_layer_support(m_validation_layers_enabled);
-                  if (m_validation_layers_enabled) {
-                      output = VALIDATION_LAYERS | stdr::to<std::vector>();
+              const auto validation_layers = init<std::vector<CZString>>([this](auto&
+                                                                                  out) noexcept {
+                  if (not m_validation_layers_enabled) return;
+
+                  auto result = vk_enumerate<VkLayerProperties>(vkEnumerateInstanceLayerProperties);
+                  if (not result) return;
+                  const auto layers = std::move(result).value()
+                                      | stdv::transform([](auto&& layer) static noexcept {
+                                            return std::string_view { layer.layerName };
+                                        });
+
+                  dlog("Layers found: {}", layers);
+
+                  for (const auto layer_name : VALIDATION_LAYERS) {
+                      if (not stdr::contains(layers, std::string_view { layer_name })) return;
                   }
 
-                  return output;
-              }();
+                  out = VALIDATION_LAYERS | stdr::to<std::vector>();
+
+                  for (const auto layer_name : OPTIONAL_VALIDATION_LAYERS) {
+                      if (stdr::contains(layers, std::string_view { layer_name }))
+                          out.push_back(layer_name);
+                  }
+              });
+
               ilog("Enabled layers: {}", validation_layers);
 
               const auto instance_extensions = [this]() noexcept {
