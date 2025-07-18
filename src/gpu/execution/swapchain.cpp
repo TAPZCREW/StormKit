@@ -112,8 +112,8 @@ namespace stormkit::gpu {
               const auto swapchain_extent   = choose_swap_extent(capabilities, extent.to<2uz>());
               const auto image_count        = choose_image_count(capabilities);
               const auto image_sharing_mode = VK_SHARING_MODE_EXCLUSIVE;
-              const auto image_usage
-                = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; //= VK_IMAGE_USAGE_TRANSFER_DST_BIT
+              const auto image_usage        = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
+                                       | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
               m_extent       = extent.to<u32>();
               m_pixel_format = from_vk<PixelFormat>(format.format);
