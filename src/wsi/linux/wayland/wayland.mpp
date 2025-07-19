@@ -1,0 +1,159 @@
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <pointer-constraints-unstable-v1.h>
+#include <relative-pointer-unstable-v1.h>
+#include <wayland-client.h>
+#include <xdg-decoration-unstable-v1.h>
+#include <xdg-shell.h>
+
+export module stormkit.wsi:linux.wayland;
+
+import std;
+
+import stormkit.core;
+
+import stormkit.wsi;
+
+import :linux.wayland.log;
+
+using namespace stormkit;
+
+export namespace stormkit::wsi::linux::wayland {
+    class WindowImpl;
+
+    namespace wl {
+        using Display              = stormkit::RAIICapsule<wl_display*,
+                                                           wl_display_connect,
+                                                           wl_display_disconnect,
+                                                           struct DisplayTag,
+                                                           nullptr>;
+        using Registry             = stormkit::RAIICapsule<wl_registry*,
+                                                           wl_display_get_registry,
+                                                           wl_registry_destroy,
+                                                           struct RegistryTag,
+                                                           nullptr>;
+        using Compositor           = stormkit::RAIICapsule<wl_compositor*,
+                                                           monadic::noop(),
+                                                           wl_compositor_destroy,
+                                                           struct CompositorTag,
+                                                           nullptr>;
+        using XDGDecorationManager = stormkit::RAIICapsule<zxdg_decoration_manager_v1*,
+                                                           monadic::noop(),
+                                                           zxdg_decoration_manager_v1_destroy,
+                                                           struct XDGDescorationManagerTag,
+                                                           nullptr>;
+        using Output               = stormkit::
+          RAIICapsule<wl_output*, monadic::noop(), wl_output_release, struct OutputTag, nullptr>;
+        using XDGWmBase = stormkit::RAIICapsule<xdg_wm_base*,
+                                                monadic::noop(),
+                                                xdg_wm_base_destroy,
+                                                struct XDGWmBaseTag,
+                                                nullptr>;
+        using Shm       = stormkit::
+          RAIICapsule<wl_shm*, monadic::noop(), wl_shm_release, struct ShmTag, nullptr>;
+
+        using Surface               = stormkit::RAIICapsule<wl_surface*,
+                                                            wl_compositor_create_surface,
+                                                            wl_surface_destroy,
+                                                            struct SurfaceTag,
+                                                            nullptr>;
+        using XDGSurface            = stormkit::RAIICapsule<xdg_surface*,
+                                                            xdg_wm_base_get_xdg_surface,
+                                                            xdg_surface_destroy,
+                                                            struct XDGSurfaceTag,
+                                                            nullptr>;
+        using XDGTopLevel           = stormkit::RAIICapsule<xdg_toplevel*,
+                                                            xdg_surface_get_toplevel,
+                                                            xdg_toplevel_destroy,
+                                                            struct XDGTopLevelTag,
+                                                            nullptr>;
+        using ShmPool               = stormkit::RAIICapsule<wl_shm_pool*,
+                                                            wl_shm_create_pool,
+                                                            wl_shm_pool_destroy,
+                                                            struct ShmPoolTag,
+                                                            nullptr>;
+        using XDGTopLevelDecoration = stormkit::RAIICapsule<
+          zxdg_toplevel_decoration_v1*,
+          zxdg_decoration_manager_v1_get_toplevel_decoration,
+          zxdg_toplevel_decoration_v1_destroy,
+          struct XDGTopLevelDecorationTag,
+          nullptr>;
+
+        using Buffer = stormkit::
+          RAIICapsule<wl_buffer*, monadic::noop(), wl_buffer_destroy, struct BufferTag, nullptr>;
+
+        struct WaylandMonitor {
+            uptr         id;
+            wsi::Monitor monitor;
+        };
+
+        struct Globals {
+            bool                     initialized = false;
+            wl::Display              display;
+            wl::Registry             registry;
+            wl::Compositor           compositor;
+            std::vector<wl::Output>  outputs;
+            wl::XDGWmBase            xdg_wm_base;
+            wl::Shm                  shm;
+            wl::XDGDecorationManager decoration_manager;
+
+            std::vector<WaylandMonitor> monitors;
+        };
+
+        auto init() noexcept -> bool;
+        auto get_globals() noexcept -> Globals&;
+
+        auto xdg_surface_configure_handler(void*, xdg_surface*, u32) noexcept -> void;
+
+        auto xdg_top_level_configure_bounds_handler(void*, xdg_toplevel*, i32, i32) noexcept
+          -> void;
+        auto xdg_top_level_configure_handler(void*, xdg_toplevel*, i32, i32, wl_array*) noexcept
+          -> void;
+        auto xdg_top_level_close_handler(void*, xdg_toplevel*) noexcept -> void;
+
+        auto xdg_top_level_decoration_configure_handler(void*,
+                                                        zxdg_toplevel_decoration_v1*,
+                                                        u32) noexcept -> void;
+
+        auto buffer_release_handler(void*, wl_buffer*) noexcept -> void;
+    } // namespace wl
+} // namespace stormkit::wsi::linux::wayland
+
+// auto surface_enter_handler(void* data, wl_surface* surface, wl_output* output) noexcept ->
+// void; auto surface_leave_handler(void* data, wl_surface* surface, wl_output* output) noexcept
+// -> void;
+// auto shell_surface_configure_handler(void*             data,
+//                                      wl_shell_surface* shell_surface,
+//                                      u32               edges,
+//                                      i32               width,
+//                                      i32               height) noexcept -> void;
+
+// auto top_level_configure_handler(void*         data,
+//                                  xdg_toplevel* xdg_tl,
+//                                  i32           width,
+//                                  i32           height,
+//                                  wl_array*     states) noexcept -> void;
+// auto top_level_close_handler(void* data, xdg_toplevel* xdg_tl) noexcept -> void;
+
+// auto shell_ping_handler(void* data, xdg_wm_base* xdg_shell, u32 serial) noexcept -> void;
+
+// auto relative_pointer_relative_motion_handler(void*                    data,
+//                                               zwp_relative_pointer_v1* pointer,
+//                                               u32                      time_hi,
+//                                               u32                      time_lw,
+//                                               wl_fixed_t               dx,
+//                                               wl_fixed_t               dy,
+//                                               wl_fixed_t               dx_unaccel,
+//                                               wl_fixed_t dy_unaccel) noexcept -> void;
+
+// auto locker_pointer_locker_handler(void* data, zwp_locked_pointer_v1* locked_pointer)
+// noexcept
+//   -> void;
+// auto locker_pointer_unlocker_handler(void* data, zwp_locked_pointer_v1* locked_pointer)
+// noexcept
+//   -> void;
+// } // namespace wl

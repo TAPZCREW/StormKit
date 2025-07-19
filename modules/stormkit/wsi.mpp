@@ -163,6 +163,7 @@ export {
             std::string name;
 
             std::vector<math::Extent2<u32>> extents;
+            u32                             scale_factor = 1;
 
             void* handle = nullptr;
 
@@ -205,7 +206,7 @@ export {
 
         struct ResizedEventData {
             static constexpr auto TYPE = EventType::RESIZED;
-            math::Extent2<u32>        extent;
+            math::Extent2<u32>    extent;
         };
 
         struct MinimizedEventData {
@@ -230,13 +231,13 @@ export {
 
         struct MouseButtonPushedEventData {
             static constexpr auto TYPE = EventType::MOUSE_BUTTON_PUSHED;
-            math::vec2i        position;
+            math::vec2i           position;
             MouseButton           button;
         };
 
         struct MouseButtonReleasedEventData {
             static constexpr auto TYPE = EventType::MOUSE_BUTTON_RELEASED;
-            math::vec2i        position;
+            math::vec2i           position;
             MouseButton           button;
         };
 
@@ -250,7 +251,7 @@ export {
 
         struct MouseMovedEventData {
             static constexpr auto TYPE = EventType::MOUSE_MOVED;
-            math::vec2i        position;
+            math::vec2i           position;
         };
 
         struct LostFocusEventData {
@@ -290,8 +291,9 @@ export {
             Window(Window&&);
             auto operator=(Window&&) -> Window&;
 
-            auto create(std::string title, const math::Extent2<u32>& size, WindowStyle style) noexcept
-              -> void;
+            auto create(std::string               title,
+                        const math::Extent2<u32>& size,
+                        WindowStyle               style) noexcept -> void;
             auto close() noexcept -> void;
 
             [[nodiscard]]
@@ -339,8 +341,7 @@ export {
             auto toggle_virtual_keyboard_visibility(bool visible) noexcept -> void;
 
             auto        set_mouse_position(const math::vec2i& position) noexcept -> void;
-            static auto set_mouse_position_on_desktop(const math::vec2u& position) noexcept
-              -> void;
+            static auto set_mouse_position_on_desktop(const math::vec2u& position) noexcept -> void;
 
             [[nodiscard]]
             static auto get_monitor_settings() -> std::vector<Monitor>;
@@ -398,10 +399,11 @@ export {
 ////////////////////////////////////////////////////////////////////
 
 ASCASTER_STRICT_DEFINE(std::string, stormkit::wsi::Monitor) {
-    return std::format("[Monitor: flags = {}, name = {}, extents = {}]",
+    return std::format("[Monitor: flags = {}, name = {}, extents = {}, scale = {}]",
                        from.flags,
                        from.name,
-                       from.extents);
+                       from.extents,
+                       from.scale_factor);
 }
 
 namespace stormkit { namespace wsi {
