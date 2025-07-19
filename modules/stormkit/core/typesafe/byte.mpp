@@ -16,6 +16,7 @@ import :meta.concepts;
 import :meta.traits;
 import :typesafe.integer;
 import :utils.contract;
+import :utils.tags;
 
 namespace stdr = std::ranges;
 
@@ -26,8 +27,6 @@ export namespace stormkit { inline namespace core {
     using ByteArray       = std::array<std::byte, N>;
     using ByteDynArray    = std::vector<std::byte>;
     using MutableByteView = std::span<std::byte>;
-
-    struct Force {};
 
     template<typename T>
     constexpr auto zero_bytes(T& value) noexcept -> void;
