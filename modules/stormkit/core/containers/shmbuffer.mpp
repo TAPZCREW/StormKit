@@ -12,8 +12,9 @@ export module stormkit.core:containers.shmbuffer;
 
 import std;
 
-import :typesafe;
-import :functional;
+import :typesafe.integer;
+import :typesafe.byte;
+import :functional.monadic;
 import :utils.contract;
 
 export namespace stormkit { inline namespace core {
