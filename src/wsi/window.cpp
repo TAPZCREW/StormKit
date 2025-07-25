@@ -61,6 +61,8 @@ namespace stormkit::wsi {
         auto wm_hint = std::optional<WM> {};
     }
 
+    /////////////////////////////////////
+    /////////////////////////////////////
     auto parse_args(std::span<const std::string_view> args) noexcept -> void {
         auto hint = std::ranges::find_if(args, [](auto&& v) {
             return v == "--x11" or v == "--wayland";
@@ -113,6 +115,24 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    auto Window::clear(const RGBColorU& color) noexcept -> void {
+        m_impl->clear(color);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::set_pixels_to(std::span<const RGBColorU> colors) noexcept -> void {
+        m_impl->set_pixels_to(colors);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::is_open() const noexcept -> bool {
+        return m_impl->is_open();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     auto Window::poll_event(Event& event) noexcept -> bool {
         return m_impl->poll_event(event);
     }
@@ -125,38 +145,26 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    auto Window::visible() const noexcept -> bool {
+        return m_impl->visible();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     auto Window::set_title(std::string title) noexcept -> void {
         m_impl->set_title(std::move(title));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
+    auto Window::title() const noexcept -> const std::string& {
+        return m_impl->title();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     auto Window::set_extent(const math::Extent2<u32>& extent) noexcept -> void {
         m_impl->set_extent(extent);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::toggle_fullscreen(bool fullscreen) noexcept -> void {
-        m_impl->toggle_fullscreen(fullscreen);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::lock_mouse() noexcept -> void {
-        m_impl->lock_mouse();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::unlock_mouse() noexcept -> void {
-        m_impl->unlock_mouse();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::hide_mouse() noexcept -> void {
-        m_impl->hide_mouse();
     }
 
     /////////////////////////////////////
@@ -171,20 +179,119 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::is_open() const noexcept -> bool {
-        return m_impl->is_open();
+    auto Window::set_fullscreen(bool fullscreen) noexcept -> void {
+        m_impl->set_fullscreen(fullscreen);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::visible() const noexcept -> bool {
-        return m_impl->visible();
+    auto Window::fullscreen() const noexcept -> bool {
+        return m_impl->fullscreen();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::native_handle() const noexcept -> NativeHandle {
-        return m_impl->native_handle();
+    auto Window::confine_mouse(bool confine, u32 mouse_id) noexcept -> void {
+        m_impl->confine_mouse(confine, mouse_id);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::is_mouse_confined(u32 mouse_id) const noexcept -> bool {
+        return m_impl->is_mouse_confined(mouse_id);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::lock_mouse(bool locked, u32 mouse_id) noexcept -> void {
+        m_impl->lock_mouse(locked, mouse_id);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::is_mouse_locked(u32 mouse_id) const noexcept -> bool {
+        return m_impl->is_mouse_locked(mouse_id);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::hide_mouse(bool hidden, u32 mouse_id) noexcept -> void {
+        m_impl->hide_mouse(hidden, mouse_id);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::is_mouse_hidden(u32 mouse_id) const noexcept -> bool {
+        return m_impl->is_mouse_hidden(mouse_id);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::set_relative_mouse(bool enabled, u32 mouse_id) noexcept -> void {
+        m_impl->set_relative_mouse(enabled, mouse_id);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::is_mouse_relative(u32 mouse_id) const noexcept -> bool {
+        return m_impl->is_mouse_relative(mouse_id);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::set_key_repeat(bool enabled, u32 keyboard_id) noexcept -> void {
+        return m_impl->set_key_repeat(enabled, keyboard_id);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::is_key_repeat_enabled(u32 keyboard_id) const noexcept -> bool {
+        return m_impl->is_key_repeat_enabled(keyboard_id);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::show_virtual_keyboard(bool visible) noexcept -> void {
+        m_impl->show_virtual_keyboard(visible);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::is_virtual_keyboard_visible() const noexcept -> bool {
+        return m_impl->is_virtual_keyboard_visible();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::set_mouse_position(const math::vec2i& position, u32 mouse_id) noexcept -> void {
+        m_impl->set_mouse_position(position, mouse_id);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::set_mouse_position_on_desktop(const math::vec2u& position, u32 mouse_id) noexcept
+      -> void {
+        WindowImpl::set_mouse_position_on_desktop(wm(), position, mouse_id);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::get_monitor_settings() -> std::vector<Monitor> {
+        return WindowImpl::get_monitor_settings(wm());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::get_primary_monitor_settings() -> Monitor {
+        const auto settings = get_monitor_settings();
+
+        const auto it = std::ranges::find_if(settings, [](const auto& monitor) {
+            return check_flag_bit(monitor.flags, Monitor::Flags::PRIMARY);
+        });
+
+        ENSURES(it != std::ranges::cend(settings));
+
+        return *it;
     }
 
     /////////////////////////////////////
@@ -213,70 +320,7 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::title() const noexcept -> const std::string& {
-        return m_impl->title();
+    auto Window::native_handle() const noexcept -> NativeHandle {
+        return m_impl->native_handle();
     }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::is_mouse_locked() const noexcept -> bool {
-        return m_impl->is_mouse_locked();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::fullscreen() const noexcept -> bool {
-        return m_impl->fullscreen();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::toggle_key_repeat(bool enabled) noexcept -> void {
-        return m_impl->toggle_key_repeat(enabled);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::is_key_repeat_enabled() const noexcept -> bool {
-        return m_impl->is_key_repeat_enabled();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::toggle_virtual_keyboard_visibility(bool visible) noexcept -> void {
-        m_impl->toggle_virtual_keyboard_visibility(visible);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::set_mouse_position(const math::vec2i& position) noexcept -> void {
-        m_impl->set_mouse_position(position);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::set_mouse_position_on_desktop(const math::vec2u& position) noexcept -> void {
-        WindowImpl::set_mouse_position_on_desktop(wm(), position);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::get_monitor_settings() -> std::vector<Monitor> {
-        return WindowImpl::get_monitor_settings(wm());
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::get_primary_monitor_settings() -> Monitor {
-        const auto settings = get_monitor_settings();
-
-        const auto it = std::ranges::find_if(settings, [](const auto& monitor) {
-            return check_flag_bit(monitor.flags, Monitor::Flags::PRIMARY);
-        });
-
-        ENSURES(it != std::ranges::cend(settings));
-
-        return *it;
-    }
-
 } // namespace stormkit::wsi

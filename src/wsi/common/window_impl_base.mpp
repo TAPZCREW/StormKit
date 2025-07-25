@@ -35,6 +35,7 @@ export namespace stormkit::wsi::common {
         auto close_event() noexcept -> void;
 
         auto resize_event(u32 width, u32 height) noexcept -> void;
+        auto restored_event() noexcept -> void;
         auto minimize_event() noexcept -> void;
         auto maximize_event() noexcept -> void;
 
@@ -42,7 +43,7 @@ export namespace stormkit::wsi::common {
         auto gained_focus_event() noexcept -> void;
 
       protected:
-        auto pushEvent(const Event& event) noexcept -> void;
+        auto push_event(const Event& event) noexcept -> void;
 
         std::queue<Event> m_events;
     };
@@ -55,8 +56,9 @@ export namespace stormkit::wsi::common {
 namespace stormkit::wsi::common {
     /////////////////////////////////////
     /////////////////////////////////////
+    STORMKIT_CONST
     inline auto WindowImplBase::poll_event(Event& event) noexcept -> bool {
-        auto has_event = not m_events.empty();
+        const auto has_event = not m_events.empty();
 
         if (has_event) {
             event = m_events.front();
@@ -68,8 +70,9 @@ namespace stormkit::wsi::common {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    STORMKIT_CONST
     inline auto WindowImplBase::wait_event(Event& event) noexcept -> bool {
-        auto has_event = not m_events.empty();
+        const auto has_event = not m_events.empty();
 
         if (has_event) {
             event = m_events.front();
@@ -81,6 +84,7 @@ namespace stormkit::wsi::common {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto WindowImplBase::mouse_down_event(MouseButton button, i32 x, i32 y) noexcept
       -> void {
         auto event = Event {};
@@ -90,13 +94,13 @@ namespace stormkit::wsi::common {
             .button   = button
         };
 
-        pushEvent(event);
+        push_event(event);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto WindowImplBase::mouse_up_event(MouseButton button, i32 x, i32 y) noexcept
-      -> void {
+    STORMKIT_FORCE_INLINE
+    inline auto WindowImplBase::mouse_up_event(MouseButton button, i32 x, i32 y) noexcept -> void {
         auto event = Event {};
         event.type = EventType::MOUSE_BUTTON_RELEASED;
         event.data = MouseButtonReleasedEventData {
@@ -104,11 +108,12 @@ namespace stormkit::wsi::common {
             .button   = button
         };
 
-        pushEvent(event);
+        push_event(event);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto WindowImplBase::mouse_move_event(i32 x, i32 y) noexcept -> void {
         auto event = Event {};
         event.type = EventType::MOUSE_MOVED;
@@ -116,61 +121,67 @@ namespace stormkit::wsi::common {
             .position = { x, y }
         };
 
-        pushEvent(event);
+        push_event(event);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto WindowImplBase::mouse_entered_event() noexcept -> void {
         auto event = Event {};
         event.type = EventType::MOUSE_ENTERED;
         event.data = MouseEnteredEventData {};
 
-        pushEvent(event);
+        push_event(event);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto WindowImplBase::mouse_exited_event() noexcept -> void {
         auto event = Event {};
         event.type = EventType::MOUSE_EXITED;
         event.data = MouseExitedEventData {};
 
-        pushEvent(event);
+        push_event(event);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto WindowImplBase::key_down_event(Key key, char character) noexcept -> void {
         auto event = Event {};
         event.type = EventType::KEY_PRESSED;
         event.data = KeyPressedEventData { .key = key, .character = character };
 
-        pushEvent(event);
+        push_event(event);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto WindowImplBase::key_up_event(Key key, char character) noexcept -> void {
         auto event = Event {};
         event.type = EventType::KEY_RELEASED;
         event.data = KeyReleasedEventData { .key = key, .character = character };
 
-        pushEvent(event);
+        push_event(event);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto WindowImplBase::close_event() noexcept -> void {
         auto event = Event {};
         event.type = EventType::CLOSED;
         event.data = ClosedEventData {};
 
-        pushEvent(event);
+        push_event(event);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto WindowImplBase::resize_event(u32 width, u32 height) noexcept -> void {
         auto event = Event {};
         event.type = EventType::RESIZED;
@@ -178,52 +189,68 @@ namespace stormkit::wsi::common {
             .extent { .width = width, .height = height }
         };
 
-        pushEvent(event);
+        push_event(event);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto WindowImplBase::restored_event() noexcept -> void {
+        auto event = Event {};
+        event.type = EventType::RESTORED;
+        event.data = RestoredEventData {};
+
+        push_event(event);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto WindowImplBase::minimize_event() noexcept -> void {
         auto event = Event {};
         event.type = EventType::MINIMIZED;
         event.data = MinimizedEventData {};
 
-        pushEvent(event);
+        push_event(event);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto WindowImplBase::maximize_event() noexcept -> void {
         auto event = Event {};
         event.type = EventType::MAXIMIZED;
         event.data = MaximizedEventData {};
 
-        pushEvent(event);
+        push_event(event);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto WindowImplBase::lost_focus_event() noexcept -> void {
         auto event = Event {};
         event.type = EventType::LOST_FOCUS;
         event.data = LostFocusEventData {};
 
-        pushEvent(event);
+        push_event(event);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto WindowImplBase::gained_focus_event() noexcept -> void {
         auto event = Event {};
         event.type = EventType::GAINED_FOCUS;
         event.data = GainedFocusEventData {};
 
-        pushEvent(event);
+        push_event(event);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto WindowImplBase::pushEvent(const Event& event) noexcept -> void {
+    STORMKIT_FORCE_INLINE
+    inline auto WindowImplBase::push_event(const Event& event) noexcept -> void {
         m_events.emplace(event);
     }
 } // namespace stormkit::wsi::common

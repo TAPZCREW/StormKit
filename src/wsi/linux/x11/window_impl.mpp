@@ -68,57 +68,69 @@ export namespace stormkit::wsi::linux::x11 {
         WindowImpl(WindowImpl&&) noexcept;
         auto operator=(WindowImpl&&) noexcept -> WindowImpl&;
 
-        auto create(std::string title, const math::Extent2<u32>& size, WindowStyle style) -> void;
+        auto create(std::string title, const math::Extent2<u32>& size, WindowStyle style) noexcept
+          -> void;
         auto close() noexcept -> void;
+
+        auto clear(const RGBColorU& color) noexcept -> void;
+        auto set_pixels_to(std::span<const RGBColorU> colors) noexcept -> void;
+
+        [[nodiscard]]
+        auto is_open() const noexcept -> bool;
 
         [[nodiscard]]
         auto poll_event(Event& event) noexcept -> bool;
         [[nodiscard]]
         auto wait_event(Event& event) noexcept -> bool;
 
-        auto set_title(std::string title) noexcept -> void;
-        auto set_extent(const math::Extent2<u32>& size) noexcept -> void;
-        auto toggle_fullscreen(bool enabled) noexcept -> void;
-
-        auto lock_mouse() noexcept -> void;
-        auto unlock_mouse() noexcept -> void;
-
-        auto hide_mouse() noexcept -> void;
-        auto unhide_mouse() noexcept -> void;
-
-        [[nodiscard]]
-        auto extent() const noexcept -> const math::Extent2<u32>&;
-        [[nodiscard]]
-        auto title() const noexcept -> const std::string&;
-
-        [[nodiscard]]
-        auto is_open() const noexcept -> bool;
         [[nodiscard]]
         auto visible() const noexcept -> bool;
 
+        auto set_title(std::string title) noexcept -> void;
         [[nodiscard]]
-        auto native_handle() const noexcept -> NativeHandle;
-        [[nodiscard]]
-        auto xcb_handles() const noexcept -> const Handles&;
+        auto title() const noexcept -> const std::string&;
 
+        auto set_extent(const math::Extent2<u32>& extent) noexcept -> void;
         [[nodiscard]]
-        auto is_mouse_locked() const noexcept -> bool;
-        [[nodiscard]]
-        auto mouseHidden() const noexcept -> bool;
+        auto extent() const noexcept -> const math::Extent2<u32>&;
+
+        auto set_fullscreen(bool fullscreen) noexcept -> void;
         [[nodiscard]]
         auto fullscreen() const noexcept -> bool;
 
-        auto toggle_key_repeat(bool enabled) noexcept -> void;
+        auto confine_mouse(bool confined, u32 mouse_id) noexcept -> void;
         [[nodiscard]]
-        auto is_key_repeat_enabled() const noexcept -> bool;
+        auto is_mouse_confined(u32 mouse_id) const noexcept -> bool;
 
-        auto toggle_virtual_keyboard_visibility(bool visible) noexcept -> void;
+        auto lock_mouse(bool locked, u32 mouse_id) noexcept -> void;
+        [[nodiscard]]
+        auto is_mouse_locked(u32 mouse_id) const noexcept -> bool;
 
-        auto        set_mouse_position(const math::vec2i& position) noexcept -> void;
-        static auto set_mouse_position_on_desktop(const math::vec2u& position) noexcept -> void;
+        auto hide_mouse(bool hidden, u32 mouse_id) noexcept -> void;
+        [[nodiscard]]
+        auto is_mouse_hidden(u32 mouse_id) const noexcept -> bool;
+
+        auto set_relative_mouse(bool enabled, u32 mouse_id) noexcept -> void;
+        [[nodiscard]]
+        auto is_mouse_relative(u32 mouse_id) const noexcept -> bool;
+
+        auto set_key_repeat(bool enabled, u32 keyboard_id) noexcept -> void;
+        [[nodiscard]]
+        auto is_key_repeat_enabled(u32 keyboard_id) const noexcept -> bool;
+
+        auto show_virtual_keyboard(bool visible) noexcept -> void;
+        [[nodiscard]]
+        auto is_virtual_keyboard_visible() const noexcept -> bool;
+
+        auto        set_mouse_position(const math::vec2i& position, u32 mouse_id) noexcept -> void;
+        static auto set_mouse_position_on_desktop(const math::vec2u& position,
+                                                  u32                mouse_id) noexcept -> void;
 
         [[nodiscard]]
         static auto get_monitor_settings() -> std::vector<Monitor>;
+
+        [[nodiscard]]
+        auto native_handle() const noexcept -> NativeHandle;
 
       private:
         auto process_events(xcb_generic_event_t* xevent) -> void;
@@ -145,17 +157,20 @@ export namespace stormkit::wsi::linux::x11 {
         } m_window_hints;
 
         std::string m_title;
-        bool        m_is_mouse_locked = false;
-        bool        m_mouse_hided     = false;
-        bool        m_fullscreen      = false;
+        bool        m_mouse_confined = false;
+        bool        m_mouse_locked   = false;
+        bool        m_mouse_hidden   = false;
+        bool        m_mouse_relative = false;
+        bool        m_fullscreen     = false;
 
         math::Extent2<u32> m_extent;
 
         int m_xi_opcode;
 
-        bool m_open               = false;
-        bool m_visible            = false;
-        bool m_key_repeat_enabled = true;
+        bool m_open                     = false;
+        bool m_visible                  = false;
+        bool m_key_repeat_enabled       = true;
+        bool m_virtual_keyboard_visible = true;
 
         Handles m_handles;
 
@@ -169,67 +184,99 @@ export namespace stormkit::wsi::linux::x11 {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit::wsi::linux::x11 {
-
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto WindowImpl::set_extent(const math::Extent2<u32>& extent) noexcept -> void {
-        m_extent = extent;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    inline auto WindowImpl::title() const noexcept -> const std::string& {
-        return m_title;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    inline auto WindowImpl::is_mouse_locked() const noexcept -> bool {
-        return m_is_mouse_locked;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    inline auto WindowImpl::mouseHidden() const noexcept -> bool {
-        return m_mouse_hided;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    inline auto WindowImpl::fullscreen() const noexcept -> bool {
-        return m_fullscreen;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
     inline auto WindowImpl::is_open() const noexcept -> bool {
         return m_open;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
     inline auto WindowImpl::visible() const noexcept -> bool {
         return m_visible;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto WindowImpl::xcb_handles() const noexcept -> const Handles& {
-        return m_handles;
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    inline auto WindowImpl::title() const noexcept -> const std::string& {
+        return m_title;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto WindowImpl::set_extent(const math::Extent2<u32>& extent) noexcept -> void {
+        m_extent = extent;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
     inline auto WindowImpl::extent() const noexcept -> const math::Extent2<u32>& {
         return m_extent;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    inline auto WindowImpl::is_key_repeat_enabled() const noexcept -> bool {
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    inline auto WindowImpl::fullscreen() const noexcept -> bool {
+        return m_fullscreen;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    inline auto WindowImpl::is_mouse_confined(u32) const noexcept -> bool {
+        return m_mouse_confined;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    inline auto WindowImpl::is_mouse_locked(u32) const noexcept -> bool {
+        return m_mouse_locked;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    inline auto WindowImpl::is_mouse_hidden(u32) const noexcept -> bool {
+        return m_mouse_hidden;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    inline auto WindowImpl::is_mouse_relative(u32) const noexcept -> bool {
+        return m_mouse_relative;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    inline auto WindowImpl::is_key_repeat_enabled(u32) const noexcept -> bool {
         return m_key_repeat_enabled;
     }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    inline auto WindowImpl::is_virtual_keyboard_visible() const noexcept -> bool {
+        return m_virtual_keyboard_visible;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    inline auto WindowImpl::native_handle() const noexcept -> NativeHandle {
+        return std::bit_cast<NativeHandle>(&m_handles);
+    }
 } // namespace stormkit::wsi::linux::x11
+
+// module :private;
 
 namespace stormkit::wsi::linux::x11 {
     namespace {
@@ -258,7 +305,10 @@ namespace stormkit::wsi::linux::x11 {
         constexpr auto XINPUT_MASK_MODIFIERS = u32 { XCB_INPUT_MODIFIER_MASK_ANY };
     } // namespace
 
-    auto is_ext_event(xcb_generic_event_t* event, int opcode) noexcept -> bool {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    inline auto is_ext_event(xcb_generic_event_t* event, int opcode) noexcept -> bool {
         return std::bit_cast<xcb_ge_generic_event_t*>(event)->extension == opcode;
     }
 
@@ -291,8 +341,9 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::create(std::string title, const math::Extent2<u32>& extent, WindowStyle style)
-      -> void {
+    auto WindowImpl::create(std::string               title,
+                            const math::Extent2<u32>& extent,
+                            WindowStyle               style) noexcept -> void {
         if (xcb_connection_has_error(m_connection)) [[unlikely]] {
             elog("ERROR {}", std::bit_cast<void*>(m_connection.get()));
             return;
@@ -558,6 +609,16 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    auto WindowImpl::clear(const RGBColorU&) noexcept -> void {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto WindowImpl::set_pixels_to(std::span<const RGBColorU>) noexcept -> void {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     auto WindowImpl::poll_event(Event& event) noexcept -> bool {
         STORMKIT_RAII_CAPSULE(Event, xcb_generic_event_t, std::free)
 
@@ -599,7 +660,7 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::toggle_fullscreen(bool enabled) noexcept -> void {
+    auto WindowImpl::set_fullscreen(bool enabled) noexcept -> void {
         auto fullscreen_atom = get_xcb_atom(WM_STATE_FULLSCREEN_STR, false);
         if (!fullscreen_atom) [[unlikely]] {
             elog("Failed to setup fullscreen\n     > Failed to get atom {}\n        > reason: {}",
@@ -633,81 +694,78 @@ namespace stormkit::wsi::linux::x11 {
                        XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY,
                        std::bit_cast<const char*>(&ev));
 
+        xcb_flush(m_connection);
+
         m_fullscreen = enabled;
-
-        xcb_flush(m_connection);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::lock_mouse() noexcept -> void {
-        xcb_warp_pointer(m_connection,
-                         XCB_NONE,
-                         m_window,
-                         0,
-                         0,
-                         0,
-                         0,
-                         as<i16>(m_extent.width / 2),
-                         as<i16>(m_extent.height / 2));
-
-        xcb_flush(m_connection);
-
-        auto cookie = xcb_grab_pointer(m_connection,
-                                       1,
-                                       m_window,
-                                       XCB_EVENT_MASK_BUTTON_PRESS
-                                         | XCB_EVENT_MASK_BUTTON_RELEASE
-                                         | XCB_EVENT_MASK_BUTTON_MOTION
-                                         | XCB_EVENT_MASK_POINTER_MOTION,
-                                       XCB_GRAB_MODE_ASYNC,
-                                       XCB_GRAB_MODE_ASYNC,
-                                       m_window,
-                                       XCB_NONE,
-                                       XCB_CURRENT_TIME);
-        xcb_grab_pointer_reply(m_connection, cookie, nullptr);
-        xcb_flush(m_connection);
-
-        m_is_mouse_locked = true;
-
-        hide_mouse();
+    auto WindowImpl::confine_mouse(bool, u32) noexcept -> void {
+        elog("x11::WindowImpl::confine_mouse isn't yet implemented");
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::unlock_mouse() noexcept -> void {
-        xcb_ungrab_pointer(m_connection, XCB_CURRENT_TIME);
-        xcb_flush(m_connection);
+    auto WindowImpl::lock_mouse(bool locked, u32) noexcept -> void {
+        if (locked) {
+            xcb_warp_pointer(m_connection,
+                             XCB_NONE,
+                             m_window,
+                             0,
+                             0,
+                             0,
+                             0,
+                             as<i16>(m_extent.width / 2),
+                             as<i16>(m_extent.height / 2));
 
-        m_is_mouse_locked = false;
+            xcb_flush(m_connection);
 
-        unhide_mouse();
+            auto cookie = xcb_grab_pointer(m_connection,
+                                           1,
+                                           m_window,
+                                           XCB_EVENT_MASK_BUTTON_PRESS
+                                             | XCB_EVENT_MASK_BUTTON_RELEASE
+                                             | XCB_EVENT_MASK_BUTTON_MOTION
+                                             | XCB_EVENT_MASK_POINTER_MOTION,
+                                           XCB_GRAB_MODE_ASYNC,
+                                           XCB_GRAB_MODE_ASYNC,
+                                           m_window,
+                                           XCB_NONE,
+                                           XCB_CURRENT_TIME);
+            xcb_grab_pointer_reply(m_connection, cookie, nullptr);
+            xcb_flush(m_connection);
+
+        } else {
+            xcb_ungrab_pointer(m_connection, XCB_CURRENT_TIME);
+            xcb_flush(m_connection);
+        }
+        m_mouse_locked = locked;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::hide_mouse() noexcept -> void {
-        xcb_xfixes_hide_cursor(m_connection, m_window);
-        xcb_flush(m_connection);
+    auto WindowImpl::hide_mouse(bool hidden, u32) noexcept -> void {
+        if (hidden) {
+            xcb_xfixes_hide_cursor(m_connection, m_window);
+            xcb_flush(m_connection);
+            m_mouse_hidden = true;
+        } else {
+            xcb_xfixes_show_cursor(m_connection, m_window);
+            xcb_flush(m_connection);
+        }
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::unhide_mouse() noexcept -> void {
-        xcb_xfixes_show_cursor(m_connection, m_window);
-        xcb_flush(m_connection);
+    auto WindowImpl::set_relative_mouse(bool, u32) noexcept -> void {
+        elog("x11::WindowImpl::show_virtual_keyboard isn't yet implemented");
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::native_handle() const noexcept -> NativeHandle {
-        return std::bit_cast<NativeHandle>(&m_handles);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto WindowImpl::toggle_key_repeat(bool enabled) noexcept -> void {
-        auto mask = ((enabled) ? KEYBOARD_EVENTS : KEYBOARD_RAW_EVENTS) | MOUSE_RAW_EVENTS;
+    auto WindowImpl::set_key_repeat(bool enabled, u32) noexcept -> void {
+        const auto mask = ((enabled) ? KEYBOARD_EVENTS : KEYBOARD_RAW_EVENTS) | MOUSE_RAW_EVENTS;
 
         xcb_input_xi_passive_grab_device(m_connection,
                                          XCB_CURRENT_TIME,
@@ -731,14 +789,13 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::toggle_virtual_keyboard_visibility([[maybe_unused]] bool visible) noexcept
-      -> void {
-        elog("x11::WindowImpl::toggle_virtual_keyboard_visibility isn't yet implemented");
+    auto WindowImpl::show_virtual_keyboard(bool) noexcept -> void {
+        elog("x11::WindowImpl::show_virtual_keyboard isn't yet implemented");
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::set_mouse_position(const math::vec2i& position) noexcept -> void {
+    auto WindowImpl::set_mouse_position(const math::vec2i& position, u32) noexcept -> void {
         auto connection = get_xcb_connection();
 
         xcb_warp_pointer(connection,
@@ -756,7 +813,7 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto WindowImpl::set_mouse_position_on_desktop(const math::vec2u& position) noexcept
+    auto WindowImpl::set_mouse_position_on_desktop(const math::vec2u& position, u32) noexcept
       -> void {
         auto connection = get_xcb_connection();
 
@@ -867,7 +924,7 @@ namespace stormkit::wsi::linux::x11 {
                 const auto x = as<u32>(mouse_event->event_x);
                 const auto y = as<u32>(mouse_event->event_y);
 
-                if (m_is_mouse_locked) {
+                if (m_mouse_locked) {
                     if (x != m_extent.width / 2 || y != m_extent.height / 2) {
                         auto dx = x - as<u32>(m_mouse_position.x);
                         auto dy = y - as<u32>(m_mouse_position.y);

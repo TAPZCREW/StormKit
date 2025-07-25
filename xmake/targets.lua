@@ -4,7 +4,7 @@ modules = {
         modulename = "core",
         has_headers = true,
         public_defines = {
-        "FROZEN_USE_STD_MODULE",
+            "FROZEN_USE_STD_MODULE",
         },
         custom = function()
             if is_plat("windows") then add_packages("wil") end
@@ -52,7 +52,7 @@ modules = {
     test = {
         modulename = "test",
         public_deps = { "stormkit-core" },
-        has_headers = true
+        has_headers = true,
     },
     log = {
         modulename = "log",
@@ -107,6 +107,12 @@ modules = {
 
                     local protocols = {
                         path.join("stable", "xdg-shell", "xdg-shell.xml"),
+                        path.join("stable", "tablet", "tablet-v2.xml"),
+                        path.join("stable", "viewporter", "viewporter.xml"),
+                        path.join("staging", "content-type", "content-type-v1.xml"),
+                        path.join("staging", "pointer-warp", "pointer-warp-v1.xml"),
+                        path.join("staging", "cursor-shape", "cursor-shape-v1.xml"),
+                        path.join("staging", "single-pixel-buffer", "single-pixel-buffer-v1.xml"),
                         path.join("unstable", "xdg-decoration", "xdg-decoration-unstable-v1.xml"),
                         path.join("unstable", "pointer-constraints", "pointer-constraints-unstable-v1.xml"),
                         path.join("unstable", "relative-pointer", "relative-pointer-unstable-v1.xml"),
@@ -172,4 +178,3 @@ modules = {
         end,
     },
 }
-
