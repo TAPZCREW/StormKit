@@ -58,7 +58,7 @@ export namespace stormkit { inline namespace core {
 
     template<meta::IsIntegral T>
     [[nodiscard]]
-    constexpr auto to_string(T value, int base = 10) noexcept
+    constexpr auto to_string(T value, i32 base = 10) noexcept
       -> std::expected<std::string, std::errc>;
 
     template<meta::IsFloatingPoint T>
@@ -68,7 +68,7 @@ export namespace stormkit { inline namespace core {
 
     template<meta::IsIntegral T>
     [[nodiscard]]
-    constexpr auto from_string(std::string_view data, int base = 10) noexcept
+    constexpr auto from_string(std::string_view data, i32 base = 10) noexcept
       -> std::expected<T, std::errc>;
 
     template<meta::IsFloatingPoint T>
@@ -215,7 +215,7 @@ namespace stormkit { inline namespace core {
     }
 
     template<meta::IsIntegral T>
-    inline constexpr auto from_string(std::string_view data, int base) noexcept
+    inline constexpr auto from_string(std::string_view data, i32 base) noexcept
       -> std::expected<T, std::errc> {
         auto value       = T {};
         auto&& [_, errc] = std::from_chars(stdr::data(data),

@@ -9,3 +9,4 @@ export import :containers.ringbuffer;
 export import :containers.tree;
 export import :containers.utils;
 export import :containers.raii_capsule;
+export import :containers.shmbuffer;
