@@ -69,12 +69,14 @@ includes("xmake/dependencies.lua")
 includes("xmake/targets.lua")
 
 ---------------------------- dependencies ----------------------------
-for _, module in pairs(modules) do
-    for _, package in ipairs(module.public_packages) do
-        add_requires_with_conf_transitive(package)
-    end
-    for _, package in ipairs(module.packages) do
-        add_requires_with_conf(package)
+for name, module in pairs(modules) do
+    if has_config(name) then
+        for _, package in ipairs(module.public_packages) do
+            add_requires_with_conf_transitive(package)
+        end
+        for _, package in ipairs(module.packages) do
+            add_requires_with_conf(package)
+        end
     end
 end
 
