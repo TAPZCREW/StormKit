@@ -27,7 +27,7 @@ on:
       - README.md
 
 env:
-  LLVM_VERSION: "-21"
+  LLVM_VERSION: "-22"
 
 jobs:
   build:
