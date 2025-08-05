@@ -88,6 +88,8 @@ namespace stormkit::gpu {
             struct Handles {
                 xcb_connection_t* connection;
                 xcb_window_t      window;
+                void*             key_symbols;
+                void*             state;
             }* handles = reinterpret_cast<Handles*>(window.native_handle());
 
             const auto create_info = VkXcbSurfaceCreateInfoKHR {

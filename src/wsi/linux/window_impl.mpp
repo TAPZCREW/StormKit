@@ -53,13 +53,10 @@ export namespace stormkit::wsi::linux {
         auto title() const noexcept -> const std::string&;
 
         auto set_extent(const math::Extent2<u32>& extent) noexcept -> void;
-#ifdef STORMKIT_OS_MACOS
         [[nodiscard]]
         auto extent() const noexcept -> math::Extent2<u32>;
-#else
         [[nodiscard]]
-        auto extent() const noexcept -> const math::Extent2<u32>&;
-#endif
+        auto framebuffer_extent() const noexcept -> math::Extent2<u32>;
 
         auto set_fullscreen(bool fullscreen) noexcept -> void;
         [[nodiscard]]
@@ -103,22 +100,18 @@ export namespace stormkit::wsi::linux {
       private:
         struct Sentinelle {};
 
-        using BackendWindowImpl = std::variant<x11::WindowImpl, wayland::WindowImpl>;
+        using BackendWindowImpl = std::
+          variant<x11::WindowImpl, wayland::WindowImpl, std::monostate>;
 
         WM m_wm;
 
-        DeferInit<BackendWindowImpl> m_impl;
+        BackendWindowImpl m_impl = std::monostate {};
     };
 } // namespace stormkit::wsi::linux
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
-
-#define CASE_DO(case_, namespace_, work) \
-    case case_: as<namespace_::WindowImpl>(m_impl.get()).work; return
-#define CASE_DO_RETURN(case_, namespace_, work) \
-    case case_: return as<namespace_::WindowImpl>(m_impl.get()).work
 
 namespace stormkit::wsi::linux {
     /////////////////////////////////////
@@ -166,15 +159,15 @@ namespace stormkit::wsi::linux {
                                    const math::Extent2<u32>& extent,
                                    WindowFlag                flags) noexcept -> void {
         switch (m_wm) {
-            CASE_DO (WM::X11, x11, create(std::move(title), extent, flags))
-                ;
-            CASE_DO (WM::WAYLAND, wayland, create(std::move(title), extent, flags))
-                ;
+            case WM::X11:
+                as<x11::WindowImpl>(m_impl).create(std::move(title), extent, flags);
+                break;
+            case WM::WAYLAND:
+                as<wayland::WindowImpl>(m_impl).create(std::move(title), extent, flags);
+                break;
 
-            default: break;
+            default: std::unreachable();
         }
-
-        std::unreachable();
     }
 
     /////////////////////////////////////
@@ -182,15 +175,11 @@ namespace stormkit::wsi::linux {
     STORMKIT_FORCE_INLINE
     inline auto WindowImpl::close() noexcept -> void {
         switch (m_wm) {
-            CASE_DO (WM::X11, x11, close())
-                ;
-            CASE_DO (WM::WAYLAND, wayland, close())
-                ;
+            case WM::X11: as<x11::WindowImpl>(m_impl).close(); break;
+            case WM::WAYLAND: as<wayland::WindowImpl>(m_impl).close(); break;
 
-            default: break;
+            default: std::unreachable();
         }
-
-        std::unreachable();
     }
 
     /////////////////////////////////////
@@ -198,15 +187,11 @@ namespace stormkit::wsi::linux {
     STORMKIT_FORCE_INLINE
     inline auto WindowImpl::clear(const RGBColorU& color) noexcept -> void {
         switch (m_wm) {
-            CASE_DO (WM::X11, x11, clear(color))
-                ;
-            CASE_DO (WM::WAYLAND, wayland, clear(color))
-                ;
+            case WM::X11: as<x11::WindowImpl>(m_impl).clear(color); break;
+            case WM::WAYLAND: as<wayland::WindowImpl>(m_impl).clear(color); break;
 
-            default: break;
+            default: std::unreachable();
         }
-
-        std::unreachable();
     }
 
     /////////////////////////////////////
@@ -214,15 +199,11 @@ namespace stormkit::wsi::linux {
     STORMKIT_FORCE_INLINE
     inline auto WindowImpl::set_pixels_to(std::span<const RGBColorU> colors) noexcept -> void {
         switch (m_wm) {
-            CASE_DO (WM::X11, x11, set_pixels_to(colors))
-                ;
-            CASE_DO (WM::WAYLAND, wayland, set_pixels_to(colors))
-                ;
+            case WM::X11: as<x11::WindowImpl>(m_impl).set_pixels_to(colors); break;
+            case WM::WAYLAND: as<wayland::WindowImpl>(m_impl).set_pixels_to(colors); break;
 
-            default: break;
+            default: std::unreachable();
         }
-
-        std::unreachable();
     }
 
     /////////////////////////////////////
@@ -230,10 +211,8 @@ namespace stormkit::wsi::linux {
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     inline auto WindowImpl::is_open() const noexcept -> bool {
         switch (m_wm) {
-            CASE_DO_RETURN (WM::X11, x11, is_open())
-                ;
-            CASE_DO_RETURN (WM::WAYLAND, wayland, is_open())
-                ;
+            case WM::X11: return as<x11::WindowImpl>(m_impl).is_open();
+            case WM::WAYLAND: return as<wayland::WindowImpl>(m_impl).is_open();
 
             default: break;
         }
@@ -246,10 +225,8 @@ namespace stormkit::wsi::linux {
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     inline auto WindowImpl::poll_event(Event& event) noexcept -> bool {
         switch (m_wm) {
-            CASE_DO_RETURN (WM::X11, x11, poll_event(event))
-                ;
-            CASE_DO_RETURN (WM::WAYLAND, wayland, poll_event(event))
-                ;
+            case WM::X11: return as<x11::WindowImpl>(m_impl).poll_event(event);
+            case WM::WAYLAND: return as<wayland::WindowImpl>(m_impl).poll_event(event);
 
             default: break;
         }
@@ -262,10 +239,8 @@ namespace stormkit::wsi::linux {
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     inline auto WindowImpl::wait_event(Event& event) noexcept -> bool {
         switch (m_wm) {
-            CASE_DO_RETURN (WM::X11, x11, wait_event(event))
-                ;
-            CASE_DO_RETURN (WM::WAYLAND, wayland, wait_event(event))
-                ;
+            case WM::X11: return as<x11::WindowImpl>(m_impl).wait_event(event);
+            case WM::WAYLAND: return as<wayland::WindowImpl>(m_impl).wait_event(event);
 
             default: break;
         }
@@ -278,10 +253,8 @@ namespace stormkit::wsi::linux {
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     inline auto WindowImpl::visible() const noexcept -> bool {
         switch (m_wm) {
-            CASE_DO_RETURN (WM::X11, x11, visible())
-                ;
-            CASE_DO_RETURN (WM::WAYLAND, wayland, visible())
-                ;
+            case WM::X11: return as<x11::WindowImpl>(m_impl).visible();
+            case WM::WAYLAND: return as<wayland::WindowImpl>(m_impl).visible();
 
             default: break;
         }
@@ -294,14 +267,11 @@ namespace stormkit::wsi::linux {
     STORMKIT_FORCE_INLINE
     inline auto WindowImpl::set_title(std::string title) noexcept -> void {
         switch (m_wm) {
-            CASE_DO (WM::X11, x11, set_title(std::move(title)))
-                ;
-            CASE_DO (WM::WAYLAND, wayland, set_title(std::move(title)))
-                ;
+            case WM::X11: as<x11::WindowImpl>(m_impl).set_title(std::move(title)); break;
+            case WM::WAYLAND: as<wayland::WindowImpl>(m_impl).set_title(std::move(title)); break;
 
-            default: break;
+            default: std::unreachable();
         }
-        std::unreachable();
     }
 
     /////////////////////////////////////
@@ -309,10 +279,8 @@ namespace stormkit::wsi::linux {
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     inline auto WindowImpl::title() const noexcept -> const std::string& {
         switch (m_wm) {
-            CASE_DO_RETURN (WM::X11, x11, title())
-                ;
-            CASE_DO_RETURN (WM::WAYLAND, wayland, title())
-                ;
+            case WM::X11: return as<x11::WindowImpl>(m_impl).title();
+            case WM::WAYLAND: return as<wayland::WindowImpl>(m_impl).title();
 
             default: break;
         }
@@ -325,10 +293,20 @@ namespace stormkit::wsi::linux {
     STORMKIT_FORCE_INLINE
     inline auto WindowImpl::set_extent(const math::Extent2<u32>& extent) noexcept -> void {
         switch (m_wm) {
-            CASE_DO (WM::X11, x11, set_extent(extent))
-                ;
-            CASE_DO (WM::WAYLAND, wayland, set_extent(extent))
-                ;
+            case WM::X11: as<x11::WindowImpl>(m_impl).set_extent(extent); break;
+            case WM::WAYLAND: as<wayland::WindowImpl>(m_impl).set_extent(extent); break;
+
+            default: std::unreachable();
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    inline auto WindowImpl::extent() const noexcept -> stormkit::math::Extent2<u32> {
+        switch (m_wm) {
+            case WM::X11: return as<x11::WindowImpl>(m_impl).extent();
+            case WM::WAYLAND: return as<wayland::WindowImpl>(m_impl).extent();
 
             default: break;
         }
@@ -339,12 +317,10 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_CONST STORMKIT_FORCE_INLINE
-    inline auto WindowImpl::extent() const noexcept -> const stormkit::math::Extent2<u32>& {
+    inline auto WindowImpl::framebuffer_extent() const noexcept -> stormkit::math::Extent2<u32> {
         switch (m_wm) {
-            CASE_DO_RETURN (WM::X11, x11, extent())
-                ;
-            CASE_DO_RETURN (WM::WAYLAND, wayland, extent())
-                ;
+            case WM::X11: return as<x11::WindowImpl>(m_impl).framebuffer_extent();
+            case WM::WAYLAND: return as<wayland::WindowImpl>(m_impl).framebuffer_extent();
 
             default: break;
         }
@@ -357,15 +333,11 @@ namespace stormkit::wsi::linux {
     STORMKIT_FORCE_INLINE
     inline auto WindowImpl::set_fullscreen(bool enabled) noexcept -> void {
         switch (m_wm) {
-            CASE_DO (WM::X11, x11, set_fullscreen(enabled))
-                ;
-            CASE_DO (WM::WAYLAND, wayland, set_fullscreen(enabled))
-                ;
+            case WM::X11: as<x11::WindowImpl>(m_impl).set_fullscreen(enabled); break;
+            case WM::WAYLAND: as<wayland::WindowImpl>(m_impl).set_fullscreen(enabled); break;
 
-            default: break;
+            default: std::unreachable();
         }
-
-        std::unreachable();
     }
 
     /////////////////////////////////////
@@ -373,10 +345,8 @@ namespace stormkit::wsi::linux {
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     inline auto WindowImpl::fullscreen() const noexcept -> bool {
         switch (m_wm) {
-            CASE_DO_RETURN (WM::X11, x11, fullscreen())
-                ;
-            CASE_DO_RETURN (WM::WAYLAND, wayland, fullscreen())
-                ;
+            case WM::X11: return as<x11::WindowImpl>(m_impl).fullscreen();
+            case WM::WAYLAND: return as<wayland::WindowImpl>(m_impl).fullscreen();
 
             default: break;
         }
@@ -389,15 +359,13 @@ namespace stormkit::wsi::linux {
     STORMKIT_FORCE_INLINE
     inline auto WindowImpl::confine_mouse(bool confined, u32 mouse_id) noexcept -> void {
         switch (m_wm) {
-            CASE_DO (WM::X11, x11, confine_mouse(confined, mouse_id))
-                ;
-            CASE_DO (WM::WAYLAND, wayland, confine_mouse(confined, mouse_id))
-                ;
+            case WM::X11: as<x11::WindowImpl>(m_impl).confine_mouse(confined, mouse_id); break;
+            case WM::WAYLAND:
+                as<wayland::WindowImpl>(m_impl).confine_mouse(confined, mouse_id);
+                break;
 
-            default: break;
+            default: std::unreachable();
         }
-
-        std::unreachable();
     }
 
     /////////////////////////////////////
@@ -405,10 +373,8 @@ namespace stormkit::wsi::linux {
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     inline auto WindowImpl::is_mouse_confined(u32 mouse_id) const noexcept -> bool {
         switch (m_wm) {
-            CASE_DO_RETURN (WM::X11, x11, is_mouse_confined(mouse_id))
-                ;
-            CASE_DO_RETURN (WM::WAYLAND, wayland, is_mouse_confined(mouse_id))
-                ;
+            case WM::X11: return as<x11::WindowImpl>(m_impl).is_mouse_confined(mouse_id);
+            case WM::WAYLAND: return as<wayland::WindowImpl>(m_impl).is_mouse_confined(mouse_id);
 
             default: break;
         }
@@ -421,15 +387,11 @@ namespace stormkit::wsi::linux {
     STORMKIT_FORCE_INLINE
     inline auto WindowImpl::lock_mouse(bool locked, u32 mouse_id) noexcept -> void {
         switch (m_wm) {
-            CASE_DO (WM::X11, x11, lock_mouse(locked, mouse_id))
-                ;
-            CASE_DO (WM::WAYLAND, wayland, lock_mouse(locked, mouse_id))
-                ;
+            case WM::X11: as<x11::WindowImpl>(m_impl).lock_mouse(locked, mouse_id); break;
+            case WM::WAYLAND: as<wayland::WindowImpl>(m_impl).lock_mouse(locked, mouse_id); break;
 
-            default: break;
+            default: std::unreachable();
         }
-
-        std::unreachable();
     }
 
     /////////////////////////////////////
@@ -437,10 +399,8 @@ namespace stormkit::wsi::linux {
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     inline auto WindowImpl::is_mouse_locked(u32 mouse_id) const noexcept -> bool {
         switch (m_wm) {
-            CASE_DO_RETURN (WM::X11, x11, is_mouse_locked(mouse_id))
-                ;
-            CASE_DO_RETURN (WM::WAYLAND, wayland, is_mouse_locked(mouse_id))
-                ;
+            case WM::X11: return as<x11::WindowImpl>(m_impl).is_mouse_locked(mouse_id);
+            case WM::WAYLAND: return as<wayland::WindowImpl>(m_impl).is_mouse_locked(mouse_id);
 
             default: break;
         }
@@ -453,15 +413,11 @@ namespace stormkit::wsi::linux {
     STORMKIT_FORCE_INLINE
     inline auto WindowImpl::hide_mouse(bool hidden, u32 mouse_id) noexcept -> void {
         switch (m_wm) {
-            CASE_DO (WM::X11, x11, hide_mouse(hidden, mouse_id))
-                ;
-            CASE_DO (WM::WAYLAND, wayland, hide_mouse(hidden, mouse_id))
-                ;
+            case WM::X11: as<x11::WindowImpl>(m_impl).hide_mouse(hidden, mouse_id); break;
+            case WM::WAYLAND: as<wayland::WindowImpl>(m_impl).hide_mouse(hidden, mouse_id); break;
 
-            default: break;
+            default: std::unreachable();
         }
-
-        std::unreachable();
     }
 
     /////////////////////////////////////
@@ -469,10 +425,8 @@ namespace stormkit::wsi::linux {
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     inline auto WindowImpl::is_mouse_hidden(u32 mouse_id) const noexcept -> bool {
         switch (m_wm) {
-            CASE_DO_RETURN (WM::X11, x11, is_mouse_hidden(mouse_id))
-                ;
-            CASE_DO_RETURN (WM::WAYLAND, wayland, is_mouse_hidden(mouse_id))
-                ;
+            case WM::X11: return as<x11::WindowImpl>(m_impl).is_mouse_hidden(mouse_id);
+            case WM::WAYLAND: return as<wayland::WindowImpl>(m_impl).is_mouse_hidden(mouse_id);
 
             default: break;
         }
@@ -485,15 +439,13 @@ namespace stormkit::wsi::linux {
     STORMKIT_FORCE_INLINE
     inline auto WindowImpl::set_relative_mouse(bool enabled, u32 mouse_id) noexcept -> void {
         switch (m_wm) {
-            CASE_DO (WM::X11, x11, set_relative_mouse(enabled, mouse_id))
-                ;
-            CASE_DO (WM::WAYLAND, wayland, set_relative_mouse(enabled, mouse_id))
-                ;
+            case WM::X11: as<x11::WindowImpl>(m_impl).set_relative_mouse(enabled, mouse_id); break;
+            case WM::WAYLAND:
+                as<wayland::WindowImpl>(m_impl).set_relative_mouse(enabled, mouse_id);
+                break;
 
-            default: break;
+            default: std::unreachable();
         }
-
-        std::unreachable();
     }
 
     /////////////////////////////////////
@@ -501,10 +453,8 @@ namespace stormkit::wsi::linux {
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     inline auto WindowImpl::is_mouse_relative(u32 mouse_id) const noexcept -> bool {
         switch (m_wm) {
-            CASE_DO_RETURN (WM::X11, x11, is_mouse_relative(mouse_id))
-                ;
-            CASE_DO_RETURN (WM::WAYLAND, wayland, is_mouse_relative(mouse_id))
-                ;
+            case WM::X11: return as<x11::WindowImpl>(m_impl).is_mouse_relative(mouse_id);
+            case WM::WAYLAND: return as<wayland::WindowImpl>(m_impl).is_mouse_relative(mouse_id);
 
             default: break;
         }
@@ -517,10 +467,9 @@ namespace stormkit::wsi::linux {
     STORMKIT_FORCE_INLINE
     inline auto WindowImpl::set_key_repeat(bool enabled, u32 keyboard_id) noexcept -> void {
         switch (m_wm) {
-            CASE_DO_RETURN (WM::X11, x11, set_key_repeat(enabled, keyboard_id))
-                ;
-            CASE_DO_RETURN (WM::WAYLAND, wayland, set_key_repeat(enabled, keyboard_id))
-                ;
+            case WM::X11: return as<x11::WindowImpl>(m_impl).set_key_repeat(enabled, keyboard_id);
+            case WM::WAYLAND:
+                return as<wayland::WindowImpl>(m_impl).set_key_repeat(enabled, keyboard_id);
 
             default: break;
         }
@@ -533,10 +482,9 @@ namespace stormkit::wsi::linux {
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     inline auto WindowImpl::is_key_repeat_enabled(u32 keyboard_id) const noexcept -> bool {
         switch (m_wm) {
-            CASE_DO_RETURN (WM::X11, x11, is_key_repeat_enabled(keyboard_id))
-                ;
-            CASE_DO_RETURN (WM::WAYLAND, wayland, is_key_repeat_enabled(keyboard_id))
-                ;
+            case WM::X11: return as<x11::WindowImpl>(m_impl).is_key_repeat_enabled(keyboard_id);
+            case WM::WAYLAND:
+                return as<wayland::WindowImpl>(m_impl).is_key_repeat_enabled(keyboard_id);
 
             default: break;
         }
@@ -549,15 +497,11 @@ namespace stormkit::wsi::linux {
     STORMKIT_FORCE_INLINE
     inline auto WindowImpl::show_virtual_keyboard(bool visible) noexcept -> void {
         switch (m_wm) {
-            CASE_DO (WM::X11, x11, show_virtual_keyboard(visible))
-                ;
-            CASE_DO (WM::WAYLAND, wayland, show_virtual_keyboard(visible))
-                ;
+            case WM::X11: as<x11::WindowImpl>(m_impl).show_virtual_keyboard(visible); break;
+            case WM::WAYLAND: as<wayland::WindowImpl>(m_impl).show_virtual_keyboard(visible); break;
 
-            default: break;
+            default: std::unreachable();
         }
-
-        std::unreachable();
     }
 
     /////////////////////////////////////
@@ -565,10 +509,8 @@ namespace stormkit::wsi::linux {
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     inline auto WindowImpl::is_virtual_keyboard_visible() const noexcept -> bool {
         switch (m_wm) {
-            CASE_DO_RETURN (WM::X11, x11, is_virtual_keyboard_visible())
-                ;
-            CASE_DO_RETURN (WM::WAYLAND, wayland, is_virtual_keyboard_visible())
-                ;
+            case WM::X11: return as<x11::WindowImpl>(m_impl).is_virtual_keyboard_visible();
+            case WM::WAYLAND: return as<wayland::WindowImpl>(m_impl).is_virtual_keyboard_visible();
 
             default: break;
         }
@@ -582,15 +524,13 @@ namespace stormkit::wsi::linux {
     inline auto WindowImpl::set_mouse_position(const math::vec2i& position, u32 mouse_id) noexcept
       -> void {
         switch (m_wm) {
-            CASE_DO (WM::X11, x11, set_mouse_position(position, mouse_id))
-                ;
-            CASE_DO (WM::WAYLAND, wayland, set_mouse_position(position, mouse_id))
-                ;
+            case WM::X11: as<x11::WindowImpl>(m_impl).set_mouse_position(position, mouse_id); break;
+            case WM::WAYLAND:
+                as<wayland::WindowImpl>(m_impl).set_mouse_position(position, mouse_id);
+                break;
 
-            default: break;
+            default: std::unreachable();
         }
-
-        std::unreachable();
     }
 
     /////////////////////////////////////
@@ -605,10 +545,8 @@ namespace stormkit::wsi::linux {
                 wayland::WindowImpl::set_mouse_position_on_desktop(position, mouse_id);
                 break;
 
-            default: break;
+            default: std::unreachable();
         }
-
-        std::unreachable();
     }
 
     /////////////////////////////////////
@@ -629,17 +567,11 @@ namespace stormkit::wsi::linux {
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     inline auto WindowImpl::native_handle() const noexcept -> NativeHandle {
         switch (m_wm) {
-            CASE_DO_RETURN (WM::X11, x11, native_handle())
-                ;
-            CASE_DO_RETURN (WM::WAYLAND, wayland, native_handle())
-                ;
-
+            case WM::X11: return as<x11::WindowImpl>(m_impl).native_handle();
+            case WM::WAYLAND: return as<wayland::WindowImpl>(m_impl).native_handle();
             default: break;
         }
 
         std::unreachable();
     }
 } // namespace stormkit::wsi::linux
-
-#undef CASE_DO
-#undef CASE_DO_RETURN

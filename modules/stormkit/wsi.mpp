@@ -322,13 +322,12 @@ export {
             auto set_title(std::string title) noexcept -> void;
 
             auto set_extent(const math::Extent2<u32>& extent) noexcept -> void;
-#ifdef STORMKIT_OS_MACOS
+
             [[nodiscard]]
             auto extent() const noexcept -> math::Extent2<u32>;
-#else
+
             [[nodiscard]]
-            auto extent() const noexcept -> const math::Extent2<u32>&;
-#endif
+            auto framebuffer_extent() const noexcept -> math::Extent2<u32>;
 
             auto set_fullscreen(bool fullscreen) noexcept -> void;
             auto toggle_fullscreen() noexcept -> void;

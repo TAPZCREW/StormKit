@@ -69,7 +69,9 @@ export {
 
             auto set_extent(const math::Extent2<u32>& extent) noexcept -> void;
             [[nodiscard]]
-            auto extent() const noexcept -> const math::Extent2<u32>&;
+            auto extent() const noexcept -> math::Extent2<u32>;
+            [[nodiscard]]
+            auto framebuffer_extent() const noexcept -> math::Extent2<u32>;
 
             auto set_fullscreen(bool fullscreen) noexcept -> void;
             [[nodiscard]]
@@ -164,6 +166,7 @@ export {
                 bool               has_focus  = false;
                 bool               fullscreen = false;
                 math::Extent2<u32> extent;
+                math::Extent2<u32> framebuffer_extent;
             } m_state;
 
             struct {
@@ -207,8 +210,15 @@ namespace stormkit::wsi::linux::wayland {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_CONST STORMKIT_FORCE_INLINE
-    inline auto WindowImpl::extent() const noexcept -> const math::Extent2<u32>& {
+    inline auto WindowImpl::extent() const noexcept -> math::Extent2<u32> {
         return m_state.extent;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_CONST STORMKIT_FORCE_INLINE
+    inline auto WindowImpl::framebuffer_extent() const noexcept -> math::Extent2<u32> {
+        return m_state.framebuffer_extent;
     }
 
     /////////////////////////////////////

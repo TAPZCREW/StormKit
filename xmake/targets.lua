@@ -87,6 +87,7 @@ modules = {
             "xcb-util-keysyms",
             "xcb-util",
             "xcb-util-wm",
+            "xcb-util-xrm",
             "xcb-util-errors",
             "wayland",
             "wayland-protocols",
