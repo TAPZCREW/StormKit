@@ -30,7 +30,7 @@ auto main(std::span<const std::string_view> args) -> int {
     auto window = wsi::Window {
         "Hello world",
         { .width = 800u, .height = 600u },
-        wsi::WindowStyle::ALL
+        wsi::WindowFlag::ALL
     };
 
     while (window.is_open()) {

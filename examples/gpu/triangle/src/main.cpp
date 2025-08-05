@@ -53,7 +53,7 @@ auto main(std::span<const std::string_view> args) -> int {
     auto window = wsi::Window {
         "Stormkit GPU Triangle example",
         { 800u, 600u },
-        wsi::WindowStyle::CLOSE
+        wsi::WindowFlag::CLOSE | wsi::WindowFlag::EXTERNAL_CONTEXT
     };
 
     auto event_handler = wsi::EventHandler {};

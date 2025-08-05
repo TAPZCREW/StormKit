@@ -21,7 +21,7 @@ export namespace stormkit::wsi::linux {
     class WindowImpl: public ::stormkit::wsi::common::WindowImplBase {
       public:
         explicit WindowImpl(WM wm);
-        WindowImpl(WM wm, std::string title, const math::Extent2<u32>& size, WindowStyle style);
+        WindowImpl(WM wm, std::string title, const math::Extent2<u32>& size, WindowFlag flags);
         ~WindowImpl();
 
         WindowImpl(const WindowImpl&) noexcept                    = delete;
@@ -30,7 +30,7 @@ export namespace stormkit::wsi::linux {
         WindowImpl(WindowImpl&&) noexcept;
         auto operator=(WindowImpl&&) noexcept -> WindowImpl&;
 
-        auto create(std::string title, const math::Extent2<u32>& size, WindowStyle style) noexcept
+        auto create(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept
           -> void;
         auto close() noexcept -> void;
 
@@ -134,8 +134,7 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline WindowImpl::~WindowImpl()
-      = default;
+    inline WindowImpl::~WindowImpl() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -143,18 +142,17 @@ namespace stormkit::wsi::linux {
     inline WindowImpl::WindowImpl(WM                        wm,
                                   std::string               title,
                                   const math::Extent2<u32>& extent,
-                                  WindowStyle               style)
+                                  WindowFlag                flags)
         : m_wm { wm } {
-        if (m_wm == WM::X11) m_impl = x11::WindowImpl { std::move(title), extent, style };
+        if (m_wm == WM::X11) m_impl = x11::WindowImpl { std::move(title), extent, flags };
         else if (m_wm == WM::WAYLAND)
-            m_impl = wayland::WindowImpl { title, extent, style };
+            m_impl = wayland::WindowImpl { title, extent, flags };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline WindowImpl::WindowImpl(WindowImpl&&) noexcept
-      = default;
+    inline WindowImpl::WindowImpl(WindowImpl&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -166,11 +164,11 @@ namespace stormkit::wsi::linux {
     STORMKIT_FORCE_INLINE
     inline auto WindowImpl::create(std::string               title,
                                    const math::Extent2<u32>& extent,
-                                   WindowStyle               style) noexcept -> void {
+                                   WindowFlag                flags) noexcept -> void {
         switch (m_wm) {
-            CASE_DO (WM::X11, x11, create(std::move(title), extent, style))
+            CASE_DO (WM::X11, x11, create(std::move(title), extent, flags))
                 ;
-            CASE_DO (WM::WAYLAND, wayland, create(std::move(title), extent, style))
+            CASE_DO (WM::WAYLAND, wayland, create(std::move(title), extent, flags))
                 ;
 
             default: break;

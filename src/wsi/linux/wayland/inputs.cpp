@@ -84,9 +84,9 @@ namespace stormkit::wsi::linux::wayland::wl {
         auto& globals       = *std::bit_cast<Globals*>(data);
         auto  _capabilities = narrow<wl_seat_capability>(capabilities);
         if (check_flag_bit(_capabilities, WL_SEAT_CAPABILITY_KEYBOARD)) {
-            auto& [keyboard, state] = globals.keyboards
-                                        .emplace_back(wl::Keyboard { std::in_place, seat },
-                                                      KeyboardState {});
+            auto& [keyboard,
+                   state] = globals.keyboards
+                              .emplace_back(wl::Keyboard { std::in_place, seat }, KeyboardState {});
             wl_keyboard_add_listener(keyboard, &g_keyboard_listener, &state);
 
             state.repeat.timer_fd = common::FD {
@@ -94,9 +94,9 @@ namespace stormkit::wsi::linux::wayland::wl {
             };
         }
         if (check_flag_bit(_capabilities, WL_SEAT_CAPABILITY_POINTER)) {
-            auto& [pointer, state] = globals.pointers
-                                       .emplace_back(wl::Pointer { std::in_place, seat },
-                                                     PointerState {});
+            auto& [pointer,
+                   state] = globals.pointers
+                              .emplace_back(wl::Pointer { std::in_place, seat }, PointerState {});
             wl_pointer_add_listener(pointer, &g_pointer_listener, &state);
             state.cursor.surface = wl::Surface { std::in_place, globals.compositor };
             if (globals.cursor_shape_manager)
@@ -152,7 +152,8 @@ namespace stormkit::wsi::linux::wayland::wl {
       -> void {
         if (data == nullptr) return;
         auto& globals = get_globals();
-        if (not globals.xkb_context) globals.xkb_context = common::get_xkb_context();
+        if (not globals.xkb_context)
+            globals.xkb_context = common::xkb::Context { std::in_place, XKB_CONTEXT_NO_FLAGS };
 
         auto& state = *std::bit_cast<KeyboardState*>(data);
         if (format == WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
@@ -177,8 +178,8 @@ namespace stormkit::wsi::linux::wayland::wl {
 
         const auto keycode = key + 8;
 
-        const auto symbol = xkb_state_key_get_one_sym(state.xkb_state.get(), keycode);
-        xkb_state_key_get_utf8(state.xkb_state.get(), keycode, &character, sizeof(char));
+        const auto symbol = xkb_state_key_get_one_sym(state.xkb_state, keycode);
+        xkb_state_key_get_utf8(state.xkb_state, keycode, &character, sizeof(char));
 
         const auto skey = common::xkb_key_to_stormkit(symbol);
 
@@ -186,7 +187,7 @@ namespace stormkit::wsi::linux::wayland::wl {
 
         auto timer = zeroed<itimerspec>();
         if (state.repeat.enabled and down) {
-            if (xkb_keymap_key_repeats(state.xkb_keymap.get(), key) and state.repeat.rate > 0) {
+            if (xkb_keymap_key_repeats(state.xkb_keymap, key) and state.repeat.rate > 0) {
                 state.repeat.c   = character;
                 state.repeat.key = skey;
 
@@ -219,7 +220,7 @@ namespace stormkit::wsi::linux::wayland::wl {
         auto& state = *std::bit_cast<KeyboardState*>(data);
         if (not state.xkb_state) return;
 
-        xkb_state_update_mask(state.xkb_state.get(),
+        xkb_state_update_mask(state.xkb_state,
                               mods_depressed,
                               mods_latched,
                               mods_locked,
@@ -243,33 +244,36 @@ namespace stormkit::wsi::linux::wayland::wl {
     /////////////////////////////////////
     /////////////////////////////////////
     auto update_keymap(KeyboardState& state, std::string_view keymap) noexcept -> void {
-        auto& globals = get_globals();
-        state.xkb_keymap.reset(xkb_keymap_new_from_string(globals.xkb_context,
-                                                          std::data(keymap),
-                                                          XKB_KEYMAP_FORMAT_TEXT_V1,
-                                                          XKB_KEYMAP_COMPILE_NO_FLAGS));
+        auto& globals    = get_globals();
+        state.xkb_keymap = common::xkb::Keymap {
+            std::in_place,
+            globals.xkb_context,
+            std::data(keymap),
+            XKB_KEYMAP_FORMAT_TEXT_V1,
+            XKB_KEYMAP_COMPILE_NO_FLAGS
+        };
 
         if (not state.xkb_keymap) {
             elog("Failed to compile a keymap");
             return;
         }
 
-        state.xkb_state.reset(xkb_state_new(state.xkb_keymap.get()));
+        state.xkb_state = common::xkb::State { std::in_place, state.xkb_keymap };
 
         if (not state.xkb_state) {
             elog("Failed to create XKB state");
             return;
         }
 
-        state.xkb_mods = common::XKBMods {
-            .shift   = xkb_keymap_mod_get_index(state.xkb_keymap.get(), XKB_MOD_NAME_SHIFT),
-            .lock    = xkb_keymap_mod_get_index(state.xkb_keymap.get(), XKB_MOD_NAME_CAPS),
-            .control = xkb_keymap_mod_get_index(state.xkb_keymap.get(), XKB_MOD_NAME_CTRL),
-            .mod1    = xkb_keymap_mod_get_index(state.xkb_keymap.get(), "Mod1"),
-            .mod2    = xkb_keymap_mod_get_index(state.xkb_keymap.get(), "Mod2"),
-            .mod3    = xkb_keymap_mod_get_index(state.xkb_keymap.get(), "Mod3"),
-            .mod4    = xkb_keymap_mod_get_index(state.xkb_keymap.get(), "Mod4"),
-            .mod5    = xkb_keymap_mod_get_index(state.xkb_keymap.get(), "Mod5")
+        state.xkb_mods = common::xkb::Mods {
+            .shift   = xkb_keymap_mod_get_index(state.xkb_keymap, XKB_MOD_NAME_SHIFT),
+            .lock    = xkb_keymap_mod_get_index(state.xkb_keymap, XKB_MOD_NAME_CAPS),
+            .control = xkb_keymap_mod_get_index(state.xkb_keymap, XKB_MOD_NAME_CTRL),
+            .mod1    = xkb_keymap_mod_get_index(state.xkb_keymap, "Mod1"),
+            .mod2    = xkb_keymap_mod_get_index(state.xkb_keymap, "Mod2"),
+            .mod3    = xkb_keymap_mod_get_index(state.xkb_keymap, "Mod3"),
+            .mod4    = xkb_keymap_mod_get_index(state.xkb_keymap, "Mod4"),
+            .mod5    = xkb_keymap_mod_get_index(state.xkb_keymap, "Mod5")
         };
     }
 

@@ -65,7 +65,7 @@ export namespace stormkit::wsi::linux::wayland {
 
             std::vector<std::pair<wl_surface*, WindowImpl*>> windows;
 
-            common::XKBContextScoped xkb_context;
+            common::xkb::Context xkb_context;
         };
 
         auto init() noexcept -> bool;

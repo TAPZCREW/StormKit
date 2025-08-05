@@ -82,9 +82,9 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Window::Window(std::string title, const math::Extent2<u32>& size, WindowStyle style) noexcept
+    Window::Window(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept
         : m_impl { wm() } {
-        create(std::move(title), size, style);
+        create(std::move(title), size, flags);
     }
 
     /////////////////////////////////////
@@ -103,8 +103,8 @@ namespace stormkit::wsi {
     /////////////////////////////////////
     auto Window::create(std::string               title,
                         const math::Extent2<u32>& size,
-                        WindowStyle               style) noexcept -> void {
-        m_impl->create(std::move(title), size, style);
+                        WindowFlag                flags) noexcept -> void {
+        m_impl->create(std::move(title), size, flags);
     }
 
     /////////////////////////////////////

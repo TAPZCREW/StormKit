@@ -27,7 +27,7 @@ import :linux.wayland.context;
 
 export {
     namespace stormkit::wsi::linux::wayland {
-        class WindowImpl: public ::stormkit::wsi::common::WindowImplBase {
+        class WindowImpl: public stormkit::wsi::common::WindowImplBase {
           public:
             struct Handles {
                 wl_display* display;
@@ -35,7 +35,7 @@ export {
             };
 
             WindowImpl();
-            WindowImpl(std::string title, const math::Extent2<u32>& extent, WindowStyle style);
+            WindowImpl(std::string title, const math::Extent2<u32>& extent, WindowFlag flags);
             ~WindowImpl();
 
             WindowImpl(const WindowImpl&) noexcept                    = delete;
@@ -46,7 +46,7 @@ export {
 
             auto create(std::string               title,
                         const math::Extent2<u32>& size,
-                        WindowStyle               style) noexcept -> void;
+                        WindowFlag                flags) noexcept -> void;
             auto close() noexcept -> void;
 
             auto clear(const RGBColorU& color) noexcept -> void;
@@ -135,12 +135,16 @@ export {
 
             u8 m_scale = 2u;
 
-            bool        m_configured         = false;
-            bool        m_open               = false;
-            bool        m_key_repeat_enabled = false;
-            bool        m_scale_content      = true;
-            WindowStyle m_style;
-            wl_output*  m_current_output = nullptr;
+            bool       m_configured         = false;
+            bool       m_open               = false;
+            bool       m_key_repeat_enabled = false;
+            bool       m_scale_content      = false;
+            WindowFlag m_flags;
+            wl_output* m_current_output = nullptr;
+
+            std::string m_title;
+
+            Handles m_handles;
 
             wl::Surface               m_surface;
             wl::XDGSurface            m_xdg_surface;
@@ -152,10 +156,6 @@ export {
             DeferInit<SHMBuffer> m_shm_buffer;
             wl::ShmPool          m_shm_pool;
             wl::Buffer           m_pixel_buffer;
-
-            std::string m_title;
-
-            Handles m_handles;
 
             struct {
                 bool               visible    = false;

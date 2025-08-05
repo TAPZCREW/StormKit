@@ -32,7 +32,7 @@ namespace stormkit { inline namespace core {
         const auto shm_access = (check_flag_bit(m_access, Access::WRITE) ? O_RDWR : O_RDONLY)
                                 | ((m_handle != nullptr) ? O_TRUNC : O_CREAT);
 
-        const auto mode = init<i32>([access = m_access](auto& mode) noexcept {
+        const auto mode = init_by<i32>([access = m_access](auto& mode) noexcept {
             if (check_flag_bit(access, Access::READ)) mode |= S_IRUSR;
             if (check_flag_bit(access, Access::WRITE)) mode |= S_IWUSR;
         });
@@ -50,7 +50,7 @@ namespace stormkit { inline namespace core {
                 std::error_code { as<i32>(errno), std::system_category() }
             };
 
-        const auto prot_access = init<i32>([access = m_access](auto& prot_access) noexcept {
+        const auto prot_access = init_by<i32>([access = m_access](auto& prot_access) noexcept {
             if (check_flag_bit(access, Access::READ)) prot_access |= PROT_READ;
             if (check_flag_bit(access, Access::WRITE)) prot_access |= PROT_WRITE;
         });

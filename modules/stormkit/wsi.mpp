@@ -171,12 +171,13 @@ export {
             constexpr auto operator<=>(const Monitor& other) const noexcept -> std::strong_ordering;
         };
 
-        enum class WindowStyle : u8 {
-            TITLE_BAR   = 0b1,
-            CLOSE       = TITLE_BAR | 0b10,
-            MINIMIZABLE = TITLE_BAR | 0b100,
-            RESIZEABLE  = TITLE_BAR | 0b1000,
-            ALL         = RESIZEABLE | MINIMIZABLE | CLOSE,
+        enum class WindowFlag : u8 {
+            TITLE_BAR        = 0b1,
+            CLOSE            = TITLE_BAR | 0b10,
+            MINIMIZABLE      = TITLE_BAR | 0b100,
+            RESIZEABLE       = TITLE_BAR | 0b1000,
+            ALL              = RESIZEABLE | MINIMIZABLE | CLOSE,
+            EXTERNAL_CONTEXT = 0b10000,
         };
 
         enum class EventType : u8 {
@@ -292,7 +293,7 @@ export {
         class STORMKIT_API Window {
           public:
             Window() noexcept;
-            Window(std::string title, const math::Extent2<u32>& size, WindowStyle style) noexcept;
+            Window(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept;
             ~Window();
 
             Window(Window&&);
@@ -300,7 +301,7 @@ export {
 
             auto create(std::string               title,
                         const math::Extent2<u32>& size,
-                        WindowStyle               style) noexcept -> void;
+                        WindowFlag                flags) noexcept -> void;
             auto close() noexcept -> void;
             [[nodiscard]]
             auto is_open() const noexcept -> bool;
@@ -407,7 +408,7 @@ export {
     }} // namespace stormkit::wsi
 
     FLAG_ENUM(stormkit::wsi::Monitor::Flags)
-    FLAG_ENUM(stormkit::wsi::WindowStyle)
+    FLAG_ENUM(stormkit::wsi::WindowFlag)
     ASCASTER_STRICT_DECLARE(std::string, stormkit::wsi::Monitor)
 
     namespace std {

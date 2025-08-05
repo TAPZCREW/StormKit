@@ -66,10 +66,10 @@ namespace stormkit::wsi::linux::wayland {
                 .wm_capabilities  = nullptr
             };
 
-            constexpr auto g_xdg_top_level_decoration_listener
-              = zxdg_toplevel_decoration_v1_listener {
-                    .configure = xdg_top_level_decoration_configure_handler,
-                };
+            constexpr auto
+              g_xdg_top_level_decoration_listener = zxdg_toplevel_decoration_v1_listener {
+                  .configure = xdg_top_level_decoration_configure_handler,
+              };
 
             constexpr auto g_buffer_listener = wl_buffer_listener {
                 .release = buffer_release_handler
@@ -106,9 +106,9 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    WindowImpl::WindowImpl(std::string title, const math::Extent2<u32>& extent, WindowStyle style)
+    WindowImpl::WindowImpl(std::string title, const math::Extent2<u32>& extent, WindowFlag flags)
         : WindowImpl {} {
-        create(std::move(title), extent, style);
+        create(std::move(title), extent, flags);
     }
 
     /////////////////////////////////////
@@ -130,7 +130,7 @@ namespace stormkit::wsi::linux::wayland {
     /////////////////////////////////////
     auto WindowImpl::create(std::string               title,
                             const math::Extent2<u32>& extent,
-                            WindowStyle               style) noexcept -> void {
+                            WindowFlag                flags) noexcept -> void {
         auto& globals = wl::get_globals();
 
         m_surface = wl::Surface { std::in_place, globals.compositor };
@@ -170,7 +170,7 @@ namespace stormkit::wsi::linux::wayland {
         m_state.extent    = extent;
         m_state.visible   = true;
         m_state.has_focus = true;
-        m_style           = style;
+        m_flags           = flags;
         m_open            = true;
         m_handles.display = globals.display;
         m_handles.surface = m_surface;
@@ -192,7 +192,7 @@ namespace stormkit::wsi::linux::wayland {
 
         m_state = {};
         m_title.clear();
-        m_style      = {};
+        m_flags      = {};
         m_open       = false;
         m_configured = false;
     }

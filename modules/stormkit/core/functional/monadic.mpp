@@ -36,8 +36,8 @@ export namespace stormkit { inline namespace core { namespace monadic {
     constexpr auto value() noexcept -> decltype(auto);
     template<typename T>
     [[nodiscard]]
-    constexpr auto as(const std::source_location& location = std::source_location::
-                        current()) noexcept -> decltype(auto);
+    constexpr auto as(const std::source_location&
+                        location = std::source_location::current()) noexcept -> decltype(auto);
     template<typename T>
     [[nodiscard]]
     constexpr auto narrow() noexcept -> decltype(auto);
@@ -115,6 +115,10 @@ export namespace stormkit { inline namespace core { namespace monadic {
     template<typename T>
     [[nodiscard]]
     constexpr auto init(auto&&... args) noexcept -> decltype(auto);
+
+    template<typename T, auto Initializer>
+    [[nodiscard]]
+    constexpr auto init_by() noexcept -> decltype(auto);
 
     [[nodiscard]]
     constexpr auto as_ref() noexcept -> decltype(auto);
@@ -320,9 +324,9 @@ namespace stormkit { inline namespace core { namespace monadic {
     }
 
     template<typename First, typename Second, typename... Args>
-    constexpr auto is_noexcept = noexcept(std::declval<
-                                          Second>()(std::declval<
-                                                    First>()(std::declval<Args>()...)));
+    constexpr auto
+      is_noexcept = noexcept(std::declval<
+                             Second>()(std::declval<First>()(std::declval<Args>()...)));
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -441,6 +445,17 @@ namespace stormkit { inline namespace core { namespace monadic {
           [... args = std::forward<
              Args>(args)]() mutable noexcept(noexcept(std::is_nothrow_constructible_v<T, Args...>))
             -> decltype(auto) { return T { std::forward<Args>(args)... }; };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename T, auto Initializer>
+    STORMKIT_FORCE_INLINE
+    STORMKIT_CONST
+    constexpr auto init_by() noexcept -> decltype(auto) {
+        return []<typename... Args>(Args&&... args) static noexcept -> decltype(auto) {
+            return stormkit::init_by<T>(Initializer, std::forward<Args>(args)...);
+        };
     }
 
     /////////////////////////////////////

@@ -25,7 +25,6 @@ export namespace stormkit::wsi::linux::wayland {
     class WindowImpl;
 
     namespace wl {
-
         struct PointerState {
             struct PointerButtonState {
                 u32  button;
@@ -80,10 +79,9 @@ export namespace stormkit::wsi::linux::wayland {
                 bool enabled = false;
             } repeat;
 
-            common::XKBKeymapScoped xkb_keymap;
-            common::XKBStateScoped  xkb_state;
-
-            common::XKBMods xkb_mods;
+            common::xkb::Keymap xkb_keymap;
+            common::xkb::State  xkb_state;
+            common::xkb::Mods   xkb_mods;
 
             WindowImpl* focused_window = nullptr;
 

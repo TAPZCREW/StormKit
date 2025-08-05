@@ -30,7 +30,7 @@ export namespace stormkit { inline namespace core {
         constexpr RAIICapsule(RAIICapsule&& other) noexcept;
         constexpr auto operator=(RAIICapsule&& other) noexcept -> RAIICapsule&;
 
-        constexpr      operator T() noexcept;
+        constexpr      operator T() const noexcept;
         constexpr auto handle() noexcept -> T&;
         constexpr auto handle() const noexcept -> T;
         constexpr auto release() noexcept -> T;
@@ -51,8 +51,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE>
     STORMKIT_FORCE_INLINE
-    constexpr RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::RAIICapsule() noexcept
-      = default;
+    constexpr RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::
+      RAIICapsule() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
@@ -103,7 +103,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
-    constexpr RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::operator T() noexcept {
+    constexpr RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::operator T()
+      const noexcept {
         return m_handle;
     }
 

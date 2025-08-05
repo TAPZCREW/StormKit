@@ -59,7 +59,7 @@ export namespace stormkit::wsi::linux::x11 {
         };
 
         WindowImpl();
-        WindowImpl(std::string title, const math::Extent2<u32>& size, WindowStyle style);
+        WindowImpl(std::string title, const math::Extent2<u32>& size, WindowFlag flags);
         ~WindowImpl();
 
         WindowImpl(const WindowImpl&) noexcept                    = delete;
@@ -68,7 +68,7 @@ export namespace stormkit::wsi::linux::x11 {
         WindowImpl(WindowImpl&&) noexcept;
         auto operator=(WindowImpl&&) noexcept -> WindowImpl&;
 
-        auto create(std::string title, const math::Extent2<u32>& size, WindowStyle style) noexcept
+        auto create(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept
           -> void;
         auto close() noexcept -> void;
 
@@ -281,8 +281,7 @@ namespace stormkit::wsi::linux::x11 {
 namespace stormkit::wsi::linux::x11 {
     namespace {
         [[maybe_unused]]
-        constexpr auto WM_HINTS_STR
-          = std::string_view("_MOTIF_WM_HINTS");
+        constexpr auto WM_HINTS_STR            = std::string_view("_MOTIF_WM_HINTS");
         constexpr auto WM_PROTOCOLS            = std::string_view("WM_PROTOCOLS");
         constexpr auto WM_DELETE_WINDOW        = std::string_view("WM_DELETE_WINDOW");
         constexpr auto WM_STATE_STR            = std::string_view("_NET_WM_STATE");
@@ -291,8 +290,7 @@ namespace stormkit::wsi::linux::x11 {
         constexpr auto _NET_WM_STATE_REMOVE = 0; // remove/unset property
         constexpr auto _NET_WM_STATE_ADD    = 1; // add/set property
         [[maybe_unused]]
-        constexpr auto _NET_WM_STATE_TOGGLE
-          = 2; // toggle property
+        constexpr auto _NET_WM_STATE_TOGGLE = 2; // toggle property
 
         constexpr auto MOUSE_RAW_EVENTS    = u32 { XCB_INPUT_XI_EVENT_MASK_RAW_BUTTON_PRESS
                                                 | XCB_INPUT_XI_EVENT_MASK_RAW_BUTTON_RELEASE
@@ -320,9 +318,9 @@ namespace stormkit::wsi::linux::x11 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    WindowImpl::WindowImpl(std::string title, const math::Extent2<u32>& extent, WindowStyle style)
+    WindowImpl::WindowImpl(std::string title, const math::Extent2<u32>& extent, WindowFlag flags)
         : WindowImpl {} {
-        create(std::move(title), extent, style);
+        create(std::move(title), extent, flags);
     }
 
     /////////////////////////////////////
@@ -343,25 +341,26 @@ namespace stormkit::wsi::linux::x11 {
     /////////////////////////////////////
     auto WindowImpl::create(std::string               title,
                             const math::Extent2<u32>& extent,
-                            WindowStyle               style) noexcept -> void {
+                            WindowFlag                flags) noexcept -> void {
         if (xcb_connection_has_error(m_connection)) [[unlikely]] {
             elog("ERROR {}", std::bit_cast<void*>(m_connection.get()));
             return;
         }
 
-        static constexpr const auto EVENTS = XCB_EVENT_MASK_FOCUS_CHANGE
-                                             | XCB_EVENT_MASK_BUTTON_PRESS
-                                             | XCB_EVENT_MASK_BUTTON_RELEASE
-                                             | XCB_EVENT_MASK_BUTTON_MOTION
-                                             | XCB_EVENT_MASK_POINTER_MOTION
-                                             | XCB_EVENT_MASK_KEY_PRESS
-                                             | XCB_EVENT_MASK_KEY_RELEASE
-                                             | XCB_EVENT_MASK_STRUCTURE_NOTIFY
-                                             | XCB_EVENT_MASK_ENTER_WINDOW
-                                             | XCB_EVENT_MASK_LEAVE_WINDOW
-                                             | XCB_EVENT_MASK_VISIBILITY_CHANGE
-                                             | XCB_EVENT_MASK_PROPERTY_CHANGE
-                                             | XCB_EVENT_MASK_EXPOSURE;
+        static constexpr const auto
+          EVENTS = XCB_EVENT_MASK_FOCUS_CHANGE
+                   | XCB_EVENT_MASK_BUTTON_PRESS
+                   | XCB_EVENT_MASK_BUTTON_RELEASE
+                   | XCB_EVENT_MASK_BUTTON_MOTION
+                   | XCB_EVENT_MASK_POINTER_MOTION
+                   | XCB_EVENT_MASK_KEY_PRESS
+                   | XCB_EVENT_MASK_KEY_RELEASE
+                   | XCB_EVENT_MASK_STRUCTURE_NOTIFY
+                   | XCB_EVENT_MASK_ENTER_WINDOW
+                   | XCB_EVENT_MASK_LEAVE_WINDOW
+                   | XCB_EVENT_MASK_VISIBILITY_CHANGE
+                   | XCB_EVENT_MASK_PROPERTY_CHANGE
+                   | XCB_EVENT_MASK_EXPOSURE;
 
         auto screen = xcb_setup_roots_iterator(xcb_get_setup(m_connection)).data;
         m_window.reset(xcb_generate_id(m_connection));
@@ -496,7 +495,7 @@ namespace stormkit::wsi::linux::x11 {
         // set the.wsi.name
         set_title(std::move(title));
 
-        // set the.wsi.s style
+        // set the.wsi.s flags
         // checking if the.wsi.manager support.wsi.decoration
         constexpr auto MWM_HINTS_FUNCTIONS   = 1 << 0;
         constexpr auto MWM_HINTS_DECORATIONS = 1 << 1;
@@ -516,22 +515,22 @@ namespace stormkit::wsi::linux::x11 {
 
         m_window_hints.flags = MWM_HINTS_FUNCTIONS | MWM_HINTS_DECORATIONS;
 
-        if (check_flag_bit(style, WindowStyle::TITLE_BAR)) {
+        if (check_flag_bit(flags, WindowFlag::TITLE_BAR)) {
             m_window_hints.decorations |= MWM_DECOR_BORDER | MWM_DECOR_TITLE | MWM_DECOR_MENU;
             m_window_hints.functions |= MWM_FUNC_MOVE;
         }
 
-        if (check_flag_bit(style, WindowStyle::CLOSE)) {
+        if (check_flag_bit(flags, WindowFlag::CLOSE)) {
             m_window_hints.decorations |= 0;
             m_window_hints.functions |= MWM_FUNC_CLOSE;
         }
 
-        if (check_flag_bit(style, WindowStyle::MINIMIZABLE)) {
+        if (check_flag_bit(flags, WindowFlag::MINIMIZABLE)) {
             m_window_hints.decorations |= MWM_DECOR_MINIMIZE;
             m_window_hints.functions |= MWM_FUNC_MINIMIZE;
         }
 
-        if (check_flag_bit(style, WindowStyle::RESIZEABLE)) {
+        if (check_flag_bit(flags, WindowFlag::RESIZEABLE)) {
             m_window_hints.decorations |= MWM_DECOR_RESIZE | MWM_DECOR_MAXIMIZE;
             m_window_hints.functions |= MWM_FUNC_RESIZE | MWM_FUNC_MAXIMIZE;
         } else {
@@ -1022,8 +1021,8 @@ namespace stormkit::wsi::linux::x11 {
                         }
                         case XCB_INPUT_BUTTON_PRESS: [[fallthrough]];
                         case XCB_INPUT_RAW_BUTTON_PRESS: {
-                            auto button_event = std::bit_cast<
-                              xcb_input_button_press_event_t*>(xevent);
+                            auto
+                              button_event = std::bit_cast<xcb_input_button_press_event_t*>(xevent);
 
                             auto button = button_event->detail;
                             WindowImplBase::

@@ -145,7 +145,7 @@ auto main(std::span<const std::string_view> args) -> int {
     auto window = wsi::Window {
         "Stormkit GPU Textured cube example",
         { 1280u, 800u },
-        wsi::WindowStyle::CLOSE
+        wsi::WindowFlag::CLOSE | wsi::WindowFlag::EXTERNAL_CONTEXT
     };
 
     auto event_handler = wsi::EventHandler {};
