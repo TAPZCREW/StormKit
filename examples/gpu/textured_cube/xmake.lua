@@ -1,7 +1,12 @@
 if is_plat("linux") then
-    add_requires("nzsl", { configs = { toolchains = "gcc", runtimes = "stdc++_shared", fs_watcher = false, link = {} } })
+    add_requires(
+        "nzsl",
+        { configs = { toolchains = "gcc", runtimes = "stdc++_shared", fs_watcher = false, link = {} } }
+    )
 elseif is_plat("windows") then
     add_requires("nzsl", { configs = { toolchains = "msvc", runtimes = "MD", fs_watcher = false, links = {} } })
+else
+    add_requires("nzsl", { configs = { fs_watcher = false, links = {} } })
 end
 
 target("textured_cube", function()
@@ -29,15 +34,13 @@ target("textured_cube", function()
     add_includedirs("$(builddir)/shaders")
 
     if get_config("devmode") then
-        add_defines("SHADER_DIR=\"$(builddir)/shaders\"")
-        add_defines("TEXTURE_DIR=\"$(builddir)/textures\"")
+        add_defines('SHADER_DIR="$(builddir)/shaders"')
+        add_defines('TEXTURE_DIR="$(builddir)/textures"')
         set_rundir("$(projectdir)")
     end
 
     -- add_cxflags("--embed-dir=$(builddir)/shaders", {tools = {"clang", "clangxx", "clang-cl", "gcc", "gxx"}})
-    after_build(function(target)
-        os.cp("examples/gpu/textured_cube/textures/", "$(builddir)")
-    end)
+    after_build(function(target) os.cp("examples/gpu/textured_cube/textures/", "$(builddir)") end)
 
     set_group("examples/stormkit-gpu")
 end)

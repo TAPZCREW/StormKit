@@ -6,6 +6,7 @@ module;
 
 #include "macos_window.hpp"
 
+#include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.wsi:macos.window_impl;
@@ -21,7 +22,7 @@ export namespace stormkit::wsi::macos {
     class WindowImpl: public ::stormkit::wsi::common::WindowImplBase {
       public:
         WindowImpl(WM wm) noexcept;
-        WindowImpl(WM wm, std::string title, const math::Extent2<u32>& size, WindowStyle style);
+        WindowImpl(WM wm, std::string title, const math::Extent2<u32>& size, WindowFlag flags);
         ~WindowImpl();
 
         WindowImpl(const WindowImpl&) noexcept                    = delete;
@@ -30,58 +31,70 @@ export namespace stormkit::wsi::macos {
         WindowImpl(WindowImpl&&) noexcept;
         auto operator=(WindowImpl&&) noexcept -> WindowImpl&;
 
-        auto create(std::string title, const math::Extent2<u32>& size, WindowStyle style) -> void;
+        auto create(std::string title, const math::Extent2<u32>& size, WindowFlag flags) -> void;
         auto close() noexcept -> void;
+
+        auto clear(const RGBColorU& color = RGBColorDef::BLACK<u8>) noexcept -> void;
+        auto set_pixels_to(std::span<const RGBColorU> colors) noexcept -> void;
+
+        [[nodiscard]]
+        auto is_open() const noexcept -> bool;
 
         [[nodiscard]]
         auto poll_event(Event& event) noexcept -> bool;
         [[nodiscard]]
         auto wait_event(Event& event) noexcept -> bool;
 
-        auto set_title(std::string title) noexcept -> void;
-
-        auto set_extent(const math::Extent2<u32>& extent) noexcept -> void;
-
-        auto toggle_fullscreen(bool enabled) noexcept -> void;
-
-        auto lock_mouse() noexcept -> void;
-        auto unlock_mouse() noexcept -> void;
-
-        auto hide_mouse() noexcept -> void;
-        auto unhide_mouse() noexcept -> void;
-
-        [[nodiscard]]
-        auto extent() const noexcept -> math::Extent2<u32>;
-        [[nodiscard]]
-        auto title() const noexcept -> const std::string&;
-
-        [[nodiscard]]
-        auto is_open() const noexcept -> bool;
         [[nodiscard]]
         auto visible() const noexcept -> bool;
 
+        auto set_title(std::string title) noexcept -> void;
         [[nodiscard]]
-        auto native_handle() const noexcept -> NativeHandle;
+        auto title() const noexcept -> const std::string&;
 
+        auto set_extent(const math::Extent2<u32>& extent) noexcept -> void;
         [[nodiscard]]
-        auto is_mouse_locked() const noexcept -> bool;
-        [[nodiscard]]
-        auto is_mouse_hided() const noexcept -> bool;
+        auto extent() const noexcept -> math::Extent2<u32>;
+        auto framebuffer_extent() const noexcept -> math::Extent2<u32>;
+
+        auto set_fullscreen(bool fullscreen) noexcept -> void;
         [[nodiscard]]
         auto fullscreen() const noexcept -> bool;
 
-        auto toggle_key_repeat(bool enabled) noexcept -> void;
+        auto confine_mouse(bool confined = true, u32 mouse_id = 0) noexcept -> void;
         [[nodiscard]]
-        auto is_key_repeat_enabled() const noexcept -> bool;
+        auto is_mouse_confined(u32 mouse_id) const noexcept -> bool;
 
-        auto toggle_virtual_keyboard_visibility(bool visible) noexcept -> void;
+        auto lock_mouse(bool locked = true, u32 mouse_id = 0) noexcept -> void;
+        [[nodiscard]]
+        auto is_mouse_locked(u32 mouse_id) const noexcept -> bool;
 
-        auto        set_mouse_position(const math::vec2i& position) noexcept -> void;
-        static auto set_mouse_position_on_desktop(WM wm, const math::vec2u& position) noexcept
-            -> void;
+        auto hide_mouse(bool hidden = true, u32 mouse_id = 0) noexcept -> void;
+        [[nodiscard]]
+        auto is_mouse_hidden(u32 mouse_id) const noexcept -> bool;
+
+        auto set_relative_mouse(bool enabled, u32 mouse_id = 0) noexcept -> void;
+        [[nodiscard]]
+        auto is_mouse_relative(u32 mouse_id = 0) const noexcept -> bool;
+
+        auto set_key_repeat(bool enabled, u32 keyboard_id = 0) noexcept -> void;
+        [[nodiscard]]
+        auto is_key_repeat_enabled(u32 keyboard_id = 0) const noexcept -> bool;
+
+        auto show_virtual_keyboard(bool visible = true) noexcept -> void;
+        [[nodiscard]]
+        auto is_virtual_keyboard_visible() const noexcept -> bool;
+
+        auto set_mouse_position(const math::vec2i& position, u32 mouse_id = 0) noexcept -> void;
+        static auto set_mouse_position_on_desktop(WM                 wm,
+                                                  const math::vec2u& position,
+                                                  u32                mouse_id = 0) noexcept -> void;
 
         [[nodiscard]]
         static auto get_monitor_settings(WM wm) -> std::vector<Monitor>;
+
+        [[nodiscard]]
+        auto native_handle() const noexcept -> NativeHandle;
 
       private:
         std::unique_ptr<macOSWindow> m_window;
@@ -95,40 +108,48 @@ export namespace stormkit::wsi::macos {
 namespace stormkit::wsi::macos {
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE WindowImpl::WindowImpl(WM _) noexcept {};
+    STORMKIT_FORCE_INLINE
+    WindowImpl::WindowImpl(WM _) noexcept {};
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    WindowImpl::WindowImpl(WM wm, std::string title, const math::Extent2<u32>& size, WindowStyle style)
+    WindowImpl::WindowImpl(WM                        wm,
+                           std::string               title,
+                           const math::Extent2<u32>& size,
+                           WindowFlag                flags)
         : WindowImpl { wm } {
-        create(std::move(title), size, style);
+        create(std::move(title), size, flags);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE WindowImpl::~WindowImpl() = default;
+    STORMKIT_FORCE_INLINE
+    WindowImpl::~WindowImpl()
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE WindowImpl::WindowImpl(WindowImpl&&) noexcept = default;
+    STORMKIT_FORCE_INLINE
+    WindowImpl::WindowImpl(WindowImpl&&) noexcept
+      = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::operator=(WindowImpl&&) noexcept
-        -> WindowImpl& = default;
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::operator=(WindowImpl&&) noexcept -> WindowImpl& = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::create(std::string          title,
-                                                  const math::Extent2<u32>& size,
-                                                  WindowStyle          style) -> void {
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::create(std::string title, const math::Extent2<u32>& size, WindowFlag flags)
+      -> void {
         m_window = allocate<macOSWindow>(std::move(title),
                                          size.width,
                                          size.height,
-                                         as<int>(as<Underlying>(style)))
-                       .transform_error(monadic::assert())
-                       .value();
+                                         as<int>(as<Underlying>(flags)))
+                     .transform_error(monadic::assert())
+                     .value();
 
         m_window->mouse_down_event = [this](int button, i32 x, i32 y) noexcept {
             WindowImplBase::mouse_down_event(as<MouseButton>(as<u8>(button)), x, y);
@@ -136,10 +157,12 @@ namespace stormkit::wsi::macos {
         m_window->mouse_up_event = [this](int button, i32 x, i32 y) noexcept {
             WindowImplBase::mouse_up_event(as<MouseButton>(as<u8>(button)), x, y);
         };
-        m_window->mouse_move_event
-            = [this](i32 x, i32 y) noexcept { WindowImplBase::mouse_move_event(x, y); };
-        m_window->mouse_entered_event
-            = [this]() noexcept { WindowImplBase::mouse_entered_event(); };
+        m_window->mouse_move_event = [this](i32 x, i32 y) noexcept {
+            WindowImplBase::mouse_move_event(x, y);
+        };
+        m_window->mouse_entered_event = [this]() noexcept {
+            WindowImplBase::mouse_entered_event();
+        };
         m_window->mouse_exited_event = [this]() noexcept { WindowImplBase::mouse_exited_event(); };
         m_window->key_down_event     = [this](int key, char c) noexcept {
             WindowImplBase::key_down_event(as<Key>(as<u8>(key)), c);
@@ -159,8 +182,35 @@ namespace stormkit::wsi::macos {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::poll_event(Event& event) noexcept -> bool {
-        expects(m_window != nullptr);
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::close() noexcept -> void {
+        m_window.reset();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::clear(const RGBColorU&) noexcept -> void {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::set_pixels_to(std::span<const RGBColorU>) noexcept -> void {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::is_open() const noexcept -> bool {
+        return m_window != nullptr;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::poll_event(Event& event) noexcept -> bool {
+        EXPECTS(m_window != nullptr);
         m_window->poll_event();
 
         return WindowImplBase::poll_event(event);
@@ -168,8 +218,9 @@ namespace stormkit::wsi::macos {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::wait_event(Event& event) noexcept -> bool {
-        expects(m_window != nullptr);
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::wait_event(Event& event) noexcept -> bool {
+        EXPECTS(m_window != nullptr);
         m_window->wait_event();
 
         return WindowImplBase::wait_event(event);
@@ -177,95 +228,192 @@ namespace stormkit::wsi::macos {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::set_title(std::string title) noexcept -> void {
-        expects(m_window != nullptr);
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::visible() const noexcept -> bool {
+        EXPECTS(m_window != nullptr);
+        return m_window->visible();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::set_title(std::string title) noexcept -> void {
+        EXPECTS(m_window != nullptr);
         m_window->set_title(std::move(title));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::set_extent(const math::Extent2<u32>& extent) noexcept
-        -> void {
-        expects(m_window != nullptr);
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::title() const noexcept -> const std::string& {
+        EXPECTS(m_window != nullptr);
+        return m_window->title();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::set_extent(const math::Extent2<u32>& extent) noexcept -> void {
+        EXPECTS(m_window != nullptr);
         m_window->set_extent(extent.width, extent.height);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::toggle_fullscreen(bool enabled) noexcept -> void {
-        expects(m_window != nullptr);
-        m_window->toggle_fullscreen(enabled);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::lock_mouse() noexcept -> void {
-        expects(m_window != nullptr);
-        m_window->lock_mouse();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::unlock_mouse() noexcept -> void {
-        expects(m_window != nullptr);
-        m_window->unlock_mouse();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::hide_mouse() noexcept -> void {
-        expects(m_window != nullptr);
-        m_window->hide_mouse();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::unhide_mouse() noexcept -> void {
-        expects(m_window != nullptr);
-        m_window->unhide_mouse();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::extent() const noexcept -> math::Extent2<u32> {
-        expects(m_window != nullptr);
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::extent() const noexcept -> math::Extent2<u32> {
+        EXPECTS(m_window != nullptr);
         return { m_window->width(), m_window->height() };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::toggle_key_repeat(bool enabled) noexcept -> void {
-        expects(m_window != nullptr);
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::framebuffer_extent() const noexcept -> math::Extent2<u32> {
+        EXPECTS(m_window != nullptr);
+        return { m_window->width(), m_window->height() };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::set_fullscreen(bool enabled) noexcept -> void {
+        EXPECTS(m_window != nullptr);
+        m_window->toggle_fullscreen(enabled);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::fullscreen() const noexcept -> bool {
+        EXPECTS(m_window != nullptr);
+        return m_window->fullscreen();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::confine_mouse(bool, u32) noexcept -> void {
+        EXPECTS(m_window != nullptr);
+        // if (confineed) m_window->confine_mouse();
+        // else
+        //     m_window->unconfine_mouse();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    auto WindowImpl::is_mouse_confined(u32) const noexcept -> bool {
+        EXPECTS(m_window != nullptr);
+        return false;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::lock_mouse(bool locked, u32) noexcept -> void {
+        EXPECTS(m_window != nullptr);
+        if (locked) m_window->lock_mouse();
+        else
+            m_window->unlock_mouse();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    auto WindowImpl::is_mouse_locked(u32) const noexcept -> bool {
+        EXPECTS(m_window != nullptr);
+        return false;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::hide_mouse(bool hidden, u32) noexcept -> void {
+        EXPECTS(m_window != nullptr);
+        if (hidden) m_window->hide_mouse();
+        else
+            m_window->unhide_mouse();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    auto WindowImpl::is_mouse_hidden(u32) const noexcept -> bool {
+        EXPECTS(m_window != nullptr);
+        return false;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::set_relative_mouse(bool, u32) noexcept -> void {
+        EXPECTS(m_window != nullptr);
+        // if (confineed) m_window->confine_mouse();
+        // else
+        //     m_window->unconfine_mouse();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    auto WindowImpl::is_mouse_relative(u32) const noexcept -> bool {
+        EXPECTS(m_window != nullptr);
+        return false;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::set_key_repeat(bool enabled, u32) noexcept -> void {
+        EXPECTS(m_window != nullptr);
         m_window->toggle_key_repeat(enabled);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::toggle_virtual_keyboard_visibility(bool visible) noexcept
-        -> void {
-        expects(m_window != nullptr);
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    auto WindowImpl::is_key_repeat_enabled(u32) const noexcept -> bool {
+        EXPECTS(m_window != nullptr);
+        return false;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::show_virtual_keyboard(bool visible) noexcept -> void {
+        EXPECTS(m_window != nullptr);
         m_window->toggle_virtual_keyboard_visibility(visible);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto
-        WindowImpl::set_mouse_position(const math::vec2i& position) noexcept -> void {
-        expects(m_window != nullptr);
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    auto WindowImpl::is_virtual_keyboard_visible() const noexcept -> bool {
+        EXPECTS(m_window != nullptr);
+        return false;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::set_mouse_position(const math::vec2i& position, u32) noexcept -> void {
+        EXPECTS(m_window != nullptr);
         m_window->set_mouse_position(position.x, position.y);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto
-        WindowImpl::set_mouse_position_on_desktop(WM _, const math::vec2u& position) noexcept
-        -> void {
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::set_mouse_position_on_desktop(WM _, const math::vec2u& position, u32) noexcept
+      -> void {
         macOSWindow::set_mouse_position_on_desktop(position.x, position.y);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::get_monitor_settings(WM _) -> std::vector<Monitor> {
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::get_monitor_settings(WM _) -> std::vector<Monitor> {
         return macOSWindow::get_monitor_settings()
                | std::views::transform([](auto&& monitor) noexcept {
                      return Monitor {
@@ -284,62 +432,9 @@ namespace stormkit::wsi::macos {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::close() noexcept -> void {
-        m_window.reset();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::title() const noexcept -> const std::string& {
-        expects(m_window != nullptr);
-        return m_window->title();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::is_open() const noexcept -> bool {
-        return m_window != nullptr;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::visible() const noexcept -> bool {
-        expects(m_window != nullptr);
-        return m_window->visible();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::is_mouse_locked() const noexcept -> bool {
-        expects(m_window != nullptr);
-        return m_window->is_mouse_locked();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::is_mouse_hided() const noexcept -> bool {
-        expects(m_window != nullptr);
-        return m_window->is_mouse_hided();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::fullscreen() const noexcept -> bool {
-        expects(m_window != nullptr);
-        return m_window->fullscreen();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::is_key_repeat_enabled() const noexcept -> bool {
-        expects(m_window != nullptr);
-        return m_window->is_key_repeat_enabled();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE auto WindowImpl::native_handle() const noexcept -> NativeHandle {
-        expects(m_window != nullptr);
+    STORMKIT_FORCE_INLINE
+    auto WindowImpl::native_handle() const noexcept -> NativeHandle {
+        EXPECTS(m_window != nullptr);
         return std::bit_cast<NativeHandle>(&m_window->macos_handles());
     }
 } // namespace stormkit::wsi::macos

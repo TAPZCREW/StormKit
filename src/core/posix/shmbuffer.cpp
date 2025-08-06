@@ -10,6 +10,8 @@ module;
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <stormkit/core/platform_macro.hpp>
+
 module stormkit.core;
 
 import :containers.shmbuffer;
@@ -44,7 +46,7 @@ namespace stormkit { inline namespace core {
             };
         const auto fd = narrow<i32>(std::bit_cast<iptr>(m_handle));
 
-        const auto ret = ftruncate(fd, m_size);
+        const auto ret = ftruncate(fd, as<off_t>(m_size));
         if (ret < 0)
             return std::unexpected {
                 std::error_code { as<i32>(errno), std::system_category() }
