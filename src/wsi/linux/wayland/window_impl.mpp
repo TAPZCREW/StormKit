@@ -167,6 +167,8 @@ export {
                 bool               fullscreen = false;
                 math::Extent2<u32> extent;
                 math::Extent2<u32> framebuffer_extent;
+
+                f32 dpi = 1.f;
             } m_state;
 
             struct {

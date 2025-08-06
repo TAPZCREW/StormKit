@@ -53,6 +53,22 @@ namespace stormkit::wsi::linux::wayland::wl {
 
     auto wm_base_ping_handler(void*, xdg_wm_base*, u32) noexcept -> void;
 
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto get_monitor(Globals& _globals, void* output) noexcept -> Monitor& {
+        const auto output_id = std::bit_cast<uptr>(output);
+        const auto is_output = [&output_id](const auto& pair) noexcept {
+            return pair.id == output_id;
+        };
+
+        if (auto it = stdr::find_if(_globals.monitors, is_output);
+            it != stdr::end(_globals.monitors))
+            return it->monitor;
+
+        _globals.monitors.push_back(WaylandMonitor { .id = output_id, .monitor = {} });
+        return _globals.monitors.back().monitor;
+    }
+
     namespace {
         thread_local constinit auto globals = Globals {};
 
@@ -106,22 +122,6 @@ namespace stormkit::wsi::linux::wayland::wl {
                 auto& ret = (_globals.*member).emplace_back();
                 ret.reset(std::bit_cast<typename U::value_type>(ptr));
             };
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        auto get_monitor(Globals& _globals, void* output) noexcept -> Monitor& {
-            const auto output_id = std::bit_cast<uptr>(output);
-            const auto is_output = [&output_id](const auto& pair) noexcept {
-                return pair.id == output_id;
-            };
-
-            if (auto it = stdr::find_if(_globals.monitors, is_output);
-                it != stdr::end(_globals.monitors))
-                return it->monitor;
-
-            _globals.monitors.push_back(WaylandMonitor { .id = output_id, .monitor = {} });
-            return _globals.monitors.back().monitor;
         }
 
         const auto INTERFACE_MAP = frozen::make_unordered_map<frozen::string, RegistryBinder>({
@@ -234,10 +234,8 @@ namespace stormkit::wsi::linux::wayland::wl {
 
             const auto theme = std::getenv("XCURSOR_THEME");
 
-            _globals.cursor_theme          = wl::CursorTheme { std::in_place,
-                                                      theme,
-                                                      cursor_size,
-                                                      _globals.shm };
+            _globals
+              .cursor_theme = wl::CursorTheme { std::in_place, theme, cursor_size, _globals.shm };
             _globals.cursor_theme_high_dpi = wl::CursorTheme {
                 std::in_place,
                 theme,

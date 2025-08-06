@@ -70,6 +70,7 @@ export namespace stormkit::wsi::linux::wayland {
 
         auto init() noexcept -> bool;
         auto get_globals() noexcept -> Globals&;
+        auto get_monitor(Globals& _globals, void* output) noexcept -> Monitor&;
     } // namespace wl
 } // namespace stormkit::wsi::linux::wayland
 

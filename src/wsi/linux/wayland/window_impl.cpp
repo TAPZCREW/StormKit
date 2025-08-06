@@ -212,8 +212,8 @@ namespace stormkit::wsi::linux::wayland {
         wl_surface_damage(m_surface,
                           0,
                           0,
-                          as<i32>(m_state.extent.width),
-                          as<i32>(m_state.extent.height));
+                          as<i32>(m_state.framebuffer_extent.width),
+                          as<i32>(m_state.framebuffer_extent.height));
     }
 
     /////////////////////////////////////
@@ -232,8 +232,8 @@ namespace stormkit::wsi::linux::wayland {
         wl_surface_damage(m_surface,
                           0,
                           0,
-                          as<i32>(m_state.extent.width),
-                          as<i32>(m_state.extent.height));
+                          as<i32>(m_state.framebuffer_extent.width),
+                          as<i32>(m_state.framebuffer_extent.height));
     }
 
     /////////////////////////////////////
@@ -586,6 +586,10 @@ namespace stormkit::wsi::linux::wayland {
         if (resized) {
             m_state.extent.width  = width;
             m_state.extent.height = height;
+
+            m_state.framebuffer_extent = m_state.extent;
+            m_state.framebuffer_extent.width *= m_state.dpi;
+            m_state.framebuffer_extent.height *= m_state.dpi;
             WindowImplBase::resize_event(m_state.extent.width, m_state.extent.height);
 
             if (globals.viewporter) {
@@ -618,6 +622,12 @@ namespace stormkit::wsi::linux::wayland {
     /////////////////////////////////////
     auto WindowImpl::handle_surface_enter(wl_surface*, wl_output* output) noexcept -> void {
         m_current_output = output;
+
+        const auto& monitor = wl::get_monitor(wl::get_globals(), output);
+        if (monitor.scale_factor != m_state.dpi) {
+            m_state.dpi = monitor.scale_factor;
+            reallocate_pixel_buffer();
+        }
     }
 
     /////////////////////////////////////
@@ -685,8 +695,12 @@ namespace stormkit::wsi::linux::wayland {
     auto WindowImpl::reallocate_pixel_buffer() noexcept -> void {
         auto& globals = wl::get_globals();
 
-        const auto stride = usize { m_state.extent.width * sizeof(u32) };
-        const auto size   = usize { stride * m_state.extent.height };
+        m_state.framebuffer_extent = m_state.extent;
+        m_state.framebuffer_extent.width *= m_state.dpi;
+        m_state.framebuffer_extent.height *= m_state.dpi;
+
+        const auto stride = usize { m_state.framebuffer_extent.width * sizeof(u32) };
+        const auto size   = usize { stride * m_state.framebuffer_extent.height };
 
         auto old_shm_buffer = std::move(m_shm_buffer);
         auto old_shm_pool   = std::move(m_shm_pool);
@@ -716,14 +730,20 @@ namespace stormkit::wsi::linux::wayland {
         m_pixel_buffer = wl::Buffer {
             wl_shm_pool_create_buffer(m_shm_pool,
                                       0,
-                                      m_state.extent.width,
-                                      m_state.extent.height,
+                                      m_state.framebuffer_extent.width,
+                                      m_state.framebuffer_extent.height,
                                       narrow<i32>(stride),
                                       WL_SHM_FORMAT_XRGB8888)
         };
 
+        wl_surface_set_buffer_scale(m_surface, m_state.dpi);
+
         if (globals.viewporter)
-            wp_viewport_set_source(m_viewport, 0, 0, m_state.extent.width, m_state.extent.height);
+            wp_viewport_set_source(m_viewport,
+                                   0,
+                                   0,
+                                   m_state.framebuffer_extent.width,
+                                   m_state.framebuffer_extent.height);
         wl_buffer_add_listener(m_pixel_buffer, &wl::g_buffer_listener, &m_pixel_buffer);
 
         wl_surface_commit(m_surface);
@@ -831,12 +851,12 @@ namespace stormkit::wsi::linux::wayland {
                                              i32       height,
                                              wl_array* state) noexcept -> void {
             auto& window = *std::bit_cast<WindowImpl*>(data);
-            window
-              .handle_xdg_top_level_configure(as<u32>(width),
-                                              as<u32>(height),
-                                              { std::bit_cast<const xdg_toplevel_state*>(state
-                                                                                           ->data),
-                                                state->size });
+            if (state->alloc > 0)
+                window.handle_xdg_top_level_configure(as<u32>(width),
+                                                      as<u32>(height),
+                                                      { std::bit_cast<
+                                                          const xdg_toplevel_state*>(state->data),
+                                                        state->size });
         }
 
         /////////////////////////////////////
