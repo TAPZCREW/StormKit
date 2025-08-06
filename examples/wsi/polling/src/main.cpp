@@ -30,11 +30,9 @@ auto main(std::span<const std::string_view> args) -> int {
     auto window = wsi::Window {
         "Hello world",
         { .width = 800u, .height = 600u },
-        wsi::WindowStyle::ALL
+        wsi::WindowFlag::ALL
     };
 
-    auto fullscreen        = false;
-    auto toggle_fullscreen = false;
     while (window.is_open()) {
         auto event = wsi::Event {};
         while (window.poll_event(event)) {
@@ -84,8 +82,25 @@ auto main(std::span<const std::string_view> args) -> int {
                     if (event_data.key == wsi::Key::ESCAPE) {
                         window.close();
                         ilog("Closing window");
-                    } else if (event_data.key == wsi::Key::F11)
-                        toggle_fullscreen = true;
+                    } else if (event_data.key == wsi::Key::F11) {
+                        window.toggle_fullscreen();
+                        ilog("Toggling fullscreen to {}", window.fullscreen());
+                    } else if (event_data.key == wsi::Key::F1) {
+                        window.toggle_hidden_mouse();
+                        ilog("Toggling hidden mouse to {}", window.is_mouse_hidden());
+                    } else if (event_data.key == wsi::Key::F2) {
+                        window.toggle_locked_mouse();
+                        ilog("Toggling locked mouse to {}", window.is_mouse_locked());
+                    } else if (event_data.key == wsi::Key::F3) {
+                        window.toggle_confined_mouse();
+                        ilog("Toggling confined mouse to {}", window.is_mouse_confined());
+                    } else if (event_data.key == wsi::Key::F4) {
+                        window.toggle_relative_mouse();
+                        ilog("Toggling relative mouse to {}", window.is_mouse_relative());
+                    } else if (event_data.key == wsi::Key::F5) {
+                        window.toggle_key_repeat();
+                        ilog("Toggling key repeat to {}", window.is_key_repeat_enabled());
+                    }
 
                     ilog("Key pressed: {}", event_data.key);
                     break;
@@ -102,13 +117,7 @@ auto main(std::span<const std::string_view> args) -> int {
 
         LOG_MODULE.flush();
 
-        if (toggle_fullscreen) {
-            fullscreen = !fullscreen;
-            window.toggle_fullscreen(fullscreen);
-
-            toggle_fullscreen = false;
-            ilog("Toggle fullscreen to: {}", fullscreen);
-        }
+        window.clear(RGBColorDef::SILVER<u8>);
     }
 
     return 0;

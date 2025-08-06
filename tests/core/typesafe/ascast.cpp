@@ -213,7 +213,6 @@ namespace {
                 static_assert(meta::IsNarrowing<int, unsigned int>);
                 static_assert(meta::IsNarrowing<unsigned int, int>);
 
-                using schar = signed char;
                 EXPECTS(as<signed char>(127) == schar { 127 });
                 EXPECTS(as<signed char>(-80) != schar { -81 });
 
@@ -227,9 +226,6 @@ namespace {
             } },
           { "AsCast.as_byte(s)",
             [] static noexcept {
-                using uchar = unsigned char;
-                using schar = signed char;
-
                 static_assert(meta::IsByteNarrowing<std::byte, int>);
                 static_assert(not meta::IsByteNarrowing<int, std::byte>);
 

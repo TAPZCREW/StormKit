@@ -1,0 +1,52 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+#ifndef STORMKIT_ASSERT
+    #define STORMKIT_ASSERT 1
+#endif
+
+module stormkit.core;
+
+namespace stormkit { inline namespace core {
+    namespace {
+        std::mutex mutex;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto assert_base(bool                        cond,
+                     AssertType                  type,
+                     std::string_view            message,
+                     const std::source_location& location) noexcept -> void {
+        if constexpr (STORMKIT_ASSERT == 1) {
+            constexpr auto ASSERTION_PREFIX = ConsoleStyle {
+                .fg        = ConsoleColor::BRIGHT_RED,
+                .modifiers = StyleModifier::BOLD | StyleModifier::INVERSE
+            } | "[Assertion]"s;
+            if (not cond) [[unlikely]] {
+                auto lock = std::unique_lock { mutex };
+                std::println(get_stderr(),
+                             "{} {} failed in \n"
+                             "    > file:     {}:{}:{}\n"
+                             "      function: {}\n"
+                             "      reason:   {}",
+                             ASSERTION_PREFIX,
+                             to_string(type),
+                             ConsoleStyle { .fg = ConsoleColor::GREEN } | location.file_name(),
+                             ConsoleStyle { .fg = ConsoleColor::BLUE } | location.line(),
+                             ConsoleStyle { .fg = ConsoleColor::BLUE } | location.column(),
+                             ConsoleStyle { .fg = ConsoleColor::YELLOW } | location.function_name(),
+                             ConsoleStyle { .fg        = ConsoleColor::RED,
+                                            .modifiers = StyleModifier::BOLD }
+                               | message);
+
+                std::terminate();
+            }
+        }
+    }
+}} // namespace stormkit::core

@@ -61,6 +61,8 @@ namespace stormkit::wsi {
         auto wm_hint = std::optional<WM> {};
     }
 
+    /////////////////////////////////////
+    /////////////////////////////////////
     auto parse_args(std::span<const std::string_view> args) noexcept -> void {
         auto hint = std::ranges::find_if(args, [](auto&& v) {
             return v == "--x11" or v == "--wayland";
@@ -80,9 +82,9 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Window::Window(std::string title, const math::Extent2<u32>& size, WindowStyle style) noexcept
+    Window::Window(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept
         : m_impl { wm() } {
-        create(std::move(title), size, style);
+        create(std::move(title), size, flags);
     }
 
     /////////////////////////////////////
@@ -101,14 +103,32 @@ namespace stormkit::wsi {
     /////////////////////////////////////
     auto Window::create(std::string               title,
                         const math::Extent2<u32>& size,
-                        WindowStyle               style) noexcept -> void {
-        m_impl->create(std::move(title), size, style);
+                        WindowFlag                flags) noexcept -> void {
+        m_impl->create(std::move(title), size, flags);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto Window::close() noexcept -> void {
         m_impl->close();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::clear(const RGBColorU& color) noexcept -> void {
+        m_impl->clear(color);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::set_pixels_to(std::span<const RGBColorU> colors) noexcept -> void {
+        m_impl->set_pixels_to(colors);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::is_open() const noexcept -> bool {
+        return m_impl->is_open();
     }
 
     /////////////////////////////////////
@@ -125,90 +145,14 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_title(std::string title) noexcept -> void {
-        m_impl->set_title(std::move(title));
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::set_extent(const math::Extent2<u32>& extent) noexcept -> void {
-        m_impl->set_extent(extent);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::toggle_fullscreen(bool fullscreen) noexcept -> void {
-        m_impl->toggle_fullscreen(fullscreen);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::lock_mouse() noexcept -> void {
-        m_impl->lock_mouse();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::unlock_mouse() noexcept -> void {
-        m_impl->unlock_mouse();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::hide_mouse() noexcept -> void {
-        m_impl->hide_mouse();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-#ifdef STORMKIT_OS_MACOS
-    auto Window::extent() const noexcept -> math::Extent2<u32> {
-#else
-    auto Window::extent() const noexcept -> const math::Extent2<u32>& {
-#endif
-        return m_impl->extent();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::is_open() const noexcept -> bool {
-        return m_impl->is_open();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
     auto Window::visible() const noexcept -> bool {
         return m_impl->visible();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::native_handle() const noexcept -> NativeHandle {
-        return m_impl->native_handle();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    WM Window::wm() noexcept {
-#if defined(STORMKIT_OS_WINDOWS)
-        return WM::WIN32;
-#elif defined(STORMKIT_OS_MACOS)
-        return WM::MACOS;
-#elif defined(STORMKIT_OS_IOS)
-    return WM::IOS;
-#elif defined(STORMKIT_OS_ANDROID)
-    return WM::ANDROID;
-#elif defined(STORMKIT_OS_SWITCH)
-    return WM::SWITCH;
-#elif defined(STORMKIT_OS_LINUX)
-    auto is_wayland = std::getenv("WAYLAND_DISPLAY") != nullptr;
-
-    if (wm_hint) return wm_hint.value();
-    else if (is_wayland)
-        return WM::WAYLAND;
-    else
-        return WM::X11;
-#endif
+    auto Window::set_title(std::string title) noexcept -> void {
+        m_impl->set_title(std::move(title));
     }
 
     /////////////////////////////////////
@@ -219,8 +163,26 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::is_mouse_locked() const noexcept -> bool {
-        return m_impl->is_mouse_locked();
+    auto Window::set_extent(const math::Extent2<u32>& extent) noexcept -> void {
+        m_impl->set_extent(extent);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::extent() const noexcept -> math::Extent2<u32> {
+        return m_impl->extent();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::framebuffer_extent() const noexcept -> math::Extent2<u32> {
+        return m_impl->framebuffer_extent();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::set_fullscreen(bool fullscreen) noexcept -> void {
+        m_impl->set_fullscreen(fullscreen);
     }
 
     /////////////////////////////////////
@@ -231,32 +193,87 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::toggle_key_repeat(bool enabled) noexcept -> void {
-        return m_impl->toggle_key_repeat(enabled);
+    auto Window::confine_mouse(bool confine, u32 mouse_id) noexcept -> void {
+        m_impl->confine_mouse(confine, mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::is_key_repeat_enabled() const noexcept -> bool {
-        return m_impl->is_key_repeat_enabled();
+    auto Window::is_mouse_confined(u32 mouse_id) const noexcept -> bool {
+        return m_impl->is_mouse_confined(mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::toggle_virtual_keyboard_visibility(bool visible) noexcept -> void {
-        m_impl->toggle_virtual_keyboard_visibility(visible);
+    auto Window::lock_mouse(bool locked, u32 mouse_id) noexcept -> void {
+        m_impl->lock_mouse(locked, mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_mouse_position(const math::vec2i& position) noexcept -> void {
-        m_impl->set_mouse_position(position);
+    auto Window::is_mouse_locked(u32 mouse_id) const noexcept -> bool {
+        return m_impl->is_mouse_locked(mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_mouse_position_on_desktop(const math::vec2u& position) noexcept -> void {
-        WindowImpl::set_mouse_position_on_desktop(wm(), position);
+    auto Window::hide_mouse(bool hidden, u32 mouse_id) noexcept -> void {
+        m_impl->hide_mouse(hidden, mouse_id);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::is_mouse_hidden(u32 mouse_id) const noexcept -> bool {
+        return m_impl->is_mouse_hidden(mouse_id);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::set_relative_mouse(bool enabled, u32 mouse_id) noexcept -> void {
+        m_impl->set_relative_mouse(enabled, mouse_id);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::is_mouse_relative(u32 mouse_id) const noexcept -> bool {
+        return m_impl->is_mouse_relative(mouse_id);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::set_key_repeat(bool enabled, u32 keyboard_id) noexcept -> void {
+        return m_impl->set_key_repeat(enabled, keyboard_id);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::is_key_repeat_enabled(u32 keyboard_id) const noexcept -> bool {
+        return m_impl->is_key_repeat_enabled(keyboard_id);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::show_virtual_keyboard(bool visible) noexcept -> void {
+        m_impl->show_virtual_keyboard(visible);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::is_virtual_keyboard_visible() const noexcept -> bool {
+        return m_impl->is_virtual_keyboard_visible();
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::set_mouse_position(const math::vec2i& position, u32 mouse_id) noexcept -> void {
+        m_impl->set_mouse_position(position, mouse_id);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::set_mouse_position_on_desktop(const math::vec2u& position, u32 mouse_id) noexcept
+      -> void {
+        WindowImpl::set_mouse_position_on_desktop(wm(), position, mouse_id);
     }
 
     /////////////////////////////////////
@@ -279,4 +296,33 @@ namespace stormkit::wsi {
         return *it;
     }
 
+    /////////////////////////////////////
+    /////////////////////////////////////
+    WM Window::wm() noexcept {
+#if defined(STORMKIT_OS_WINDOWS)
+        return WM::WIN32;
+#elif defined(STORMKIT_OS_MACOS)
+        return WM::MACOS;
+#elif defined(STORMKIT_OS_IOS)
+        return WM::IOS;
+#elif defined(STORMKIT_OS_ANDROID)
+        return WM::ANDROID;
+#elif defined(STORMKIT_OS_SWITCH)
+        return WM::SWITCH;
+#elif defined(STORMKIT_OS_LINUX)
+        auto is_wayland = std::getenv("WAYLAND_DISPLAY") != nullptr;
+
+        if (wm_hint) return wm_hint.value();
+        else if (is_wayland)
+            return WM::WAYLAND;
+        else
+            return WM::X11;
+#endif
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::native_handle() const noexcept -> NativeHandle {
+        return m_impl->native_handle();
+    }
 } // namespace stormkit::wsi

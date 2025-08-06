@@ -11,9 +11,10 @@ export module stormkit.core:containers.multi_buffer;
 
 import std;
 
-import :meta;
-import :typesafe;
-import :functional;
+import :meta.traits;
+import :typesafe.integer;
+import :functional.monadic;
+import :utils.tags;
 
 namespace stdr = std::ranges;
 namespace stdv = std::views;

@@ -68,11 +68,11 @@ export namespace stormkit { inline namespace core {
     [[nodiscard]]
     constexpr auto bind_back(Args&&... args) noexcept -> decltype(auto);
 
-    template<typename T, typename Func>
-        requires(std::invocable<Func, T&> and meta::Is<std::invoke_result_t<Func, T&>, void>)
+    template<typename T, typename Func, typename... Args>
+        requires(std::invocable<Func, T&, Args...>
+                 and meta::Is<std::invoke_result_t<Func, T&, Args...>, void>)
     [[nodiscard]]
-    constexpr auto init(Func&& func) noexcept(meta::IsNoexceptDefaultConstructible<T>
-                                              and noexcept(func(std::declval<T&>()))) -> T;
+    constexpr auto init_by(Func&& func, Args&&... args) noexcept -> T;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -165,13 +165,13 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename T, typename Func>
-        requires(std::invocable<Func, T&> and meta::Is<std::invoke_result_t<Func, T&>, void>)
+    template<typename T, typename Func, typename... Args>
+        requires(std::invocable<Func, T&, Args...>
+                 and meta::Is<std::invoke_result_t<Func, T&, Args...>, void>)
     STORMKIT_CONST STORMKIT_FORCE_INLINE
-    constexpr auto init(Func&& func) noexcept(meta::IsNoexceptDefaultConstructible<T>
-                                              and noexcept(func(std::declval<T&>()))) -> T {
+    constexpr auto init_by(Func&& func, Args&&... args) noexcept -> T {
         auto out = T {};
-        std::invoke(std::forward<Func>(func), out);
+        std::invoke(std::forward<Func>(func), out, std::forward<Args>(args)...);
         return out;
     }
 }} // namespace stormkit::core

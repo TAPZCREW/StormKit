@@ -36,11 +36,10 @@ namespace stormkit::gpu {
         };
 
         [[maybe_unused]]
-        constexpr auto VALIDATION_FEATURES
-          = std::array {
-                VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
-                VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,
-            };
+        constexpr auto VALIDATION_FEATURES = std::array {
+            VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT,
+            VK_VALIDATION_FEATURE_ENABLE_GPU_ASSISTED_EXT,
+        };
 
         constexpr auto STORMKIT_VK_VERSION = vk_make_version<i32>(STORMKIT_MAJOR_VERSION,
                                                                   STORMKIT_MINOR_VERSION,
@@ -127,8 +126,8 @@ namespace stormkit::gpu {
 
               dlog("Instance extensions: {}", m_extensions);
 
-              const auto validation_layers = init<std::vector<CZString>>([this](auto&
-                                                                                  out) noexcept {
+              const auto validation_layers = init_by<std::vector<CZString>>([this](auto&
+                                                                                     out) noexcept {
                   if (not m_validation_layers_enabled) return;
 
                   auto result = vk_enumerate<VkLayerProperties>(vkEnumerateInstanceLayerProperties);

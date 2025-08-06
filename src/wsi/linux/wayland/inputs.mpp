@@ -1,0 +1,214 @@
+// Copyright (C) 2021 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <xkbcommon/xkbcommon.h>
+
+#include <wayland-client.h>
+
+#include <pointer-constraints-unstable-v1.h>
+#include <relative-pointer-unstable-v1.h>
+
+export module stormkit.wsi:linux.wayland.input;
+
+import std;
+
+import stormkit.core;
+
+import :linux.wayland;
+import :linux.common.fd;
+import :linux.common.xkb;
+
+export namespace stormkit::wsi::linux::wayland {
+    class WindowImpl;
+
+    namespace wl {
+        struct PointerState {
+            struct PointerButtonState {
+                u32  button;
+                bool down;
+            };
+
+            enum class Flag : u8 {
+                NONE     = 0,
+                HIDDEN   = 1,
+                LOCKED   = 2,
+                CONFINED = 4,
+                RELATIVE = 4,
+            } flags;
+
+            std::optional<u32> serial = std::nullopt;
+
+            std::array<PointerButtonState, 5> button_state;
+
+            wl::ConfinedPointer confined_pointer;
+            wl::LockedPointer   locked_pointer;
+            wl::RelativePointer relative_pointer;
+
+            struct Cursor {
+                std::string name;
+
+                wl::Surface           surface;
+                wl::CursorShapeDevice shape_device;
+            } cursor;
+
+            WindowImpl* focused_window = nullptr;
+
+            wl_fixed_t x;
+            wl_fixed_t y;
+        };
+
+        struct KeyboardState {
+            struct KeyState {
+                xkb_keysym_t key;
+                bool         down;
+            };
+
+            std::optional<u32> serial = std::nullopt;
+
+            struct repeat {
+                i32        rate;
+                i32        delay;
+                common::FD timer_fd;
+
+                char c;
+                Key  key;
+
+                bool enabled = false;
+            } repeat;
+
+            common::xkb::Keymap xkb_keymap;
+            common::xkb::State  xkb_state;
+            common::xkb::Mods   xkb_mods;
+
+            WindowImpl* focused_window = nullptr;
+
+            std::array<KeyState, 102> keyboard_state = {
+                KeyState { XKB_KEY_a,            false },
+                 KeyState { XKB_KEY_b,            false },
+                KeyState { XKB_KEY_c,            false },
+                 KeyState { XKB_KEY_d,            false },
+                KeyState { XKB_KEY_e,            false },
+                 KeyState { XKB_KEY_f,            false },
+                KeyState { XKB_KEY_g,            false },
+                 KeyState { XKB_KEY_h,            false },
+                KeyState { XKB_KEY_i,            false },
+                 KeyState { XKB_KEY_j,            false },
+                KeyState { XKB_KEY_k,            false },
+                 KeyState { XKB_KEY_l,            false },
+                KeyState { XKB_KEY_m,            false },
+                 KeyState { XKB_KEY_n,            false },
+                KeyState { XKB_KEY_o,            false },
+                 KeyState { XKB_KEY_p,            false },
+                KeyState { XKB_KEY_q,            false },
+                 KeyState { XKB_KEY_r,            false },
+                KeyState { XKB_KEY_s,            false },
+                 KeyState { XKB_KEY_t,            false },
+                KeyState { XKB_KEY_u,            false },
+                 KeyState { XKB_KEY_v,            false },
+                KeyState { XKB_KEY_w,            false },
+                 KeyState { XKB_KEY_x,            false },
+                KeyState { XKB_KEY_y,            false },
+                 KeyState { XKB_KEY_z,            false },
+                KeyState { XKB_KEY_0,            false },
+                 KeyState { XKB_KEY_1,            false },
+                KeyState { XKB_KEY_2,            false },
+                 KeyState { XKB_KEY_3,            false },
+                KeyState { XKB_KEY_4,            false },
+                 KeyState { XKB_KEY_5,            false },
+                KeyState { XKB_KEY_6,            false },
+                 KeyState { XKB_KEY_7,            false },
+                KeyState { XKB_KEY_8,            false },
+                 KeyState { XKB_KEY_9,            false },
+                KeyState { XKB_KEY_Escape,       false },
+                 KeyState { XKB_KEY_Control_L,    false },
+                KeyState { XKB_KEY_Shift_L,      false },
+                 KeyState { XKB_KEY_Alt_L,        false },
+                KeyState { XKB_KEY_Super_L,      false },
+                 KeyState { XKB_KEY_Control_R,    false },
+                KeyState { XKB_KEY_Shift_R,      false },
+                 KeyState { XKB_KEY_Alt_R,        false },
+                KeyState { XKB_KEY_Super_R,      false },
+                 KeyState { XKB_KEY_Menu,         false },
+                KeyState { XKB_KEY_bracketleft,  false },
+                 KeyState { XKB_KEY_bracketright, false },
+                KeyState { XKB_KEY_semicolon,    false },
+                 KeyState { XKB_KEY_comma,        false },
+                KeyState { XKB_KEY_period,       false },
+                 KeyState { XKB_KEY_quoteleft,    false },
+                KeyState { XKB_KEY_slash,        false },
+                 KeyState { XKB_KEY_backslash,    false },
+                KeyState { XKB_KEY_dead_grave,   false },
+                 KeyState { XKB_KEY_equal,        false },
+                KeyState { XKB_KEY_hyphen,       false },
+                 KeyState { XKB_KEY_space,        false },
+                KeyState { XKB_KEY_Return,       false },
+                 KeyState { XKB_KEY_BackSpace,    false },
+                KeyState { XKB_KEY_Tab,          false },
+                 KeyState { XKB_KEY_Page_Up,      false },
+                KeyState { XKB_KEY_Page_Down,    false },
+                 KeyState { XKB_KEY_Begin,        false },
+                KeyState { XKB_KEY_End,          false },
+                 KeyState { XKB_KEY_Home,         false },
+                KeyState { XKB_KEY_Insert,       false },
+                 KeyState { XKB_KEY_Delete,       false },
+                KeyState { XKB_KEY_KP_Add,       false },
+                 KeyState { XKB_KEY_KP_Subtract,  false },
+                KeyState { XKB_KEY_KP_Multiply,  false },
+                 KeyState { XKB_KEY_KP_Divide,    false },
+                KeyState { XKB_KEY_Left,         false },
+                 KeyState { XKB_KEY_Right,        false },
+                KeyState { XKB_KEY_Up,           false },
+                 KeyState { XKB_KEY_Down,         false },
+                KeyState { XKB_KEY_KP_0,         false },
+                 KeyState { XKB_KEY_KP_1,         false },
+                KeyState { XKB_KEY_KP_2,         false },
+                 KeyState { XKB_KEY_KP_3,         false },
+                KeyState { XKB_KEY_KP_4,         false },
+                 KeyState { XKB_KEY_KP_5,         false },
+                KeyState { XKB_KEY_KP_6,         false },
+                 KeyState { XKB_KEY_KP_7,         false },
+                KeyState { XKB_KEY_KP_8,         false },
+                 KeyState { XKB_KEY_KP_9,         false },
+                KeyState { XKB_KEY_F1,           false },
+                 KeyState { XKB_KEY_F2,           false },
+                KeyState { XKB_KEY_F3,           false },
+                 KeyState { XKB_KEY_F4,           false },
+                KeyState { XKB_KEY_F5,           false },
+                 KeyState { XKB_KEY_F6,           false },
+                KeyState { XKB_KEY_F7,           false },
+                 KeyState { XKB_KEY_F8,           false },
+                KeyState { XKB_KEY_F9,           false },
+                 KeyState { XKB_KEY_F10,          false },
+                KeyState { XKB_KEY_F11,          false },
+                 KeyState { XKB_KEY_F12,          false },
+                KeyState { XKB_KEY_F13,          false },
+                 KeyState { XKB_KEY_F14,          false },
+                KeyState { XKB_KEY_F15,          false },
+                 KeyState { XKB_KEY_Pause,        false },
+            };
+        };
+
+        struct TouchState {};
+
+        auto seat_capabilities_handler(void*, wl_seat*, u32) noexcept -> void;
+        auto seat_name_handler(void*, wl_seat*, const char*) noexcept -> void;
+
+        auto pointer_contraints_locked_handler(void* data, zwp_locked_pointer_v1*) -> void;
+        auto pointer_contraints_unlocked_handler(void* data, zwp_locked_pointer_v1*) -> void;
+
+        auto pointer_contraints_confined_handler(void* data, zwp_confined_pointer_v1*) -> void;
+        auto pointer_contraints_unconfined_handler(void* data, zwp_confined_pointer_v1*) -> void;
+
+        auto relative_pointer_relative_motion_handler(void*,
+                                                      zwp_relative_pointer_v1*,
+                                                      u32,
+                                                      u32,
+                                                      wl_fixed_t,
+                                                      wl_fixed_t,
+                                                      wl_fixed_t,
+                                                      wl_fixed_t) noexcept -> void;
+    } // namespace wl
+} // namespace stormkit::wsi::linux::wayland

@@ -28,42 +28,46 @@ export namespace stormkit { inline namespace core {
         PostCondition,
     };
 
-    auto assert_base(bool                        cond,
-                     AssertType                  type,
-                     std::string_view            message,
-                     const std::source_location& location = std::source_location::
-                       current()) noexcept -> void;
+    constexpr auto as_string(AssertType type) noexcept -> std::string_view;
+    constexpr auto to_string(AssertType type) noexcept -> std::string;
+
+    STORMKIT_API
+    auto           assert_base(bool             cond,
+                               AssertType       type,
+                               std::string_view message,
+                               const std::source_location&
+                                 location = std::source_location::current()) noexcept -> void;
 
     consteval auto consteval_assert_base(bool             cond,
                                          AssertType       type,
                                          std::string_view message) noexcept -> void;
 
-    constexpr auto assert(bool                        cond,
-                          std::string_view            message,
-                          const std::source_location& location = std::source_location::
-                            current()) noexcept -> void;
+    constexpr auto assert(bool             cond,
+                          std::string_view message,
+                          const std::source_location&
+                            location = std::source_location::current()) noexcept -> void;
 
-    constexpr auto assert(bool                        cond,
-                          const std::source_location& location = std::source_location::
-                            current()) noexcept -> void;
+    constexpr auto assert(bool cond,
+                          const std::source_location&
+                            location = std::source_location::current()) noexcept -> void;
 
-    constexpr auto expects(bool                        cond,
-                           std::string_view            message,
-                           const std::source_location& location = std::source_location::
-                             current()) noexcept -> void;
+    constexpr auto expects(bool             cond,
+                           std::string_view message,
+                           const std::source_location&
+                             location = std::source_location::current()) noexcept -> void;
 
-    constexpr auto expects(bool                        cond,
-                           const std::source_location& location = std::source_location::
-                             current()) noexcept -> void;
+    constexpr auto expects(bool cond,
+                           const std::source_location&
+                             location = std::source_location::current()) noexcept -> void;
 
-    constexpr auto ensures(bool                        cond,
-                           std::string_view            message,
-                           const std::source_location& location = std::source_location::
-                             current()) noexcept -> void;
+    constexpr auto ensures(bool             cond,
+                           std::string_view message,
+                           const std::source_location&
+                             location = std::source_location::current()) noexcept -> void;
 
-    constexpr auto ensures(bool                        cond,
-                           const std::source_location& location = std::source_location::
-                             current()) noexcept -> void;
+    constexpr auto ensures(bool cond,
+                           const std::source_location&
+                             location = std::source_location::current()) noexcept -> void;
 
     namespace casts::core {
         template<meta::IsStrictOneOf<std::string, std::string_view> To>
@@ -81,23 +85,14 @@ using namespace frozen::string_literals;
 
 namespace stormkit { inline namespace core {
     namespace casts::core { namespace {
-        constexpr auto AssertTypeToContractName = frozen::make_unordered_map<AssertType,
-                                                                             frozen::string>({
-          { AssertType::Assertion,     "Contract check"_s       },
-          { AssertType::PreCondition,  "Pre condition check"_s  },
-          { AssertType::PostCondition, "Post condition check"_s },
+        constexpr auto
+          AssertTypeToContractName = frozen::make_unordered_map<AssertType, frozen::string>({
+            { AssertType::Assertion,     "Contract check"_s       },
+            { AssertType::PreCondition,  "Pre condition check"_s  },
+            { AssertType::PostCondition, "Post condition check"_s },
         });
 
     }} // namespace casts::core
-
-    namespace {
-        std::mutex mutex;
-
-        constexpr auto to_string(AssertType type) noexcept -> std::string {
-            const auto t = casts::core::AssertTypeToContractName.at(type);
-            return { stdr::data(t), stdr::size(t) };
-        }
-    } // namespace
 
     struct StringLiteral {
         std::array<char, 512> buff;
@@ -110,6 +105,22 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto as_string(AssertType type) noexcept -> std::string_view {
+        const auto t = casts::core::AssertTypeToContractName.at(type);
+        return { stdr::data(t), stdr::size(t) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto to_string(AssertType type) noexcept -> std::string {
+        const auto t = casts::core::AssertTypeToContractName.at(type);
+        return { stdr::data(t), stdr::size(t) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
     consteval auto generateConstevalMessage(AssertType type, std::string_view message) noexcept
       -> StringLiteral {
         auto       result = StringLiteral {};
@@ -117,39 +128,6 @@ namespace stormkit { inline namespace core {
         std::ranges::copy(str, std::begin(result.buff));
         result.size = std::size(str);
         return result;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    inline auto assert_base(bool                        cond,
-                            AssertType                  type,
-                            std::string_view            message,
-                            const std::source_location& location) noexcept -> void {
-        if constexpr (STORMKIT_ASSERT == 1) {
-            constexpr auto ASSERTION_PREFIX = ConsoleStyle {
-                .fg        = ConsoleColor::BRIGHT_RED,
-                .modifiers = StyleModifier::BOLD | StyleModifier::INVERSE
-            } | "[Assertion]"s;
-            if (not cond) [[unlikely]] {
-                auto lock = std::unique_lock { mutex };
-                std::println(get_stderr(),
-                             "{} {} failed in \n"
-                             "    > file:     {}:{}:{}\n"
-                             "      function: {}\n"
-                             "      reason:   {}",
-                             ASSERTION_PREFIX,
-                             to_string(type),
-                             ConsoleStyle { .fg = ConsoleColor::GREEN } | location.file_name(),
-                             ConsoleStyle { .fg = ConsoleColor::BLUE } | location.line(),
-                             ConsoleStyle { .fg = ConsoleColor::BLUE } | location.column(),
-                             ConsoleStyle { .fg = ConsoleColor::YELLOW } | location.function_name(),
-                             ConsoleStyle { .fg        = ConsoleColor::RED,
-                                            .modifiers = StyleModifier::BOLD }
-                               | message);
-
-                std::terminate();
-            }
-        }
     }
 
     /////////////////////////////////////

@@ -21,4 +21,5 @@ export import :utils.random;
 export import :utils.singleton;
 export import :utils.stracktrace;
 export import :utils.signal_handler;
+export import :utils.tags;
 export import :utils.time;

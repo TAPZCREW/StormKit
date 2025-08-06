@@ -21,7 +21,7 @@ namespace stormkit::wsi {
 
 export {
     namespace stormkit { namespace wsi {
-        enum class WM {
+        enum class WM : u8 {
             WIN32,
             WAYLAND,
             X11,
@@ -163,6 +163,7 @@ export {
             std::string name;
 
             std::vector<math::Extent2<u32>> extents;
+            u32                             scale_factor = 1;
 
             void* handle = nullptr;
 
@@ -170,18 +171,20 @@ export {
             constexpr auto operator<=>(const Monitor& other) const noexcept -> std::strong_ordering;
         };
 
-        enum class WindowStyle : u8 {
-            TITLE_BAR   = 0b1,
-            CLOSE       = TITLE_BAR | 0b10,
-            MINIMIZABLE = TITLE_BAR | 0b100,
-            RESIZEABLE  = TITLE_BAR | 0b1000,
-            ALL         = RESIZEABLE | MINIMIZABLE | CLOSE,
+        enum class WindowFlag : u8 {
+            TITLE_BAR        = 0b1,
+            CLOSE            = TITLE_BAR | 0b10,
+            MINIMIZABLE      = TITLE_BAR | 0b100,
+            RESIZEABLE       = TITLE_BAR | 0b1000,
+            ALL              = RESIZEABLE | MINIMIZABLE | CLOSE,
+            EXTERNAL_CONTEXT = 0b10000,
         };
 
         enum class EventType : u8 {
             NONE,
             CLOSED,
             RESIZED,
+            RESTORED,
             MINIMIZED,
             MAXIMIZED,
             KEY_PRESSED,
@@ -205,7 +208,11 @@ export {
 
         struct ResizedEventData {
             static constexpr auto TYPE = EventType::RESIZED;
-            math::Extent2<u32>        extent;
+            math::Extent2<u32>    extent;
+        };
+
+        struct RestoredEventData {
+            static constexpr auto TYPE = EventType::RESTORED;
         };
 
         struct MinimizedEventData {
@@ -230,13 +237,13 @@ export {
 
         struct MouseButtonPushedEventData {
             static constexpr auto TYPE = EventType::MOUSE_BUTTON_PUSHED;
-            math::vec2i        position;
+            math::vec2i           position;
             MouseButton           button;
         };
 
         struct MouseButtonReleasedEventData {
             static constexpr auto TYPE = EventType::MOUSE_BUTTON_RELEASED;
-            math::vec2i        position;
+            math::vec2i           position;
             MouseButton           button;
         };
 
@@ -250,7 +257,7 @@ export {
 
         struct MouseMovedEventData {
             static constexpr auto TYPE = EventType::MOUSE_MOVED;
-            math::vec2i        position;
+            math::vec2i           position;
         };
 
         struct LostFocusEventData {
@@ -261,20 +268,22 @@ export {
             static constexpr auto TYPE = EventType::GAINED_FOCUS;
         };
 
-        using EventData = std::variant<NoneEventData,
-                                       ClosedEventData,
-                                       ResizedEventData,
-                                       MinimizedEventData,
-                                       MaximizedEventData,
-                                       KeyPressedEventData,
-                                       KeyReleasedEventData,
-                                       MouseButtonPushedEventData,
-                                       MouseButtonReleasedEventData,
-                                       MouseEnteredEventData,
-                                       MouseExitedEventData,
-                                       MouseMovedEventData,
-                                       LostFocusEventData,
-                                       GainedFocusEventData>;
+        using EventData = std::variant<
+          NoneEventData,
+          ClosedEventData,
+          ResizedEventData,
+          RestoredEventData,
+          MinimizedEventData,
+          MaximizedEventData,
+          KeyPressedEventData,
+          KeyReleasedEventData,
+          MouseButtonPushedEventData,
+          MouseButtonReleasedEventData,
+          MouseEnteredEventData,
+          MouseExitedEventData,
+          MouseMovedEventData,
+          LostFocusEventData,
+          GainedFocusEventData>;
 
         struct Event {
             EventType type = EventType::NONE;
@@ -284,63 +293,85 @@ export {
         class STORMKIT_API Window {
           public:
             Window() noexcept;
-            Window(std::string title, const math::Extent2<u32>& size, WindowStyle style) noexcept;
+            Window(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept;
             ~Window();
 
             Window(Window&&);
             auto operator=(Window&&) -> Window&;
 
-            auto create(std::string title, const math::Extent2<u32>& size, WindowStyle style) noexcept
-              -> void;
+            auto create(std::string               title,
+                        const math::Extent2<u32>& size,
+                        WindowFlag                flags) noexcept -> void;
             auto close() noexcept -> void;
+            [[nodiscard]]
+            auto is_open() const noexcept -> bool;
+
+            auto clear(const RGBColorU& color = RGBColorDef::BLACK<u8>) noexcept -> void;
+            auto set_pixels_to(std::span<const RGBColorU> colors) noexcept -> void;
 
             [[nodiscard]]
             auto poll_event(Event& event) noexcept -> bool;
             [[nodiscard]]
             auto wait_event(Event& event) noexcept -> bool;
 
-            auto set_title(std::string title) noexcept -> void;
-
-            auto toggle_fullscreen(bool fullscreen) noexcept -> void;
-
-            auto set_extent(const math::Extent2<u32>& extent) noexcept -> void;
-
-            auto lock_mouse() noexcept -> void;
-            auto unlock_mouse() noexcept -> void;
-            auto hide_mouse() noexcept -> void;
-
-#ifdef STORMKIT_OS_MACOS
-            [[nodiscard]]
-            auto extent() const noexcept -> math::Extent2<u32>;
-#else
-            [[nodiscard]]
-            auto extent() const noexcept -> const math::Extent2<u32>&;
-#endif
-            [[nodiscard]]
-            auto title() const noexcept -> const std::string&;
-
-            [[nodiscard]]
-            auto is_open() const noexcept -> bool;
             [[nodiscard]]
             auto visible() const noexcept -> bool;
 
             [[nodiscard]]
-            auto native_handle() const noexcept -> NativeHandle;
+            auto title() const noexcept -> const std::string&;
+            auto set_title(std::string title) noexcept -> void;
+
+            auto set_extent(const math::Extent2<u32>& extent) noexcept -> void;
 
             [[nodiscard]]
-            auto is_mouse_locked() const noexcept -> bool;
+            auto extent() const noexcept -> math::Extent2<u32>;
+
+            [[nodiscard]]
+            auto framebuffer_extent() const noexcept -> math::Extent2<u32>;
+
+            auto set_fullscreen(bool fullscreen) noexcept -> void;
+            auto toggle_fullscreen() noexcept -> void;
             [[nodiscard]]
             auto fullscreen() const noexcept -> bool;
 
-            auto toggle_key_repeat(bool enabled) noexcept -> void;
+            auto confine_mouse(bool confined = true, u32 mouse_id = 0) noexcept -> void;
+            auto unconfine_mouse(u32 mouse_id = 0) noexcept -> void;
+            auto toggle_confined_mouse(u32 mouse_id = 0) noexcept -> void;
             [[nodiscard]]
-            auto is_key_repeat_enabled() const noexcept -> bool;
+            auto is_mouse_confined(u32 mouse_id = 0) const noexcept -> bool;
 
-            auto toggle_virtual_keyboard_visibility(bool visible) noexcept -> void;
+            auto lock_mouse(bool locked = true, u32 mouse_id = 0) noexcept -> void;
+            auto unlock_mouse(u32 mouse_id = 0) noexcept -> void;
+            auto toggle_locked_mouse(u32 mouse_id = 0) noexcept -> void;
+            [[nodiscard]]
+            auto is_mouse_locked(u32 mouse_id = 0) const noexcept -> bool;
 
-            auto        set_mouse_position(const math::vec2i& position) noexcept -> void;
-            static auto set_mouse_position_on_desktop(const math::vec2u& position) noexcept
-              -> void;
+            auto hide_mouse(bool hidden = true, u32 mouse_id = 0) noexcept -> void;
+            auto unhide_mouse(u32 mouse_id = 0) noexcept -> void;
+            auto toggle_hidden_mouse(u32 mouse_id = 0) noexcept -> void;
+            [[nodiscard]]
+            auto is_mouse_hidden(u32 mouse_id = 0) const noexcept -> bool;
+
+            auto set_relative_mouse(bool enabled = true, u32 mouse_id = 0) noexcept -> void;
+            auto toggle_relative_mouse(u32 mouse_id = 0) noexcept -> void;
+            [[nodiscard]]
+            auto is_mouse_relative(u32 mouse_id = 0) const noexcept -> bool;
+
+            auto set_key_repeat(bool enabled = true, u32 keyboard_id = 0) noexcept -> void;
+            auto disable_key_repeat(u32 keyboard_id = 0) noexcept -> void;
+            auto toggle_key_repeat(u32 keyboard_id = 0) noexcept -> void;
+            [[nodiscard]]
+            auto is_key_repeat_enabled(u32 keyboard_id = 0) const noexcept -> bool;
+
+            auto show_virtual_keyboard(bool visible = true) noexcept -> void;
+            auto hide_virtual_keyboard() noexcept -> void;
+            auto toggle_virtual_keyboard() noexcept -> void;
+            [[nodiscard]]
+            auto is_virtual_keyboard_visible() const noexcept -> bool;
+
+            auto set_mouse_position(const math::vec2i& position, u32 mouse_id = 0) noexcept -> void;
+            static auto set_mouse_position_on_desktop(const math::vec2u& position,
+                                                      u32 mouse_id = 0) noexcept -> void;
 
             [[nodiscard]]
             static auto get_monitor_settings() -> std::vector<Monitor>;
@@ -349,6 +380,9 @@ export {
 
             [[nodiscard]]
             static auto wm() noexcept -> WM;
+
+            [[nodiscard]]
+            auto native_handle() const noexcept -> NativeHandle;
 
           private:
             using WindowImplPimpl = Pimpl<WindowImpl>;
@@ -373,7 +407,7 @@ export {
     }} // namespace stormkit::wsi
 
     FLAG_ENUM(stormkit::wsi::Monitor::Flags)
-    FLAG_ENUM(stormkit::wsi::WindowStyle)
+    FLAG_ENUM(stormkit::wsi::WindowFlag)
     ASCASTER_STRICT_DECLARE(std::string, stormkit::wsi::Monitor)
 
     namespace std {
@@ -398,15 +432,94 @@ export {
 ////////////////////////////////////////////////////////////////////
 
 ASCASTER_STRICT_DEFINE(std::string, stormkit::wsi::Monitor) {
-    return std::format("[Monitor: flags = {}, name = {}, extents = {}]",
+    return std::format("[Monitor: flags = {}, name = {}, extents = {}, scale = {}]",
                        from.flags,
                        from.name,
-                       from.extents);
+                       from.extents,
+                       from.scale_factor);
 }
 
-namespace stormkit { namespace wsi {
+namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Window::toggle_fullscreen() noexcept -> void {
+        set_fullscreen(not fullscreen());
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Window::unconfine_mouse(u32 mouse_id) noexcept -> void {
+        confine_mouse(false, mouse_id);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Window::toggle_confined_mouse(u32 mouse_id) noexcept -> void {
+        confine_mouse(not is_mouse_confined(mouse_id), mouse_id);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Window::unlock_mouse(u32 mouse_id) noexcept -> void {
+        lock_mouse(false, mouse_id);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Window::toggle_locked_mouse(u32 mouse_id) noexcept -> void {
+        lock_mouse(not is_mouse_locked(mouse_id), mouse_id);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Window::unhide_mouse(u32 mouse_id) noexcept -> void {
+        hide_mouse(false, mouse_id);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Window::toggle_hidden_mouse(u32 mouse_id) noexcept -> void {
+        hide_mouse(not is_mouse_hidden(mouse_id), mouse_id);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Window::toggle_relative_mouse(u32 mouse_id) noexcept -> void {
+        set_relative_mouse(not is_mouse_relative(mouse_id), mouse_id);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Window::toggle_key_repeat(u32 keyboard_id) noexcept -> void {
+        set_key_repeat(not is_key_repeat_enabled(keyboard_id), keyboard_id);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Window::hide_virtual_keyboard() noexcept -> void {
+        show_virtual_keyboard(false);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto Window::toggle_virtual_keyboard() noexcept -> void {
+        show_virtual_keyboard(not is_virtual_keyboard_visible());
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_CONST
     inline constexpr auto Monitor::operator<=>(const Monitor& other) const noexcept
       -> std::strong_ordering {
         if (auto ret = flags <=> other.flags; ret != 0) return ret;
@@ -467,4 +580,4 @@ namespace stormkit { namespace wsi {
     auto EventHandler::clear_callbacks(EventType event_type) -> void {
         m_callback[event_type].clear();
     }
-}} // namespace stormkit::wsi
+} // namespace stormkit::wsi

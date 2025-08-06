@@ -415,7 +415,7 @@ namespace stormkit { inline namespace core { namespace math {
     constexpr auto normalize(const VectorSpan<const T, N>& a, VectorSpan<T, N> out) noexcept
       -> void {
         EXPECTS(a.data_handle() != out.data_handle());
-        const auto sum = init<T>([&a](auto& out) noexcept {
+        const auto sum = init_by<T>([&a](auto& out) noexcept {
             for (auto i = 0u; i < N; ++i) out += (a[i] * a[i]);
             out = narrow<T>(std::sqrt(out));
         });
@@ -460,7 +460,7 @@ namespace stormkit { inline namespace core { namespace math {
 
         for (auto i = 0u; i < M; ++i)
             for (auto j = 0u; j < M; ++j) {
-                const auto submatrix = init<SMatData<T, N>>([&i, &j, &mat](auto& out) noexcept {
+                const auto submatrix = init_by<SMatData<T, N>>([&i, &j, &mat](auto& out) noexcept {
                     auto c = 0u;
                     for (auto k = 0u; k < M; ++k) {
                         for (auto l = 0u; l < M; ++l) {
@@ -496,7 +496,7 @@ namespace stormkit { inline namespace core { namespace math {
 
             auto result = T { 0 };
             for (auto j = 0u; j < M; ++j) {
-                const auto submatrix = init<SMatData<T, N>>([&j, &mat](auto& out) noexcept {
+                const auto submatrix = init_by<SMatData<T, N>>([&j, &mat](auto& out) noexcept {
                     auto c = 0u;
                     for (auto k = 0u; k < M; ++k) {
                         for (auto l = 0u; l < M; ++l) {
@@ -553,11 +553,11 @@ namespace stormkit { inline namespace core { namespace math {
         EXPECTS(a.data_handle() != out.data_handle());
         EXPECTS(is_inversible(a));
 
-        const auto factor = init<SMatData<T, N>>([&a](auto& out) noexcept {
+        const auto factor = init_by<SMatData<T, N>>([&a](auto& out) noexcept {
             cofactor(a, as_mdspan_mut<N, N>(out));
         });
 
-        const auto transposed = init<SMatData<T, N>>([&factor](auto& out) noexcept {
+        const auto transposed = init_by<SMatData<T, N>>([&factor](auto& out) noexcept {
             transpose(as_mdspan<N, N>(factor), as_mdspan_mut<N, N>(out));
         });
 
@@ -589,11 +589,11 @@ namespace stormkit { inline namespace core { namespace math {
                 return matrix;
             }();
 
-            const auto transposed = init<SMatData<T, N>>([&mat](auto& out) noexcept {
+            const auto transposed = init_by<SMatData<T, N>>([&mat](auto& out) noexcept {
                 transpose(mat, as_mdspan_mut<M, N>(out));
             });
 
-            const auto result = init<SMatData<T, N>>([&mat, &transposed](auto& out) noexcept {
+            const auto result = init_by<SMatData<T, N>>([&mat, &transposed](auto& out) noexcept {
                 mul(mat, as_mdspan<M, N>(transposed), as_mdspan_mut<M, N>(out));
             });
 
@@ -626,7 +626,7 @@ namespace stormkit { inline namespace core { namespace math {
         EXPECTS(a.data_handle() != out.data_handle());
         EXPECTS(b.data_handle() != out.data_handle());
 
-        const auto inverted = init<SMatData<T, N>>([&b](auto& out) noexcept {
+        const auto inverted = init_by<SMatData<T, N>>([&b](auto& out) noexcept {
             inverse(b, as_mdspan_mut<N, N>(out));
         });
 
@@ -821,24 +821,24 @@ namespace stormkit { inline namespace core { namespace math {
         EXPECTS(center.data_handle() != out.data_handle());
         EXPECTS(up.data_handle() != out.data_handle());
 
-        const auto z_temp = init<Vec3Data<T>>([&eye, &center](auto& out) noexcept {
+        const auto z_temp = init_by<Vec3Data<T>>([&eye, &center](auto& out) noexcept {
             sub(center, eye, as_mdspan_mut<3>(out));
         });
-        const auto z      = init<Vec3Data<T>>([&z_temp](auto& out) noexcept {
+        const auto z      = init_by<Vec3Data<T>>([&z_temp](auto& out) noexcept {
             normalize(as_mdspan<3>(z_temp), as_mdspan_mut<3>(out));
         });
 
-        const auto x_temp = init<Vec3Data<T>>([&up, &z](auto& out) noexcept {
+        const auto x_temp = init_by<Vec3Data<T>>([&up, &z](auto& out) noexcept {
             cross(up, as_mdspan<3>(z), as_mdspan_mut<3>(out));
         });
-        const auto x      = init<Vec3Data<T>>([&x_temp](auto& out) noexcept {
+        const auto x      = init_by<Vec3Data<T>>([&x_temp](auto& out) noexcept {
             normalize(as_mdspan<3>(x_temp), as_mdspan_mut<3>(out));
         });
 
-        const auto y_temp = init<Vec3Data<T>>([&z, &x](auto& out) noexcept {
+        const auto y_temp = init_by<Vec3Data<T>>([&z, &x](auto& out) noexcept {
             cross(as_mdspan<3>(z), as_mdspan<3>(x), as_mdspan_mut<3>(out));
         });
-        const auto y      = init<Vec3Data<T>>([&y_temp](auto& out) noexcept {
+        const auto y      = init_by<Vec3Data<T>>([&y_temp](auto& out) noexcept {
             normalize(as_mdspan<3>(y_temp), as_mdspan_mut<3>(out));
         });
 

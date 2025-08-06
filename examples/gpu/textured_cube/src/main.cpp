@@ -145,11 +145,8 @@ auto main(std::span<const std::string_view> args) -> int {
     auto window = wsi::Window {
         "Stormkit GPU Textured cube example",
         { 1280u, 800u },
-        wsi::WindowStyle::CLOSE
+        wsi::WindowFlag::CLOSE | wsi::WindowFlag::EXTERNAL_CONTEXT
     };
-
-    auto fullscreen        = false;
-    auto toggle_fullscreen = false;
 
     auto event_handler = wsi::EventHandler {};
 
@@ -608,14 +605,6 @@ auto main(std::span<const std::string_view> args) -> int {
         const auto current_time = clock::now();
 
         event_handler.update(window);
-
-        if (toggle_fullscreen) {
-            fullscreen = !fullscreen;
-            window.toggle_fullscreen(fullscreen);
-
-            toggle_fullscreen = false;
-            ilog("Toggle fullscreen to: {}", fullscreen);
-        }
 
         // get next swapchain image
         auto& submission_resource = submission_resources[current_frame];
