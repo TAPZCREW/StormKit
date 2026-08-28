@@ -21,7 +21,7 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto parse_args(std::span<const std::string_view> args) noexcept -> void {
+    auto parse_args(array_view<const string_view> args) noexcept -> void {
         auto hint = std::ranges::find_if(args, [](auto&& v) { return v == "--x11" or v == "--wayland"; });
 
         if (hint != std::ranges::cend(args)) {

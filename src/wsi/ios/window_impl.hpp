@@ -28,12 +28,12 @@ namespace storm::window {
     class STORMKIT_PRIVATE Window: public storm::window::AbstractWindow {
       public:
         Window() noexcept;
-        Window(const std::string&                  title,
+        Window(const string&                  title,
                    const storm::window::VideoSettings& settings,
                    storm::window::WindowStyle          style) noexcept;
         ~Window() override;
 
-        void create(const std::string&                  title,
+        void create(const string&                  title,
                     const storm::window::VideoSettings& settings,
                     storm::window::WindowStyle          style) noexcept override;
         void close() noexcept override;
@@ -41,10 +41,10 @@ namespace storm::window {
         bool poll_event(storm::window::Event& event, void* native_event) noexcept override;
         bool wait_event(storm::window::Event& event, void* native_event) noexcept override;
 
-        void set_title(const std::string& title) noexcept override;
+        void set_title(const string& title) noexcept override;
         void setVideoSettings(const storm::window::VideoSettings& settings) noexcept override;
 
-        storm::core::Extentu size() const noexcept override;
+        storm::core::extentu size() const noexcept override;
 
         bool is_open() const noexcept override;
         bool isVisible() const noexcept override;

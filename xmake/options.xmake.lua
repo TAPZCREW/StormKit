@@ -2,37 +2,44 @@
 option("examples_gpu", {
     default = false,
     category = "root menu/build",
-    deps = { "examples" },
+    deps = { "examples", "gpu" },
     after_check = function(option)
-        if option:dep("examples"):enabled() then option:enable(true) end
+        if option:dep("examples"):enabled() then option:enable(option:dep("gpu"):enabled()) end
     end,
 })
 option("examples_wsi", {
     default = false,
     category = "root menu/build",
-    deps = { "examples" },
+    deps = { "examples", "wsi" },
     after_check = function(option)
-        if option:dep("examples"):enabled() then option:enable(true) end
+        if option:dep("examples"):enabled() then option:enable(option:dep("wsi"):enabled()) end
     end,
 })
 option("examples_log", {
     default = false,
     category = "root menu/build",
-    deps = { "examples" },
+    deps = { "examples", "log" },
     after_check = function(option)
-        if option:dep("examples"):enabled() then option:enable(true) end
+        if option:dep("examples"):enabled() then option:enable(option:dep("log"):enabled()) end
     end,
 })
 option("examples_entities", {
     default = false,
     category = "root menu/build",
-    deps = { "examples" },
+    deps = { "examples", "entities" },
     after_check = function(option)
-        if option:dep("examples"):enabled() then
-        end
+        if option:dep("examples"):enabled() then option:enable(option:dep("entities"):enabled()) end
     end,
 }) --option:enable(true) end end })
-option("examples", { default = false, category = "root menu/build" })
+option("examples_lua", {
+    default = false,
+    category = "root menu/build",
+    deps = { "examples", "lua" },
+    after_check = function(option)
+        if option:dep("examples"):enabled() then option:enable(option:dep("lua"):enabled()) end
+    end,
+})
+option("examples", { default = true, category = "root menu/build" })
 option("tools", {
     default = false,
     category = "root menu/build",
@@ -47,10 +54,12 @@ option("rad", { default = false, category = "root menu/build" })
 
 ---------------------------- module options ----------------------------
 option("log", { default = true, category = "root menu/modules" })
-option("entities", { default = true, category = "root menu/modules" })
-option("image", { default = true, category = "root menu/modules", deps = { "log" } })
-option("wsi", { default = true, category = "root menu/modules", deps = { "log" } })
-option("gpu", { default = true, category = "root menu/modules", deps = { "log", "image", "wsi" } })
+option("math", { default = false, category = "root menu/modules" })
+option("entities", { default = false, category = "root menu/modules" })
+option("image", { default = false, category = "root menu/modules", deps = { "log" } })
+option("wsi", { default = false, category = "root menu/modules", deps = { "log" } })
+option("gpu", { default = false, category = "root menu/modules", deps = { "log", "image", "wsi" } })
+option("lua", { default = false, category = "root menu/modules", deps = { "log" } })
 
 option("compile_commands", { default = false, category = "root menu/support" })
 option("vsxmake", { default = false, category = "root menu/support" })

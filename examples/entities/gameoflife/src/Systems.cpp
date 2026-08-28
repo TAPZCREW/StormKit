@@ -24,7 +24,7 @@ UpdateBoardSystem::~UpdateBoardSystem()                                         
 UpdateBoardSystem::UpdateBoardSystem(UpdateBoardSystem&&) noexcept                    = default;
 auto UpdateBoardSystem::operator=(UpdateBoardSystem&&) noexcept -> UpdateBoardSystem& = default;
 
-auto UpdateBoardSystem::update(stormkit::Secondf delta) -> void {
+auto UpdateBoardSystem::update(stormkit::fsecond delta) -> void {
     const auto now = Clock::now();
 
     if (m_is_on_edit_mode) [[unlikely]] {

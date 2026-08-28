@@ -4,6 +4,8 @@
 
 module;
 
+#include <stormkit/core/try_expected.hpp>
+
 #include <stormkit/gpu/vulkan.hpp>
 
 module stormkit.gpu.execution;
@@ -22,106 +24,57 @@ namespace stdv = std::views;
 namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
-    auto CommandPool::create_command_buffers(usize count, CommandBufferLevel level) const noexcept
-      -> Expected<std::vector<CommandBuffer>> {
-        return create_vk_command_buffers(count, level)
-          .transform([this, &level](auto&& command_buffers) noexcept {
-              return command_buffers
-                     | stdv::as_rvalue
-                     | stdv::transform([this, &level](VkCommandBuffer&& cmb) noexcept -> decltype(auto) {
-                           return CommandBuffer::create(m_vk_device,
-                                                        m_vk_handle,
-                                                        m_vk_device_table,
-                                                        level,
-                                                        std::move(cmb),
-                                                        CommandPool::delete_vk_command_buffers);
-                       })
-                     | stdr::to<std::vector>();
-          })
-          .transform_error(monadic::from_vk<Result>());
-    }
+    template<typename Base>
+    auto CommandPoolInterface<Base>::create_vk_command_buffers(usize count, CommandBufferLevel level) const noexcept
+      -> Expected<dyn_array<VkCommandBuffer>> {
+        const auto& device       = Base::owner();
+        const auto& device_table = device.device_table();
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto CommandPool::allocate_command_buffers(usize count, CommandBufferLevel level) const noexcept
-      -> Expected<std::vector<Heap<CommandBuffer>>> {
-        return create_vk_command_buffers(count, level)
-          .transform([this, &level](auto&& command_buffers) noexcept {
-              return command_buffers
-                     | stdv::as_rvalue
-                     | stdv::transform([this, &level](VkCommandBuffer&& cmb) noexcept -> decltype(auto) {
-                           return CommandBuffer::allocate(m_vk_device,
-                                                          m_vk_handle,
-                                                          m_vk_device_table,
-                                                          level,
-                                                          std::move(cmb),
-                                                          CommandPool::delete_vk_command_buffers);
-                       })
-                     | stdr::to<std::vector>();
-          })
-          .transform_error(monadic::from_vk<Result>());
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto CommandPool::create_vk_command_buffers(usize count, CommandBufferLevel level) const noexcept
-      -> VulkanExpected<std::vector<VkCommandBuffer>> {
-        // auto out = std::vector<VkCommandBuffer> {};
-        // const auto reuse_count  = stdr::empty(m_reusable_command_buffers)
-        //                             ? 0
-        //                             : math::abs(stdr::size(m_reusable_command_buffers) - count);
-        // auto       create_count = count - reuse_count;
-
-        {
-            // auto lock = std::unique_lock { m_reuse_mutex };
-            // auto erase_end   = std::ranges::end(m_reusable_command_buffers);
-            // auto erase_begin = std::ranges::end(m_reusable_command_buffers) - reuse_count;
-            //
-            // std::ranges::for_each(m_reusable_command_buffers | std::views::reverse |
-            //                           std::views::take(reuse_count),
-            //                       [&out](VkCommandBuffer&& cmb) {
-            //                           out.emplace_back(std::move(cmb));
-            //                       });
-            //
-            // m_reusable_command_buffers.erase(erase_begin, erase_end);
-        }
-        // out.reserve(count);
-
-        // if (create_count > 0) {
         const auto allocate_info = VkCommandBufferAllocateInfo {
             .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
             .pNext              = nullptr,
-            .commandPool        = m_vk_handle,
-            .level              = to_vk<VkCommandBufferLevel>(level),
+            .commandPool        = *this,
+            .level              = vk::to_vk<VkCommandBufferLevel>(level),
             .commandBufferCount = as<u32>(count)
         };
 
-        return vk_allocate<VkCommandBuffer>(count, m_vk_device_table->vkAllocateCommandBuffers, m_vk_device, &allocate_info);
+        return vk::allocate_checked<VkCommandBuffer>(count, device_table.vkAllocateCommandBuffers, device, &allocate_info);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto CommandPool::delete_vk_command_buffers(VkDevice               device,
-                                                VkCommandPool          command_pool,
-                                                const VolkDeviceTable& device_table,
-                                                VkCommandBuffer        command_buffer) noexcept -> void {
-        vk_call(device_table.vkFreeCommandBuffers, device, command_pool, 1, &command_buffer);
-        // auto lock = std::unique_lock { m_reuse_mutex };
-        // m_reusable_command_buffers.emplace_back(std::move(cmb));
+    template<typename Base>
+    auto CommandPoolInterface<Base>::delete_vk_command_buffers(view::Device      device,
+                                                               view::CommandPool pool,
+                                                               VkCommandBuffer   cmb) noexcept -> void {
+        const auto& device_table = device.device_table();
+        vk::call(device_table.vkFreeCommandBuffers, device, pool, 1, &cmb);
     }
+
+    template class CommandPoolInterface<CommandPoolImplementation>;
+    template class CommandPoolInterface<view::CommandPoolImplementation>;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto CommandPool::do_init() noexcept -> Expected<void> {
+    auto CommandPoolImplementation::do_init(PrivateTag, const CreateInfo& create_info_) noexcept -> Expected<void> {
+        const auto& device       = owner();
+        const auto& device_table = device.device_table();
+
+        const auto flags = [&create_info_] noexcept {
+            auto out = VkCommandPoolCreateFlags {};
+            if (create_info_.reset) out |= VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+            if (create_info_.transient) out |= VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;
+            return out;
+        }();
+
         const auto create_info = VkCommandPoolCreateInfo {
             .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
             .pNext            = nullptr,
-            .flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT | VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
-            .queueFamilyIndex = 0,
+            .flags            = flags,
+            .queueFamilyIndex = create_info_.queue.entry().id,
         };
 
-        return vk_call<VkCommandPool>(m_vk_device_table->vkCreateCommandPool, m_vk_device, &create_info, nullptr)
-          .transform(core::monadic::set(m_vk_handle))
-          .transform_error(monadic::from_vk<Result>());
+        m_vk_handle = Try(vk::call_checked<VkCommandPool>(device_table.vkCreateCommandPool, device, &create_info, nullptr));
+        Return {};
     }
 } // namespace stormkit::gpu

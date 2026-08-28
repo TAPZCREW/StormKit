@@ -51,6 +51,7 @@ rule("wayland.protocols", function()
 
     before_buildcmd_file(function(target, batchcmds, sourcefile, opt)
         import("lib.detect.find_tool")
+        import("utils.progress")
 
         local outputdir = target:extraconf("rules", "wayland.protocols", "outputdir")
             or path.join(target:autogendir(), "rules", "wayland.protocols")
@@ -67,6 +68,7 @@ rule("wayland.protocols", function()
         local client_flags = { client_flag, sourcefile, clientfile }
         local private_flags = { private_flag, sourcefile, privatefile }
 
+        if progress.apply_target then opt.progress = progress.apply_target(target, opt.progress) end
         batchcmds:show_progress(
             opt.progress,
             "${color.build.object}generating.wayland.protocol.client %s",

@@ -28,7 +28,7 @@ auto Renderer::operator=(Renderer&&) noexcept -> Renderer& = default;
 
 auto Renderer::renderFrame() -> void {
     const auto& surface_extent  = m_surface->extent();
-    const auto  surface_extentf = math::ExtentF { surface_extent };
+    const auto  surface_extentf = math::fextent2 { surface_extent };
 
     if (m_surface->needRecreate()) {
         m_surface->recreate();
@@ -36,17 +36,17 @@ auto Renderer::renderFrame() -> void {
     }
 
     const auto viewports = [&] {
-        auto v = std::vector<gpu::Viewport> {};
+        auto v = dyn_array<gpu::Viewport> {};
         v.emplace_back(gpu::Viewport {
-            .extent = surface_extentf,
-            .depth  = { 0, 1 }
+          .extent = surface_extentf,
+          .depth  = { 0, 1 }
         });
 
         return v;
     }();
 
     const auto scissors = [&] {
-        auto s = std::vector<gpu::Scissor> {};
+        auto s = dyn_array<gpu::Scissor> {};
         s.emplace_back(gpu::Scissor { .extent = surface_extent });
 
         return s;
@@ -88,14 +88,12 @@ auto Renderer::updateBoard(const stormkit::image::Image& board) -> void {
 
     if (m_current_fence) m_current_fence->wait();
 
-    const auto descriptors = into_array(gpu::Descriptor {
-        gpu::ImageDescriptor { .type    = gpu::DescriptorType::Combined_Image_Sampler,
-                              .binding = 0,
-                              .layout  = gpu::ImageLayout::Shader_Read_Only_Optimal,
-                              .image_view
-                               = makeConstObserver(m_board.image_views[m_board.current_image]),
-                              .sampler = makeConstObserver(m_board.sampler) }
-    });
+    const auto descriptors = into_array_of<gpu::Descriptor>(gpu::ImageDescriptor {
+      .type       = gpu::DescriptorType::Combined_Image_Sampler,
+      .binding    = 0,
+      .layout     = gpu::ImageLayout::Shader_Read_Only_Optimal,
+      .image_view = makeConstObserver(m_board.image_views[m_board.current_image]),
+      .sampler    = makeConstObserver(m_board.sampler) });
     m_board.descriptor_set->update(descriptors);
 }
 
@@ -122,9 +120,7 @@ auto Renderer::do_initBaseRenderObjects() -> void {
 
     const auto& physical_device_info = physical_device.info();
 
-    ilog("Using physical device {} ({:#06x})",
-         physical_device_info.device_name,
-         physical_device_info.device_id);
+    ilog("Using physical device {} ({:#06x})", physical_device_info.device_name, physical_device_info.device_id);
 
     m_device = physical_device.allocateLogicalDevice();
 
@@ -136,49 +132,46 @@ auto Renderer::do_initBaseRenderObjects() -> void {
 
 auto Renderer::do_initMeshRenderObjects() -> void {
     const auto& surface_extent  = m_surface->extent();
-    const auto  surface_extentf = math::ExtentF { surface_extent };
+    const auto  surface_extentf = math::fextent2 { surface_extent };
 
     m_board.vertex_shader   = m_device->allocateShader(SHADER_DATA, gpu::ShaderStageFlag::Vertex);
     m_board.fragment_shader = m_device->allocateShader(SHADER_DATA, gpu::ShaderStageFlag::Fragment);
 
-    const auto description
-        = gpu::RenderPassDescription { .attachments = { { .format = m_surface->pixelFormat() } },
-                                       .subpasses
-                                       = { { .bind_point      = gpu::PipelineBindPoint::Graphics,
-                                             .attachment_refs = { { .attachment_id = 0u } } } } };
+    const auto description = gpu::RenderPassDescription {
+        .attachments = { { .format = m_surface->pixelFormat() } },
+        .subpasses   = { { .bind_point = gpu::PipelineBindPoint::Graphics, .attachment_refs = { { .attachment_id = 0u } } } }
+    };
 
     m_descriptor_set_layout = m_device->allocateDescriptorSetLayout();
-    m_descriptor_set_layout->addBinding({ .binding = 0,
-                                          .type    = gpu::DescriptorType::Combined_Image_Sampler,
-                                          .stages  = gpu::ShaderStageFlag::Fragment,
-                                          .descriptor_count = 1 });
+    m_descriptor_set_layout
+      ->addBinding({ .binding          = 0,
+                     .type             = gpu::DescriptorType::Combined_Image_Sampler,
+                     .stages           = gpu::ShaderStageFlag::Fragment,
+                     .descriptor_count = 1 });
     m_descriptor_set_layout->bake();
     m_descriptor_pool = m_device->allocateDescriptorPool(
-        std::array {
-            gpu::DescriptorPool::Size { gpu::DescriptorType::Combined_Image_Sampler, 1 }
+      array {
+        gpu::DescriptorPool::Size { gpu::DescriptorType::Combined_Image_Sampler, 1 }
     },
-        1);
+      1);
 
     m_render_pass = m_device->allocateRenderPass(description);
 
     m_board.pipeline = m_device->allocateRasterPipeline();
     const auto state = gpu::RasterPipelineState {
         .input_assembly_state = { .topology = gpu::PrimitiveTopology::Triangle_Strip },
-        .viewport_state
-        = { .viewports = { gpu::Viewport { .position = { 0.f, 0.f },
-                                           .extent   = surface_extentf,
-                                           .depth    = { 0.f, 1.f } } },
+        .viewport_state       = { .viewports = { gpu::Viewport { .position = { 0.f, 0.f },
+                                                                 .extent   = surface_extentf,
+                                                                 .depth    = { 0.f, 1.f } } },
                                  .scissors  = { gpu::Scissor { .offset = { 0, 0 }, .extent = surface_extent } } },
-        .color_blend_state
-        = { .attachments = { { .blend_enable           = true,
-                               .src_color_blend_factor = gpu::BlendFactor::Src_Alpha,
-                               .dst_color_blend_factor = gpu::BlendFactor::One_Minus_Src_Alpha,
-                               .src_alpha_blend_factor = gpu::BlendFactor::Src_Alpha,
-                               .dst_alpha_blend_factor = gpu::BlendFactor::One_Minus_Src_Alpha,
-                               .alpha_blend_operation  = gpu::BlendOperation::Add } } },
-        .dynamic_state = { { gpu::DynamicState::Viewport, gpu::DynamicState::Scissor } },
-        .shader_state
-        = { .shaders = makeConstObserverArray(m_board.vertex_shader, m_board.fragment_shader) },
+        .color_blend_state    = { .attachments = { { .blend_enable           = true,
+                                                     .src_color_blend_factor = gpu::BlendFactor::Src_Alpha,
+                                                     .dst_color_blend_factor = gpu::BlendFactor::One_Minus_Src_Alpha,
+                                                     .src_alpha_blend_factor = gpu::BlendFactor::Src_Alpha,
+                                                     .dst_alpha_blend_factor = gpu::BlendFactor::One_Minus_Src_Alpha,
+                                                     .alpha_blend_operation  = gpu::BlendOperation::Add } } },
+        .dynamic_state        = { { gpu::DynamicState::Viewport, gpu::DynamicState::Scissor } },
+        .shader_state         = { .shaders = makeConstObserverArray(m_board.vertex_shader, m_board.fragment_shader) },
         /*.vertex_input_state   = { .binding_descriptions =
                                     to_dyn_array(MESH_VERTEX_BINDING_DESCRIPTIONS),
                                   .input_attribute_descriptions =
@@ -193,17 +186,17 @@ auto Renderer::do_initMeshRenderObjects() -> void {
     for (auto i : range(BOARD_BUFFERING_COUNT)) {
         auto& img = m_board.images.emplace_back(*m_device,
                                                 gpu::Image::CreateInfo {
-                                                    .extent = { BOARD_SIZE, BOARD_SIZE }
+                                                  .extent = { BOARD_SIZE, BOARD_SIZE }
         });
 
         m_board.image_views.emplace_back(img.createView());
     }
 
-    m_board.sampler = m_device->allocateSampler(
-        gpu::Sampler::Settings { .mag_filter     = gpu::Filter::Nearest,
-                                 .min_filter     = gpu::Filter::Nearest,
-                                 .address_mode_u = gpu::SamplerAddressMode::Clamp_To_Edge,
-                                 .address_mode_v = gpu::SamplerAddressMode::Clamp_To_Edge });
+    m_board.sampler = m_device->allocateSampler(gpu::Sampler::Settings {
+      .mag_filter     = gpu::Filter::Nearest,
+      .min_filter     = gpu::Filter::Nearest,
+      .address_mode_u = gpu::SamplerAddressMode::Clamp_To_Edge,
+      .address_mode_v = gpu::SamplerAddressMode::Clamp_To_Edge });
 
     m_board.descriptor_set = m_descriptor_pool->allocateDescriptorSet(*m_descriptor_set_layout);
 
@@ -212,7 +205,7 @@ auto Renderer::do_initMeshRenderObjects() -> void {
 
 auto Renderer::do_initPerFrameObjects() -> void {
     const auto& surface_extent  = m_surface->extent();
-    const auto  surface_extentf = math::ExtentF { surface_extent };
+    const auto  surface_extentf = math::fextent2 { surface_extent };
     const auto  buffering_count = m_surface->bufferingCount();
 
     m_surface_views.clear();

@@ -14,7 +14,7 @@ import App;
     #include "App.mpp"
 #endif
 
-auto main([[maybe_unused]] std::span<const std::string_view> args) -> int {
+auto main([[maybe_unused]] array_view<const string_view> args) -> int {
     using namespace stormkit;
 
     setup_signal_handler();

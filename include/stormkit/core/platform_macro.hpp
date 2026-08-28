@@ -5,6 +5,8 @@
 #ifndef STORMKIT_PLATFORM_MACRO_HPP
 #define STORMKIT_PLATFORM_MACRO_HPP
 
+#include <stormkit/core/macro_utils.hpp>
+
 #include <version>
 
 #if defined(__cplusplus)
@@ -16,9 +18,6 @@
 #else
     #error "Stormkit need a c++ compiler"
 #endif
-
-#define STORMKIT_STRINGIFY_DETAILS(x) #x
-#define STORMKIT_STRINGIFY(x)         STORMKIT_STRINGIFY_DETAILS(x)
 
 #if defined(_MSC_VER) and not defined(__clang__)
     #pragma warning(disable: 4251)
@@ -34,8 +33,11 @@
     #define STORMKIT_INTRINSIC         [[msvc::intrinsic]]
     #define STORMKIT_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
     #define STORMKIT_PUSH_WARNINGS     _Pragma("warning(push)")
-    #define STORMKIT_POP_WARNINGS      _Pragma("warning(pop))")
-    #define STORMKIT_ARRAY_IF_MSVC     std::array
+    //clang-format off
+    #define STORMKIT_WARNING_IGNORE_MSVC(value) STORMKIT_PRAGMA_FROM_STRING(warning(disable : value))
+    //clang-format on
+    #define STORMKIT_POP_WARNINGS  _Pragma("warning(pop)")
+    #define STORMKIT_ARRAY_IF_MSVC array
 #elif defined(_MSC_VER) and defined(__clang__)
     #if defined(_LIBCPP_VERSION)
         #define STORMKIT_COMPILER_LIBCPP "libc++"
@@ -44,13 +46,16 @@
     #else
         #define STORMKIT_COMPILER_MSSTL  "MSSTL"
         #define STORMKIT_COMPILER_CXXLIB STORMKIT_COMPILER_MSSTL
-        #define STORMKIT_ARRAY_IF_MSVC   std::array
+        #define STORMKIT_ARRAY_IF_MSVC   array
     #endif
-    #define STORMKIT_EXPORT            __declspec(dllexport)
-    #define STORMKIT_IMPORT            __declspec(dllimport)
-    #define STORMKIT_PRIVATE           [[gnu::visibility("hidden")]]
-    #define STORMKIT_RESTRICT          __restrict
-    #define STORMKIT_FORCE_INLINE_IMPL [[gnu::always_inline]]
+    #define STORMKIT_EXPORT                     __declspec(dllexport)
+    #define STORMKIT_IMPORT                     __declspec(dllimport)
+    #define STORMKIT_PRIVATE                    [[gnu::visibility("hidden")]]
+    #define STORMKIT_RESTRICT                   __restrict
+    //clang-format off
+    #define STORMKIT_WARNING_IGNORE_MSVC(value) STORMKIT_PRAGMA_FROM_STRING(warning(disable : value))
+    //clang-format on
+    #define STORMKIT_FORCE_INLINE_IMPL          [[gnu::always_inline]]
     #define STORMKIT_INTRINSIC
     #define STORMKIT_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
 #elif defined(__MINGW32__)
@@ -97,61 +102,105 @@
     #define STORMKIT_LIFETIMEBOUND
 #endif
 
-#if not defined(STORMKIT_COMPILER_MSVC)
-    #if __has_cpp_attribute(gnu::pure)
-        #define STORMKIT_PURE [[gnu::pure]]
-    #else
-        #define STORMKIT_PURE
-    #endif
+#if __has_cpp_attribute(clang::guarded_by)
+    #define STORMKIT_GUARDED_BY(x) [[clang::guarded_by(x)]]
+#else
+    #define STORMKIT_GUARDED_BY(_)
+#endif
+
+#if __has_cpp_attribute(gnu::pure)
+    #define STORMKIT_PURE [[gnu::pure]]
 #else
     #define STORMKIT_PURE
+#endif
+
+#if __has_cpp_attribute(gsl::Owner)
+    #define STORMKIT_OWNER [[gsl::Owner]]
+#else
+    #define STORMKIT_OWNER [[gsl::Owner]]
+#endif
+
+#if __has_cpp_attribute(gsl::Pointer)
+    #define STORMKIT_VIEW [[gsl::Pointer]]
+#else
+    #define STORMKIT_VIEW [[gsl::Pointer]]
+#endif
+
+#if __has_cpp_attribute(trivially_relocatable)
+    #define STORMKIT_TRIVIALLY_RELOCATABLE [[trivially_relocatable]]
+#else
+    #define STORMKIT_TRIVIALLY_RELOCATABLE [[clang::trivial_abi]]
 #endif
 
 #if not defined(STORMKIT_COMPILER_MSVC)
     #if __has_cpp_attribute(gnu::const)
         #define STORMKIT_CONST [[gnu::const]]
-    #else
-        #define STORMKIT_CONST
     #endif
-#else
+#endif
+
+#if not defined(STORMKIT_CONST)
     #define STORMKIT_CONST
 #endif
 
-#define STORMKIT_FORCE_INLINE STORMKIT_FORCE_INLINE_IMPL
+// #if defined(STORMKIT_BUILD_DEBUG)
+#define STORMKIT_FORCE_INLINE
+// #else
+//     #define STORMKIT_FORCE_INLINE STORMKIT_FORCE_INLINE_IMPL
+// #endif
 
 #if defined(__MINGW32__)
     #define STORMKIT_COMPILER STORMKIT_COMPILER_MINGW
     #if defined(__clang__)
-        #define STORMKIT_COMPILER_CLANG std::string { "MinGW Clang " } + __clang_version__
+        #define STORMKIT_COMPILER_CLANG string { "MinGW Clang " } + __clang_version__
         #define STORMKIT_COMPILER       STORMKIT_COMPILER_CLANG
         #define STORMKIT_PUSH_WARNINGS  _Pragma("clang diagnostic push")
         #define STORMKIT_POP_WARNINGS   _Pragma("clang diagnostic pop")
     #elif defined(__GNUC__) or defined(__GNUG__)
-        #define STORMKIT_COMPILER_GCC          \
-            "MinGW GCC "                       \
-              + std::to_string(__GNUC__)       \
-              + "."                            \
-              + std::to_string(__GNUC_MINOR__) \
-              + "."                            \
-              + "."                            \
-              + std::to_string(__GNUC_PATCHLEVEL__)
+        #define STORMKIT_COMPILER_GCC           \
+            "MinGW GCC "                        \
+              + std::as<string>(__GNUC__)       \
+              + "."                             \
+              + std::as<string>(__GNUC_MINOR__) \
+              + "."                             \
+              + "."                             \
+              + std::as<string>(__GNUC_PATCHLEVEL__)
         #define STORMKIT_COMPILER_MINGW STORMKIT_COMPILER_GCC
         #define STORMKIT_PUSH_WARNINGS  _Pragma("GCC diagnostic push")
         #define STORMKIT_POP_WARNINGS   _Pragma("GCC diagnostic pop")
     #endif
     #define STORMKIT_COMPILER_MINGW STORMKIT_COMPILER
 #elif defined(__clang__)
-    #define STORMKIT_COMPILER_CLANG std::string { "Clang " } + __clang_version__
+    #define STORMKIT_COMPILER_CLANG string { "Clang " } + __clang_version__
     #define STORMKIT_COMPILER       STORMKIT_COMPILER_CLANG
     #define STORMKIT_PUSH_WARNINGS  _Pragma("clang diagnostic push")
-    #define STORMKIT_POP_WARNINGS   _Pragma("clang diagnostic pop")
+    #define STORMKIT_WARNING_IGNORE_GCC(_)
+    #ifndef STORMKIT_WARNING_IGNORE_MSVC
+        #define STORMKIT_WARNING_IGNORE_MSVC(_)
+    #endif
+    #define STORMKIT_WARNING_IGNORE_CLANG(warning) STORMKIT_PRAGMA_FROM_STRING(clang diagnostic ignore warning)
+    #define STORMKIT_POP_WARNINGS                  _Pragma("clang diagnostic pop")
 #elif defined(__GNUC__) or defined(__GNUG__)
-    #define STORMKIT_COMPILER_GCC \
-        "GCC " + std::to_string(__GNUC__) + "." + std::to_string(__GNUC_MINOR__) + "." + "." + std::to_string(__GNUC_PATCHLEVEL__)
+    #define STORMKIT_COMPILER_GCC           \
+        "GCC "                              \
+          + std::as<string>(__GNUC__)       \
+          + "."                             \
+          + std::as<string>(__GNUC_MINOR__) \
+          + "."                             \
+          + "."                             \
+          + std::as<string>(__GNUC_PATCHLEVEL__)
     #define STORMKIT_COMPILER      STORMKIT_COMPILER_GCC
     #define STORMKIT_PUSH_WARNINGS _Pragma("GCC diagnostic push")
-    #define STORMKIT_POP_WARNINGS  _Pragma("GCC diagnostic pop")
+    #define STORMKIT_WARNING_IGNORE_CLANG(_)
+    #ifndef STORMKIT_WARNING_IGNORE_MSVC
+        #define STORMKIT_WARNING_IGNORE_MSVC(_)
+    #endif
+    #define STORMKIT_WARNING_IGNORE_GCC(warning) STORMKIT_PRAGMA_FROM_STRING(GCC diagnostic ignored warning)
+    #define STORMKIT_POP_WARNINGS                _Pragma("GCC diagnostic pop")
 #endif
+
+#define STORMKIT_WARNING_IGNORE_GCC_CLANG(warning) \
+    STORMKIT_WARNING_IGNORE_GCC(warning)           \
+    STORMKIT_WARNING_IGNORE_CLANG(warning)
 
 #if defined(__SWITCH__)
     #define STORMKIT_OS_NX "Nintendo Switch"
@@ -226,6 +275,12 @@ inline constexpr auto STORMKIT_CXX_LIBRARY = STORMKIT_MSSTL;
 #else
     #define STORMKIT_LIBSTDCXX "libstdc++"
 inline constexpr auto STORMKIT_CXX_LIBRARY = STORMKIT_LIBSTDCXX;
+#endif
+
+#ifdef NDEBUG
+    #define STORMKIT_RELEASE_MODE
+#else
+    #define STORMKIT_DEBUG_MODE
 #endif
 
 #endif

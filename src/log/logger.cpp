@@ -12,53 +12,58 @@ import std;
 
 import stormkit.core;
 
+namespace stdr = std::ranges;
+
 namespace stormkit::log {
     namespace {
-#ifdef STORMKIT_BUILD_DEBUG
-        constexpr auto DEFAULT_SEVERITY = Severity::INFO
-                                          | Severity::DEBUG
-                                          | Severity::ERROR
-                                          | Severity::FATAL
-                                          | Severity::WARNING;
-#else
-        constexpr auto DEFAULT_SEVERITY = Severity::INFO | Severity::ERROR | Severity::FATAL;
-#endif
-        constinit Logger* logger = nullptr;
+        constexpr auto DEFAULT_LOG_MASK = severity::INFO | severity::ERROR | severity::FATAL | severity::WARNING;
+
+        constinit logger* logger_instance = nullptr;
+
+        constinit auto debug_enabled = false;
     } // namespace
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Logger::Logger(LogClock::time_point start_time) noexcept : Logger { std::move(start_time), DEFAULT_SEVERITY } {
-        EXPECTS(not logger);
-
-        logger = this;
+    auto parse_args(array_view<const string_view> args) noexcept -> void {
+        debug_enabled = stdr::find_if(args, [](auto&& v) { return v == "--debug" or v == "-d"; }) != stdr::cend(args);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Logger::Logger(LogClock::time_point start_time, Severity log_level) noexcept
-        : m_start_time { std::move(start_time) }, m_log_level { log_level } {
+    logger::logger(clock_type::time_point start_time) noexcept : logger { std::move(start_time), DEFAULT_LOG_MASK } {
+        EXPECTS(not logger_instance);
+
+        if (debug_enabled) m_severity_mask |= severity::DEBUG;
+
+        logger_instance = this;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Logger::~Logger() noexcept {
-        logger = nullptr;
+    logger::logger(clock_type::time_point start_time, severity log_level) noexcept
+        : m_start_time { std::move(start_time) }, m_severity_mask { log_level } {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Logger::has_logger() noexcept -> bool {
-        if (logger) [[likely]]
+    logger::~logger() noexcept {
+        logger_instance = nullptr;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto logger::has_logger() noexcept -> bool {
+        if (logger_instance) [[likely]]
             return true;
         return false;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Logger::instance() noexcept -> Logger& {
-        EXPECTS(logger);
+    auto logger::instance() noexcept -> logger& {
+        EXPECTS(logger_instance != nullptr);
 
-        return *logger;
+        return *logger_instance;
     }
 } // namespace stormkit::log

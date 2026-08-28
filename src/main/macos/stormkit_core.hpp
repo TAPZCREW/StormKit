@@ -4,6 +4,6 @@
 #include <string_view>
 
 auto setup_signal_handler() -> void;
-auto set_current_thread_name(std::string_view name) -> void;
+auto set_current_thread_name(string_view name) -> void;
 
 #endif

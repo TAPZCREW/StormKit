@@ -25,7 +25,7 @@ App::~App() {
     ilog("Cleaning");
 }
 
-auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] CZString argv[]) -> i32 {
+auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] czstring argv[]) -> i32 {
     using Clock = std::chrono::high_resolution_clock;
 
     using namespace stormkit::literals;
@@ -83,7 +83,7 @@ auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] CZString argv[])
 auto App::do_initWindow() -> void {
     const auto window_style = wsi::WindowStyle::ALL;
 
-    m_window = allocate<wsi::Window>(WINDOW_TITLE, math::ExtentU { 800u, 600u }, window_style);
+    m_window = allocate<wsi::Window>(WINDOW_TITLE, math::uextent2 { 800u, 600u }, window_style);
 
     m_renderer = allocate<Renderer>(*m_window);
 }
@@ -124,8 +124,8 @@ auto App::handleKeyboard(const stormkit::wsi::KeyReleasedEventData& event) -> vo
             m_is_on_edit_mode = !m_is_on_edit_mode;
             m_update_system->setEditModeEnabled(m_is_on_edit_mode);
             break;
-        case wsi::Key::ADD: m_update_system->incrementDelta(Secondf { 0.01f }); break;
-        case wsi::Key::SUBSTRACT: m_update_system->incrementDelta(Secondf { -0.01f }); break;
+        case wsi::Key::ADD: m_update_system->incrementDelta(fsecond { 0.01f }); break;
+        case wsi::Key::SUBSTRACT: m_update_system->incrementDelta(fsecond { -0.01f }); break;
         default: break;
     }
 }
@@ -135,11 +135,11 @@ auto App::handleMouse(const stormkit::wsi::MouseButtonPushedEventData& event) ->
         return;
     if (event.button != wsi::MouseButton::LEFT) return;
 
-    const auto cell_width  = as<float>(m_window->size().width) / as<float>(BOARD_SIZE);
-    const auto cell_height = as<float>(m_window->size().height) / as<float>(BOARD_SIZE);
+    const auto cell_width  = as<f32>(m_window->size().width) / as<f32>(BOARD_SIZE);
+    const auto cell_height = as<f32>(m_window->size().height) / as<f32>(BOARD_SIZE);
 
-    const auto x = glm::floor(as<float>(event.position.x) / cell_width);
-    const auto y = glm::floor(as<float>(event.position.y) / cell_height);
+    const auto x = glm::floor(as<f32>(event.position.x) / cell_width);
+    const auto y = glm::floor(as<f32>(event.position.y) / cell_height);
 
     const auto cells = m_entities.entities_with_component<PositionComponent>();
     const auto it    = std::ranges::find_if(cells, [&](const auto e) {

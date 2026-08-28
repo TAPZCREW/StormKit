@@ -23,13 +23,13 @@ import :tga;
 namespace stormkit::image {
     namespace details {
         using namespace stormkit::literals;
-        inline constexpr auto KTX_HEADER = into_bytes({ 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A });
+        inline constexpr auto KTX_HEADER = into<bytes_view>({ 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A });
 
-        inline constexpr auto PNG_HEADER = into_bytes({ 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A });
+        inline constexpr auto PNG_HEADER = into<bytes_view>({ 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A });
 
-        inline constexpr auto QOI_HEADER = into_bytes({ 0x71, 0x6f, 0x69, 0x66 });
+        inline constexpr auto QOI_HEADER = into<bytes_view>({ 0x71, 0x6f, 0x69, 0x66 });
 
-        inline constexpr auto JPEG_HEADER = into_bytes({ 0xFF, 0xD8 });
+        inline constexpr auto JPEG_HEADER = into<bytes_view>({ 0xFF, 0xD8 });
 
         auto filename_to_codec(const std::filesystem::path& filename) noexcept -> Image::Codec {
             EXPECTS(std::filesystem::exists(filename));
@@ -56,7 +56,7 @@ namespace stormkit::image {
             return Image::Codec::UNKNOWN;
         }
 
-        auto header_to_codec(std::span<const Byte> data) noexcept -> Image::Codec {
+        auto header_to_codec(byte_view data) noexcept -> Image::Codec {
             EXPECTS(std::size(data) >= 12);
 
             if (std::memcmp(std::data(data), std::data(KTX_HEADER), std::size(KTX_HEADER)) == 0) return Image::Codec::KTX;
@@ -70,7 +70,7 @@ namespace stormkit::image {
             return Image::Codec::UNKNOWN;
         }
 
-        auto map(std::span<const Byte> bytes, u32 source_count, u32 destination_count) noexcept -> std::vector<Byte> {
+        auto map(byte_view bytes, u32 source_count, u32 destination_count) noexcept -> byte_dynarray {
             EXPECTS(source_count <= 4u and source_count > 0u and destination_count <= 4u and destination_count > 0u);
 
             static constexpr auto BYTE_1_MIN = std::numeric_limits<u8>::min();
@@ -80,7 +80,7 @@ namespace stormkit::image {
             static constexpr auto BYTE_4_MIN = std::numeric_limits<u32>::min();
             static constexpr auto BYTE_4_MAX = std::numeric_limits<u32>::max();
 
-            auto data = std::vector<Byte> {};
+            auto data = byte_dynarray {};
             data.resize(std::size(bytes) * destination_count);
 
             if (source_count == 1u and destination_count == 2u) {
@@ -138,7 +138,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Image::Image(const math::Extent3<u32>& extent, Format format) noexcept : Image {} {
+    Image::Image(const math::uextent3& extent, Format format) noexcept : Image {} {
         create(extent, format);
     }
 
@@ -150,7 +150,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Image::Image(std::span<const Byte> data, Image::Codec codec) noexcept : Image {} {
+    Image::Image(byte_view data, Image::Codec codec) noexcept : Image {} {
         const auto _ = load_from_memory(data, codec);
     }
 
@@ -249,7 +249,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::load_from_memory(std::span<const Byte> data, Image::Codec codec) noexcept -> std::expected<void, Error> {
+    auto Image::load_from_memory(byte_view data, Image::Codec codec) noexcept -> std::expected<void, Error> {
         EXPECTS(codec != Image::Codec::UNKNOWN);
         EXPECTS(!std::empty(data));
 
@@ -305,7 +305,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::save_to_file(std::filesystem::path filepath, Codec codec, CodecArgs args) const noexcept
+    auto Image::save_to_file(std::filesystem::path filepath, Codec codec, CodecTs args) const noexcept
       -> std::expected<void, Error> {
         filepath = std::filesystem::canonical(filepath.parent_path()) / filepath.filename();
 
@@ -350,7 +350,7 @@ namespace stormkit::image {
                 std::format("Failed to load " _Name " image from data\n    > {}", result.error().str_error) \
             };                                                                                              \
         }                                                                                                   \
-        return std::expected<std::vector<Byte>, Error> { std::in_place, std::move(*result) };               \
+        return std::expected<byte_dynarray, Error> { std::in_place, std::move(*result) };                 \
     }
 #define CASE_ARGS_DO(_E, _Func, _Name)                                                                      \
     case Image::Codec::_E: {                                                                                \
@@ -362,17 +362,17 @@ namespace stormkit::image {
                 std::format("Failed to load " _Name " image from data\n    > {}", result.error().str_error) \
             };                                                                                              \
         }                                                                                                   \
-        return std::expected<std::vector<Byte>, Error> { std::in_place, std::move(*result) };               \
+        return std::expected<byte_dynarray, Error> { std::in_place, std::move(*result) };                 \
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::save_to_memory(Codec codec, CodecArgs args) const noexcept -> std::expected<std::vector<Byte>, Error> {
+    auto Image::save_to_memory(Codec codec, CodecTs args) const noexcept -> std::expected<byte_dynarray, Error> {
         EXPECTS(codec != Image::Codec::UNKNOWN);
         EXPECTS(codec != Image::Codec::AUTODETECT);
         EXPECTS(!std::empty(m_data.data));
 
-        auto output = std::vector<Byte> {};
+        auto output = byte_dynarray {};
 
         switch (codec) {
             CASE_DO (JPEG, save_jpg, "JPEG")
@@ -402,7 +402,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::create(math::Extent3<u32> extent, Format format) noexcept -> void {
+    auto Image::create(math::uextent3 extent, Format format) noexcept -> void {
         EXPECTS(extent.width > 0u and extent.height > 0u and extent.depth > 0u and format != Format::UNDEFINED);
         m_data.data.clear();
 
@@ -414,15 +414,14 @@ namespace stormkit::image {
         m_data.mip_levels        = 1u;
         m_data.format            = format;
 
-        m_data.data
-          .resize(m_data.extent.width
-                  * m_data.extent.height
-                  * m_data.extent.depth
-                  * m_data.layers
-                  * m_data.faces
-                  * m_data.mip_levels
-                  * m_data.channel_count
-                  * m_data.bytes_per_channel);
+        m_data.data.resize(m_data.extent.width
+                           * m_data.extent.height
+                           * m_data.extent.depth
+                           * m_data.layers
+                           * m_data.faces
+                           * m_data.mip_levels
+                           * m_data.channel_count
+                           * m_data.bytes_per_channel);
     }
 
     /////////////////////////////////////
@@ -449,7 +448,7 @@ namespace stormkit::image {
                                                   static_cast<i8>(m_data.channel_count)));*/
         const auto pixel_count = m_data.extent.width * m_data.extent.height * m_data.extent.depth;
 
-        image_data.data.resize(pixel_count * image_data.channel_count * image_data.bytes_per_channel, Byte { 255u });
+        image_data.data.resize(pixel_count * image_data.channel_count * image_data.bytes_per_channel, byte { 255u });
 
         auto image = Image { std::move(image_data) };
 
@@ -469,7 +468,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Image::scale(const math::Extent3<u32>&) const noexcept -> Image {
+    auto Image::scale(const math::uextent3&) const noexcept -> Image {
         return *this;
     }
 

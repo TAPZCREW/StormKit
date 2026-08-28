@@ -114,7 +114,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::open(std::string title, const math::Extent2<u32>& extent, WindowFlag flags) noexcept -> void {
+    auto Window::open(string title, const math::uextent2& extent, WindowFlag flags) noexcept -> void {
         auto& globals = wl::get_globals();
 
         m_surface = wl::Surface::create(globals.compositor);
@@ -159,7 +159,7 @@ namespace stormkit::wsi::linux::wayland {
             wp_viewport_set_destination(m_viewport, _extent.width, _extent.height);
         }
 
-        if (not check_flag_bit(m_flags, WindowFlag::EXTERNAL_CONTEXT)) reallocate_pixel_buffer();
+        if (not has_flag_bit(m_flags, WindowFlag::EXTERNAL_CONTEXT)) reallocate_pixel_buffer();
 
         wl_surface_commit(m_surface);
         wl_display_roundtrip(globals.display);
@@ -194,10 +194,10 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::clear(const rgbcolor<u8>& color) noexcept -> void {
+    auto Window::clear(const ucolor_rgb& color) noexcept -> void {
         const auto value = (255 << 24) + (color.r << 16) + (color.g << 8) + (color.b);
 
-        auto view = std::span<i32> { std::bit_cast<i32*>(m_shm_buffer.get().begin()), m_shm_buffer->size() / sizeof(i32) };
+        auto view = array_view<i32> { std::bit_cast<i32*>(m_shm_buffer.value().begin()), m_shm_buffer->size() / sizeof(i32) };
         stdr::fill(view, value);
 
         const auto [width, height] = extent().to<i32>();
@@ -207,8 +207,8 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::fill_framebuffer(std::span<const rgbcolor<u8>> colors) noexcept -> void {
-        auto view = std::span<i32> { std::bit_cast<i32*>(m_shm_buffer.get().begin()), m_shm_buffer->size() / sizeof(i32) };
+    auto Window::fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void {
+        auto view = array_view<i32> { std::bit_cast<i32*>(m_shm_buffer.value().begin()), m_shm_buffer->size() / sizeof(i32) };
         stdr::copy(colors | stdv::transform([](const auto& color) static noexcept {
                        return (255 << 24) + (color.r << 16) + (color.g << 8) + (color.b);
                    }),
@@ -221,7 +221,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_title(std::string title) noexcept -> void {
+    auto Window::set_title(string title) noexcept -> void {
         if (!m_state.open) return;
         m_title = std::move(title);
 
@@ -230,7 +230,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_extent(const math::Extent2<u32>&) noexcept -> void {
+    auto Window::set_extent(const math::uextent2&) noexcept -> void {
     }
 
     /////////////////////////////////////
@@ -257,15 +257,12 @@ namespace stormkit::wsi::linux::wayland {
         EXPECTS(mouse_id < globals.pointers.size());
         auto& [pointer, state] = globals.pointers[mouse_id];
 
-        if (not state.serial or check_flag_bit(state.flags, wl::PointerState::Flag::LOCKED)) return;
+        if (not state.serial or has_flag_bit(state.flags, wl::PointerState::Flag::LOCKED)) return;
 
         if (confined) {
-            if (not check_flag_bit(state.flags, wl::PointerState::Flag::CONFINED)) {
-                state.confined_pointer = wl::ConfinedPointer ::create(globals.pointer_constraints,
-                                                                      m_surface,
-                                                                      pointer,
-                                                                      nullptr,
-                                                                      ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT);
+            if (not has_flag_bit(state.flags, wl::PointerState::Flag::CONFINED)) {
+                state.confined_pointer = wl::ConfinedPointer ::
+                  create(globals.pointer_constraints, m_surface, pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT);
 
                 zwp_confined_pointer_v1_add_listener(state.confined_pointer, &wl::g_confined_pointer_listener, &state);
                 state.flags |= wl::PointerState::Flag::CONFINED;
@@ -286,7 +283,7 @@ namespace stormkit::wsi::linux::wayland {
         EXPECTS(mouse_id < globals.pointers.size());
         const auto& [_, state] = globals.pointers[mouse_id];
 
-        return check_flag_bit(state.flags, wl::PointerState::Flag::CONFINED);
+        return has_flag_bit(state.flags, wl::PointerState::Flag::CONFINED);
     }
 
     /////////////////////////////////////
@@ -303,10 +300,10 @@ namespace stormkit::wsi::linux::wayland {
         EXPECTS(mouse_id < globals.pointers.size());
         auto& [pointer, state] = globals.pointers[mouse_id];
 
-        if (not state.serial or check_flag_bit(state.flags, wl::PointerState::Flag::CONFINED)) return;
+        if (not state.serial or has_flag_bit(state.flags, wl::PointerState::Flag::CONFINED)) return;
 
         if (locked) {
-            if (not check_flag_bit(state.flags, wl::PointerState::Flag::LOCKED)) {
+            if (not has_flag_bit(state.flags, wl::PointerState::Flag::LOCKED)) {
                 state.locked_pointer = wl::LockedPointer::create(globals.pointer_constraints,
                                                                  m_surface,
                                                                  pointer,
@@ -333,7 +330,7 @@ namespace stormkit::wsi::linux::wayland {
         EXPECTS(mouse_id < globals.pointers.size());
         const auto& [_, state] = globals.pointers[mouse_id];
 
-        return check_flag_bit(state.flags, wl::PointerState::Flag::LOCKED);
+        return has_flag_bit(state.flags, wl::PointerState::Flag::LOCKED);
     }
 
     /////////////////////////////////////
@@ -356,7 +353,7 @@ namespace stormkit::wsi::linux::wayland {
         EXPECTS(mouse_id < globals.pointers.size());
         auto& [_, state] = globals.pointers[mouse_id];
 
-        return check_flag_bit(state.flags, wl::PointerState::Flag::HIDDEN);
+        return has_flag_bit(state.flags, wl::PointerState::Flag::HIDDEN);
     }
 
     /////////////////////////////////////
@@ -375,7 +372,7 @@ namespace stormkit::wsi::linux::wayland {
         auto& [pointer, state] = globals.pointers[mouse_id];
 
         if (enabled) {
-            if (not check_flag_bit(state.flags, wl::PointerState::Flag::RELATIVE)) {
+            if (not has_flag_bit(state.flags, wl::PointerState::Flag::RELATIVE)) {
                 state.relative_pointer = wl::RelativePointer::create(globals.relative_pointer_manager, pointer);
                 zwp_relative_pointer_v1_add_listener(state.relative_pointer, &wl::g_relative_pointer_listener, &state);
 
@@ -396,7 +393,7 @@ namespace stormkit::wsi::linux::wayland {
         EXPECTS(mouse_id < globals.pointers.size());
         auto& [_, state] = globals.pointers[mouse_id];
 
-        return check_flag_bit(state.flags, wl::PointerState::Flag::RELATIVE);
+        return has_flag_bit(state.flags, wl::PointerState::Flag::RELATIVE);
     }
 
     /////////////////////////////////////
@@ -430,7 +427,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_mouse_position(const math::vec2i& position, u8 mouse_id) noexcept -> void {
+    auto Window::set_mouse_position(const math::ivec2& position, u8 mouse_id) noexcept -> void {
         if (not m_state.open) return;
 
         auto& globals = wl::get_globals();
@@ -440,7 +437,7 @@ namespace stormkit::wsi::linux::wayland {
 
         if (not state.serial) return;
 
-        if (check_flag_bit(state.flags, wl::PointerState::Flag::LOCKED))
+        if (has_flag_bit(state.flags, wl::PointerState::Flag::LOCKED))
             zwp_locked_pointer_v1_set_cursor_position_hint(state.locked_pointer,
                                                            wl_fixed_to_int(position.x),
                                                            wl_fixed_to_int(position.y));
@@ -469,7 +466,7 @@ namespace stormkit::wsi::linux::wayland {
         if (m_pending_state.resizing) {
             m_state.extent = m_pending_state.resizing.value();
 
-            if (not check_flag_bit(m_flags, WindowFlag::EXTERNAL_CONTEXT)) reallocate_pixel_buffer();
+            if (not has_flag_bit(m_flags, WindowFlag::EXTERNAL_CONTEXT)) reallocate_pixel_buffer();
 
             if (m_viewport) {
                 const auto _extent = m_state.extent.to<i32>();
@@ -502,11 +499,11 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::handle_xdg_top_level_configure(u32 width, u32 height, std::span<const xdg_toplevel_state> states) noexcept
+    auto Window::handle_xdg_top_level_configure(u32 width, u32 height, array_view<const xdg_toplevel_state> states) noexcept
       -> void {
         m_state.open = true;
 
-        if (not check_flag_bit(m_flags, wsi::WindowFlag::RESIZEABLE)) {
+        if (not has_flag_bit(m_flags, wsi::WindowFlag::RESIZEABLE)) {
             xdg_toplevel_set_min_size(m_xdg_top_level, as<i32>(width), as<i32>(height));
             xdg_toplevel_set_max_size(m_xdg_top_level, as<i32>(width), as<i32>(height));
         }
@@ -534,7 +531,7 @@ namespace stormkit::wsi::linux::wayland {
         const auto& monitor = wl::get_monitor(wl::get_globals(), output);
         if (as<f32>(monitor.scale_factor) != m_state.dpi) {
             m_state.dpi = as<f32>(monitor.scale_factor);
-            if (not check_flag_bit(m_flags, WindowFlag::EXTERNAL_CONTEXT)) reallocate_pixel_buffer();
+            if (not has_flag_bit(m_flags, WindowFlag::EXTERNAL_CONTEXT)) reallocate_pixel_buffer();
         }
     }
 
@@ -549,7 +546,7 @@ namespace stormkit::wsi::linux::wayland {
     /////////////////////////////////////
     /////////////////////////////////////
     auto Window::handle_pointer_enter(wl_pointer* pointer, wl::PointerState& state) noexcept -> void {
-        if (check_flag_bit(state.flags, wl::PointerState::Flag::HIDDEN)) hide_mouse(true, pointer, state);
+        if (has_flag_bit(state.flags, wl::PointerState::Flag::HIDDEN)) hide_mouse(true, pointer, state);
 
         // mouse_entered_event(GLOBAL_MOUSE_ID);
     }
@@ -601,26 +598,26 @@ namespace stormkit::wsi::linux::wayland {
         const auto  stride = as<usize>(extent.width * sizeof(u32));
         const auto  size   = as<usize>(stride * extent.height);
 
-        auto old_shm_buffer   = DeferInit<SHMBuffer> {};
-        auto old_shm_pool     = DeferInit<wl::ShmPool> {};
-        auto old_pixel_buffer = DeferInit<wl::Buffer> {};
+        auto old_shm_buffer   = defer_init<shm_buffer> {};
+        auto old_shm_pool     = defer_init<wl::ShmPool> {};
+        auto old_pixel_buffer = defer_init<wl::Buffer> {};
 
         const auto [width, height] = extent.to<i32>();
-        if (not m_shm_buffer or stdr::size(m_shm_buffer.get()) < size) {
+        if (not m_shm_buffer or stdr::size(m_shm_buffer.value()) < size) {
             old_shm_buffer   = std::move(m_shm_buffer);
             old_shm_pool     = std::move(m_shm_pool);
             old_pixel_buffer = std::move(m_pixel_buffer);
 
-            SHMBuffer::create(size, std::format("StormKit::{}::PixelBuffer", m_title))
-              .transform(bind_front(&DeferInit<SHMBuffer>::construct<SHMBuffer&&>, &m_shm_buffer))
-              .transform_error(monadic::assert());
+            auto _ = shm_buffer::create(size, std::format("StormKit::{}::PixelBuffer", m_title))
+                       .transform(bind_front(&defer_init<shm_buffer>::construct<shm_buffer&&>, &m_shm_buffer))
+                       .transform_error(monadic::assert());
 
             m_shm_pool = wl::ShmPool::create(globals.shm,
-                                             narrow<i32>(std::bit_cast<uptr>(m_shm_buffer->native_handle())),
-                                             narrow<i32>(size));
+                                             unchecked_narrow<i32>(std::bit_cast<uptr>(m_shm_buffer->native_handle())),
+                                             unchecked_narrow<i32>(size));
 
             m_pixel_buffer = wl::Buffer::
-              take(wl_shm_pool_create_buffer(m_shm_pool, 0, width, height, narrow<i32>(stride), WL_SHM_FORMAT_XRGB8888));
+              take(wl_shm_pool_create_buffer(m_shm_pool, 0, width, height, unchecked_narrow<i32>(stride), WL_SHM_FORMAT_XRGB8888));
 
             wl_buffer_add_listener(m_pixel_buffer, &wl::g_buffer_listener, &m_pixel_buffer);
         }
@@ -663,7 +660,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_cursor(std::string_view name, wl_pointer* pointer, wl::PointerState& state) noexcept -> void {
+    auto Window::set_cursor(string_view name, wl_pointer* pointer, wl::PointerState& state) noexcept -> void {
         auto& globals = wl::get_globals();
 
         auto cursor_theme = globals.cursor_theme.handle();

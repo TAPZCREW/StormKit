@@ -1,0 +1,62 @@
+
+
+#ifdef STORMKIT_BUILD_MODULES
+export module Systems;
+
+import std;
+
+import stormkit.core;
+import stormkit.image;
+import stormkit.entities;
+
+import Constants;
+import Renderer;
+
+export {
+#else
+    #include <stormkit/std.hpp>
+
+    #include <stormkit.core.hpp>
+    #include <stormkit/Entities.hpp>
+    #include <stormkit/Image.hpp>
+
+    #include "Constants.mpp"
+    #include "Renderer.mpp"
+#endif
+
+    class UpdateBoardSystem final: public stormkit::entities::System {
+      public:
+        UpdateBoardSystem(stormkit::image::Image&            board,
+                          Renderer&                          renderer,
+                          stormkit::entities::EntityManager& manager);
+        ~UpdateBoardSystem() override;
+
+        UpdateBoardSystem(UpdateBoardSystem&&) noexcept;
+        auto operator=(UpdateBoardSystem&&) noexcept -> UpdateBoardSystem&;
+
+        auto update(stormkit::fsecond delta) -> void override;
+        auto post_update() -> void override;
+
+        auto setEditModeEnabled(bool enabled) noexcept { m_is_on_edit_mode = enabled; }
+
+        auto incrementDelta(stormkit::fsecond delta) { m_refresh_board_delta += delta; }
+
+      private:
+        using Clock = std::chrono::high_resolution_clock;
+
+        auto on_message_received(const stormkit::entities::Message& message) -> void override {};
+
+        bool                    m_is_on_edit_mode = true;
+        stormkit::image::Image* m_board           = nullptr;
+        Renderer*               m_renderer        = nullptr;
+
+        Clock::time_point m_last_update;
+
+        bool m_updated = true;
+
+        stormkit::fsecond m_refresh_board_delta = REFRESH_BOARD_DELTA;
+    };
+
+#ifdef STORMKIT_BUILD_MODULES
+}
+#endif

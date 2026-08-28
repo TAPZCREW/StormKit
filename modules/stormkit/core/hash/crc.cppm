@@ -1,0 +1,206 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/platform_macro.hpp>
+
+export module stormkit.core.hash.crc;
+
+import std;
+
+import stormkit.core.types;
+
+import stormkit.core.ranges.numeric_range;
+import stormkit.core.typesafe.safecasts;
+import stormkit.core.containers.safecasts;
+
+using namespace stormkit::literals;
+
+namespace stdr = std::ranges;
+
+export namespace stormkit { inline namespace core {
+    namespace hash {
+        constexpr auto crc32(array_view<const byte>, u32 seed = 0) -> hash32;
+        constexpr auto crc64(array_view<const byte>, u64 seed = 0) -> hash64;
+
+    } // namespace hash
+
+    namespace literals {
+        constexpr auto operator""_crc32(unsigned long long int) -> hash32;
+        constexpr auto operator""_crc32(long double) -> hash32;
+
+        constexpr auto operator""_crc64(unsigned long long int) -> hash64;
+        constexpr auto operator""_crc64(long double) -> hash64;
+    } // namespace literals
+}} // namespace stormkit::core
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit { inline namespace core {
+    namespace hash {
+        namespace details {
+            inline constexpr auto crc32_table = array {
+                0x00000000_i32, 0xB71DC104_i32, 0x6E3B8209_i32, 0xD926430D_i32, 0xDC760413_i32, 0x6B6BC517_i32, 0xB24D861A_i32,
+                0x0550471E_i32, 0xB8ED0826_i32, 0x0FF0C922_i32, 0xD6D68A2F_i32, 0x61CB4B2B_i32, 0x649B0C35_i32, 0xD386CD31_i32,
+                0x0AA08E3C_i32, 0xBDBD4F38_i32, 0x70DB114C_i32, 0xC7C6D048_i32, 0x1EE09345_i32, 0xA9FD5241_i32, 0xACAD155F_i32,
+                0x1BB0D45B_i32, 0xC2969756_i32, 0x758B5652_i32, 0xC836196A_i32, 0x7F2BD86E_i32, 0xA60D9B63_i32, 0x11105A67_i32,
+                0x14401D79_i32, 0xA35DDC7D_i32, 0x7A7B9F70_i32, 0xCD665E74_i32, 0xE0B62398_i32, 0x57ABE29C_i32, 0x8E8DA191_i32,
+                0x39906095_i32, 0x3CC0278B_i32, 0x8BDDE68F_i32, 0x52FBA582_i32, 0xE5E66486_i32, 0x585B2BBE_i32, 0xEF46EABA_i32,
+                0x3660A9B7_i32, 0x817D68B3_i32, 0x842D2FAD_i32, 0x3330EEA9_i32, 0xEA16ADA4_i32, 0x5D0B6CA0_i32, 0x906D32D4_i32,
+                0x2770F3D0_i32, 0xFE56B0DD_i32, 0x494B71D9_i32, 0x4C1B36C7_i32, 0xFB06F7C3_i32, 0x2220B4CE_i32, 0x953D75CA_i32,
+                0x28803AF2_i32, 0x9F9DFBF6_i32, 0x46BBB8FB_i32, 0xF1A679FF_i32, 0xF4F63EE1_i32, 0x43EBFFE5_i32, 0x9ACDBCE8_i32,
+                0x2DD07DEC_i32, 0x77708634_i32, 0xC06D4730_i32, 0x194B043D_i32, 0xAE56C539_i32, 0xAB068227_i32, 0x1C1B4323_i32,
+                0xC53D002E_i32, 0x7220C12A_i32, 0xCF9D8E12_i32, 0x78804F16_i32, 0xA1A60C1B_i32, 0x16BBCD1F_i32, 0x13EB8A01_i32,
+                0xA4F64B05_i32, 0x7DD00808_i32, 0xCACDC90C_i32, 0x07AB9778_i32, 0xB0B6567C_i32, 0x69901571_i32, 0xDE8DD475_i32,
+                0xDBDD936B_i32, 0x6CC0526F_i32, 0xB5E61162_i32, 0x02FBD066_i32, 0xBF469F5E_i32, 0x085B5E5A_i32, 0xD17D1D57_i32,
+                0x6660DC53_i32, 0x63309B4D_i32, 0xD42D5A49_i32, 0x0D0B1944_i32, 0xBA16D840_i32, 0x97C6A5AC_i32, 0x20DB64A8_i32,
+                0xF9FD27A5_i32, 0x4EE0E6A1_i32, 0x4BB0A1BF_i32, 0xFCAD60BB_i32, 0x258B23B6_i32, 0x9296E2B2_i32, 0x2F2BAD8A_i32,
+                0x98366C8E_i32, 0x41102F83_i32, 0xF60DEE87_i32, 0xF35DA999_i32, 0x4440689D_i32, 0x9D662B90_i32, 0x2A7BEA94_i32,
+                0xE71DB4E0_i32, 0x500075E4_i32, 0x892636E9_i32, 0x3E3BF7ED_i32, 0x3B6BB0F3_i32, 0x8C7671F7_i32, 0x555032FA_i32,
+                0xE24DF3FE_i32, 0x5FF0BCC6_i32, 0xE8ED7DC2_i32, 0x31CB3ECF_i32, 0x86D6FFCB_i32, 0x8386B8D5_i32, 0x349B79D1_i32,
+                0xEDBD3ADC_i32, 0x5AA0FBD8_i32, 0xEEE00C69_i32, 0x59FDCD6D_i32, 0x80DB8E60_i32, 0x37C64F64_i32, 0x3296087A_i32,
+                0x858BC97E_i32, 0x5CAD8A73_i32, 0xEBB04B77_i32, 0x560D044F_i32, 0xE110C54B_i32, 0x38368646_i32, 0x8F2B4742_i32,
+                0x8A7B005C_i32, 0x3D66C158_i32, 0xE4408255_i32, 0x535D4351_i32, 0x9E3B1D25_i32, 0x2926DC21_i32, 0xF0009F2C_i32,
+                0x471D5E28_i32, 0x424D1936_i32, 0xF550D832_i32, 0x2C769B3F_i32, 0x9B6B5A3B_i32, 0x26D61503_i32, 0x91CBD407_i32,
+                0x48ED970A_i32, 0xFFF0560E_i32, 0xFAA01110_i32, 0x4DBDD014_i32, 0x949B9319_i32, 0x2386521D_i32, 0x0E562FF1_i32,
+                0xB94BEEF5_i32, 0x606DADF8_i32, 0xD7706CFC_i32, 0xD2202BE2_i32, 0x653DEAE6_i32, 0xBC1BA9EB_i32, 0x0B0668EF_i32,
+                0xB6BB27D7_i32, 0x01A6E6D3_i32, 0xD880A5DE_i32, 0x6F9D64DA_i32, 0x6ACD23C4_i32, 0xDDD0E2C0_i32, 0x04F6A1CD_i32,
+                0xB3EB60C9_i32, 0x7E8D3EBD_i32, 0xC990FFB9_i32, 0x10B6BCB4_i32, 0xA7AB7DB0_i32, 0xA2FB3AAE_i32, 0x15E6FBAA_i32,
+                0xCCC0B8A7_i32, 0x7BDD79A3_i32, 0xC660369B_i32, 0x717DF79F_i32, 0xA85BB492_i32, 0x1F467596_i32, 0x1A163288_i32,
+                0xAD0BF38C_i32, 0x742DB081_i32, 0xC3307185_i32, 0x99908A5D_i32, 0x2E8D4B59_i32, 0xF7AB0854_i32, 0x40B6C950_i32,
+                0x45E68E4E_i32, 0xF2FB4F4A_i32, 0x2BDD0C47_i32, 0x9CC0CD43_i32, 0x217D827B_i32, 0x9660437F_i32, 0x4F460072_i32,
+                0xF85BC176_i32, 0xFD0B8668_i32, 0x4A16476C_i32, 0x93300461_i32, 0x242DC565_i32, 0xE94B9B11_i32, 0x5E565A15_i32,
+                0x87701918_i32, 0x306DD81C_i32, 0x353D9F02_i32, 0x82205E06_i32, 0x5B061D0B_i32, 0xEC1BDC0F_i32, 0x51A69337_i32,
+                0xE6BB5233_i32, 0x3F9D113E_i32, 0x8880D03A_i32, 0x8DD09724_i32, 0x3ACD5620_i32, 0xE3EB152D_i32, 0x54F6D429_i32,
+                0x7926A9C5_i32, 0xCE3B68C1_i32, 0x171D2BCC_i32, 0xA000EAC8_i32, 0xA550ADD6_i32, 0x124D6CD2_i32, 0xCB6B2FDF_i32,
+                0x7C76EEDB_i32, 0xC1CBA1E3_i32, 0x76D660E7_i32, 0xAFF023EA_i32, 0x18EDE2EE_i32, 0x1DBDA5F0_i32, 0xAAA064F4_i32,
+                0x738627F9_i32, 0xC49BE6FD_i32, 0x09FDB889_i32, 0xBEE0798D_i32, 0x67C63A80_i32, 0xD0DBFB84_i32, 0xD58BBC9A_i32,
+                0x62967D9E_i32, 0xBBB03E93_i32, 0x0CADFF97_i32, 0xB110B0AF_i32, 0x060D71AB_i32, 0xDF2B32A6_i32, 0x6836F3A2_i32,
+                0x6D66B4BC_i32, 0xDA7B75B8_i32, 0x035D36B5_i32, 0xB440F7B1_i32
+            };
+
+            inline constexpr auto crc64_table = array {
+                0x0000000000000000_i64, 0x42F0E1EBA9EA3693_i64, 0x85E1C3D753D46D26_i64, 0xC711223CFA3E5BB5_i64,
+                0x493366450E42ECDF_i64, 0x0BC387AEA7A8DA4C_i64, 0xCCD2A5925D9681F9_i64, 0x8E224479F47CB76A_i64,
+                0x9266CC8A1C85D9BE_i64, 0xD0962D61B56FEF2D_i64, 0x17870F5D4F51B498_i64, 0x5577EEB6E6BB820B_i64,
+                0xDB55AACF12C73561_i64, 0x99A54B24BB2D03F2_i64, 0x5EB4691841135847_i64, 0x1C4488F3E8F96ED4_i64,
+                0x663D78FF90E185EF_i64, 0x24CD9914390BB37C_i64, 0xE3DCBB28C335E8C9_i64, 0xA12C5AC36ADFDE5A_i64,
+                0x2F0E1EBA9EA36930_i64, 0x6DFEFF5137495FA3_i64, 0xAAEFDD6DCD770416_i64, 0xE81F3C86649D3285_i64,
+                0xF45BB4758C645C51_i64, 0xB6AB559E258E6AC2_i64, 0x71BA77A2DFB03177_i64, 0x334A9649765A07E4_i64,
+                0xBD68D2308226B08E_i64, 0xFF9833DB2BCC861D_i64, 0x388911E7D1F2DDA8_i64, 0x7A79F00C7818EB3B_i64,
+                0xCC7AF1FF21C30BDE_i64, 0x8E8A101488293D4D_i64, 0x499B3228721766F8_i64, 0x0B6BD3C3DBFD506B_i64,
+                0x854997BA2F81E701_i64, 0xC7B97651866BD192_i64, 0x00A8546D7C558A27_i64, 0x4258B586D5BFBCB4_i64,
+                0x5E1C3D753D46D260_i64, 0x1CECDC9E94ACE4F3_i64, 0xDBFDFEA26E92BF46_i64, 0x990D1F49C77889D5_i64,
+                0x172F5B3033043EBF_i64, 0x55DFBADB9AEE082C_i64, 0x92CE98E760D05399_i64, 0xD03E790CC93A650A_i64,
+                0xAA478900B1228E31_i64, 0xE8B768EB18C8B8A2_i64, 0x2FA64AD7E2F6E317_i64, 0x6D56AB3C4B1CD584_i64,
+                0xE374EF45BF6062EE_i64, 0xA1840EAE168A547D_i64, 0x66952C92ECB40FC8_i64, 0x2465CD79455E395B_i64,
+                0x3821458AADA7578F_i64, 0x7AD1A461044D611C_i64, 0xBDC0865DFE733AA9_i64, 0xFF3067B657990C3A_i64,
+                0x711223CFA3E5BB50_i64, 0x33E2C2240A0F8DC3_i64, 0xF4F3E018F031D676_i64, 0xB60301F359DBE0E5_i64,
+                0xDA050215EA6C212F_i64, 0x98F5E3FE438617BC_i64, 0x5FE4C1C2B9B84C09_i64, 0x1D14202910527A9A_i64,
+                0x93366450E42ECDF0_i64, 0xD1C685BB4DC4FB63_i64, 0x16D7A787B7FAA0D6_i64, 0x5427466C1E109645_i64,
+                0x4863CE9FF6E9F891_i64, 0x0A932F745F03CE02_i64, 0xCD820D48A53D95B7_i64, 0x8F72ECA30CD7A324_i64,
+                0x0150A8DAF8AB144E_i64, 0x43A04931514122DD_i64, 0x84B16B0DAB7F7968_i64, 0xC6418AE602954FFB_i64,
+                0xBC387AEA7A8DA4C0_i64, 0xFEC89B01D3679253_i64, 0x39D9B93D2959C9E6_i64, 0x7B2958D680B3FF75_i64,
+                0xF50B1CAF74CF481F_i64, 0xB7FBFD44DD257E8C_i64, 0x70EADF78271B2539_i64, 0x321A3E938EF113AA_i64,
+                0x2E5EB66066087D7E_i64, 0x6CAE578BCFE24BED_i64, 0xABBF75B735DC1058_i64, 0xE94F945C9C3626CB_i64,
+                0x676DD025684A91A1_i64, 0x259D31CEC1A0A732_i64, 0xE28C13F23B9EFC87_i64, 0xA07CF2199274CA14_i64,
+                0x167FF3EACBAF2AF1_i64, 0x548F120162451C62_i64, 0x939E303D987B47D7_i64, 0xD16ED1D631917144_i64,
+                0x5F4C95AFC5EDC62E_i64, 0x1DBC74446C07F0BD_i64, 0xDAAD56789639AB08_i64, 0x985DB7933FD39D9B_i64,
+                0x84193F60D72AF34F_i64, 0xC6E9DE8B7EC0C5DC_i64, 0x01F8FCB784FE9E69_i64, 0x43081D5C2D14A8FA_i64,
+                0xCD2A5925D9681F90_i64, 0x8FDAB8CE70822903_i64, 0x48CB9AF28ABC72B6_i64, 0x0A3B7B1923564425_i64,
+                0x70428B155B4EAF1E_i64, 0x32B26AFEF2A4998D_i64, 0xF5A348C2089AC238_i64, 0xB753A929A170F4AB_i64,
+                0x3971ED50550C43C1_i64, 0x7B810CBBFCE67552_i64, 0xBC902E8706D82EE7_i64, 0xFE60CF6CAF321874_i64,
+                0xE224479F47CB76A0_i64, 0xA0D4A674EE214033_i64, 0x67C58448141F1B86_i64, 0x253565A3BDF52D15_i64,
+                0xAB1721DA49899A7F_i64, 0xE9E7C031E063ACEC_i64, 0x2EF6E20D1A5DF759_i64, 0x6C0603E6B3B7C1CA_i64,
+                0xF6FAE5C07D3274CD_i64, 0xB40A042BD4D8425E_i64, 0x731B26172EE619EB_i64, 0x31EBC7FC870C2F78_i64,
+                0xBFC9838573709812_i64, 0xFD39626EDA9AAE81_i64, 0x3A28405220A4F534_i64, 0x78D8A1B9894EC3A7_i64,
+                0x649C294A61B7AD73_i64, 0x266CC8A1C85D9BE0_i64, 0xE17DEA9D3263C055_i64, 0xA38D0B769B89F6C6_i64,
+                0x2DAF4F0F6FF541AC_i64, 0x6F5FAEE4C61F773F_i64, 0xA84E8CD83C212C8A_i64, 0xEABE6D3395CB1A19_i64,
+                0x90C79D3FEDD3F122_i64, 0xD2377CD44439C7B1_i64, 0x15265EE8BE079C04_i64, 0x57D6BF0317EDAA97_i64,
+                0xD9F4FB7AE3911DFD_i64, 0x9B041A914A7B2B6E_i64, 0x5C1538ADB04570DB_i64, 0x1EE5D94619AF4648_i64,
+                0x02A151B5F156289C_i64, 0x4051B05E58BC1E0F_i64, 0x87409262A28245BA_i64, 0xC5B073890B687329_i64,
+                0x4B9237F0FF14C443_i64, 0x0962D61B56FEF2D0_i64, 0xCE73F427ACC0A965_i64, 0x8C8315CC052A9FF6_i64,
+                0x3A80143F5CF17F13_i64, 0x7870F5D4F51B4980_i64, 0xBF61D7E80F251235_i64, 0xFD913603A6CF24A6_i64,
+                0x73B3727A52B393CC_i64, 0x31439391FB59A55F_i64, 0xF652B1AD0167FEEA_i64, 0xB4A25046A88DC879_i64,
+                0xA8E6D8B54074A6AD_i64, 0xEA16395EE99E903E_i64, 0x2D071B6213A0CB8B_i64, 0x6FF7FA89BA4AFD18_i64,
+                0xE1D5BEF04E364A72_i64, 0xA3255F1BE7DC7CE1_i64, 0x64347D271DE22754_i64, 0x26C49CCCB40811C7_i64,
+                0x5CBD6CC0CC10FAFC_i64, 0x1E4D8D2B65FACC6F_i64, 0xD95CAF179FC497DA_i64, 0x9BAC4EFC362EA149_i64,
+                0x158E0A85C2521623_i64, 0x577EEB6E6BB820B0_i64, 0x906FC95291867B05_i64, 0xD29F28B9386C4D96_i64,
+                0xCEDBA04AD0952342_i64, 0x8C2B41A1797F15D1_i64, 0x4B3A639D83414E64_i64, 0x09CA82762AAB78F7_i64,
+                0x87E8C60FDED7CF9D_i64, 0xC51827E4773DF90E_i64, 0x020905D88D03A2BB_i64, 0x40F9E43324E99428_i64,
+                0x2CFFE7D5975E55E2_i64, 0x6E0F063E3EB46371_i64, 0xA91E2402C48A38C4_i64, 0xEBEEC5E96D600E57_i64,
+                0x65CC8190991CB93D_i64, 0x273C607B30F68FAE_i64, 0xE02D4247CAC8D41B_i64, 0xA2DDA3AC6322E288_i64,
+                0xBE992B5F8BDB8C5C_i64, 0xFC69CAB42231BACF_i64, 0x3B78E888D80FE17A_i64, 0x7988096371E5D7E9_i64,
+                0xF7AA4D1A85996083_i64, 0xB55AACF12C735610_i64, 0x724B8ECDD64D0DA5_i64, 0x30BB6F267FA73B36_i64,
+                0x4AC29F2A07BFD00D_i64, 0x08327EC1AE55E69E_i64, 0xCF235CFD546BBD2B_i64, 0x8DD3BD16FD818BB8_i64,
+                0x03F1F96F09FD3CD2_i64, 0x41011884A0170A41_i64, 0x86103AB85A2951F4_i64, 0xC4E0DB53F3C36767_i64,
+                0xD8A453A01B3A09B3_i64, 0x9A54B24BB2D03F20_i64, 0x5D45907748EE6495_i64, 0x1FB5719CE1045206_i64,
+                0x919735E51578E56C_i64, 0xD367D40EBC92D3FF_i64, 0x1476F63246AC884A_i64, 0x568617D9EF46BED9_i64,
+                0xE085162AB69D5E3C_i64, 0xA275F7C11F7768AF_i64, 0x6564D5FDE549331A_i64, 0x279434164CA30589_i64,
+                0xA9B6706FB8DFB2E3_i64, 0xEB46918411358470_i64, 0x2C57B3B8EB0BDFC5_i64, 0x6EA7525342E1E956_i64,
+                0x72E3DAA0AA188782_i64, 0x30133B4B03F2B111_i64, 0xF7021977F9CCEAA4_i64, 0xB5F2F89C5026DC37_i64,
+                0x3BD0BCE5A45A6B5D_i64, 0x79205D0E0DB05DCE_i64, 0xBE317F32F78E067B_i64, 0xFCC19ED95E6430E8_i64,
+                0x86B86ED5267CDBD3_i64, 0xC4488F3E8F96ED40_i64, 0x0359AD0275A8B6F5_i64, 0x41A94CE9DC428066_i64,
+                0xCF8B0890283E370C_i64, 0x8D7BE97B81D4019F_i64, 0x4A6ACB477BEA5A2A_i64, 0x089A2AACD2006CB9_i64,
+                0x14DEA25F3AF9026D_i64, 0x562E43B4931334FE_i64, 0x913F6188692D6F4B_i64, 0xD3CF8063C0C759D8_i64,
+                0x5DEDC41A34BBEEB2_i64, 0x1F1D25F19D51D821_i64, 0xD80C07CD676F8394_i64, 0x9AFCE626CE85B507_i64
+            };
+        }; // namespace details
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        constexpr auto crc32(array_view<const byte> bytes, u32 seed) -> hash32 {
+            for (const auto it : range(stdr::size(bytes))) {
+                const auto index = as<usize>(seed & 0xFF) ^ std::bit_cast<u8>(bytes[it]);
+                seed             = details::crc64_table[index] ^ (seed >> 8);
+            }
+
+            return as<hash32>(seed);
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        constexpr auto crc64(array_view<const byte> bytes, u64 seed) -> hash64 {
+            for (const auto it : range(stdr::size(bytes))) {
+                const auto index = as<usize>(seed & 0xFF) ^ std::bit_cast<u8>(bytes[it]);
+                seed             = details::crc64_table[index] ^ (seed >> 8);
+            }
+
+            return as<hash64>(seed);
+        }
+    } // namespace hash
+
+    namespace literals {
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE STORMKIT_CONST
+        constexpr auto operator""_crc32(unsigned long long int value) -> hash32 {
+            return hash::crc32(as<array_view>(as_bytes, value));
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE STORMKIT_CONST
+        constexpr auto operator""_crc32(long double value) -> hash32 {
+            return hash::crc32(as<array_view>(as_bytes, value));
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE STORMKIT_CONST
+        constexpr auto operator""_crc64(unsigned long long int value) -> hash64 {
+            return hash::crc64(as<array_view>(as_bytes, value));
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        STORMKIT_FORCE_INLINE STORMKIT_CONST
+        constexpr auto operator""_crc64(long double value) -> hash64 {
+            return hash::crc64(as<array_view>(as_bytes, value));
+        }
+    } // namespace literals
+}} // namespace stormkit::core

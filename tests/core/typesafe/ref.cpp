@@ -11,11 +11,15 @@ import stormkit.test;
 
 using namespace stormkit::core;
 
+static_assert(meta::has_hasher<ref_ptr<int>>);
+static_assert(meta::trivially_relocatable<ref_ptr<int>>);
+
 namespace {
-    auto _ = test::TestSuite {
-        "Core.typesafe",
+    constexpr auto VAL = 2;
+    auto           _   = test::test_suite {
+        "core.typesafe",
         {
-          { "Ref.to_refs.std_vector.all_ref",
+          { "ref.into<dynarray>.all_ref",
             [] static noexcept {
                 auto a = 0;
                 auto b = 1;
@@ -24,12 +28,12 @@ namespace {
                 auto e = 4;
                 auto f = 5;
 
-                auto refs = to_refs<std::vector>(a, b, c, d, e, f);
+                auto refs = into<dynarray>(as_ref_ptrs, a, b, c, d, e, f);
 
                 auto i = 0;
-                for (auto&& ref : refs) EXPECTS(*ref == i++);
+                for (const auto& ref : refs) EXPECTS(*ref == i++);
             } },
-          { "Ref.as_refs.std_array.all_ref",
+          { "ref.into<array>.all_ref",
             [] static noexcept {
                 auto a = 0;
                 auto b = 1;
@@ -38,12 +42,12 @@ namespace {
                 auto e = 4;
                 auto f = 5;
 
-                auto refs = as_refs<std::array>(a, b, c, d, e, f);
+                auto refs = into<array>(as_ref_ptrs, a, b, c, d, e, f);
 
                 auto i = 0;
-                for (auto&& ref : refs) EXPECTS(*ref == i++);
+                for (const auto& ref : refs) EXPECTS(*ref == i++);
             } },
-          { "Ref.as_refs.default.all_ref",
+          { "ref.into<hash_set>.all_ref",
             [] static noexcept {
                 auto a = 0;
                 auto b = 1;
@@ -52,77 +56,77 @@ namespace {
                 auto e = 4;
                 auto f = 5;
 
-                auto refs = as_refs(a, b, c, d, e, f);
+                auto refs = into<hash_set>(as_ref_ptrs, a, b, c, d, e, f);
 
                 auto i = 0;
-                for (auto&& ref : refs) EXPECTS(*ref == i++);
+                for (const auto& ref : refs) EXPECTS(*ref == i++);
             } },
-          { "Ref.to_refs.std_vector.all_ptr",
+          { "ref.into<dynarray>.all_ptr",
             [] static noexcept {
-                auto a = std::make_unique<int>(0);
-                auto b = std::make_unique<int>(1);
-                auto c = std::make_unique<int>(2);
+                auto a = allocate_unsafe<int>(0);
+                auto b = allocate_unsafe<int>(1);
+                auto c = ref_ptr<const int> { VAL };
                 auto d = new int { 3 };
                 auto e = new int { 4 };
                 auto f = 5;
 
-                auto refs = to_refs<std::vector>(a, b, c, d, e, &f);
+                auto refs = into<dynarray>(as_ref_ptrs, a, b, c, d, e, &f);
 
                 auto i = 0;
-                for (auto&& ref : refs) EXPECTS(*ref == i++);
+                for (const auto& ref : refs) EXPECTS(*ref == i++);
 
                 delete d;
                 delete e;
             } },
-          { "Ref.as_refs.std_array.all_ptr",
+          { "ref.into<array>.all_ptr",
             [] static noexcept {
-                auto a = std::make_unique<int>(0);
-                auto b = std::make_unique<int>(1);
-                auto c = std::make_unique<int>(2);
+                auto a = allocate_unsafe<int>(0);
+                auto b = allocate_unsafe<int>(1);
+                auto c = ref_ptr<const int> { VAL };
                 auto d = new int { 3 };
                 auto e = new int { 4 };
                 auto f = 5;
 
-                auto refs = as_refs<std::array>(a, b, c, d, e, &f);
+                auto refs = into<array>(as_ref_ptrs, a, b, c, d, e, &f);
 
                 auto i = 0;
-                for (auto&& ref : refs) EXPECTS(*ref == i++);
+                for (const auto& ref : refs) EXPECTS(*ref == i++);
 
                 delete d;
                 delete e;
             } },
-          { "Ref.as_refs.default.all_ptr",
+          { "ref.into<hash_set>.all_ptr",
             [] static noexcept {
-                auto a = std::make_unique<int>(0);
-                auto b = std::make_unique<int>(1);
-                auto c = std::make_unique<int>(2);
+                auto a = allocate_unsafe<int>(0);
+                auto b = allocate_unsafe<int>(1);
+                auto c = ref_ptr<const int> { VAL };
                 auto d = new int { 3 };
                 auto e = new int { 4 };
                 auto f = 5;
 
-                auto refs = as_refs(a, b, c, d, e, &f);
+                auto refs = into<hash_set>(as_ref_ptrs, a, b, c, d, e, &f);
 
                 auto i = 0;
-                for (auto&& ref : refs) EXPECTS(*ref == i++);
+                for (const auto& ref : refs) EXPECTS(*ref == i++);
 
                 delete d;
                 delete e;
             } },
-          { "Ref.to_refs.std_set",
+          { "ref.as<dynarray>.from_range",
             [] static noexcept {
-                auto vec  = std::vector { 1, 3, 5, 6, 9 };
-                auto refs = to_refs<std::set>(vec);
+                auto vec  = array { 1, 3, 5, 6, 9 };
+                auto refs = as<dynarray>(as_ref_ptrs, vec);
 
                 auto i = 0u;
-                for (auto&& ref : refs) EXPECTS(*ref == vec[i++]);
+                for (const auto& ref : refs) EXPECTS(*ref == vec[i++]);
             } },
-          { "Ref.to_refs.default",
+          { "ref.as<hash_set>.from_range",
             [] static noexcept {
-                constexpr auto vec  = std::array { 1, 3, 5, 6, 9 };
-                auto           refs = to_refs(vec);
+                auto vec  = array { 1, 3, 5, 6, 9 };
+                auto refs = as<hash_set>(as_ref_ptrs, vec);
 
                 auto i = 0u;
-                for (auto&& ref : refs) EXPECTS(ref == vec[i++]);
+                for (const auto& ref : refs) EXPECTS(*ref == vec[i++]);
             } },
           }
     };

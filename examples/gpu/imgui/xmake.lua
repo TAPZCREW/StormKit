@@ -3,31 +3,21 @@ add_requires("imgui", {
     system = false,
     debug = true,
 })
+
 target("imgui", function()
-    set_kind("binary")
-    set_languages("cxxlatest", "clatest")
+    add_rules("stormkit::example")
 
-    add_rules("stormkit.flags")
-    -- add_rules("platform.windows.subsystem.windows")
-    add_rules("platform.windows.subsystem.console")
+    add_files("src/*.cpp", "src/*.cppm", "../common/app.cppm")
 
-    add_deps("core", "main", "log", "wsi", "gpu", "stormkit")
-
-    add_packages("imgui")
-
-    if is_mode("debug") then
-        add_defines("STORMKIT_BUILD_DEBUG")
-        add_defines("STORMKIT_ASSERT=1")
-        set_suffixname("-d")
-    else
-        add_defines("STORMKIT_ASSERT=0")
+    if get_config("devmode") then
+        add_defines(format('RESOURCE_DIR="%s"', path.unix(path.join(os.projectdir(), "gpu/imgui"))))
+        add_defines(format('SHADER_DIR="%s"', path.unix("$(builddir)/shader")))
     end
-
-    add_files("../common/app.mpp")
-    add_files("src/*.cpp")
-    if is_plat("windows") then add_files("win32/*.manifest") end
+    add_embeddirs("$(builddir)/shaders")
 
     if get_config("devmode") then set_rundir("$(projectdir)") end
+
+    add_packages("imgui", "volk", "vulkan-headers")
 
     set_group("examples/stormkit-gpu")
 end)

@@ -36,7 +36,7 @@ namespace stormkit::wsi::linux::wayland::wl {
     auto keyboard_key_handler(void*, wl_keyboard*, u32, u32, u32, u32) noexcept -> void;
     auto keyboard_modifiers_handler(void*, wl_keyboard*, u32, u32, u32, u32, u32) noexcept -> void;
     auto keyboard_repeat_info_handler(void*, wl_keyboard*, i32, i32) noexcept -> void;
-    auto update_keymap(KeyboardState&, std::string_view) noexcept -> void;
+    auto update_keymap(KeyboardState&, string_view) noexcept -> void;
 
     auto pointer_enter_handler(void*, wl_pointer*, u32, wl_surface*, wl_fixed_t, wl_fixed_t) noexcept -> void;
     auto pointer_leave_handler(void*, wl_pointer*, u32, wl_surface*) noexcept -> void;
@@ -77,21 +77,21 @@ namespace stormkit::wsi::linux::wayland::wl {
     /////////////////////////////////////
     auto seat_capabilities_handler(void* data, wl_seat* seat, u32 capabilities) noexcept -> void {
         auto& globals       = *std::bit_cast<Globals*>(data);
-        auto  _capabilities = narrow<wl_seat_capability>(capabilities);
-        if (check_flag_bit(_capabilities, WL_SEAT_CAPABILITY_KEYBOARD)) {
+        auto  _capabilities = unchecked_narrow<wl_seat_capability>(capabilities);
+        if (has_flag_bit(_capabilities, WL_SEAT_CAPABILITY_KEYBOARD)) {
             auto& [keyboard, state] = globals.keyboards.emplace_back(wl::Keyboard::create(seat), KeyboardState {});
             wl_keyboard_add_listener(keyboard, &g_keyboard_listener, &state);
 
             state.repeat.timer_fd = common::FD::take(timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK));
         }
-        if (check_flag_bit(_capabilities, WL_SEAT_CAPABILITY_POINTER)) {
+        if (has_flag_bit(_capabilities, WL_SEAT_CAPABILITY_POINTER)) {
             auto& [pointer, state] = globals.pointers.emplace_back(wl::Pointer::create(seat), PointerState {});
             wl_pointer_add_listener(pointer, &g_pointer_listener, &state);
             state.cursor.surface = wl::Surface::create(globals.compositor);
             if (globals.cursor_shape_manager)
                 state.cursor.shape_device = wl::CursorShapeDevice::create(globals.cursor_shape_manager, pointer);
         }
-        if (check_flag_bit(_capabilities, WL_SEAT_CAPABILITY_TOUCH)) {
+        if (has_flag_bit(_capabilities, WL_SEAT_CAPABILITY_TOUCH)) {
             auto& _ = globals.touchs.emplace_back(wl::Touch::create(seat), TouchState {});
             // wl_touch_add_listener(touch, &g_touch_listener, &globals);
         }
@@ -110,7 +110,7 @@ namespace stormkit::wsi::linux::wayland::wl {
         auto& globals = get_globals();
 
         auto& state = *std::bit_cast<KeyboardState*>(data);
-        for (auto&& [_surface, window] : globals.windows) {
+        for (const auto& [_surface, window] : globals.windows) {
             if (_surface == surface) {
                 state.focused_window = window;
                 break;
@@ -125,7 +125,7 @@ namespace stormkit::wsi::linux::wayland::wl {
         auto& state          = *std::bit_cast<KeyboardState*>(data);
         state.focused_window = nullptr;
 
-        const auto timer = zeroed<itimerspec>();
+        const auto timer = itimerspec {};
         timerfd_settime(state.repeat.timer_fd, 0, &timer, nullptr);
     }
 
@@ -140,7 +140,7 @@ namespace stormkit::wsi::linux::wayland::wl {
         if (format == WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
             auto map_shm = std::bit_cast<char*>(mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fd, 0));
 
-            update_keymap(state, std::string_view { map_shm, size });
+            update_keymap(state, string_view { map_shm, size });
 
             munmap(map_shm, size);
             ::close(fd);
@@ -154,7 +154,7 @@ namespace stormkit::wsi::linux::wayland::wl {
         auto& state = *std::bit_cast<KeyboardState*>(data);
         if (not state.focused_window or not state.xkb_state) return;
 
-        auto characters = std::array<char, 10> {};
+        auto characters = array<char, 10> {};
         // stdr
 
         const auto keycode = key + 8;
@@ -218,7 +218,7 @@ namespace stormkit::wsi::linux::wayland::wl {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto update_keymap(KeyboardState& state, std::string_view keymap) noexcept -> void {
+    auto update_keymap(KeyboardState& state, string_view keymap) noexcept -> void {
         auto& globals    = get_globals();
         state.xkb_keymap = common::xkb::Keymap::create(globals.xkb_context,
                                                        std::data(keymap),
@@ -261,7 +261,7 @@ namespace stormkit::wsi::linux::wayland::wl {
         auto& globals = get_globals();
 
         auto& state = *std::bit_cast<PointerState*>(data);
-        for (auto&& [_surface, window] : globals.windows) {
+        for (const auto& [_surface, window] : globals.windows) {
             if (_surface == surface) {
                 state.focused_window = window;
                 break;
@@ -294,7 +294,7 @@ namespace stormkit::wsi::linux::wayland::wl {
         if (data == nullptr) return;
 
         auto& state = *std::bit_cast<PointerState*>(data);
-        if (not state.focused_window or (state.relative_pointer and check_flag_bit(state.flags, PointerState::Flag::RELATIVE)))
+        if (not state.focused_window or (state.relative_pointer and has_flag_bit(state.flags, PointerState::Flag::RELATIVE)))
             return;
 
         state.x = surface_x;

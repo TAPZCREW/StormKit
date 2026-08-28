@@ -14,6 +14,7 @@ ${define STORMKIT_LIB_ENTITIES_ENABLED}
 ${define STORMKIT_LIB_IMAGE_ENABLED}
 ${define STORMKIT_LIB_WSI_ENABLED}
 ${define STORMKIT_LIB_GPU_ENABLED}
+${define STORMKIT_LIB_LUA_ENABLED}
 
 #ifndef NO_CONSTANTS
 _STORMKIT_EXPORT namespace stormkit { inline namespace core {

@@ -1,0 +1,54 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+#ifdef STORMKIT_BUILD_MODULES
+export module Constants;
+
+import std;
+
+import stormkit.core;
+import stormkit.log;
+import stormkit.gpu;
+
+export {
+#else
+    #include <stormkit/std.hpp>
+
+    #include <stormkit.core.hpp>
+    #include <stormkit/Gpu.hpp>
+    #include <stormkit/Log.hpp>
+#endif
+
+    inline constexpr auto VERTEX_SIZE
+        = sizeof(stormkit::math::fvec2) + sizeof(stormkit::fvec3);
+    inline constexpr auto WINDOW_TITLE                     = "StormKit GameOfLife Example";
+    inline constexpr auto MESH_VERTEX_BUFFER_SIZE          = VERTEX_SIZE * 3;
+    inline constexpr auto MESH_VERTEX_BINDING_DESCRIPTIONS = array {
+        stormkit::gpu::VertexBindingDescription { .binding = 0, .stride = VERTEX_SIZE }
+    };
+    inline constexpr auto MESH_VERTEX_ATTRIBUTE_DESCRIPTIONS = array {
+        stormkit::gpu::VertexInputAttributeDescription { .location = 0,
+                                                        .binding  = 0,
+                                                        .format   = stormkit::gpu::format::f322,
+                                                        .offset   = 0                       },
+        stormkit::gpu::VertexInputAttributeDescription { .location = 1,
+                                                        .binding  = 0,
+                                                        .format   = stormkit::gpu::format::f322,
+                                                        .offset
+                                                         = sizeof(stormkit::math::fvec2) }
+    };
+
+    inline constexpr auto BOARD_SIZE            = 100u;
+    inline constexpr auto BOARD_BUFFERING_COUNT = 3u;
+    inline constexpr auto REFRESH_BOARD_DELTA   = stormkit::fsecond { 1 };
+
+    inline constexpr auto SHADER_DATA = stormkit::as_bytes(
+#include <shader.spv.h>
+    );
+
+    IN_MODULE_LOGGER("StormKit.GameOfLife");
+
+#ifdef STORMKIT_BUILD_MODULES
+}
+#endif

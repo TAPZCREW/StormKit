@@ -63,9 +63,17 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::open(std::string title, const math::Extent2<u32>& size, WindowFlag flags) noexcept -> Window {
+    auto Window::open(string title, const math::uextent2& size, WindowFlag flags) noexcept -> Window {
         auto window = Window {};
         window.m_impl->open(std::move(title), size, flags);
+        return window;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::allocate_and_open(string title, const math::uextent2& size, WindowFlag flags) noexcept -> heap_ptr<Window> {
+        auto window = allocate_unsafe<Window>(Window {});
+        window->m_impl->open(std::move(title), size, flags);
         return window;
     }
 
@@ -77,13 +85,13 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::clear(const rgbcolor<u8>& color) noexcept -> void {
+    auto Window::clear(const ucolor_rgb& color) noexcept -> void {
         m_impl->clear(color);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::fill_framebuffer(std::span<const rgbcolor<u8>> colors) noexcept -> void {
+    auto Window::fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void {
         m_impl->fill_framebuffer(colors);
     }
 
@@ -113,25 +121,25 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_title(std::string title) noexcept -> void {
+    auto Window::set_title(string title) noexcept -> void {
         m_impl->set_title(std::move(title));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::title() const noexcept -> const std::string& {
+    auto Window::title() const noexcept -> const string& {
         return m_impl->title();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_extent(const math::Extent2<u32>& extent) noexcept -> void {
+    auto Window::set_extent(const math::uextent2& extent) noexcept -> void {
         m_impl->set_extent(extent);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::extent() const noexcept -> const math::Extent2<u32>& {
+    auto Window::extent() const noexcept -> const math::uextent2& {
         return m_impl->extent();
     }
 
@@ -221,7 +229,7 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_mouse_position(const math::vec2i& position, u8 mouse_id) noexcept -> void {
+    auto Window::set_mouse_position(const math::ivec2& position, u8 mouse_id) noexcept -> void {
         m_impl->set_mouse_position(position, mouse_id);
     }
 

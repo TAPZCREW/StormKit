@@ -6,8 +6,6 @@ module;
 
 #include <stormkit/core/try_expected.hpp>
 
-#include <stormkit/log/log_macro.hpp>
-
 #include <stormkit/gpu/vulkan.hpp>
 
 module stormkit.gpu.execution;
@@ -19,33 +17,42 @@ import stormkit.log;
 
 import stormkit.gpu.core;
 
-namespace stdr = std::ranges;
+namespace stdr  = std::ranges;
+namespace stdfs = std::filesystem;
 
-LOGGER("stormkit.gpu")
+using namespace stormkit::literals;
 
 namespace stormkit::gpu {
+    namespace {
+        /////////////////////////////////////
+        /////////////////////////////////////
+        auto sys_to_load_error(SystemError error) noexcept -> LoadSaveError {
+            return LoadSaveError { { error } };
+        }
+
+        /////////////////////////////////////
+        /////////////////////////////////////
+        auto result_to_load_error(Result error) noexcept -> LoadSaveError {
+            return LoadSaveError { { error } };
+        }
+    } // namespace
+
+    template class PipelineCacheInterface<PipelineCacheImplementation>;
+    template class PipelineCacheInterface<view::PipelineCacheImplementation>;
+
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_PURE
-    inline auto sys_to_load_error(SystemError error) noexcept -> PipelineCache::LoadSaveError {
-        return PipelineCache::LoadSaveError { { error } };
+    auto PipelineCacheImplementation::do_init(PrivateTag, stdfs::path&& path) noexcept -> LoadSaveExpected<void> {
+        m_path = std::move(path);
+        Return read_pipeline_cache();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_PURE
-    inline auto result_to_load_error(Result error) noexcept -> PipelineCache::LoadSaveError {
-        return PipelineCache::LoadSaveError { { error } };
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    PipelineCache::~PipelineCache() noexcept = default;
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto PipelineCache::create_new_pipeline_cache(const Device& device) noexcept -> LoadSaveExpected<void> {
-        const auto physical_device_infos = device.physical_device().info();
+    auto PipelineCacheImplementation::create_new_pipeline_cache() noexcept -> LoadSaveExpected<void> {
+        const auto& device                = owner();
+        const auto& device_table          = device.device_table();
+        const auto& physical_device_infos = device.physical_device().info();
 
         m_serialized.guard.magic     = MAGIC;
         m_serialized.guard.data_size = 0u;
@@ -65,61 +72,38 @@ namespace stormkit::gpu {
             .pInitialData    = nullptr,
         };
 
-        m_vk_handle = Try(vk_call<VkPipelineCache>(m_vk_device_table->vkCreatePipelineCache, m_vk_device, &create_info, nullptr)
-                            .transform_error(monadic::from_vk<Result>())
-                            .transform_error(result_to_load_error));
+        m_vk_handle = TryTransformError(vk::call_checked<
+                                          VkPipelineCache>(device_table.vkCreatePipelineCache, device, &create_info, nullptr),
+                                        result_to_load_error);
 
-        Ret({});
+        Return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto PipelineCache::read_pipeline_cache(const Device& device) noexcept -> LoadSaveExpected<void> {
-        if (not std::filesystem::exists(m_path)) Ret(create_new_pipeline_cache(device));
+    auto PipelineCacheImplementation::read_pipeline_cache() noexcept -> LoadSaveExpected<void> {
+        if (not stdfs::exists(m_path)) Return create_new_pipeline_cache();
 
-        const auto physical_device_infos = device.physical_device().info();
+        const auto& device                = owner();
+        const auto& device_table          = device.device_table();
+        const auto& physical_device_infos = device.physical_device().info();
 
-        auto file = Try(io::File::open(m_path, io::Access::READ).transform_error(sys_to_load_error));
-        Try(file.read_to(as_bytes(m_serialized.guard)).transform_error(sys_to_load_error));
-        Try(file.read_to(as_bytes(m_serialized.infos)).transform_error(sys_to_load_error));
-        Try(file.read_to(as_bytes(m_serialized.uuid.value)).transform_error(sys_to_load_error));
+        auto file = TryTransform(io::File::open(m_path, io::Access::READ), sys_to_load_error);
+        TryTransform(file.read_to(as_mutable_bytes(m_serialized.guard)), sys_to_load_error);
+        TryTransform(file.read_to(as_mutable_bytes(m_serialized.infos)), sys_to_load_error);
+        TryTransform(file.read_to(as_mutable_bytes(m_serialized.uuid.value)), sys_to_load_error);
 
-        if (m_serialized.guard.magic != MAGIC) {
-            elog("Invalid pipeline cache magic number, have {}, expected: {}", m_serialized.guard.magic, MAGIC);
+        if (m_serialized.guard.magic != MAGIC) Return create_new_pipeline_cache();
+        if (m_serialized.infos.version != VERSION) Return create_new_pipeline_cache();
+        if (m_serialized.infos.vendor_id != physical_device_infos.vendor_id) Return create_new_pipeline_cache();
+        if (m_serialized.infos.device_id != physical_device_infos.device_id) Return create_new_pipeline_cache();
+        if (not stdr::equal(m_serialized.uuid.value, physical_device_infos.pipeline_cache_uuid))
+            Return create_new_pipeline_cache();
 
-            Ret(create_new_pipeline_cache(device));
-        }
-
-        if (m_serialized.infos.version != VERSION) {
-            elog("Mismatch pipeline cache version, have {}, expected: {}", m_serialized.infos.version, VERSION);
-
-            Ret(create_new_pipeline_cache(device));
-        }
-
-        if (m_serialized.infos.vendor_id != physical_device_infos.vendor_id) {
-            elog("Mismatch pipeline cache vendor id, have {:#06x}, expected: {:#06x}",
-                 m_serialized.infos.vendor_id,
-                 physical_device_infos.vendor_id);
-
-            Ret(create_new_pipeline_cache(device));
-        }
-
-        if (m_serialized.infos.device_id != physical_device_infos.device_id) {
-            elog("Mismatch pipeline cache device id, have {:#06x}, expected: {:#06x}",
-                 m_serialized.infos.device_id,
-                 physical_device_infos.device_id);
-
-            Ret(create_new_pipeline_cache(device));
-        }
-
-        if (not stdr::equal(m_serialized.uuid.value, physical_device_infos.pipeline_cache_uuid)) {
-            Ret(create_new_pipeline_cache(device));
-        }
-
-        auto data = std::vector<Byte> {};
+        auto data = byte_dyn_array {};
         data.resize(m_serialized.guard.data_size);
 
-        Try(io::read_to(m_path, data).transform_error(sys_to_load_error));
+        TryTransform(io::read_to(m_path, data), sys_to_load_error);
 
         const auto create_info = VkPipelineCacheCreateInfo {
             .sType           = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
@@ -129,30 +113,37 @@ namespace stormkit::gpu {
             .pInitialData    = stdr::data(data),
         };
 
-        m_vk_handle = Try(vk_call<VkPipelineCache>(m_vk_device_table->vkCreatePipelineCache, m_vk_device, &create_info, nullptr)
-                            .transform_error(monadic::from_vk<Result>())
-                            .transform_error(result_to_load_error));
+        m_vk_handle = TryTransform(vk::call_checked<
+                                          VkPipelineCache>(device_table.vkCreatePipelineCache, device, &create_info, nullptr),
+                                        result_to_load_error);
 
-        Ret({});
+        Return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto PipelineCache::save_cache() noexcept -> LoadSaveExpected<void> {
-        auto data = Try((vk_enumerate<Byte, usize>(m_vk_device_table->vkGetPipelineCacheData, m_vk_device, m_vk_handle)
-                           .transform_error(monadic::from_vk<Result>())
-                           .transform_error(result_to_load_error)));
+    auto PipelineCacheImplementation::save_cache() noexcept -> LoadSaveExpected<void> {
+        const auto& device       = owner();
+        const auto& device_table = device.device_table();
+
+        auto size = 0_usize;
+        TryTransform(vk::call_checked(device_table.vkGetPipelineCacheData, device, m_vk_handle, &size, nullptr),
+                          result_to_load_error);
+        auto data = byte_dyn_array {};
+        data.resize(size, 0_b);
+        TryTransform(vk::call_checked(device_table.vkGetPipelineCacheData, device, m_vk_handle, &size, stdr::data(data)),
+                          result_to_load_error);
+
         m_serialized.guard.data_size = stdr::size(data);
         m_serialized.guard.data_hash = 0u;
 
         hash_combine(m_serialized.guard.data_hash, data);
 
-        auto file = Try(io::File::open(m_path, io::Access::WRITE).transform_error(sys_to_load_error));
+        auto file = TryTransform(io::File::open(m_path, io::Access::WRITE), sys_to_load_error);
+        TryTransform(file.write(as_bytes(m_serialized.infos)), sys_to_load_error);
+        TryTransform(file.write(as_bytes(m_serialized.uuid.value)), sys_to_load_error);
+        TryTransform(file.write(as_bytes(data)), sys_to_load_error);
 
-        Try(file.write(as_bytes(m_serialized.infos)).transform_error(sys_to_load_error));
-        Try(file.write(as_bytes(m_serialized.uuid.value)).transform_error(sys_to_load_error));
-        Try(file.write(as_bytes(data)).transform_error(sys_to_load_error));
-
-        Ret({});
+        Return {};
     }
 } // namespace stormkit::gpu

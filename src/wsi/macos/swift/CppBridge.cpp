@@ -29,7 +29,7 @@ namespace stormkit::wsi::macos {
     }
 
     consteval auto generate_key_array() -> decltype(auto) {
-        auto out = std::array<Key, 256> {};
+        auto out = array<Key, 256> {};
         stdr::fill(out, Key::UNKNOWN);
 
         out[0x00] = Key::A;
@@ -159,13 +159,13 @@ namespace stormkit::wsi::macos {
         return out;
     }
 
-    consteval auto generate_scancode_array(std::span<const Key, 256> keys) -> decltype(auto) {
-        auto out = std::array<u8, 256> {};
+    consteval auto generate_scancode_array(array_view<const Key, 256> keys) -> decltype(auto) {
+        auto out = array<u8, 256> {};
         stdr::fill(out, 0);
 
         for (auto i : range(256_u8)) {
             const auto key  = keys[i];
-            const auto _key = narrow<usize>(key);
+            const auto _key = unchecked_narrow<usize>(key);
             if (key != Key::UNKNOWN) out[_key] = i;
         }
 
@@ -202,7 +202,7 @@ extern "C" {
         EXPECTS(ptr != 0);
 
         auto& window = *std::bit_cast<stormkit::wsi::macos::Window*>(ptr);
-        window.WindowBase::set_extent(math::Extent2 { width, height }.to<u32>());
+        window.WindowBase::set_extent(math::extent2 { width, height }.to<u32>());
 
         window.resized_event(window.extent());
     }

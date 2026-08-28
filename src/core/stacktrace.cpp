@@ -12,16 +12,24 @@ module;
     #define STD_STACKTRACE_SUPPORTED
 #endif
 
-module stormkit.core;
+module stormkit.core.stacktrace;
 
 import std;
 
-import :console;
-import :string.operations;
+import stormkit.core.console;
+import stormkit.core.string;
+import stormkit.core.errors;
+import stormkit.core.types;
+import stormkit.core.typesafe.safecasts;
+import stormkit.core.parallelism.threadutils;
+
+namespace stdr = std::ranges;
+
+using namespace std::literals;
 
 namespace stormkit { inline namespace core {
-    auto prettify(std::string_view str) -> std::string {
-        auto out = std::string { str };
+    auto prettify(string_view str) -> string {
+        auto out = string { str };
         out      = replace(out, "::__1::", "::");
         out      = replace(out, "::$_0::", "::");
         out      = replace(out, "__invoke", "invoke");
@@ -31,22 +39,22 @@ namespace stormkit { inline namespace core {
         out      = replace(out, "basic_string_view<char, std::char_traits<char>>", "string_view");
         out      = replace(out, "basic_string_view<char, std::char_traits<char> >", "string_view");
         out      = replace(out,
-                      "basic_string<char, std::char_traits<char>, "
+                           "basic_string<char, std::char_traits<char>, "
                            "std::allocator<char>>",
-                      "string");
+                           "string");
         out      = replace(out,
-                      "basic_string<char, std::char_traits<char>, "
+                           "basic_string<char, std::char_traits<char>, "
                            "std::allocator<char> >",
-                      "string");
+                           "string");
         return out;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto print_stacktrace(int ignore_count) noexcept -> void {
+    auto print_stacktrace(u32 ignore_count) noexcept -> void {
         const auto thread_name = get_current_thread_name();
         const auto stderr      = get_stderr();
-        ;
+
         if (not std::empty(thread_name))
             std::println(stderr,
                          "================= CALLSTACK (thread name: {}, id: {}) =================",
@@ -57,20 +65,20 @@ namespace stormkit { inline namespace core {
 #ifdef STD_STACKTRACE_SUPPORTED
         const auto st = std::stacktrace::current();
         auto       i  = 0;
-        for (auto&& frame : st) {
+        for (const auto& frame : st) {
             if (i < ignore_count) {
                 i += 1;
                 continue;
             }
     #ifdef STORMKIT_COMPILER_MSSTL
-            const auto frame_str = std::to_string(frame);
-            auto       splitted  = split(frame_str, "+");
-            const auto address   = from_string<u64>(splitted[1].substr(2), 16)
-                                   .transform_error([stderr, &splitted](auto&& err) noexcept {
+            const auto frame_str        = std::to_string(frame);
+            auto       splitted         = split(frame_str, "+");
+            const auto address          = as<u64>(splitted[1].substr(2), 16)
+                                            .transform_error([stderr, &splitted](auto&& err) noexcept {
                                        std::println(stderr, "Failed to parse {}, reason: {}", splitted[0], err);
                                        return 0;
-                                   })
-                                   .value();
+                                            })
+                                            .value();
             splitted                    = split(splitted[0], "!");
             const auto formatted_symbol = prettify((stdr::size(splitted) >= 2)
                                                      ? "\n    in " + (YELLOW_TEXT_STYLE | splitted[1]).render()
@@ -82,12 +90,11 @@ namespace stormkit { inline namespace core {
             // clang-format on
             const auto frame_str = std::to_string(frame);
             const auto splitted  = split(frame_str, ": ");
-            const auto address   = from_string<u64>(splitted[0].substr(2), 16)
-                                   .transform_error([stderr, &splitted](auto&& err) noexcept {
-                                       std::println(stderr, "Failed to parse {}, reason: {}", splitted[0], err);
-                                       return 0;
-                                   })
-                                   .value();
+            const auto
+              address = *try_as<u64>(splitted[0].substr(2), 16).transform_error([stderr, &splitted](auto&& err) noexcept {
+                  std::println(stderr, "Failed to parse {}, reason: {}", splitted[0], err);
+                  return 0;
+              });
 
             const auto formatted_symbol = prettify((stdr::size(splitted) > 2)
                                                      ? "\n    in " + (YELLOW_TEXT_STYLE | splitted[1]).render()
@@ -99,7 +106,7 @@ namespace stormkit { inline namespace core {
     #endif
             const auto object_address = (address == 0 ? "inlined" : std::format("{:#010x}", address));
 
-            if (not std::ranges::empty(frame.source_file()) and frame.source_line() != 0) {
+            if (not stdr::empty(frame.source_file()) and frame.source_line() != 0) {
                 std::println(stderr,
                              "{}# {}{}\n    at {}:{}",
                              (i++ - ignore_count),
@@ -107,7 +114,7 @@ namespace stormkit { inline namespace core {
                              formatted_symbol,
                              GREEN_TEXT_STYLE | frame.source_file(),
                              BLUE_TEXT_STYLE | frame.source_line());
-            } else if (not std::ranges::empty(frame.source_file())) {
+            } else if (not stdr::empty(frame.source_file())) {
                 std::println(stderr,
                              "{}# {}{}\n    at {}",
                              (i++ - ignore_count),

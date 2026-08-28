@@ -1,0 +1,689 @@
+// Copyright (C) 2024 Arthur LAURENT <arthur.laurent4@gmail.com>
+// This file is subject to the license terms in the LICENSE file
+// found in the top-level of this distribution
+
+module;
+
+#include <stormkit/core/contract_macro.hpp>
+#include <stormkit/core/platform_macro.hpp>
+
+#include <stormkit/image/api.hpp>
+
+export module stormkit.image;
+
+import std;
+
+import stormkit.core;
+
+export namespace stormkit::image {
+    class STORMKIT_IMAGE_API Image {
+      public:
+        enum class Format : u8 {
+            R8_SNORM     = 0,
+            RG8_SNORM    = 1,
+            RGB8_SNORM   = 2,
+            RGBA8_SNORM  = 3,
+            R8_UNORM     = 4,
+            RG8_UNORM    = 5,
+            RGB8_UNORM   = 6,
+            RGBA8_UNORM  = 7,
+            R16_SNORM    = 8,
+            RG16_SNORM   = 9,
+            RGB16_SNORM  = 10,
+            RGBA16_SNORM = 11,
+            R16_UNORM    = 12,
+            RG16_UNORM   = 13,
+            RGB16_UNORM  = 14,
+            RGBA16_UNORM = 15,
+            RGBA4_UNORM  = 17,
+            BGR8_UNORM   = 20,
+            BGRA8_UNORM  = 21,
+            R8I          = 22,
+            RG8I         = 23,
+            RGB8I        = 24,
+            RGBA8I       = 25,
+            R8U          = 26,
+            RG8U         = 27,
+            RGB8U        = 28,
+            RGBA8U       = 29,
+            R16I         = 30,
+            RG16I        = 31,
+            RGB16I       = 32,
+            RGBA16I      = 33,
+            R16U         = 34,
+            RG16U        = 35,
+            RGB16U       = 36,
+            RGBA16U      = 37,
+            R32I         = 38,
+            RG32I        = 39,
+            RGB32I       = 40,
+            RGBA32I      = 41,
+            R32U         = 42,
+            RG32U        = 43,
+            RGB32U       = 44,
+            RGBA32U      = 45,
+            R16F         = 47,
+            RG16F        = 48,
+            RGB16F       = 49,
+            RGBA16F      = 50,
+            R32F         = 51,
+            RG32F        = 52,
+            RGB32F       = 53,
+            RGBA32F      = 54,
+            SRGB8        = 56,
+            SRGBA8       = 57,
+            SBGR8        = 58,
+            SBGRA8       = 59,
+            UNDEFINED    = 254,
+        };
+
+        enum class Codec : u8 {
+            AUTODETECT = 0,
+            JPEG       = 1,
+            PNG        = 2,
+            TARGA      = 3,
+            PPM        = 4,
+            HDR        = 5,
+            KTX        = 6,
+            QOI        = 7,
+            UNKNOWN    = 255,
+        };
+
+        enum class CodecTs : u8 {
+            BINARY = 0,
+            ASCII  = 1,
+        };
+
+        struct Error {
+            enum class Reason {
+                NOT_IMPLEMENTED,
+                FAILED_TO_PARSE,
+                FAILED_TO_SAVE,
+                FILE_NOT_FOUND,
+                INVALID_FORMAT,
+                UNKNOWN,
+            } reason;
+
+            string str_error;
+        };
+
+        struct ImageData {
+            math::uextent3 extent            = { .width = 0u, .height = 0u };
+            u32            channel_count     = 0u;
+            u32            bytes_per_channel = 0u;
+            u32            layers            = 1u;
+            u32            faces             = 1u;
+            u32            mip_levels        = 1u;
+            Format         format            = Format::UNDEFINED;
+
+            byte_dynarray data = {};
+        };
+
+        Image() noexcept;
+        explicit Image(ImageData&& data) noexcept;
+        Image(const math::uextent3& extent, Format format) noexcept;
+        Image(const std::filesystem::path& filepath, Codec codec = Codec::AUTODETECT) noexcept;
+        Image(byte_view data, Codec codec = Codec::AUTODETECT) noexcept;
+        ~Image() noexcept;
+
+        Image(const Image& rhs) noexcept;
+        auto operator=(const Image& rhs) noexcept -> Image&;
+
+        Image(Image&& rhs) noexcept;
+        auto operator=(Image&& rhs) noexcept -> Image&;
+
+        [[nodiscard]]
+        auto load_from_file(std::filesystem::path filepath, Codec codec = Codec::AUTODETECT) noexcept
+          -> std::expected<void, Error>;
+        [[nodiscard]]
+        auto load_from_memory(byte_view data, Codec codec = Codec::AUTODETECT) noexcept -> std::expected<void, Error>;
+        [[nodiscard]]
+        auto save_to_file(std::filesystem::path filename, Codec codec, CodecTs args = CodecTs::BINARY) const noexcept
+          -> std::expected<void, Error>;
+
+        [[nodiscard]]
+        auto save_to_memory(Codec codec, CodecTs args = CodecTs::BINARY) const noexcept
+          -> std::expected<byte_dynarray, Error>;
+
+        auto create(math::uextent3 extent, Format format) noexcept -> void;
+
+        [[nodiscard]]
+        auto convert_to(Format format) const noexcept -> Image;
+        [[nodiscard]]
+        auto scale(const math::uextent3& scale_to) const noexcept -> Image;
+        [[nodiscard]]
+        auto flip_x() const noexcept -> Image;
+        [[nodiscard]]
+        auto flip_y() const noexcept -> Image;
+        [[nodiscard]]
+        auto flip_z() const noexcept -> Image;
+        [[nodiscard]]
+        auto rotate_90() const noexcept -> Image;
+        [[nodiscard]]
+        auto rotate_180() const noexcept -> Image;
+        [[nodiscard]]
+        auto rotate_270() const noexcept -> Image;
+
+        [[nodiscard]]
+        auto pixel(usize id, u32 layer = 0u, u32 face = 0u, u32 level = 0u) noexcept -> byte_view_mut;
+        [[nodiscard]]
+        auto pixel(usize id, u32 layer = 0u, u32 face = 0u, u32 level = 0u) const noexcept -> byte_view;
+        [[nodiscard]]
+        auto pixel(math::uvec3 position, u32 layer = 0u, u32 face = 0u, u32 level = 0u) noexcept -> byte_view_mut;
+        [[nodiscard]]
+        auto pixel(math::uvec3 position, u32 layer = 0u, u32 face = 0u, u32 level = 0u) const noexcept -> byte_view;
+
+        [[nodiscard]]
+        auto extent(u32 level = 0u) const noexcept -> math::uextent3;
+
+        [[nodiscard]]
+        auto channelCount() const noexcept -> u32;
+
+        [[nodiscard]]
+        auto bytesPerChannel() const noexcept -> u32;
+
+        [[nodiscard]]
+        auto layers() const noexcept -> u32;
+
+        [[nodiscard]]
+        auto faces() const noexcept -> u32;
+
+        [[nodiscard]]
+        auto mip_levels() const noexcept -> u32;
+
+        [[nodiscard]]
+        auto format() const noexcept -> Format;
+
+        [[nodiscard]]
+        auto size() const noexcept -> usize;
+        [[nodiscard]]
+        auto size(u32 layer, u32 face, u32 level) const noexcept -> usize;
+        [[nodiscard]]
+        auto size(u32 layer, u32 face) const noexcept -> usize;
+        [[nodiscard]]
+        auto size(u32 layer) const noexcept -> usize;
+
+        [[nodiscard]]
+        auto data() noexcept -> byte_view_mut;
+        [[nodiscard]]
+        auto data(u32 layer, u32 face, u32 level) noexcept -> byte_view_mut;
+        [[nodiscard]]
+        auto data() const noexcept -> byte_view;
+        [[nodiscard]]
+        auto data(u32 layer, u32 face, u32 level) const noexcept -> byte_view;
+
+        [[nodiscard]]
+        auto begin() noexcept;
+        [[nodiscard]]
+        auto begin(u32 layer, u32 face, u32 level) noexcept;
+        [[nodiscard]]
+        auto begin() const noexcept;
+        [[nodiscard]]
+        auto begin(u32 layer, u32 face, u32 level) const noexcept;
+
+        [[nodiscard]]
+        auto cbegin() const noexcept;
+        [[nodiscard]]
+        auto cbegin(u32 layer, u32 face, u32 level) const noexcept;
+
+        [[nodiscard]]
+        auto end() noexcept;
+        [[nodiscard]]
+        auto end(u32 layer, u32 face, u32 level) noexcept;
+        [[nodiscard]]
+        auto end() const noexcept;
+        [[nodiscard]]
+        auto end(u32 layer, u32 face, u32 level) const noexcept;
+
+        [[nodiscard]]
+        auto cend() const noexcept;
+        [[nodiscard]]
+        auto cend(u32 layer, u32 face, u32 level) const noexcept;
+
+        [[nodiscard]]
+        auto image_data() const noexcept -> const ImageData&;
+
+      private:
+        ImageData m_data;
+    };
+
+    constexpr auto get_format_channel_count(Image::Format format) noexcept -> u8;
+    constexpr auto getSizeof(Image::Format format) noexcept -> u8;
+
+} // namespace stormkit::image
+
+export {
+    template<typename CharT>
+    struct std::formatter<stormkit::image::Image::Error, CharT>: std::formatter<std::basic_string_view<CharT>, CharT> {
+        template<class FormatContext>
+        [[nodiscard]]
+        auto format(const stormkit::image::Image::Error& error, FormatContext& ctx) const noexcept -> decltype(ctx.out());
+    };
+}
+
+////////////////////////////////////////////////////////////////////
+///                      IMPLEMENTATION                          ///
+////////////////////////////////////////////////////////////////////
+
+namespace stormkit::image {
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::pixel(usize index, u32 layer, u32 face, u32 level) noexcept -> byte_view_mut {
+        EXPECTS(m_data.mip_levels > level);
+        EXPECTS(m_data.faces > face);
+        EXPECTS(m_data.layers > layer);
+
+        auto _data = data(layer, face, level);
+
+        EXPECTS(index < m_data.extent.width * m_data.extent.height * m_data.extent.depth);
+
+        const auto block_size = m_data.channel_count * m_data.bytes_per_channel;
+
+        return { std::data(_data) + index * block_size, block_size };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::pixel(usize index, u32 layer, u32 face, u32 level) const noexcept -> byte_view {
+        EXPECTS(m_data.mip_levels > level);
+        EXPECTS(m_data.faces > face);
+        EXPECTS(m_data.layers > layer);
+
+        auto _data = data(layer, face, level);
+
+        const auto mip_extent = extent(level);
+        EXPECTS(index < mip_extent.width * mip_extent.height * mip_extent.depth);
+
+        const auto block_size = m_data.channel_count * m_data.bytes_per_channel;
+
+        return { std::data(_data) + index * block_size, block_size };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::pixel(math::uvec3 position, u32 layer, u32 face, u32 level) noexcept -> byte_view_mut {
+        const auto mip_extent = extent(level);
+
+        const auto id = position.x + (position.y * mip_extent.width) + (mip_extent.width * mip_extent.height * position.z);
+
+        return pixel(id, layer, face, level);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::pixel(math::uvec3 position, u32 layer, u32 face, u32 level) const noexcept -> byte_view {
+        const auto mip_extent = extent(level);
+
+        const auto id = position.x + (position.y * mip_extent.width) + (mip_extent.width * mip_extent.height * position.z);
+
+        return pixel(id, layer, face, level);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::extent(u32 level) const noexcept -> math::uextent3 {
+        EXPECTS(m_data.mip_levels > level);
+
+        return { .width  = std::max(1u, m_data.extent.width >> level),
+                 .height = std::max(1u, m_data.extent.height >> level),
+                 .depth  = std::max(1u, m_data.extent.depth >> level) };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::channelCount() const noexcept -> u32 {
+        return m_data.channel_count;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::bytesPerChannel() const noexcept -> u32 {
+        return m_data.bytes_per_channel;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::layers() const noexcept -> u32 {
+        return m_data.layers;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::faces() const noexcept -> u32 {
+        return m_data.faces;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::mip_levels() const noexcept -> u32 {
+        return m_data.mip_levels;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::format() const noexcept -> Format {
+        return m_data.format;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::size() const noexcept -> usize {
+        return std::size(m_data.data);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::size(u32 layer, // TODO Use layer and face to get correct size
+                            u32 face,
+                            u32 level) const noexcept -> usize {
+        EXPECTS(m_data.mip_levels > level);
+        EXPECTS(m_data.faces > face);
+        EXPECTS(m_data.layers > layer);
+
+        const auto mip_extent = extent(level);
+
+        return mip_extent.width * mip_extent.height * mip_extent.depth * m_data.channel_count * m_data.bytes_per_channel;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::size(u32 layer, u32 face) const noexcept -> usize {
+        auto _size = usize { 0u };
+        for (auto i : range(m_data.mip_levels)) _size += size(layer, face, i);
+
+        return _size;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::size(u32 layer) const noexcept -> usize {
+        auto _size = usize { 0u };
+        for (auto i : range(m_data.faces)) _size += size(layer, i);
+
+        return _size;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::data() noexcept -> byte_view_mut {
+        return m_data.data;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::data(u32 layer, u32 face, u32 level) noexcept -> byte_view_mut {
+        const auto mip_size = size(layer, face, level);
+
+        auto offset = usize { 0 };
+
+        for (auto i : range(layer)) offset += size(i);
+
+        for (auto j : range(face)) offset += size(layer, j);
+
+        for (auto k : range(level)) offset += size(layer, face, k);
+
+        return { std::data(m_data.data) + offset, mip_size };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::data() const noexcept -> byte_view {
+        return m_data.data;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::data(u32 layer, u32 face, u32 level) const noexcept -> byte_view {
+        const auto mip_size = size(layer, face, level);
+
+        auto offset = usize { 0 };
+
+        for (auto i : range(layer)) offset += size(i);
+
+        for (auto j : range(face)) offset += size(layer, j);
+
+        for (auto k : range(level)) offset += size(layer, face, k);
+
+        return { std::data(m_data.data) + offset, mip_size };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::begin() noexcept {
+        return std::begin(m_data.data);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::begin(u32 layer, u32 face, u32 level) noexcept {
+        EXPECTS(m_data.mip_levels > level);
+        EXPECTS(m_data.faces > face);
+        EXPECTS(m_data.layers > layer);
+
+        return std::begin(data(layer, face, level));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::begin() const noexcept {
+        return std::begin(m_data.data);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::begin(u32 layer, u32 face, u32 level) const noexcept {
+        return std::begin(data(layer, face, level));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::cbegin() const noexcept {
+        return std::cbegin(m_data.data);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::cbegin(u32 layer, u32 face, u32 level) const noexcept {
+        EXPECTS(m_data.mip_levels > level);
+        EXPECTS(m_data.faces > face);
+        EXPECTS(m_data.layers > layer);
+
+        return std::cbegin(data(layer, face, level));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::end() noexcept {
+        return std::end(m_data.data);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::end(u32 layer, u32 face, u32 level) noexcept {
+        EXPECTS(m_data.mip_levels > level);
+        EXPECTS(m_data.faces > face);
+        EXPECTS(m_data.layers > layer);
+
+        return std::end(data(layer, face, level));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::end() const noexcept {
+        return std::end(m_data.data);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::end(u32 layer, u32 face, u32 level) const noexcept {
+        EXPECTS(m_data.mip_levels > level);
+        EXPECTS(m_data.faces > face);
+        EXPECTS(m_data.layers > layer);
+
+        return std::end(data(layer, face, level));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::cend() const noexcept {
+        return std::cend(m_data.data);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::cend(u32 layer, u32 face, u32 level) const noexcept {
+        EXPECTS(m_data.mip_levels > level);
+        EXPECTS(m_data.faces > face);
+        EXPECTS(m_data.layers > layer);
+
+        return std::cend(data(layer, face, level));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    inline auto Image::image_data() const noexcept -> const ImageData& {
+        return m_data;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    constexpr auto get_format_channel_count(Image::Format format) noexcept -> u8 {
+        switch (format) {
+            case Image::Format::R8_SNORM:
+            case Image::Format::R8_UNORM:
+            case Image::Format::R16_SNORM:
+            case Image::Format::R16_UNORM:
+            case Image::Format::R8I:
+            case Image::Format::R8U:
+            case Image::Format::R16I:
+            case Image::Format::R16U:
+            case Image::Format::R32I:
+            case Image::Format::R32U:
+            case Image::Format::R16F:
+            case Image::Format::R32F: return 1;
+
+            case Image::Format::RG8_SNORM:
+            case Image::Format::RG8_UNORM:
+            case Image::Format::RG16_SNORM:
+            case Image::Format::RG16_UNORM:
+            case Image::Format::RG8I:
+            case Image::Format::RG8U:
+            case Image::Format::RG16I:
+            case Image::Format::RG16U:
+            case Image::Format::RG32I:
+            case Image::Format::RG32U:
+            case Image::Format::RG16F:
+            case Image::Format::RG32F: return 2;
+
+            case Image::Format::RGB8_SNORM:
+            case Image::Format::RGB8_UNORM:
+            case Image::Format::RGB16_SNORM:
+            case Image::Format::RGB16_UNORM:
+            case Image::Format::BGR8_UNORM:
+            case Image::Format::RGB8I:
+            case Image::Format::RGB8U:
+            case Image::Format::RGB16I:
+            case Image::Format::RGB16U:
+            case Image::Format::RGB32I:
+            case Image::Format::RGB32U:
+            case Image::Format::RGB16F:
+            case Image::Format::RGB32F:
+            case Image::Format::SRGB8:
+            case Image::Format::SBGR8: return 3;
+
+            case Image::Format::RGBA8_SNORM:
+            case Image::Format::RGBA8_UNORM:
+            case Image::Format::RGBA16_SNORM:
+            case Image::Format::RGBA16_UNORM:
+            case Image::Format::BGRA8_UNORM:
+            case Image::Format::RGBA8I:
+            case Image::Format::RGBA8U:
+            case Image::Format::RGBA16I:
+            case Image::Format::RGBA16U:
+            case Image::Format::RGBA32I:
+            case Image::Format::RGBA32U:
+            case Image::Format::RGBA16F:
+            case Image::Format::RGBA32F:
+            case Image::Format::SRGBA8:
+            case Image::Format::SBGRA8: return 4;
+
+            default: break;
+        }
+
+        return 0u;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    constexpr auto getSizeof(Image::Format format) noexcept -> u8 {
+        switch (format) {
+            case Image::Format::R8_SNORM:
+            case Image::Format::R8_UNORM:
+            case Image::Format::RG8_SNORM:
+            case Image::Format::RG8_UNORM:
+            case Image::Format::R8I:
+            case Image::Format::R8U:
+            case Image::Format::RG8I:
+            case Image::Format::RG8U:
+            case Image::Format::RGB8_SNORM:
+            case Image::Format::RGB8_UNORM:
+            case Image::Format::BGR8_UNORM:
+            case Image::Format::RGB8I:
+            case Image::Format::RGB8U:
+            case Image::Format::RGBA8_SNORM:
+            case Image::Format::RGBA8_UNORM:
+            case Image::Format::RGBA16_SNORM:
+            case Image::Format::BGRA8_UNORM:
+            case Image::Format::SRGB8:
+            case Image::Format::SBGR8:
+            case Image::Format::SRGBA8:
+            case Image::Format::SBGRA8: return 1u;
+
+            case Image::Format::R16_SNORM:
+            case Image::Format::R16_UNORM:
+            case Image::Format::R16I:
+            case Image::Format::R16U:
+            case Image::Format::RG16_SNORM:
+            case Image::Format::RG16_UNORM:
+            case Image::Format::RG16I:
+            case Image::Format::RG16U:
+            case Image::Format::RG16F:
+            case Image::Format::RGB16I:
+            case Image::Format::RGB16U:
+            case Image::Format::RGB16F:
+            case Image::Format::RGBA16I:
+            case Image::Format::RGBA16U:
+            case Image::Format::RGBA16F:
+            case Image::Format::R16F: return 2u;
+
+            case Image::Format::R32I:
+            case Image::Format::R32U:
+            case Image::Format::R32F:
+            case Image::Format::RG32I:
+            case Image::Format::RG32U:
+            case Image::Format::RG32F:
+            case Image::Format::RGB16_SNORM:
+            case Image::Format::RGB32I:
+            case Image::Format::RGB32U:
+            case Image::Format::RGB32F:
+            case Image::Format::RGBA8I:
+            case Image::Format::RGBA8U:
+            case Image::Format::RGBA32I:
+            case Image::Format::RGBA32U:
+            case Image::Format::RGBA32F: return 4u;
+
+            default: break;
+        }
+
+        return 0u;
+    }
+
+} // namespace stormkit::image
+
+template<class CharT>
+template<class FormatContext>
+auto std::formatter<stormkit::image::Image::Error, CharT>::format(const stormkit::image::Image::Error& error, FormatContext& ctx)
+  const noexcept -> decltype(ctx.out()) {
+    auto&& out = ctx.out();
+    return format_to(out, "{}", error.str_error);
+}

@@ -4,6 +4,8 @@
 
 module;
 
+#include <stormkit/core/try_expected.hpp>
+
 #include <stormkit/gpu/vulkan.hpp>
 
 module stormkit.gpu.resource;
@@ -80,33 +82,66 @@ namespace stormkit::gpu {
         // }
     } // namespace
 
-    auto Image::do_init(const VkImageCreateInfo& create_info, MemoryPropertyFlag memory_properties) noexcept -> Expected<void> {
-        return vk_call<VkImage>(m_vk_device_table->vkCreateImage, m_vk_device, &create_info, nullptr)
-          .transform(core::monadic::set(m_vk_handle))
-          .and_then([this, memory_properties] noexcept -> VulkanExpected<VmaAllocation> {
-              const auto create_info = VmaAllocationCreateInfo {
-                  .flags          = 0,
-                  .usage          = VMA_MEMORY_USAGE_UNKNOWN,
-                  .requiredFlags  = to_vk<VkMemoryPropertyFlags>(memory_properties),
-                  .preferredFlags = 0,
-                  .memoryTypeBits = 0,
-                  .pool           = nullptr,
-                  .pUserData      = nullptr,
-                  .priority       = 0
-              };
+    template class ImageInterface<ImageImplementation>;
+    template class ImageInterface<view::ImageImplementation>;
 
-              auto out    = VulkanExpected<VmaAllocation> { std::in_place, nullptr };
-              auto result = vmaAllocateMemoryForImage(m_vma_allocator, m_vk_handle, &create_info, &*out, nullptr);
-              if (result != VK_SUCCESS) out = std::unexpected { result };
-              else {
-                  m_vma_allocation = { [vma_allocator = m_vma_allocator](auto handle) noexcept {
-                      vmaFreeMemory(vma_allocator, handle);
-                  } };
-              }
-              return out;
-          })
-          .transform(core::monadic::set(m_vma_allocation))
-          .and_then([this] noexcept { return vk_call(vmaBindImageMemory, m_vma_allocator, m_vma_allocation, m_vk_handle); })
-          .transform_error(monadic::from_vk<Result>());
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto ImageImplementation::do_init(PrivateTag, const CreateInfo& _create_info) noexcept -> Expected<void> {
+        m_extent     = _create_info.extent;
+        m_format     = _create_info.format;
+        m_layers     = _create_info.layers;
+        m_faces      = 1;
+        m_mip_levels = _create_info.mip_levels;
+        m_type       = _create_info.type;
+        m_flags      = _create_info.flags;
+        m_samples    = _create_info.samples;
+        m_usages     = _create_info.usages;
+
+        if (core::check_flag_bit(m_flags, gpu::ImageCreateFlag::CUBE_COMPATIBLE)) m_faces = 6u;
+        const auto create_info = VkImageCreateInfo {
+            .sType                 = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+            .pNext                 = nullptr,
+            .flags                 = vk::to_vk<VkImageCreateFlags>(m_flags),
+            .imageType             = vk::to_vk<VkImageType>(m_type),
+            .format                = vk::to_vk<VkFormat>(m_format),
+            .extent                = { m_extent.width, m_extent.height, m_extent.depth },
+            .mipLevels             = m_mip_levels,
+            .arrayLayers           = m_layers * m_faces,
+            .samples               = vk::to_vk<VkSampleCountFlagBits>(m_samples),
+            .tiling                = vk::to_vk<VkImageTiling>(_create_info.tiling),
+            .usage                 = vk::to_vk<VkImageUsageFlags>(m_usages),
+            .sharingMode           = VK_SHARING_MODE_EXCLUSIVE,
+            .queueFamilyIndexCount = 0, // TODO CHECK IF VALID VALUE
+            .pQueueFamilyIndices   = nullptr,
+            .initialLayout         = VK_IMAGE_LAYOUT_UNDEFINED,
+        };
+
+        const auto& device = owner();
+
+        m_vk_handle = Try(vk::call_checked<VkImage>(device.device_table().vkCreateImage, device, &create_info, nullptr));
+
+        const auto vma_create_info = VmaAllocationCreateInfo {
+            .flags          = 0,
+            .usage          = VMA_MEMORY_USAGE_UNKNOWN,
+            .requiredFlags  = vk::to_vk<VkMemoryPropertyFlags>(_create_info.properties),
+            .preferredFlags = 0,
+            .memoryTypeBits = 0,
+            .pool           = nullptr,
+            .pUserData      = nullptr,
+            .priority       = 0
+        };
+
+        const auto allocator = device.allocator();
+        auto       out       = VmaAllocation { VK_NULL_HANDLE };
+        Try(vk::call_checked(vmaAllocateMemoryForImage, allocator, m_vk_handle, &vma_create_info, &out, nullptr));
+        m_vma_allocation = { [allocator](VmaAllocation handle) noexcept {
+            if (handle != VK_NULL_HANDLE) vk::call(vmaFreeMemory, allocator, handle);
+        } };
+        m_vma_allocation = std::move(out);
+
+        Try(vk::call_checked(vmaBindImageMemory, allocator, m_vma_allocation, m_vk_handle));
+
+        Return {};
     }
 } // namespace stormkit::gpu
