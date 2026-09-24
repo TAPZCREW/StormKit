@@ -113,12 +113,12 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ github.workspace }}/llvm.7z
-          key: ${{ matrix.os }}-LLVM-21-${{ matrix.arch }}
+          key: ${{ matrix.os }}-LLVM-24-${{ matrix.arch }}
 
       - name: Download LLVM
         if: ${{ startsWith(matrix.compiler, 'LLVM') && !steps.restore-llvmcache.outputs.cache-hit }}
         run: |
-          curl.exe -o "${{ github.workspace }}/llvm.7z" -LO https://github.com/Arthapz/llvm-prebuilt/releases/download/llvm-22/llvm.7z
+          curl.exe -o "${{ github.workspace }}/llvm.7z" -LO https://github.com/Arthapz/llvm-prebuilt/releases/download/llvm-24/llvm.7z
 
       - name: Extract LLVM
         if: ${{ startsWith(matrix.compiler, 'LLVM') }}

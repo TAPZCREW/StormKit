@@ -12,8 +12,8 @@ import stormkit.test;
 using namespace stormkit::core;
 
 namespace {
-    auto _ = test::TestSuite {
-        "Core.utils",
+    auto _ = test::test_suite {
+        "core.utils",
         { { "Allocation.safe",
             [] static noexcept {
                 auto allocation = allocate<int>(5);

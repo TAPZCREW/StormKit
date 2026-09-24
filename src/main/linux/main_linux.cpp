@@ -7,15 +7,17 @@ import stormkit.core;
 
 #include <version>
 
-extern auto user_main(std::span<const std::string_view>) -> int;
+using namespace stormkit;
 
-auto main(int argc, char** argv) -> int {
-    stormkit::setup_signal_handler();
-    stormkit::set_current_thread_name("MainThread");
+extern auto user_main(array_view<const string_view>) -> i32;
 
-    auto args = std::vector<std::string_view> {};
+auto main(i32 argc, char** argv) -> i32 {
+    setup_signal_handler();
+    set_current_thread_name("stormkit:main_thread");
 
-    for (auto i : stormkit::range(argc)) args.emplace_back(argv[i]);
+    auto args = dynarray<string_view> {};
+
+    for (auto i : range(argc)) args.emplace_back(argv[i]);
 
     return user_main(args);
 }

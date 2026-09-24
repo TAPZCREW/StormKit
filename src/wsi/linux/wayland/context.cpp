@@ -83,10 +83,10 @@ namespace stormkit::wsi::linux::wayland::wl {
         };
 
         struct RegistryBinder {
-            const wl_interface*                interface;
-            FunctionRef<void(Globals&, void*)> bind;
-            u32                                version    = 1;
-            FunctionRef<void(Globals&, void*)> after_bind = monadic::noop();
+            const wl_interface*                        interface;
+            std23::function_ref<void(Globals&, void*)> bind;
+            u32                                        version    = 1;
+            std23::function_ref<void(Globals&, void*)> after_bind = monadic::noop();
         };
 
         /////////////////////////////////////
@@ -94,8 +94,8 @@ namespace stormkit::wsi::linux::wayland::wl {
         template<auto member>
         constexpr auto make_binder() noexcept -> decltype(auto) {
             return [](Globals& _globals, void* ptr) static noexcept {
-                using U            = meta::ToPlainType<decltype(globals.*member)>;
-                (_globals.*member) = U::take(std::bit_cast<meta::UnderlyingType<U>>(ptr));
+                using U            = meta::to_plain_type<decltype(globals.*member)>;
+                (_globals.*member) = U::take(std::bit_cast<meta::value_type<U>>(ptr));
             };
         }
 
@@ -104,13 +104,13 @@ namespace stormkit::wsi::linux::wayland::wl {
         template<auto member>
         constexpr auto make_binder_to_array() noexcept -> decltype(auto) {
             return [](Globals& _globals, void* ptr) static noexcept {
-                using Vec = meta::ToPlainType<decltype(globals.*member)>;
-                using U   = meta::UnderlyingType<Vec>;
-                (_globals.*member).push_back(U::take(std::bit_cast<meta::UnderlyingType<U>>(ptr)));
+                using Vec = meta::to_plain_type<decltype(globals.*member)>;
+                using U   = meta::value_type<Vec>;
+                (_globals.*member).push_back(U::take(std::bit_cast<meta::value_type<U>>(ptr)));
             };
         }
 
-        const auto INTERFACE_MAP = frozen::make_unordered_map<frozen::string, RegistryBinder>({
+        const auto INTERFACE_MAP = make_static_hash_map<frozen::string, RegistryBinder>({
           { frozen::string { wl_compositor_interface.name },
            { &wl_compositor_interface, make_binder<&Globals::compositor>(), 4 } },
           {
@@ -197,7 +197,7 @@ namespace stormkit::wsi::linux::wayland::wl {
             auto cursor_size = 16;
 
             const auto size_str = std::getenv("XCURSOR_SIZE");
-            if (size_str) cursor_size = *from_string<i32>(size_str, 10);
+            if (size_str) cursor_size = *as<i32>(size_str, 10);
 
             const auto theme = std::getenv("XCURSOR_THEME");
 
@@ -225,7 +225,7 @@ namespace stormkit::wsi::linux::wayland::wl {
 
         auto& _globals = *std::bit_cast<Globals*>(data);
 
-        const auto interface_name = std::string_view { interface, std::char_traits<char>::length(interface) };
+        const auto interface_name = string_view { interface, std::char_traits<char>::length(interface) };
 
         const auto it = INTERFACE_MAP.find(interface_name);
         if (it == stdr::cend(INTERFACE_MAP)) return;

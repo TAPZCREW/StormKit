@@ -1,22 +1,7 @@
-target("file-logger")
-do
-    set_kind("binary")
-    set_languages("cxxlatest", "clatest")
+target("file-logger", function()
+    add_rules("stormkit::example")
 
-    add_rules("stormkit.flags")
-    add_rules("platform.windows.subsystem.console")
-
-    add_deps("core", "main", "log")
-
-    if is_mode("debug") then
-        add_defines("STORMKIT_BUILD_DEBUG")
-        add_defines("STORMKIT_ASSERT=1")
-        set_suffixname("-d")
-    else
-        add_defines("STORMKIT_ASSERT=0")
-    end
-
-    add_files("src/main.cpp")
+    add_files("src/*.cpp")
 
     set_group("examples/stormkit-log")
-end
+end)

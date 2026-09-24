@@ -5,6 +5,8 @@
 .xmake_configure_flags
 .xmake_target_to_run
 
+.clice
+
 ### C++ ###
 # Prerequisites
 *.d

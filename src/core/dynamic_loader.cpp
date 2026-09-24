@@ -15,14 +15,19 @@ module;
     #include <errno.h>
 #endif
 
-module stormkit.core;
+module stormkit.core.dynamic_loader;
 
 import std;
+
+import stormkit.core.typesafe.safecasts;
+import stormkit.core.errors;
+
+namespace stdfs = std::filesystem;
 
 namespace stormkit {
     /////////////////////////////////////
     /////////////////////////////////////
-    DynamicLoader::~DynamicLoader() {
+    dynamic_loader::~dynamic_loader() {
         if (m_library_handle != nullptr) [[likely]] {
 #ifdef STORMKIT_OS_WINDOWS
             FreeLibrary(std::bit_cast<HMODULE>(m_library_handle));
@@ -35,40 +40,40 @@ namespace stormkit {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto DynamicLoader::do_load(std::filesystem::path filepath) -> Expected<void> {
+    auto dynamic_loader::do_load(const stdfs::path& filepath) -> system_result<void> {
 #ifdef STORMKIT_OS_WINDOWS
         const auto wfilepath = filepath.wstring();
 
         m_library_handle = ::LoadLibraryExW(std::data(wfilepath), nullptr, 0);
 
         if (not m_library_handle) [[unlikely]]
-            return std::unexpected(std::error_code { as<i32>(GetLastError()), std::system_category() });
+            return std::unexpected { error_code::from_win32() };
 #else
         m_library_handle = ::dlopen(filepath.c_str(), RTLD_LAZY | RTLD_LOCAL);
 
         if (not m_library_handle) [[unlikely]]
-            return std::unexpected(std::error_code { static_cast<i32>(errno), std::system_category() });
+            return std::unexpected { error_code::from_errno() };
 #endif
 
-        m_filepath = std::move(filepath);
+        m_filepath = filepath;
 
         return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto DynamicLoader::do_get_func(std::string_view name) const -> Expected<void*> {
+    auto dynamic_loader::do_get_func(string_view name) const -> system_result<void*> {
         EXPECTS(m_library_handle);
 #ifdef STORMKIT_OS_WINDOWS
         auto func = ::GetProcAddress(std::bit_cast<HMODULE>(m_library_handle), std::data(name));
 
         if (not func) [[unlikely]]
-            return std::unexpected(std::error_code { as<i32>(::GetLastError()), std::system_category() });
+            return std::unexpected { error_code::from_win32() };
 #else
         auto func = ::dlsym(m_library_handle, std::data(name));
 
         if (not func) [[unlikely]]
-            return std::unexpected(std::error_code { static_cast<i32>(errno), std::system_category() });
+            return std::unexpected { error_code::from_errno() };
 #endif
 
         return { func };

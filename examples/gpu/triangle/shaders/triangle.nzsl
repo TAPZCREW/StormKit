@@ -15,7 +15,7 @@ struct VertOut {
 }
 
 [entry(vert)]
-fn main(input: VertIn) -> VertOut {
+fn vert_main(input: VertIn) -> VertOut {
     let output: VertOut;
 
     let position: vec2[f32];
@@ -44,7 +44,7 @@ struct FragOut {
 }
 
 [entry(frag)]
-fn main(input: VertOut) -> FragOut {
+fn frag_main(input: VertOut) -> FragOut {
     let output: FragOut;
     output.color = vec4[f32](input.color, 1.);
 

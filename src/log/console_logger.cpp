@@ -9,7 +9,6 @@ module;
 module stormkit.log;
 
 import std;
-import frozen;
 
 import stormkit.core;
 
@@ -19,56 +18,46 @@ namespace stdr = std::ranges;
 
 namespace stormkit::log {
     namespace {
-        constexpr auto StyleMap = frozen::make_unordered_map<Severity, ConsoleStyle>({
-          { Severity::INFO,    ConsoleStyle { .fg = ConsoleColor::GREEN, .modifiers = StyleModifier::INVERSE }   },
-          { Severity::WARNING, ConsoleStyle { .fg = ConsoleColor::MAGENTA, .modifiers = StyleModifier::INVERSE } },
-          { Severity::ERROR,   ConsoleStyle { .fg = ConsoleColor::YELLOW, .modifiers = StyleModifier::INVERSE }  },
-          { Severity::FATAL,   ConsoleStyle { .fg = ConsoleColor::RED, .modifiers = StyleModifier::INVERSE }     },
-          { Severity::DEBUG,   ConsoleStyle { .fg = ConsoleColor::CYAN, .modifiers = StyleModifier::INVERSE }    },
+        constexpr auto STYLE_MAP = make_static_hash_map<severity, console_style>({
+          { severity::INFO,    console_style { .fg = console_color::GREEN, .modifiers = style_modifier::INVERSE }   },
+          { severity::WARNING, console_style { .fg = console_color::MAGENTA, .modifiers = style_modifier::INVERSE } },
+          { severity::ERROR,   console_style { .fg = console_color::YELLOW, .modifiers = style_modifier::INVERSE }  },
+          { severity::FATAL,   console_style { .fg = console_color::RED, .modifiers = style_modifier::INVERSE }     },
+          { severity::DEBUG,   console_style { .fg = console_color::CYAN, .modifiers = style_modifier::INVERSE }    },
         });
+
+        constexpr auto FORMAT_STRING             = "{}[ {:<7} | {:%S} ]{} {}"sv;
+        constexpr auto FORMAT_STRING_WITH_MODULE = "{}[ {:<7} | {} | {:%S} ]{} {}"sv;
+    } // namespace
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    console_logger::console_logger(clock_type::time_point start) noexcept : logger { std::move(start) } {
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    ConsoleLogger::ConsoleLogger(LogClock::time_point start) noexcept : Logger { std::move(start) } {
+    console_logger::console_logger(clock_type::time_point start, severity log_level) noexcept
+        : logger { std::move(start), log_level } {
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    ConsoleLogger::ConsoleLogger(LogClock::time_point start, Severity log_level) noexcept
-        : Logger { std::move(start), log_level } {
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    auto ConsoleLogger::write(Severity severity, const Module& module, CZString string) noexcept -> void {
-        const auto now      = LogClock::now();
+    auto console_logger::write(severity severity_, const module& module, std::string_view str) noexcept -> void {
+        const auto now      = clock_type::now();
         const auto time     = std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time);
-        const auto is_error = severity == Severity::ERROR or severity == Severity::FATAL;
+        const auto is_error = severity_ == severity::ERROR or severity_ == severity::FATAL;
         const auto out      = (is_error) ? get_stderr() : get_stdout();
+        const auto style    = STYLE_MAP.at(severity_);
 
-        const auto header = [&severity, &module, &time] noexcept {
-            if (std::empty(module.name)) return std::format("[{}, {:%S}]", as_string(severity), time);
-            else
-                return std::format("[{}, {:%S}, {}]", as_string(severity), time, module.name);
-        }();
-
-        const auto prefixed_string = [&header, string] noexcept {
-            const auto header_length = stdr::size(header) + 1;
-
-            auto prefix = std::string {};
-            prefix.resize(header_length + 1, ' ');
-            prefix.front() = '\n';
-            return replace(string, "\n", prefix);
-        }();
-
-        const auto styled_header = std::format("{} ", StyleMap.at(severity) | header);
-        std::println(out, "{}{}", styled_header, prefixed_string);
+        if (stdr::empty(module.name)) std::println(out, FORMAT_STRING, style, severity_, time, ecma48::RESET, str);
+        else
+            std::println(out, FORMAT_STRING_WITH_MODULE, style, severity_, module.name, time, ecma48::RESET, str);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto ConsoleLogger::flush() noexcept -> void {
+    auto console_logger::flush() noexcept -> void {
         std::fflush(get_stdout());
         std::fflush(get_stderr());
     }

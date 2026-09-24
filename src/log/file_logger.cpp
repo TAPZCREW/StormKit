@@ -10,6 +10,8 @@ import stormkit.core;
 
 using namespace std::literals;
 
+namespace stdfs = std::filesystem;
+
 namespace {
     constexpr auto LOG_FILE_NAME = "log.txt";
 }
@@ -17,23 +19,11 @@ namespace {
 namespace stormkit::log {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    FileLogger::FileLogger(LogClock::time_point start, std::filesystem::path path) noexcept
-        : Logger { std::move(start) }, m_base_path { std::move(path) } {
-        if (not std::filesystem::exists(m_base_path)) std::filesystem::create_directory(m_base_path);
+    file_logger::file_logger(clock_type::time_point start, stdfs::path path) noexcept
+        : logger { std::move(start) }, m_base_path { std::move(path) } {
+        if (not stdfs::exists(m_base_path)) stdfs::create_directory(m_base_path);
 
-        expects(std::filesystem::is_directory(m_base_path), "path need to be a directory");
-
-        auto filepath                = m_base_path / to_native_encoding(LOG_FILE_NAME);
-        m_streams[filepath.string()] = std::ofstream { filepath.string() };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    FileLogger::FileLogger(LogClock::time_point start, std::filesystem::path path, Severity log_level) noexcept
-        : Logger { std::move(start), log_level }, m_base_path { std::move(path) } {
-        if (not std::filesystem::exists(m_base_path)) std::filesystem::create_directory(m_base_path);
-
-        expects(std::filesystem::is_directory(m_base_path), "path need to be a directory");
+        expects(stdfs::is_directory(m_base_path), "path need to be a directory");
 
         auto filepath                = m_base_path / to_native_encoding(LOG_FILE_NAME);
         m_streams[filepath.string()] = std::ofstream { filepath.string() };
@@ -41,17 +31,29 @@ namespace stormkit::log {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto FileLogger::flush() noexcept -> void {
+    file_logger::file_logger(clock_type::time_point start, stdfs::path path, severity log_level) noexcept
+        : logger { std::move(start), log_level }, m_base_path { std::move(path) } {
+        if (not stdfs::exists(m_base_path)) stdfs::create_directory(m_base_path);
+
+        expects(stdfs::is_directory(m_base_path), "path need to be a directory");
+
+        auto filepath                = m_base_path / to_native_encoding(LOG_FILE_NAME);
+        m_streams[filepath.string()] = std::ofstream { filepath.string() };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    auto file_logger::flush() noexcept -> void {
         for (auto& [path, stream] : m_streams) stream.flush();
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto FileLogger::write(Severity severity, const Module& m, CZString string) noexcept -> void {
-        const auto now  = LogClock::now();
+    auto file_logger::write(severity severity, const module& m, std::string_view str) noexcept -> void {
+        const auto now  = clock_type::now();
         const auto time = std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time).count();
 
-        auto filepath = m_base_path / std::filesystem::path { to_native_encoding(LOG_FILE_NAME) };
+        auto filepath = m_base_path / stdfs::path { to_native_encoding(LOG_FILE_NAME) };
         if (not std::empty(m.name)) {
             filepath = m_base_path / to_native_encoding(m.name);
             filepath += to_native_encoding("-") + to_native_encoding(LOG_FILE_NAME);
@@ -63,10 +65,11 @@ namespace stormkit::log {
         static constexpr auto LOG_LINE        = "[{}, {}] {}\n"sv;
         static constexpr auto LOG_LINE_MODULE = "[{}, {}, {}] {}\n"sv;
 
-        auto final_string = std::string {};
-        if (std::empty(m.name)) final_string = std::format(LOG_LINE, to_string(severity), time, string);
+        auto       final_string = string {};
+        const auto severity_str = replace(as<string_view>(severity), "severity::", "");
+        if (std::empty(m.name)) final_string = std::format(LOG_LINE, severity_str, time, str);
         else
-            final_string = std::format(LOG_LINE_MODULE, to_string(severity), time, m.name, string);
+            final_string = std::format(LOG_LINE_MODULE, severity_str, time, m.name, str);
 
         m_streams.at(filepath.string()) << final_string << std::flush;
     }

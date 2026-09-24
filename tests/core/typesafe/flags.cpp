@@ -7,125 +7,115 @@ import std;
 import stormkit.core;
 import stormkit.test;
 
-#include <stormkit/core/flags_macro.hpp>
 #include <stormkit/test/test_macro.hpp>
 
 using namespace stormkit::core;
 
-enum class Flag {
+enum class flag {
     A = 1,
     B = 2,
     C = 4,
 };
 
-enum Flag2 {
+enum flag2 {
     A = 1,
     B = 2,
     C = 4,
 };
 
-FLAG_ENUM(Flag)
-FLAG_ENUM(Flag2)
+template<>
+inline constexpr auto stormkit::core::meta::FLAG_TRAIT<flag> = true;
+
+template<>
+inline constexpr auto stormkit::core::meta::FLAG_TRAIT<flag2> = true;
 
 namespace {
-    auto _ = test::TestSuite {
-        "Core.typesafe",
+    auto _ = test::test_suite {
+        "core.typesafe",
         {
           {
-            "Flags.enum_class.operators",
+            "flags.enum_class.operators",
             [] static noexcept {
                 {
-                    auto foo = Flag::A | Flag::B;
-                    EXPECTS(foo == (Flag::A | Flag::B));
+                    auto foo = flag::A | flag::B;
+                    EXPECTS(foo == (flag::A | flag::B));
                 }
 
                 {
-                    auto foo = (Flag::A ^ Flag::A | Flag::B);
-                    EXPECTS(foo == Flag::B);
+                    auto foo = (flag::A ^ flag::A | flag::B);
+                    EXPECTS(foo == flag::B);
                 }
 
                 {
-                    auto foo = (Flag::A | Flag::B);
-                    foo ^= Flag::A;
-                    EXPECTS(foo == Flag::B);
+                    auto foo = (flag::A | flag::B);
+                    foo ^= flag::A;
+                    EXPECTS(foo == flag::B);
                 }
 
                 {
-                    auto foo = (Flag::A | Flag::B);
-                    foo      = foo & Flag::B;
-                    EXPECTS(foo == Flag::B);
+                    auto foo = (flag::A | flag::B);
+                    foo      = foo & flag::B;
+                    EXPECTS(foo == flag::B);
                 }
 
                 {
-                    auto foo = (Flag::A | Flag::B);
-                    foo &= Flag::B;
-                    EXPECTS(foo == Flag::B);
+                    auto foo = (flag::A | flag::B);
+                    foo &= flag::B;
+                    EXPECTS(foo == flag::B);
                 }
 
                 {
-                    auto foo = ~(Flag::B);
-                    EXPECTS(foo == ~(Flag::B));
+                    auto foo = ~(flag::B);
+                    EXPECTS(foo == ~(flag::B));
                 }
             },
           }, {
-            "Flags.enum_class.check_flag_bit",
+            "flags.enum_class.has_flag_bit",
             [] static noexcept {
-                auto foo = Flag::A | Flag::B;
-                EXPECTS(check_flag_bit(foo, Flag::A));
+                auto foo = flag::A | flag::B;
+                EXPECTS(has_flag_bit(foo, flag::A));
             },
           }, {
-            "Flags.enum_class.next_value",
-            [] static noexcept {
-                auto foo = Flag::A;
-                EXPECTS(next_value(foo) == Flag::B);
-            },
-          }, {
-            "Flags.enum.operators",
+            "flags.enum.operators",
             [] static noexcept {
                 {
-                    auto foo = Flag2::A | Flag2::B;
-                    EXPECTS(foo == (Flag2::A | Flag2::B));
+                    auto foo = flag2::A | flag2::B;
+                    EXPECTS(foo == (flag2::A | flag2::B));
                 }
 
                 {
-                    auto foo = (Flag2::A ^ Flag2::A | Flag2::B);
-                    EXPECTS(foo == Flag2::B);
+                    auto foo = (flag2::A ^ flag2::A | flag2::B);
+                    EXPECTS(foo == flag2::B);
                 }
 
                 {
-                    auto foo = (Flag2::A | Flag2::B);
-                    foo ^= Flag2::A;
-                    EXPECTS(foo == Flag2::B);
+                    auto foo = (flag2::A | flag2::B);
+                    foo ^= flag2::A;
+                    EXPECTS(foo == flag2::B);
                 }
 
                 {
-                    auto foo = (Flag2::A | Flag2::B);
-                    foo      = foo & Flag2::B;
-                    EXPECTS(foo == Flag2::B);
+                    auto foo = (flag2::A | flag2::B);
+                    foo      = foo & flag2::B;
+                    EXPECTS(foo == flag2::B);
                 }
 
                 {
-                    auto foo = (Flag2::A | Flag2::B);
-                    foo &= Flag2::B;
-                    EXPECTS(foo == Flag2::B);
+                    auto foo = (flag2::A | flag2::B);
+                    foo &= flag2::B;
+                    EXPECTS(foo == flag2::B);
                 }
 
                 {
-                    auto foo = (~Flag2::B);
-                    EXPECTS(foo == static_cast<int>(~Flag2::B));
+                    auto foo = (~flag2::B);
+                    EXPECTS(foo == static_cast<int>(~flag2::B));
                 }
             },
           }, {
-            "Flags.enum.check_flag_bit",
+            "flags.enum.has_flag_bit",
             [] static noexcept {
-                auto foo = Flag2::A | Flag2::B;
-                EXPECTS(check_flag_bit(foo, Flag2::A));
-            },
-          }, {
-            "Flags.enum.next_value",
-            [] static noexcept {
-                auto foo = Flag2::A;
-                EXPECTS(next_value(foo) == Flag2::B);
+                auto foo = flag2::A | flag2::B;
+                EXPECTS(has_flag_bit(foo, flag2::A));
             },
           }, }
     };

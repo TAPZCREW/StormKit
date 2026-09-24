@@ -29,7 +29,7 @@ external {
 }
 
 [entry(vert)]
-fn main(input: VertIn) -> VertOut {
+fn vert_main(input: VertIn) -> VertOut {
     let output: VertOut;
 
     output.position = viewer.proj * viewer.view * viewer.model * vec4[f32](input.position, 1.);
@@ -49,7 +49,7 @@ external {
 }
 
 [entry(frag)]
-fn main(input: VertOut) -> FragOut {
+fn frag_main(input: VertOut) -> FragOut {
     let output: FragOut;
     output.color = texture.Sample(input.uv);
 

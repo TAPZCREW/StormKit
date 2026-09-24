@@ -55,7 +55,7 @@ namespace {
 
             if (alloc_console) {
                 // set the screen buffer to be big enough to let us scroll text
-                auto coninfo = zeroed<CONSOLE_SCREEN_BUFFER_INFO>();
+                auto coninfo = CONSOLE_SCREEN_BUFFER_INFO {};
 
                 GetConsoleScreenBufferInfo(std_handle, &coninfo);
                 coninfo.dwSize.Y = MAX_CONSOLE_LINES;
@@ -75,18 +75,18 @@ namespace {
     }
 } // namespace
 
-extern auto user_main(std::span<const std::string_view>) -> int;
+extern auto user_main(array_view<const string_view>) -> int;
 
 auto __stdcall main(int argc, char** argv) -> int {
-    auto args = std::vector<std::string_view> {};
+    auto args = dynarray<string_view> {};
     args.reserve(as<usize>(argc));
 
-    for (auto&& i : stormkit::range(argc)) args.emplace_back(argv[i]);
+    for (const auto& i : stormkit::range(argc)) args.emplace_back(argv[i]);
 
     redirect_io_to_console(false);
 
     setup_signal_handler();
-    set_current_thread_name("MainThread");
+    set_current_thread_name("stormkit:main_thread");
 
     return user_main(args);
 }
@@ -95,15 +95,15 @@ auto __stdcall WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) -> int {
     const auto argc = __argc;
     const auto argv = __argv;
 
-    auto args = std::vector<std::string_view> {};
+    auto args = dynarray<string_view> {};
     args.reserve(as<usize>(argc));
 
-    for (auto&& i : stormkit::range(argc)) args.emplace_back(argv[i]);
+    for (auto i : stormkit::range(argc)) args.emplace_back(argv[i]);
 
     const auto has_allocated = redirect_io_to_console(false);
 
     setup_signal_handler();
-    set_current_thread_name("MainThread");
+    set_current_thread_name("stormkit:main_thread");
 
     const auto ret_value = user_main(args);
     if (has_allocated) ::FreeConsole();

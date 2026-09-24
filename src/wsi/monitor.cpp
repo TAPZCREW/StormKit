@@ -38,7 +38,7 @@ using namespace std::literals;
 namespace stormkit::wsi {
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_monitors(bool update) noexcept -> std::span<const Monitor> {
+    auto get_monitors(bool update) noexcept -> array_view<const Monitor> {
         return impl::get_monitors(wm(), update);
     }
 

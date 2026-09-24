@@ -13,9 +13,9 @@ using namespace stormkit::core;
 
 namespace {
 
-    auto _ = test::TestSuite {
-        "Core.utils",
-        { { "Numerics.range.simple",
+    auto _ = test::test_suite {
+        "core.utils",
+        { { "numeric.range.simple",
             [] {
                 auto rng     = range(10);
                 auto success = true;
@@ -28,7 +28,7 @@ namespace {
                 }
                 EXPECTS(success);
             } },
-          { "Numerics.range.custom_start",
+          { "numeric.range.custom_start",
             [] {
                 auto rng     = range(2, 10);
                 auto success = true;
@@ -41,7 +41,7 @@ namespace {
                 }
                 EXPECTS(success);
             } },
-          { "Numerics.range.custom_negative_start",
+          { "numeric.range.custom_negative_start",
             [] {
                 auto rng     = range(-5, 10);
                 auto success = true;
@@ -54,7 +54,7 @@ namespace {
                 }
                 EXPECTS(success);
             } },
-          { "Numerics.range.custom_step",
+          { "numeric.range.custom_step",
             [] {
                 auto rng     = range(-6, 10, 2);
                 auto success = true;
@@ -68,9 +68,9 @@ namespace {
                 }
                 EXPECTS(success);
             } },
-          { "Numerics.range.custom_numeric_range",
+          { "numeric.range.custom_numeric_range",
             [] {
-                auto rng     = range(NumericsRange { -4, 10, 2 });
+                auto rng     = range(numeric_range { -4, 10, 2 });
                 auto success = true;
                 auto j       = -4;
                 for (auto i : rng) {
@@ -82,7 +82,7 @@ namespace {
                 }
                 EXPECTS(success);
             } },
-          { "Numerics.multirange.simple",
+          { "numeric.multirange.simple",
             [] {
                 auto success = true;
                 auto i       = 0;
@@ -103,14 +103,14 @@ namespace {
 
                 EXPECTS(success);
             } },
-          { "Numerics.multirange.different_types",
+          { "numeric.multirange.different_types",
             [] {
                 auto success = true;
                 auto i       = 0;
                 auto j       = 0u;
 
                 for (auto [v1, v2] : multi_range(10, 5u)) {
-                    if (v1 != i or v2 != j or not std::same_as<decltype(v2), decltype(j)>) {
+                    if (v1 != i or v2 != j or not meta::same_as<decltype(v2), decltype(j)>) {
                         success = false;
                         break;
                     }
@@ -124,13 +124,13 @@ namespace {
 
                 EXPECTS(success);
             } },
-          { "Numerics.multirange.custom_start",
+          { "numeric.multirange.custom_start",
             [] {
                 auto success = true;
                 auto i       = 5;
                 auto j       = 2;
 
-                auto rng = multi_range(NumericsRange { 5, 10 }, NumericsRange { 2, 5 });
+                auto rng = multi_range(numeric_range { 5, 10 }, numeric_range { 2, 5 });
                 for (auto [v1, v2] : rng) {
                     if (v1 != i or v2 != j) {
                         success = false;
@@ -146,13 +146,13 @@ namespace {
 
                 EXPECTS(success);
             } },
-          { "Numerics.multirange.custom_step",
+          { "numeric.multirange.custom_step",
             [] {
                 auto success = true;
                 auto i       = 0;
                 auto j       = 0;
 
-                auto rng = multi_range(NumericsRange { 0, 10, 5 }, NumericsRange { 0, 6, 2 });
+                auto rng = multi_range(numeric_range { 0, 10, 5 }, numeric_range { 0, 6, 2 });
                 for (auto [v1, v2] : rng) {
                     if (v1 != i or v2 != j) {
                         success = false;

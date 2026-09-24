@@ -30,7 +30,7 @@ namespace stormkit::wsi::linux::x11::xcb {
     namespace {
         thread_local constinit auto initialized = false;
         thread_local constinit auto globals     = Globals {};
-        thread_local auto           atoms       = stormkit::StringHashMap<xcb_atom_t> {};
+        thread_local auto           atoms       = stormkit::string_hash_map<xcb_atom_t> {};
     } // namespace
 
     /////////////////////////////////////
@@ -66,18 +66,16 @@ namespace stormkit::wsi::linux::x11::xcb {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_atom(std::string_view name, bool only_if_exists) noexcept -> std::expected<xcb_atom_t, Error> {
+    auto get_atom(string_view name, bool only_if_exists) noexcept -> std::expected<xcb_atom_t, Error> {
         auto out = std::expected<xcb_atom_t, Error> {};
 
         auto it = atoms.find(name);
         if (it != stdr::end(atoms)) out = it->second;
         else {
-            const auto cookie = xcb_intern_atom(globals.connection,
-                                                (only_if_exists) ? 1 : 0,
-                                                as<u16>(stdr::size(name)),
-                                                stdr::data(name));
-            auto       error  = xcb::GenericError::empty();
-            const auto reply  = xcb::InternAtomReply::create(globals.connection, cookie, &error.handle());
+            const auto
+              cookie = xcb_intern_atom(globals.connection, (only_if_exists) ? 1 : 0, as<u16>(stdr::size(name)), stdr::data(name));
+            auto       error = xcb::GenericError::empty();
+            const auto reply = xcb::InternAtomReply::create(globals.connection, cookie, &error.handle());
 
             if (error or not reply.handle()) out = std::unexpected<Error> { std::in_place, get_error(as_ref_mut(*error)) };
             else {
@@ -91,8 +89,8 @@ namespace stormkit::wsi::linux::x11::xcb {
         return out;
     }
 
-    auto get_atom_name(xcb_atom_t atom) -> std::expected<std::string, Error> {
-        auto out = std::expected<std::string, Error> {};
+    auto get_atom_name(xcb_atom_t atom) -> std::expected<string, Error> {
+        auto out = std::expected<string, Error> {};
 
         const auto cookie = xcb_get_atom_name(globals.connection, atom);
 
@@ -100,20 +98,20 @@ namespace stormkit::wsi::linux::x11::xcb {
         const auto reply = xcb::AtomNameReply::create(globals.connection, cookie, &error.handle());
         if (error) out = std::unexpected<Error> { std::in_place, get_error(as_ref_mut(*error)) };
         else
-            out = std::string { xcb_get_atom_name_name(reply), as<usize>(xcb_get_atom_name_name_length(reply)) };
+            out = string { xcb_get_atom_name_name(reply), as<usize>(xcb_get_atom_name_name_length(reply)) };
 
         return out;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_error(Ref<xcb_generic_error_t> error) -> std::string {
+    auto get_error(ref<xcb_generic_error_t> error) -> string {
         auto guard = xcb::GenericError::take(error);
 
         const auto major = xcb_errors_get_name_for_major_code(globals.error_context, error->major_code);
         const auto minor = xcb_errors_get_name_for_minor_code(globals.error_context, error->major_code, error->minor_code);
 
-        const auto* extension = CZString { nullptr };
+        const auto* extension = czstring { nullptr };
         const auto  str_error = xcb_errors_get_name_for_error(globals.error_context, error->major_code, &extension);
 
         return std::format("{} extension: {} major: {} minor: {}\n",
@@ -125,8 +123,8 @@ namespace stormkit::wsi::linux::x11::xcb {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_xi_device_info(xcb_input_device_id_t device_id) -> std::expected<Ref<xcb_input_xi_device_info_t>, Error> {
-        auto out = std::expected<Ref<xcb_input_xi_device_info_t>, Error> { std::unexpect };
+    auto get_xi_device_info(xcb_input_device_id_t device_id) -> std::expected<ref<xcb_input_xi_device_info_t>, Error> {
+        auto out = std::expected<ref<xcb_input_xi_device_info_t>, Error> { std::unexpect };
 
         const auto cookie = xcb_input_xi_query_device(globals.connection, device_id);
         auto       error  = xcb::GenericError::empty();

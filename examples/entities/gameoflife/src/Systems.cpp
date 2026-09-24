@@ -13,7 +13,7 @@ import Components;
 
 using namespace stormkit;
 
-UpdateBoardSystem::UpdateBoardSystem(stormkit::image::Image&  board,
+UpdateBoardSystem::UpdateBoardSystem(stormkit::image::image&  board,
                                      Renderer&                renderer,
                                      entities::EntityManager& manager)
     : entities::System { manager, 0, { PositionComponent::TYPE } }, m_board { &board },
@@ -24,7 +24,7 @@ UpdateBoardSystem::~UpdateBoardSystem()                                         
 UpdateBoardSystem::UpdateBoardSystem(UpdateBoardSystem&&) noexcept                    = default;
 auto UpdateBoardSystem::operator=(UpdateBoardSystem&&) noexcept -> UpdateBoardSystem& = default;
 
-auto UpdateBoardSystem::update(stormkit::Secondf delta) -> void {
+auto UpdateBoardSystem::update(stormkit::fsecond delta) -> void {
     const auto now = Clock::now();
 
     if (m_is_on_edit_mode) [[unlikely]] {

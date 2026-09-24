@@ -12,13 +12,13 @@ import stormkit.test;
 using namespace stormkit::core;
 
 namespace {
-    auto _ = test::TestSuite {
-        "Core.parallelism",
+    auto _ = test::test_suite {
+        "core.parallelism",
         {
-          { "Locked.write",
+          { "locked.write",
             [] static noexcept {
                 static constexpr auto ITERATIONS = 1'000'000;
-                auto                  locked_int = Locked { 0 };
+                auto                  locked_int = locked { 0 };
                 const auto            func       = [&locked_int] noexcept {
                     for (auto foo = 0; foo != ITERATIONS; ++foo) {
                         auto integer = locked_int.write();
@@ -33,6 +33,30 @@ namespace {
                 future_2.wait();
 
                 EXPECTS(locked_int.unsafe() == (ITERATIONS * 2));
+            } },
+          { "locked.write_closure",
+            [] static noexcept {
+                static constexpr auto ITERATIONS = 1'000'000;
+                auto                  locked_int = locked { 0 };
+                const auto            func       = [&locked_int] noexcept {
+                    for (auto foo = 0; foo != ITERATIONS; ++foo) {
+                        locked_int.write([](auto& value) static noexcept { value += 1; });
+                    }
+                };
+
+                auto future_1 = std::async(std::launch::async, func);
+                auto future_2 = std::async(std::launch::async, func);
+
+                future_1.wait();
+                future_2.wait();
+
+                EXPECTS(locked_int.unsafe() == (ITERATIONS * 2));
+            } },
+          { "locked.move",
+            [] static noexcept {
+                auto locked_int = locked { 0 };
+
+                auto locked_int2 = std::move(locked_int);
             } },
           }
     };

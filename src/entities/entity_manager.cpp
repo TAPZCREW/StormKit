@@ -18,35 +18,34 @@ namespace stdv = std::views;
 namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
-    EntityManager::EntityManager() = default;
+    EntityManager::EntityManager() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    EntityManager::EntityManager(EntityManager&&) = default;
+    EntityManager::EntityManager(EntityManager&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto EntityManager::operator=(EntityManager&&) -> EntityManager& = default;
+    auto EntityManager::operator=(EntityManager&&) noexcept -> EntityManager& = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    EntityManager::~EntityManager() = default;
+    EntityManager::~EntityManager() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto EntityManager::make_entity() -> Entity {
+    auto EntityManager::make_entity() noexcept -> Entity {
         const auto entity = [this]() {
             if (stdr::empty(m_free_entities)) return m_next_valid_entity++;
             else {
-                auto entity = m_free_entities.front();
-                m_free_entities.pop();
+                auto entity = m_free_entities.back();
+                m_free_entities.pop_back();
                 return entity;
             }
         }();
 
         m_added_entities.emplace(entity);
         m_updated_entities.emplace(entity);
-        m_registered_components_for_entities[entity] = {};
         m_message_bus.push(Message { ADDED_ENTITY_MESSAGE_ID, { entity } });
 
         return entity;
@@ -54,7 +53,7 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto EntityManager::destroy_entity(Entity entity) -> void {
+    auto EntityManager::destroy_entity(Entity entity) noexcept -> void {
         EXPECTS(entity != INVALID_ENTITY);
 
         if (has_entity(entity)) {
@@ -65,8 +64,8 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto EntityManager::destroy_all_entities() -> void {
-        for (auto&& e : entities()) {
+    auto EntityManager::destroy_all_entities() noexcept -> void {
+        for (const auto& e : entities()) {
             m_removed_entities.emplace(e);
             m_message_bus.push(Message { REMOVED_ENTITY_MESSAGE_ID, { e } });
         }
@@ -74,58 +73,112 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto EntityManager::has_entity(Entity entity) const -> bool {
+    auto EntityManager::has_entity(Entity entity) const noexcept -> bool {
         EXPECTS(entity != INVALID_ENTITY);
 
-        return stdr::any_of(entities(), monadic::is_equal(entity)) or stdr::any_of(m_added_entities, monadic::is_equal(entity));
+        return stdr::any_of(entities(), monadic::is(entity)) or stdr::any_of(m_added_entities, monadic::is(entity));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto EntityManager::has_component(Entity entity, Component::Type type) const -> bool {
-        EXPECTS(entity != INVALID_ENTITY and type != Component::INVALID_TYPE);
+    auto EntityManager::destroy_component(Entity entity, ComponentType type) noexcept -> void {
+        EXPECTS(has_entity(entity));
+        EXPECTS(has_component(entity, type));
 
-        return stdr::any_of(m_registered_components_for_entities.at(entity), monadic::is_equal(type));
-    }
+        auto it = stdr::find_if(m_components, [type](const auto& pair) noexcept { return pair.type == type; });
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto EntityManager::step(Secondf delta) -> void {
-        for (auto entity : m_removed_entities) {
-            auto it = m_registered_components_for_entities.find(entity);
-            // a this point, all entities should be valid
-            ensures(it != stdr::cend(m_registered_components_for_entities));
+        auto& [_, size, entities, components, delete_func] = *it;
+        auto component_it                                  = stdr::begin(components);
 
-            for (auto&& key : it->second | stdv::transform([entity](auto&& type) { return component_key_for(entity, type); }))
-                m_components.erase(key);
+        for (;;) {
+            auto e = *std::launder(std::bit_cast<Entity*>(&*component_it));
 
-            m_entities.erase(entity);
+            if (e == entity) break;
 
-            remove_from_systems(entity);
-
-            if (not stdr::any_of(m_added_entities, monadic::is_equal(entity))) m_free_entities.push(entity);
+            component_it += as<ioffset>(sizeof(Entity) + size);
         }
-        m_removed_entities.clear();
 
-        stdr::for_each(m_added_entities, [this](auto&& entity) { m_entities.emplace(entity); });
+        delete_func(&*component_it + sizeof(Entity));
+
+        components.erase(component_it, component_it + as<ioffset>(size));
+
+        auto&& [begin, end] = stdr::remove(entities, entity);
+        entities.erase(begin, end);
+
+        m_updated_entities.emplace(entity);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto EntityManager::has_component(Entity entity, ComponentType type) const noexcept -> bool {
+        EXPECTS(entity != INVALID_ENTITY);
+
+        auto it = stdr::find_if(m_components, [&type](const auto& pair) noexcept { return pair.type == type; });
+        if (it == stdr::cend(m_components)) return false;
+
+        auto& [_, size, entities, _, _] = *it;
+
+        return stdr::any_of(entities, monadic::is(entity));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto EntityManager::flush() noexcept -> void {
+        if (not stdr::empty(m_removed_entities)) {
+            if (stdr::size(m_entities) == stdr::size(m_removed_entities)) {
+                for (auto& [_, size, entities, data, delete_func] : m_components) {
+                    for (auto component_it = stdr::data(data); component_it != stdr::data(data) + stdr::size(data);
+                         component_it += as<ioffset>(sizeof(Entity) + size))
+                        delete_func(component_it + sizeof(Entity));
+
+                    entities.clear();
+                    data.clear();
+                }
+
+                merge(m_free_entities, m_entities);
+                m_entities.clear();
+                m_removed_entities.clear();
+            } else {
+                for (auto entity : m_removed_entities) {
+                    const auto components_types = components_types_of(entity);
+
+                    for (auto t : components_types) destroy_component(entity, t);
+
+                    auto&& [begin, end] = stdr::remove(m_entities, entity);
+                    m_entities.erase(begin, end);
+
+                    remove_from_systems(entity);
+
+                    if (not stdr::any_of(m_added_entities, monadic::is(entity))) m_free_entities.emplace_back(entity);
+                }
+                m_removed_entities.clear();
+            }
+        }
+
+        stdr::for_each(m_added_entities, [this](auto&& entity) noexcept { m_entities.emplace_back(entity); });
         m_added_entities.clear();
 
-        stdr::for_each(m_updated_entities, [this](auto&& entity) { purpose_to_systems(entity); });
+        stdr::for_each(m_updated_entities, [this](auto&& entity) noexcept { purpose_to_systems(entity); });
         m_updated_entities.clear();
 
         while (!m_message_bus.empty()) {
-            for (auto& system : m_systems) system->on_message_received(m_message_bus.top());
+            for (auto& system : m_systems) system.on_message_received(*this, m_message_bus.top());
             m_message_bus.pop();
         }
-
-        for (auto& system : m_systems) system->pre_update();
-        for (auto& system : m_systems) system->update(delta);
-        for (auto& system : m_systems) system->post_update();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto EntityManager::purpose_to_systems(Entity e) -> void {
+    auto EntityManager::step(fsecond delta) noexcept -> void {
+        flush();
+        for (auto& system : m_systems) system.pre_update(*this);
+        for (auto& system : m_systems) system.update(*this, delta);
+        for (auto& system : m_systems) system.post_update(*this);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto EntityManager::purpose_to_systems(Entity e) noexcept -> void {
         EXPECTS(e != INVALID_ENTITY);
 
         const auto reliable_system_filter = [e, this](auto&& system) {
@@ -135,27 +188,28 @@ namespace stormkit::entities {
             return true;
         };
 
-        stdr::for_each(systems() | stdv::filter(reliable_system_filter), [e](auto&& system) { system->add_entity(e); });
+        stdr::for_each(systems() | stdv::filter(reliable_system_filter), [e](auto&& system) noexcept { system->add_entity(e); });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto EntityManager::remove_from_systems(Entity e) -> void {
+    auto EntityManager::remove_from_systems(Entity e) noexcept -> void {
         EXPECTS(e != INVALID_ENTITY);
 
-        for (auto& s : m_systems) { s->remove_entity(e); }
+        for (auto& s : m_systems) { s.remove_entity(e); }
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto EntityManager::get_needed_entities(System& system) -> void {
-        const auto reliable_entity_filter = [&system, this](auto&& entity) {
+    auto EntityManager::get_needed_entities(System& system) noexcept -> void {
+        const auto reliable_entity_filter = [&system, this](auto&& entity) noexcept {
             for (auto component_type : system.components_used())
                 if (not has_component(entity, component_type)) return false;
 
             return true;
         };
 
-        stdr::for_each(entities() | stdv::filter(reliable_entity_filter), [&system](auto&& e) { system.add_entity(e); });
+        stdr::for_each(entities() | stdv::filter(reliable_entity_filter), [&system](auto&& e) noexcept { system.add_entity(e); });
     }
+
 } // namespace stormkit::entities

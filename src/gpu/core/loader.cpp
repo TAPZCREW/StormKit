@@ -5,7 +5,7 @@ module;
 module stormkit.gpu.core;
 
 namespace stormkit::gpu {
-    auto initialize_backend() -> Expected<void> {
-        return vk_call(volkInitialize).transform_error(monadic::from_vk<Result>());
+    auto initialize_backend() -> expected<void> {
+        return vk::call_checked(volkInitialize);
     }
 } // namespace stormkit::gpu

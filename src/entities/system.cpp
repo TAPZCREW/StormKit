@@ -15,8 +15,8 @@ import stormkit.core;
 namespace stormkit::entities {
     /////////////////////////////////////
     /////////////////////////////////////
-    System::System(EntityManager& manager, u32 priority, ComponentTypes types)
-        : m_manager { as_ref(manager) }, m_priority { priority }, m_types { std::move(types) } {
+    System::System(string name, ComponentTypes types, Closures&& closures) noexcept
+        : m_name { std::move(name) }, m_types { std::move(types) }, m_closures { std::move(closures) } {
     }
 
     /////////////////////////////////////
@@ -29,31 +29,46 @@ namespace stormkit::entities {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    System::~System() = default;
+    System::~System() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto System::pre_update() -> void {
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto System::post_update() -> void {
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto System::add_entity(Entity e) -> void {
+    auto System::add_entity(Entity e) noexcept -> void {
         EXPECTS(e != INVALID_ENTITY);
 
-        m_entities.insert(e);
+        m_entities.emplace_back(e);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto System::remove_entity(Entity e) -> void {
+    auto System::remove_entity(Entity e) noexcept -> void {
         EXPECTS(e != INVALID_ENTITY);
 
-        m_entities.erase(e);
+        const auto [begin, end] = stdr::remove(m_entities, e);
+        m_entities.erase(begin, end);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto System::pre_update(EntityManager& manager) noexcept -> void {
+        m_closures.pre_update(manager, m_entities);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto System::update(EntityManager& manager, fsecond delta) noexcept -> void {
+        m_closures.update(manager, delta, m_entities);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto System::post_update(EntityManager& manager) noexcept -> void {
+        m_closures.post_update(manager, m_entities);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto System::on_message_received(EntityManager& manager, const Message& message) noexcept -> void {
+        m_closures.on_message_received(manager, message, m_entities);
     }
 } // namespace stormkit::entities
