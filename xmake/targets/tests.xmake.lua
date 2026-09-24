@@ -37,7 +37,7 @@ namespace("tests", function()
 
                     add_files(file)
 
-                    add_deps("stormkit::test")
+                    add_deps("stormkit::test", "stormkit::" .. name)
 
                     add_options("sanitizers")
 

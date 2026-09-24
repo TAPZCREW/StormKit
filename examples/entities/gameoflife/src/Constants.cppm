@@ -43,7 +43,7 @@ export {
     inline constexpr auto BOARD_BUFFERING_COUNT = 3u;
     inline constexpr auto REFRESH_BOARD_DELTA   = stormkit::fsecond { 1 };
 
-    inline constexpr auto SHADER_DATA = stormkit::as_bytes(
+    inline constexpr auto SHADER_DATA = stormkit::view_of(as_bytes, 
 #include <shader.spv.h>
     );
 

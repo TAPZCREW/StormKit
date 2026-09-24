@@ -68,6 +68,9 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<typename T, template<typename...> class Variant, typename... Ts>
     constexpr auto variant_contains_type(const Variant<Ts...>) noexcept -> bool;
 
+    template<typename T>
+    using identity = details::lazy_type<T>::type;
+
 #if defined(__cpp_pack_indexing) and __cpp_pack_indexing >= 202311L
     template<usize AT, typename... Ts>
     using nth_type = Ts...[AT];

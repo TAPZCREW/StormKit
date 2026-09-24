@@ -52,6 +52,9 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<has_value_type T>
     using value_type = typename T::value_type;
 
+    template<has_size_type T>
+    using size_type = typename T::size_type;
+
     template<has_value_type T>
     using error_type = typename T::error_type;
 
@@ -66,6 +69,9 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     template<stdr::input_range Range>
     using range_value_type_ref = stdr::range_reference_t<Range>;
+
+    template<has_ordering_type T>
+    using ordering_type = typename T::ordering_type;
 
     template<typename T>
     using in = lazy_conditional<prefer_pass_by_value<T>, T, const T&>;
@@ -116,6 +122,11 @@ namespace stormkit { inline namespace core { namespace meta {
         template<typename T>
         struct pointed_type<std::reference_wrapper<T>> {
             using type = std::reference_wrapper<T>::type;
+        };
+
+        template<typename T>
+        struct indirection_target_type {
+            using type = T;
         };
 
         template<reference T>

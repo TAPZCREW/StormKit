@@ -5,7 +5,6 @@
 module;
 
 #include <stormkit/core/platform_macro.hpp>
-#include <stormkit/core/flags_macro.hpp>
 
 #include <stormkit/gpu/api.hpp>
 #include <stormkit/gpu/vulkan.hpp>
@@ -76,7 +75,7 @@ export {
         [[nodiscard]]
         constexpr auto get_format_element_count(PixelFormat format) noexcept -> u8;
     }
-    {% for name, enumeration in table.orderpairs(json_data) do %}FLAG_ENUM(stormkit::gpu::{% outfile:write(name) %})
+    {% for name, enumeration in table.orderpairs(json_data) do %} template<> inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::gpu::{% outfile:write(name) %}> = true;
     template<>
     STORMKIT_FORCE_INLINE
     STORMKIT_CONST

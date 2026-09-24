@@ -1,6 +1,5 @@
 module;
 
-#include <stormkit/core/flags_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 #include <stormkit/gpu/vulkan.hpp>
@@ -82,7 +81,7 @@ namespace stormkit::gpu::vk {
     STORMKIT_FORCE_INLINE
     STORMKIT_PURE
     inline auto to_vk(const T& value) noexcept -> decltype(auto) {
-        if constexpr (core::meta::IsPointer<T>) return value->native_handle();
+        if constexpr (core::meta::pointer<T>) return value->native_handle();
         else
             return value.native_handle();
     }
@@ -180,7 +179,7 @@ namespace stormkit::gpu::vk {
         STORMKIT_FORCE_INLINE
         STORMKIT_PURE
     constexpr auto to_vk(const Extent& extent) noexcept -> Out {
-        if constexpr (stormkit::meta::Is<Out, VkExtent2D>)
+        if constexpr (stormkit::meta::is<Out, VkExtent2D>)
             return VkExtent2D { .width = as<u32>(extent.width), .height = as<u32>(extent.height) };
         else
             return Out { .x = extent.width, .y = extent.height };
@@ -192,7 +191,7 @@ namespace stormkit::gpu::vk {
         STORMKIT_FORCE_INLINE
         STORMKIT_PURE
     constexpr auto to_vk(const Extent& extent) noexcept -> Out {
-        if constexpr (stormkit::meta::Is<Out, VkExtent3D>)
+        if constexpr (stormkit::meta::is<Out, VkExtent3D>)
             return VkExtent3D { .width  = as<u32>(extent.width),
                                 .height = as<u32>(extent.height),
                                 .depth  = as<u32>(extent.depth) };
@@ -206,7 +205,7 @@ namespace stormkit::gpu::vk {
         STORMKIT_FORCE_INLINE
         STORMKIT_PURE
     constexpr auto from_vk(const VkExtent2D& extent) noexcept -> Out {
-        using T = typename Out::ValueType;
+        using T = typename Out::value_type;
         return Out { .width = as<T>(extent.width), .height = as<T>(extent.height) };
     }
 
@@ -216,7 +215,7 @@ namespace stormkit::gpu::vk {
         STORMKIT_FORCE_INLINE
         STORMKIT_PURE
     constexpr auto from_vk(const VkExtent3D& extent) noexcept -> Out {
-        using T = typename Out::ValueType;
+        using T = typename Out::value_type;
         return Out { .width = as<T>(extent.width), .height = as<T>(extent.height) };
     }
 } // namespace stormkit::gpu::vk

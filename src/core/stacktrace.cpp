@@ -90,11 +90,10 @@ namespace stormkit { inline namespace core {
             // clang-format on
             const auto frame_str = std::to_string(frame);
             const auto splitted  = split(frame_str, ": ");
-            const auto
-              address = *try_as<u64>(splitted[0].substr(2), 16).transform_error([stderr, &splitted](auto&& err) noexcept {
-                  std::println(stderr, "Failed to parse {}, reason: {}", splitted[0], err);
-                  return 0;
-              });
+            const auto address   = *to<u64>(splitted[0].substr(2), 16).transform_error([stderr, &splitted](auto&& err) noexcept {
+                std::println(stderr, "Failed to parse {}, reason: {}", splitted[0], err);
+                return 0;
+            });
 
             const auto formatted_symbol = prettify((stdr::size(splitted) > 2)
                                                      ? "\n    in " + (YELLOW_TEXT_STYLE | splitted[1]).render()

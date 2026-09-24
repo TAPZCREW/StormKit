@@ -95,17 +95,17 @@ namespace stormkit::gpu {
         InstanceImplementation(InstanceImplementation&&) noexcept;
         auto operator=(InstanceImplementation&&) noexcept -> InstanceImplementation&;
 
-        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
+        auto do_init(PrivateTag, const CreateInfo&) noexcept -> expected<void>;
 
       protected:
-        dyn_array<string>         m_extensions;
-        dyn_array<PhysicalDevice> m_physical_devices;
+        dynarray<string>         m_extensions;
+        dynarray<PhysicalDevice> m_physical_devices;
 
         friend class view::InstanceImplementation;
 
       private:
-        auto do_load_instance() noexcept -> Expected<void>;
-        auto do_retrieve_physical_devices() noexcept -> Expected<void>;
+        auto do_load_instance() noexcept -> expected<void>;
+        auto do_retrieve_physical_devices() noexcept -> expected<void>;
     };
 
     namespace view {
@@ -148,11 +148,11 @@ namespace stormkit::gpu {
         auto do_init(PrivateTag, VkPhysicalDevice&&) noexcept -> void;
 
       protected:
-        Heap<Data>                                          m_data;
-        dyn_array<MemoryPropertyFlag>                       m_memory_types;
-        dyn_array<QueueFamily>                              m_queue_families;
-        dyn_array<string>                                   m_extensions;
-        dyn_array<std::pair<PixelFormat, FormatProperties>> m_format_properties;
+        heap_ptr<Data>                                          m_data;
+        dynarray<MemoryPropertyFlag>                       m_memory_types;
+        dynarray<QueueFamily>                              m_queue_families;
+        dynarray<string>                                   m_extensions;
+        dynarray<std::pair<PixelFormat, FormatProperties>> m_format_properties;
 
         friend class InstanceInterface<InstanceImplementation>;
         friend class view::PhysicalDeviceImplementation;

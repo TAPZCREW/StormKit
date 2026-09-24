@@ -26,7 +26,8 @@ target("image", function()
     add_headerfiles(path.join(include_dir, "(stormkit/image/**.hpp)"))
     add_includedirs(include_dir, { public = true })
 
-    add_deps("core")
+    add_deps("core", "math")
+    -- add_deps("log", { public = false })
 
     add_packages("libktx", "libpng", "libjpeg-turbo")
 

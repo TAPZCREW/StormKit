@@ -14,9 +14,9 @@ module stormkit.core.contract;
 
 import std;
 
+import stormkit.core.stacktrace;
 import stormkit.core.string.format;
 import stormkit.core.typesafe.flags;
-import stormkit.core.typesafe.safecasts;
 import stormkit.core.console.style;
 import stormkit.core.console.io;
 

@@ -57,7 +57,7 @@ end
 if suffix then set_suffixname(suffix) end
 
 ---------------------------- configvar ----------------------------
-for _, name in ipairs({ "log", "entities", "image", "wsi", "gpu", "lua" }) do
+for _, name in ipairs({ "math", "log", "entities", "image", "wsi", "gpu", "lua" }) do
     if get_config(name) then set_configvar("STORMKIT_LIB_" .. string.upper(name) .. "_ENABLED", true) end
 end
 
@@ -94,7 +94,7 @@ namespace("stormkit", function()
         add_files("modules/stormkit.cppm", { public = true })
 
         add_deps("stormkit::core")
-        for _, name in ipairs({ "log", "entities", "gpu", "image", "wsi", "lua" }) do
+        for _, name in ipairs({ "math", "log", "entities", "gpu", "image", "wsi", "lua" }) do
             if get_config(name) then
                 add_deps("stormkit::" .. name)
                 add_defines("STORMKIT_IMPORT_" .. string.upper(name), { public = true })

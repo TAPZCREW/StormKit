@@ -26,20 +26,20 @@ using namespace std::literals;
 namespace stormkit::gpu {
     namespace {
         struct PipelineData {
-            dyn_array<VkVertexInputBindingDescription>     binding_descriptions;
-            dyn_array<VkVertexInputAttributeDescription>   input_attribute_descriptions;
+            dynarray<VkVertexInputBindingDescription>     binding_descriptions;
+            dynarray<VkVertexInputAttributeDescription>   input_attribute_descriptions;
             VkPipelineVertexInputStateCreateInfo           vertex_input_info;
             VkPipelineInputAssemblyStateCreateInfo         input_assembly;
-            dyn_array<VkViewport>                          viewports;
-            dyn_array<VkRect2D>                            scissors;
+            dynarray<VkViewport>                          viewports;
+            dynarray<VkRect2D>                            scissors;
             VkPipelineViewportStateCreateInfo              viewport_state;
             VkPipelineRasterizationStateCreateInfo         rasterizer;
             VkPipelineMultisampleStateCreateInfo           multisample;
-            dyn_array<VkPipelineColorBlendAttachmentState> blend_attachments;
+            dynarray<VkPipelineColorBlendAttachmentState> blend_attachments;
             VkPipelineColorBlendStateCreateInfo            color_blending;
-            dyn_array<VkDynamicState>                      states;
+            dynarray<VkDynamicState>                      states;
             VkPipelineDynamicStateCreateInfo               dynamic_state;
-            dyn_array<VkPipelineShaderStageCreateInfo>     shaders;
+            dynarray<VkPipelineShaderStageCreateInfo>     shaders;
             VkPipelineDepthStencilStateCreateInfo          depth_stencil;
         };
 
@@ -206,7 +206,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto PipelineImplementation::do_init(PrivateTag, const RasterizationCreateInfo& create_info) noexcept -> Expected<void> {
+    auto PipelineImplementation::do_init(PrivateTag, const RasterizationCreateInfo& create_info) noexcept -> expected<void> {
         m_type  = Type::RASTER;
         m_state = core::allocate_unsafe<StateVariant>(create_info.state);
 
@@ -277,7 +277,7 @@ namespace stormkit::gpu {
         const auto& device       = owner();
         const auto& device_table = device.device_table();
 
-        m_vk_handle = Try(vk::call_checked<VkPipeline>(device_table.vkCreateGraphicsPipelines,
+        m_vk_handle = TryX(vk::call_checked<VkPipeline>(device_table.vkCreateGraphicsPipelines,
                                                        device,
                                                        vk_pipeline_cache,
                                                        1,
@@ -289,7 +289,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     auto PipelineImplementation::do_init(PrivateTag, const LegacyRasterizationCreateInfo& create_info) noexcept
-      -> Expected<void> {
+      -> expected<void> {
         m_type  = Type::RASTER;
         m_state = core::allocate_unsafe<StateVariant>(create_info.state);
 
@@ -338,7 +338,7 @@ namespace stormkit::gpu {
         const auto& device       = owner();
         const auto& device_table = device.device_table();
 
-        m_vk_handle = Try(vk::call_checked<VkPipeline>(device_table.vkCreateGraphicsPipelines,
+        m_vk_handle = TryX(vk::call_checked<VkPipeline>(device_table.vkCreateGraphicsPipelines,
                                                        device,
                                                        vk_pipeline_cache,
                                                        1,

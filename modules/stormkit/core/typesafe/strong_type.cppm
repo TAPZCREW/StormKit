@@ -26,7 +26,7 @@ export namespace stormkit { inline namespace core {
 
     namespace meta {
         template<typename T>
-        concept is_strong_type = specialization_of_nttp_ttvtcs<T, strong_type>;
+        concept is_strong_type = specialization_of_nttp_ttvc<T, strong_type>;
 
         template<typename T, typename Capability>
         concept has_capability = derived_from<T, Capability>;

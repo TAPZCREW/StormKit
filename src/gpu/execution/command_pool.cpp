@@ -26,7 +26,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     auto CommandPoolInterface<Base>::create_vk_command_buffers(usize count, CommandBufferLevel level) const noexcept
-      -> Expected<dyn_array<VkCommandBuffer>> {
+      -> expected<dynarray<VkCommandBuffer>> {
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
 
@@ -56,7 +56,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto CommandPoolImplementation::do_init(PrivateTag, const CreateInfo& create_info_) noexcept -> Expected<void> {
+    auto CommandPoolImplementation::do_init(PrivateTag, const CreateInfo& create_info_) noexcept -> expected<void> {
         const auto& device       = owner();
         const auto& device_table = device.device_table();
 
@@ -74,7 +74,7 @@ namespace stormkit::gpu {
             .queueFamilyIndex = create_info_.queue.entry().id,
         };
 
-        m_vk_handle = Try(vk::call_checked<VkCommandPool>(device_table.vkCreateCommandPool, device, &create_info, nullptr));
+        m_vk_handle = TryX(vk::call_checked<VkCommandPool>(device_table.vkCreateCommandPool, device, &create_info, nullptr));
         Return {};
     }
 } // namespace stormkit::gpu

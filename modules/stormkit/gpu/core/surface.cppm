@@ -48,13 +48,13 @@ namespace stormkit::gpu {
     class STORMKIT_GPU_API SurfaceImplementation
         : public GpuObjectImplementation<SurfaceTag, const SurfaceInterfaceBase::CreateInfo&>,
           public core::NamedConstructor<SurfaceImplementation,
-                                        ConstructorArgs<view::Instance>,
-                                        DoInitArgs<const SurfaceInterfaceBase::OffscreenCreateInfo&>> {
+                                        ConstructorTs<view::Instance>,
+                                        DoInitTs<const SurfaceInterfaceBase::OffscreenCreateInfo&>> {
       public:
         using CreateInfo                = SurfaceInterfaceBase::CreateInfo;
         using OffscreenCreateInfo       = SurfaceInterfaceBase::OffscreenCreateInfo;
         using OffscreenNamedConstructor = core::
-          NamedConstructor<SurfaceImplementation, ConstructorArgs<view::Instance>, DoInitArgs<const OffscreenCreateInfo&>>;
+          NamedConstructor<SurfaceImplementation, ConstructorTs<view::Instance>, DoInitTs<const OffscreenCreateInfo&>>;
 
         using OffscreenNamedConstructor::allocate;
         using OffscreenNamedConstructor::create;
@@ -71,19 +71,19 @@ namespace stormkit::gpu {
 #if false
         [[nodiscard]]
         static auto create_offscreen(view::Instance instance) noexcept 
-          -> Expected<Surface>;
+          -> expected<Surface>;
         [[nodiscard]]
         static auto allocate_offscreen(view::Instance instance) noexcept
-          -> Expected<Heap<Surface>>;
+          -> expected<heap_ptr<Surface>>;
 #endif
 
         [[nodiscard]]
-        static auto create_from_window(view::Instance instance, const wsi::Window& window) noexcept -> Expected<Surface>;
+        static auto create_from_window(view::Instance instance, const wsi::Window& window) noexcept -> expected<Surface>;
         [[nodiscard]]
-        static auto allocate_from_window(view::Instance instance, const wsi::Window& window) noexcept -> Expected<Heap<Surface>>;
+        static auto allocate_from_window(view::Instance instance, const wsi::Window& window) noexcept -> expected<heap_ptr<Surface>>;
 
-        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
-        auto do_init(PrivateTag, const OffscreenCreateInfo&) noexcept -> Expected<void>;
+        auto do_init(PrivateTag, const CreateInfo&) noexcept -> expected<void>;
+        auto do_init(PrivateTag, const OffscreenCreateInfo&) noexcept -> expected<void>;
     };
 
     namespace view {
@@ -126,14 +126,14 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE inline auto SurfaceImplementation::create_offscreen(view::Instance instance) noexcept
-        -> Expected<Surface> {
+        -> expected<Surface> {
         return OffScreenNamedConstructor::create(std::move(instance), OffscreenCreateInfo{});
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE inline auto SurfaceImplementation::allocate_offscreen(view::Instance instance) noexcept
-        -> Expected<Heap<Surface>> {
+        -> expected<heap_ptr<Surface>> {
         return OffScreenNamedConstructor::allocate(std::move(instance), OffscreenCreateInfo{});
     }
 #endif
@@ -142,7 +142,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto SurfaceImplementation::create_from_window(view::Instance instance, const wsi::Window& window) noexcept
-      -> Expected<Surface> {
+      -> expected<Surface> {
         return GpuObjectImplementation::create(std::move(instance), CreateInfo { as_ref(window) });
     }
 
@@ -150,7 +150,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto SurfaceImplementation::allocate_from_window(view::Instance instance, const wsi::Window& window) noexcept
-      -> Expected<Heap<Surface>> {
+      -> expected<heap_ptr<Surface>> {
         return GpuObjectImplementation::allocate(std::move(instance), CreateInfo { as_ref(window) });
     }
 } // namespace stormkit::gpu

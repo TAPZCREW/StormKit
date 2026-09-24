@@ -23,11 +23,11 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto FenceInterface<Base>::status() const noexcept -> Expected<Status> {
+    auto FenceInterface<Base>::status() const noexcept -> expected<Status> {
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
 
-        const auto result = Try((vk::call_checked<VkResult, VK_NOT_READY>(device_table.vkGetFenceStatus, device, *this)));
+        const auto result = TryX((vk::call_checked<VkResult, VK_NOT_READY>(device_table.vkGetFenceStatus, device, *this)));
         if (result == VK_NOT_READY) Return Fence::Status::UNSIGNALED;
         Return Fence::Status::SIGNALED;
     }
@@ -35,13 +35,13 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto FenceInterface<Base>::wait(const std::chrono::milliseconds& wait_for) const noexcept -> Expected<Result> {
+    auto FenceInterface<Base>::wait(const std::chrono::milliseconds& wait_for) const noexcept -> expected<Result> {
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
         const auto  handle       = Base::native_handle();
 
         const auto
-          result = Try((vk::call_checked<VkResult,
+          result = TryX((vk::call_checked<VkResult,
                                          VK_NOT_READY>(device_table.vkWaitForFences,
                                                        device,
                                                        1u,
@@ -55,12 +55,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto FenceInterface<Base>::reset() const noexcept -> Expected<void> {
+    auto FenceInterface<Base>::reset() const noexcept -> expected<void> {
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
         const auto  handle       = Base::native_handle();
 
-        Try(vk::call_checked(device_table.vkResetFences, device, 1u, &handle));
+        TryX(vk::call_checked(device_table.vkResetFences, device, 1u, &handle));
 
         Return {};
     }
@@ -70,7 +70,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto FenceImplementation::do_init(PrivateTag, const CreateInfo& create_info) noexcept -> Expected<void> {
+    auto FenceImplementation::do_init(PrivateTag, const CreateInfo& create_info) noexcept -> expected<void> {
         const auto flags = (create_info.signaled) ? VkFenceCreateFlags { VK_FENCE_CREATE_SIGNALED_BIT } : VkFenceCreateFlags {};
 
         const auto vk_create_info = VkFenceCreateInfo {
@@ -82,7 +82,7 @@ namespace stormkit::gpu {
         const auto& device       = owner();
         const auto& device_table = device.device_table();
 
-        m_vk_handle = Try(vk::call_checked<VkFence>(device_table.vkCreateFence, device, &vk_create_info, nullptr));
+        m_vk_handle = TryX(vk::call_checked<VkFence>(device_table.vkCreateFence, device, &vk_create_info, nullptr));
 
         Return {};
     }

@@ -5,10 +5,7 @@
 module;
 
 #include <stormkit/core/contract_macro.hpp>
-#include <stormkit/core/memory_macro.hpp>
 #include <stormkit/core/try_expected.hpp>
-
-#include <stormkit/log/log_macro.hpp>
 
 #include <stormkit/gpu/api.hpp>
 #include <stormkit/gpu/vulkan.hpp>
@@ -201,9 +198,9 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto DeviceInterface<Base>::wait_idle() const noexcept -> Expected<void> {
+    auto DeviceInterface<Base>::wait_idle() const noexcept -> expected<void> {
         const auto device_table = this->device_table();
-        Try(vk::call_checked(device_table.vkDeviceWaitIdle, *this));
+        TryX(vk::call_checked(device_table.vkDeviceWaitIdle, *this));
         Return {};
     }
 
@@ -212,11 +209,11 @@ namespace stormkit::gpu {
     template<typename Base>
     auto DeviceInterface<Base>::wait_for_fences(array_view<const view::Fence>    fences,
                                                 bool                             wait_all,
-                                                const std::chrono::milliseconds& timeout) const noexcept -> Expected<Result> {
+                                                const std::chrono::milliseconds& timeout) const noexcept -> expected<Result> {
         const auto device_table = this->device_table();
         const auto _fences      = transform(fences, vk::monadic::to_vk());
 
-        const auto result = Try((vk::call_checked<VkResult, VK_SUCCESS, VK_NOT_READY>(
+        const auto result = TryX((vk::call_checked<VkResult, VK_SUCCESS, VK_NOT_READY>(
           device_table.vkWaitForFences,
           *this,
           stdr::size(_fences),
@@ -229,11 +226,11 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto DeviceInterface<Base>::reset_fences(array_view<const view::Fence> fences) const noexcept -> Expected<void> {
+    auto DeviceInterface<Base>::reset_fences(array_view<const view::Fence> fences) const noexcept -> expected<void> {
         const auto device_table = this->device_table();
 
         const auto _fences = transform(fences, vk::monadic::to_vk());
-        Try(vk::call_checked(device_table.vkResetFences, *this, stdr::size(_fences), stdr::data(_fences)));
+        TryX(vk::call_checked(device_table.vkResetFences, *this, stdr::size(_fences), stdr::data(_fences)));
         Return {};
     }
 
@@ -241,7 +238,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     auto DeviceInterface<Base>::set_object_name(u64 object, DebugObjectType type, string_view name) const noexcept
-      -> Expected<void> {
+      -> expected<void> {
         if (not vkSetDebugUtilsObjectNameEXT) return {};
 
         const auto info = VkDebugUtilsObjectNameInfoEXT {
@@ -252,7 +249,7 @@ namespace stormkit::gpu {
             .pObjectName  = stdr::data(name),
         };
 
-        Try(vk::call_checked(vkSetDebugUtilsObjectNameEXT, *this, &info));
+        TryX(vk::call_checked(vkSetDebugUtilsObjectNameEXT, *this, &info));
         Return {};
     }
 
@@ -261,12 +258,12 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto DeviceImplementation::do_init(PrivateTag, const CreateInfo& info) noexcept -> Expected<void> {
+    auto DeviceImplementation::do_init(PrivateTag, const CreateInfo& info) noexcept -> expected<void> {
         const auto  physical_device = owner();
         const auto& queue_families  = physical_device.queue_families();
 
         auto i          = 0_u32;
-        auto priorities = dyn_array<dyn_array<f32>> {};
+        auto priorities = dynarray<dynarray<f32>> {};
         priorities.reserve(stdr::size(queue_families));
         const auto queue_create_infos = transform(queue_families, [this, &i, &priorities](const auto& family) noexcept {
             auto& priority = priorities.emplace_back();
@@ -312,14 +309,14 @@ namespace stormkit::gpu {
 
         const auto swapchain_available = [&] {
             for (const auto& ext : SWAPCHAIN_EXTENSIONS)
-                if (stdr::none_of(device_extensions, cmonadic::is_equal(ext))) return false;
+                if (stdr::none_of(device_extensions, cmonadic::is(ext))) return false;
 
             return true;
         }();
 
         const auto raytracing_available = [&] {
             for (const auto& ext : RAYTRACING_EXTENSIONS)
-                if (stdr::none_of(device_extensions, cmonadic::is_equal(ext))) return false;
+                if (stdr::none_of(device_extensions, cmonadic::is(ext))) return false;
 
             return true;
         }();
@@ -365,7 +362,7 @@ namespace stormkit::gpu {
             .pEnabledFeatures        = &enabled_1_0_features,
         };
 
-        m_vk_handle = Try(vk::call_checked<VkDevice>(vkCreateDevice, physical_device.native_handle(), &create_info, nullptr));
+        m_vk_handle = TryX(vk::call_checked<VkDevice>(vkCreateDevice, physical_device.native_handle(), &create_info, nullptr));
         volkLoadDeviceTable(&m_vk_device_table, m_vk_handle);
 
         auto allocator_create_info = VmaAllocatorCreateInfo {
@@ -381,13 +378,13 @@ namespace stormkit::gpu {
             .vulkanApiVersion               = vk::make_version<i32>(1, 4, 0),
             .pTypeExternalMemoryHandleTypes = nullptr,
         };
-        m_vma_function_table = Try(vk::call_checked<VmaVulkanFunctions>(vma_import_functions_from_volk,
-                                                                        &allocator_create_info,
-                                                                        &m_vk_device_table));
+        m_vma_function_table = TryX(vk::call_checked<VmaVulkanFunctions>(vma_import_functions_from_volk,
+                                                                         &allocator_create_info,
+                                                                         &m_vk_device_table));
 
         allocator_create_info.pVulkanFunctions = &m_vma_function_table;
 
-        m_vma_allocator = Try(vk::call_checked<VmaAllocator>(vmaCreateAllocator, &allocator_create_info));
+        m_vma_allocator = TryX(vk::call_checked<VmaAllocator>(vmaCreateAllocator, &allocator_create_info));
 
         const auto name = std::format("StormKit:device ({})", physical_device.info().device_name);
         if (not vkSetDebugUtilsObjectNameEXT) Return {};
@@ -401,7 +398,7 @@ namespace stormkit::gpu {
             .pObjectName  = stdr::data(name),
         };
 
-        Try(vk::call_checked(vkSetDebugUtilsObjectNameEXT, *this, &debug_info));
+        TryX(vk::call_checked(vkSetDebugUtilsObjectNameEXT, *this, &debug_info));
 
         Return {};
     }

@@ -41,7 +41,7 @@ namespace stormkit::gpu {
             bool resolve = false;
         };
 
-        using AttachmentDescriptions = dyn_array<AttachmentDescription>;
+        using AttachmentDescriptions = dynarray<AttachmentDescription>;
 
         struct Subpass {
             struct Ref {
@@ -51,12 +51,12 @@ namespace stormkit::gpu {
             };
 
             PipelineBindPoint  bind_point;
-            dyn_array<Ref>     color_attachment_refs   = {};
-            dyn_array<Ref>     resolve_attachment_refs = {};
+            dynarray<Ref>     color_attachment_refs   = {};
+            dynarray<Ref>     resolve_attachment_refs = {};
             std::optional<Ref> depth_attachment_ref    = {};
         };
 
-        using Subpasses = dyn_array<Subpass>;
+        using Subpasses = dynarray<Subpass>;
 
         struct RenderPassDescription {
             AttachmentDescriptions attachments;
@@ -88,11 +88,11 @@ namespace stormkit::gpu {
             auto create_framebuffer(this const auto&,
                                     view::Device               device,
                                     const math::uextent2&      extent,
-                                    dyn_array<view::ImageView> attachments) noexcept -> Expected<FrameBuffer>;
+                                    dynarray<view::ImageView> attachments) noexcept -> expected<FrameBuffer>;
             auto allocate_framebuffer(this const auto&,
                                       view::Device               device,
                                       const math::uextent2&      extent,
-                                      dyn_array<view::ImageView> attachments) noexcept -> Expected<Heap<FrameBuffer>>;
+                                      dynarray<view::ImageView> attachments) noexcept -> expected<heap_ptr<FrameBuffer>>;
 
             [[nodiscard]]
             auto is_compatible(view::RenderPass render_pass) const noexcept -> bool;
@@ -105,7 +105,7 @@ namespace stormkit::gpu {
     }
 
     class STORMKIT_GPU_API FrameBufferImplementation
-        : public GpuObjectImplementation<FrameBufferTag, view::RenderPass, const math::uextent2&, dyn_array<view::ImageView>> {
+        : public GpuObjectImplementation<FrameBufferTag, view::RenderPass, const math::uextent2&, dynarray<view::ImageView>> {
       public:
         FrameBufferImplementation(PrivateTag, view::Device&&) noexcept;
         ~FrameBufferImplementation() noexcept;
@@ -116,15 +116,15 @@ namespace stormkit::gpu {
         FrameBufferImplementation(FrameBufferImplementation&&) noexcept;
         auto operator=(FrameBufferImplementation&&) noexcept -> FrameBufferImplementation&;
 
-        auto do_init(PrivateTag, view::RenderPass&&, const math::uextent2&, dyn_array<view::ImageView>&&) noexcept
-          -> Expected<void>;
+        auto do_init(PrivateTag, view::RenderPass&&, const math::uextent2&, dynarray<view::ImageView>&&) noexcept
+          -> expected<void>;
 
       protected:
         using NamedConstructor::allocate;
         using NamedConstructor::create;
 
         math::uextent2             m_extent = { 0, 0 };
-        dyn_array<view::ImageView> m_attachments;
+        dynarray<view::ImageView> m_attachments;
 
         friend class RenderPassInterface<RenderPassImplementation>;
         friend class RenderPassInterface<view::RenderPassImplementation>;
@@ -161,10 +161,10 @@ namespace stormkit::gpu {
         RenderPassImplementation(RenderPassImplementation&&) noexcept;
         auto operator=(RenderPassImplementation&&) noexcept -> RenderPassImplementation&;
 
-        auto do_init(PrivateTag, const RenderPassDescription&) noexcept -> Expected<void>;
+        auto do_init(PrivateTag, const RenderPassDescription&) noexcept -> expected<void>;
 
       protected:
-        Heap<RenderPassDescription> m_description = {};
+        heap_ptr<RenderPassDescription> m_description = {};
     };
 
     namespace view {
@@ -188,13 +188,13 @@ namespace stormkit::gpu {
         };
     } // namespace view
 
-    template<core::meta::HashType Ret = hash32>
+    template<core::meta::hash_type Ret = hash32>
     constexpr auto hasher(const AttachmentDescription& value) noexcept -> Ret;
-    template<core::meta::HashType Ret = hash32>
+    template<core::meta::hash_type Ret = hash32>
     constexpr auto hasher(const Subpass::Ref& value) noexcept -> Ret;
-    template<core::meta::HashType Ret = hash32>
+    template<core::meta::hash_type Ret = hash32>
     constexpr auto hasher(const Subpass& value) noexcept -> Ret;
-    template<core::meta::HashType Ret = hash32>
+    template<core::meta::hash_type Ret = hash32>
     constexpr auto hasher(const RenderPassDescription& value) noexcept -> Ret;
 } // namespace stormkit::gpu
 
@@ -226,8 +226,8 @@ namespace stormkit::gpu {
     inline auto RenderPassInterface<Base>::create_framebuffer(this const auto&           self,
                                                               view::Device               device,
                                                               const math::uextent2&      extent,
-                                                              dyn_array<view::ImageView> attachments) noexcept
-      -> Expected<FrameBuffer> {
+                                                              dynarray<view::ImageView> attachments) noexcept
+      -> expected<FrameBuffer> {
         return FrameBuffer::create(std::move(device), gpu::as_view(self), extent, std::move(attachments));
     }
 
@@ -238,8 +238,8 @@ namespace stormkit::gpu {
     inline auto RenderPassInterface<Base>::allocate_framebuffer(this const auto&           self,
                                                                 view::Device               device,
                                                                 const math::uextent2&      extent,
-                                                                dyn_array<view::ImageView> attachments) noexcept
-      -> Expected<Heap<FrameBuffer>> {
+                                                                dynarray<view::ImageView> attachments) noexcept
+      -> expected<Heap<FrameBuffer>> {
         return FrameBuffer::allocate(std::move(device), gpu::as_view(self), extent, std::move(attachments));
     }
 
@@ -405,7 +405,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::HashType Ret>
+    template<core::meta::hash_type Ret>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const AttachmentDescription& value) noexcept -> Ret {
         return hash<Ret>(value.format,
@@ -421,7 +421,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::HashType Ret>
+    template<core::meta::hash_type Ret>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const Subpass::Ref& value) noexcept -> Ret {
         return hash<Ret>(value.attachment_id, value.layout);
@@ -429,7 +429,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::HashType Ret>
+    template<core::meta::hash_type Ret>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const Subpass& value) noexcept -> Ret {
         return hash<Ret>(value.bind_point,
@@ -440,7 +440,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::HashType Ret>
+    template<core::meta::hash_type Ret>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const RenderPassDescription& value) noexcept -> Ret {
         return hash<Ret>(value.attachments, value.subpasses);

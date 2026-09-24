@@ -18,28 +18,28 @@ import stormkit.math.arithmetic;
 
 namespace stdr = std::ranges;
 
-export namespace stormkit { inline namespace core { namespace math {
-    template<stormkit::core::meta::arithmetic T>
+export namespace stormkit::math {
+    template<core::meta::arithmetic T>
     constexpr auto factoriel(T n) noexcept -> T;
-}}} // namespace stormkit::core::math
+} // namespace stormkit::math
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit { inline namespace core { namespace math {
+namespace stormkit::math {
     constexpr auto FTABLE = array<u64, 14> {
         1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800, 39916800, 479001600, 6227020800
     };
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stormkit::core::meta::arithmetic T>
+    template<core::meta::arithmetic T>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto factoriel(T n) noexcept -> T {
-        if constexpr (stormkit::meta::integral<T>) {
+        if constexpr (core::meta::integral<T>) {
             const auto i = [](auto n) static noexcept {
-                if constexpr (stormkit::meta::signed_type<T>) return abs(static_cast<usize>(n));
+                if constexpr (core::meta::signed_type<T>) return abs(static_cast<usize>(n));
                 else
                     return static_cast<usize>(n);
             }(n);
@@ -56,4 +56,4 @@ namespace stormkit { inline namespace core { namespace math {
         for (auto i = T { 2 }; i <= n; ++i) res *= i;
         return res;
     }
-}}} // namespace stormkit::core::math
+} // namespace stormkit::math

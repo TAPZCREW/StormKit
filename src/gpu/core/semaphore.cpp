@@ -25,7 +25,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto SemaphoreImplementation::do_init(PrivateTag) noexcept -> Expected<void> {
+    auto SemaphoreImplementation::do_init(PrivateTag) noexcept -> expected<void> {
         const auto create_info = VkSemaphoreCreateInfo {
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
             .pNext = nullptr,
@@ -34,7 +34,7 @@ namespace stormkit::gpu {
 
         const auto& device       = owner();
         const auto& device_table = device.device_table();
-        m_vk_handle = Try(vk::call_checked<VkSemaphore>(device_table.vkCreateSemaphore, device, &create_info, nullptr));
+        m_vk_handle = TryX(vk::call_checked<VkSemaphore>(device_table.vkCreateSemaphore, device, &create_info, nullptr));
 
         Return {};
     }

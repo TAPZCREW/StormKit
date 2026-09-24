@@ -35,8 +35,8 @@ export namespace stormkit::gpu {
     };
 
     struct RasterPipelineVertexInputState {
-        dyn_array<VertexBindingDescription>        binding_descriptions         = {};
-        dyn_array<VertexInputAttributeDescription> input_attribute_descriptions = {};
+        dynarray<VertexBindingDescription>        binding_descriptions         = {};
+        dynarray<VertexInputAttributeDescription> input_attribute_descriptions = {};
     };
 
     struct RasterPipelineInputAssemblyState {
@@ -45,8 +45,8 @@ export namespace stormkit::gpu {
     };
 
     struct RasterPipelineViewportState {
-        dyn_array<Viewport> viewports = {};
-        dyn_array<Scissor>  scissors  = {};
+        dynarray<Viewport> viewports = {};
+        dynarray<Scissor>  scissors  = {};
     };
 
     struct RasterPipelineRasterizationState {
@@ -84,12 +84,12 @@ export namespace stormkit::gpu {
     struct RasterPipelineColorBlendState {
         bool                                               logic_operation_enable = false;
         LogicOperation                                     logic_operation        = LogicOperation::COPY;
-        dyn_array<RasterPipelineColorBlendAttachmentState> attachments;
+        dynarray<RasterPipelineColorBlendAttachmentState> attachments;
         array<f32, 4>                                      blend_constants = { 0.f, 0.f, 0.f, 0.f };
     };
 
-    using RasterPipelineDynamicState = dyn_array<DynamicState>;
-    using RasterPipelineShaderState  = dyn_array<view::Shader>;
+    using RasterPipelineDynamicState = dynarray<DynamicState>;
+    using RasterPipelineShaderState  = dynarray<view::Shader>;
 
     struct RasterPipelineDepthStencilState {
         bool depth_test_enable  = false;
@@ -105,14 +105,14 @@ export namespace stormkit::gpu {
 
     struct RasterPipelineRenderingInfo {
         u32                        view_mask = 0u;
-        dyn_array<PixelFormat>     color_attachment_formats;
+        dynarray<PixelFormat>     color_attachment_formats;
         std::optional<PixelFormat> depth_attachment_format   = std::nullopt;
         std::optional<PixelFormat> stencil_attachment_format = std::nullopt;
     };
 
     struct RasterPipelineLayout {
-        dyn_array<view::DescriptorSetLayout> descriptor_set_layouts = {};
-        dyn_array<PushConstantRange>         push_constant_ranges   = {};
+        dynarray<view::DescriptorSetLayout> descriptor_set_layouts = {};
+        dynarray<PushConstantRange>         push_constant_ranges   = {};
     };
 
     struct RasterPipelineState {

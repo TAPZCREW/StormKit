@@ -23,7 +23,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto ImageViewImplementation::do_init(PrivateTag, const CreateInfo& create_info) noexcept -> Expected<void> {
+    auto ImageViewImplementation::do_init(PrivateTag, const CreateInfo& create_info) noexcept -> expected<void> {
         m_type              = create_info.type;
         m_subresource_range = create_info.subresource_range;
 
@@ -51,7 +51,7 @@ namespace stormkit::gpu {
 
         const auto device = owner();
 
-        m_vk_handle = Try(vk::call_checked<
+        m_vk_handle = TryX(vk::call_checked<
                           VkImageView>(device.device_table().vkCreateImageView, device, &vk_create_info, nullptr));
         Return {};
     }

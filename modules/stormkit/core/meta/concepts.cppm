@@ -12,25 +12,6 @@ import std;
 
 import stormkit.core.types;
 
-namespace stormkit { inline namespace core { namespace meta::details {
-    template<template<class...> typename T, typename... Ts>
-    constexpr auto is_specialization_of_helper(const T<Ts...>&) noexcept -> std::true_type;
-    template<template<typename, auto...> typename T, typename T2, auto... Ts>
-    constexpr auto is_specialization_of_with_nttp_helper(const T<T2, Ts...>&) noexcept -> std::true_type;
-    template<template<typename, auto...> typename T, typename T1, auto... Ts>
-    constexpr auto is_specialization_of_helper_nttp_tv(const T<T1, Ts...>&) noexcept -> std::true_type;
-    template<template<class, class, auto...> typename T, typename T1, typename T2, auto... Ts>
-    constexpr auto is_specialization_of_helper_nttp_ttv(const T<T1, T2, Ts...>&) noexcept -> std::true_type;
-    template<template<class, class, auto, class...> typename T, typename T1, typename T2, auto Arg, typename... Ts>
-    constexpr auto is_specialization_of_helper_nttp_ttvts(const T<T1, T2, Arg, Ts...>&) noexcept -> std::true_type;
-    template<template<class, class, auto, template<class> class...> typename T,
-             typename T1,
-             typename T2,
-             auto Arg,
-             template<class> typename... Ts>
-    constexpr auto is_specialization_of_helper_nttp_ttvtcs(const T<T1, T2, Arg, Ts...>&) noexcept -> std::true_type;
-}}} // namespace stormkit::core::meta::details
-
 namespace stdr = std::ranges;
 
 export namespace stormkit { inline namespace core { namespace meta {
@@ -50,6 +31,9 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<typename T, typename... Ts>
     concept same_types_as = (same_as<T, Ts> and ...);
 
+    template<typename T>
+    concept standard_layout = std::is_standard_layout_v<T>;
+
     using std::convertible_to;
 
     template<typename From, typename To>
@@ -61,29 +45,30 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<typename T>
     concept boolean_testable = convertible_to<T, bool>;
 
-    template<typename S, template<class...> typename T>
-    concept specialization_of = requires(S&& s) {
-        { details::is_specialization_of_helper<T>(std::forward<S>(s)) } -> is<std::true_type>;
+    template<typename S, template<class...> typename Template>
+    concept specialization_of = requires(const S& s) { []<typename... Ts>(const Template<Ts...>&) { return true; }(s); };
+
+    template<typename S, template<auto...> typename Template>
+    concept specialization_of_nttp_v = requires(const S& s) { []<auto VAL>(const Template<VAL>&) { return true; }(s); };
+
+    template<typename S, template<class, auto...> typename Template>
+    concept specialization_of_nttp_tv = requires(const S& s) {
+        []<typename T, auto... VALS>(const Template<T, VALS...>&) { return true; }(s);
     };
 
-    template<typename S, template<class, auto...> typename T>
-    concept specialization_of_nttp_tv = requires(S&& s) {
-        { details::is_specialization_of_helper_nttp_tv<T>(std::forward<S>(s)) } -> is<std::true_type>;
+    template<typename S, template<class, class, auto...> typename Template>
+    concept specialization_of_nttp_ttv = requires(const S& s) {
+        []<typename T, typename U, auto... VALS>(const Template<T, U, VALS...>&) { return true; }(s);
     };
 
-    template<typename S, template<class, class, auto> typename T>
-    concept specialization_of_nttp_ttv = requires(S&& s) {
-        { details::is_specialization_of_helper_nttp_ttv<T>(std::forward<S>(s)) } -> is<std::true_type>;
+    template<typename S, template<class, auto, template<class> class...> typename Template>
+    concept specialization_of_nttp_tvc = requires(const S& s) {
+        []<typename T, auto VAL, template<class> class... Ts>(const Template<T, VAL, Ts...>&) { return true; }(s);
     };
 
-    template<typename S, template<class, class, auto, class...> typename T>
-    concept specialization_of_nttp_ttvts = requires(S&& s) {
-        { details::is_specialization_of_helper_nttp_ttvts<T>(std::forward<S>(s)) } -> is<std::true_type>;
-    };
-
-    template<typename S, template<class, class, auto, template<class> class...> typename T>
-    concept specialization_of_nttp_ttvtcs = requires(S&& s) {
-        { details::is_specialization_of_helper_nttp_ttvtcs<T>(std::forward<S>(s)) } -> is<std::true_type>;
+    template<typename S, template<class, class, auto, template<class> class...> typename Template>
+    concept specialization_of_nttp_ttvc = requires(const S& s) {
+        []<typename T, typename U, auto VAL, template<class> class... Ts>(const Template<T, U, VAL, Ts...>&) { return true; }(s);
     };
 
     template<typename T>
@@ -123,12 +108,15 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept raw_pointer = std::is_pointer_v<T>;
 
     template<typename T>
-    concept owning_pointer = requires { typename std::pointer_traits<T>::element_type; } and requires(T a) {
+    concept owning_pointer = requires { typename std::pointer_traits<T>::element_type; } and requires(std::remove_const_t<T> a) {
         { a.operator->() } -> convertible_to<decltype(&*a)>;
         { a.operator*() };
         { a == nullptr } -> boolean_testable;
         { a.reset() };
     };
+
+    template<typename T, typename U>
+    concept owning_pointer_to = owning_pointer<T> and is<typename std::pointer_traits<T>::element_type, U>;
 
     template<typename T>
     concept view_pointer = not owning_pointer<T> and (raw_pointer<T> or (requires {
@@ -139,17 +127,23 @@ export namespace stormkit { inline namespace core { namespace meta {
         { a == nullptr } -> boolean_testable;
     }) or std_reference_wrapper<T>);
 
+    template<typename T, typename U>
+    concept view_pointer_to = view_pointer<T> and is<typename std::pointer_traits<T>::element_type, U>;
+
     template<typename T>
     concept pointer = view_pointer<T> or owning_pointer<T>;
 
     template<typename T, typename U>
-    concept pointer_to = pointer<T> and is<typename std::pointer_traits<T>::element_type, U>;
+    concept pointer_to = view_pointer_to<T, U> or owning_pointer_to<T, U>;
 
     template<typename T>
     concept indirection = reference<T> or pointer<T>;
 
     template<typename T, typename U>
     concept indirection_to = indirection<T> and (pointer_to<T, U> or reference_to<T, U>);
+
+    template<typename T>
+    concept view_indirection = view_pointer<std::remove_reference_t<T>> or lvalue_ref<T>;
 
     template<typename T>
     concept raw_indirection = reference<T> or raw_pointer<T>;
@@ -164,10 +158,16 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept has_value_type = requires() { typename T::value_type; };
 
     template<typename T>
+    concept has_size_type = requires() { typename T::size_type; };
+
+    template<typename T>
     concept has_error_type = requires() { typename T::error_type; };
 
     template<typename T>
     concept has_expected_type = requires() { typename T::expected_type; } and std_expected<typename T::expected_type>;
+
+    template<typename T>
+    concept has_ordering_type = requires() { typename T::ordering_type; };
 
     template<typename T>
     concept wrapped_value = has_value_type<T> and requires(T& val) {
@@ -226,11 +226,20 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<typename T>
     concept char_type = is_any_of<T, char, wchar_t, char8_t, char16_t, char32_t>;
 
+    template<typename... Ts>
+    concept char_types = (meta::char_type<Ts> and ...);
+
     template<typename T>
     concept const_type = std::is_const_v<T>;
 
+    template<typename... Ts>
+    concept const_types = (meta::const_type<Ts> and ...);
+
     template<typename T>
     concept volatile_type = std::is_volatile_v<T>;
+
+    template<typename... Ts>
+    concept volatile_types = (meta::volatile_type<Ts> and ...);
 
     template<class From, typename To>
     concept brace_initializable_to = requires(From&& from) { To { std::forward<From>(from) }; };
@@ -349,56 +358,16 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     template<typename T>
     concept hash_type = is_any_of<T, hash32, hash64>;
+
+    template<typename T>
+    using iter_const_reference_t = std::common_reference_t<const std::iter_value_t<T>&&, std::iter_reference_t<T>>;
+
+    template<typename T>
+    concept constant_iterator = std::input_iterator<T> and same_as<iter_const_reference_t<T>, std::iter_reference_t<T>>;
+
+    template<typename T>
+    concept constant_range = stdr::input_range<T> and constant_iterator<stdr::iterator_t<T>>;
+
+    template<typename T>
+    concept has_unique_object_representations = std::has_unique_object_representations_v<T>;
 }}} // namespace stormkit::core::meta
-
-////////////////////////////////////////////////////////////////////
-///                      IMPLEMENTATION                          ///
-////////////////////////////////////////////////////////////////////
-
-namespace stormkit { inline namespace core { namespace meta::details {
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<template<class...> typename T, typename... Ts>
-    constexpr auto is_specialization_of_helper(const T<Ts...>&) noexcept -> std::true_type {
-        return {};
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<template<typename, auto...> typename T, typename T2, auto... Ts>
-    constexpr auto is_specialization_of_with_nttp_helper(const T<T2, Ts...>&) noexcept -> std::true_type {
-        return {};
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<template<typename, auto...> typename T, typename T1, auto... Ts>
-    constexpr auto is_specialization_of_helper_nttp_tv(const T<T1, Ts...>&) noexcept -> std::true_type {
-        return {};
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<template<class, class, auto...> typename T, typename T1, typename T2, auto... Ts>
-    constexpr auto is_specialization_of_helper_nttp_ttv(const T<T1, T2, Ts...>&) noexcept -> std::true_type {
-        return {};
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<template<class, class, auto, class...> typename T, typename T1, typename T2, auto Arg, typename... Ts>
-    constexpr auto is_specialization_of_helper_nttp_ttvts(const T<T1, T2, Arg, Ts...>&) noexcept -> std::true_type {
-        return {};
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<template<class, class, auto, template<class> class...> typename T,
-             typename T1,
-             typename T2,
-             auto Arg,
-             template<class> typename... Ts>
-    constexpr auto is_specialization_of_helper_nttp_ttvtcs(const T<T1, T2, Arg, Ts...>&) noexcept -> std::true_type {
-        return {};
-    }
-}}} // namespace stormkit::core::meta::details

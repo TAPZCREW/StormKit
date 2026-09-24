@@ -43,13 +43,13 @@ class Application: public base::Application {
   public:
     auto init_example() {
         // load shaders
-        m_vertex_shader = TryAssert(gpu::Shader::load_from_file(m_device, SHADER, gpu::ShaderStageFlag::VERTEX),
+        m_vertex_shader = TryXAssert(gpu::Shader::load_from_file(m_device, SHADER, gpu::ShaderStageFlag::VERTEX),
                                     std::format("Failed to load vertex shader {}!", SHADER.string()));
 
-        m_fragment_shader = TryAssert(gpu::Shader::load_from_file(m_device, SHADER, gpu::ShaderStageFlag::FRAGMENT),
+        m_fragment_shader = TryXAssert(gpu::Shader::load_from_file(m_device, SHADER, gpu::ShaderStageFlag::FRAGMENT),
                                       std::format("Failed to load fragment shader {}!", SHADER.string()));
 
-        m_pipeline_layout = TryAssert(gpu::PipelineLayout::create(m_device, gpu::RasterPipelineLayout {}),
+        m_pipeline_layout = TryXAssert(gpu::PipelineLayout::create(m_device, gpu::RasterPipelineLayout {}),
                                       "Failed to create pipeline layoutu!");
 
         const auto window_extent = m_window->extent();
@@ -83,7 +83,7 @@ class Application: public base::Application {
             .color_attachment_formats = { m_swapchain->pixel_format() }
         };
 
-        m_pipeline = TryAssert(gpu::Pipeline::create(m_device,
+        m_pipeline = TryXAssert(gpu::Pipeline::create(m_device,
                                                      gpu::Pipeline::RasterizationCreateInfo { .state          = as_ref(state),
                                                                                               .layout         = m_pipeline_layout,
                                                                                               .rendering_info = rendering_info }),
@@ -94,13 +94,13 @@ class Application: public base::Application {
             out.reserve(BUFFERING_COUNT);
             for (auto _ : range(BUFFERING_COUNT)) {
                 out.push_back({
-                  .in_flight       = TryAssert(gpu::Fence::create_signaled(m_device),
+                  .in_flight       = TryXAssert(gpu::Fence::create_signaled(m_device),
                                                "Failed to create swapchain image "
                                                "in flight fence!"),
-                  .image_available = TryAssert(gpu::Semaphore::create(m_device),
+                  .image_available = TryXAssert(gpu::Semaphore::create(m_device),
                                                "Failed to create "
                                                "present wait semaphore!"),
-                  .render_cmb      = TryAssert(m_command_pool->create_command_buffer(),
+                  .render_cmb      = TryXAssert(m_command_pool->create_command_buffer(),
                                                "Failed to create transition "
                                                "command buffers!"),
                 });
@@ -111,22 +111,22 @@ class Application: public base::Application {
         const auto& images = m_swapchain->images();
 
         const auto image_count     = stdr::size(images);
-        auto       transition_cmbs = TryAssert(m_command_pool->create_command_buffers(image_count),
+        auto       transition_cmbs = TryXAssert(m_command_pool->create_command_buffers(image_count),
                                                "Failed to create transition command buffers!");
         m_image_resources.reserve(stdr::size(images));
 
         auto image_index = 0u;
         for (const auto& swap_image : images) {
-            auto view = TryAssert(gpu::ImageView::create(m_device, { swap_image }), "Failed to create swapchain image view!");
+            auto view = TryXAssert(gpu::ImageView::create(m_device, { swap_image }), "Failed to create swapchain image view!");
 
             m_image_resources.push_back({ .image           = swap_image,
                                           .view            = std::move(view),
-                                          .render_finished = TryAssert(gpu::Semaphore::create(m_device),
+                                          .render_finished = TryXAssert(gpu::Semaphore::create(m_device),
                                                                        "Failed to create render "
                                                                        "signal semaphore!") });
 
             auto& transition_cmb = transition_cmbs[image_index];
-            DiscardTryAssert((transition_cmb.record([&](auto cmb) noexcept {
+            DiscardTryXAssert((transition_cmb.record([&](auto cmb) noexcept {
                                  cmb.begin_debug_region(std::format("Transition image {}", image_index))
                                    .transition_image_layout(swap_image,
                                                             gpu::ImageLayout::UNDEFINED,
@@ -138,15 +138,15 @@ class Application: public base::Application {
             ++image_index;
         }
 
-        const auto fence = TryAssert(gpu::Fence::create(m_device), "Failed to create transition fence!");
+        const auto fence = TryXAssert(gpu::Fence::create(m_device), "Failed to create transition fence!");
 
         const auto cmbs = gpu::to_views(transition_cmbs);
 
-        TryAssert(m_raster_queue->submit({ .command_buffers = cmbs }, fence),
+        TryXAssert(m_raster_queue->submit({ .command_buffers = cmbs }, fence),
                   "Failed to submit texture transition command buffers!");
 
         // wait for transition to be done
-        TryAssert(fence.wait(), "");
+        TryXAssert(fence.wait(), "");
     }
 
     auto run_example() {
@@ -158,10 +158,10 @@ class Application: public base::Application {
         const auto& wait      = submission_resource.image_available;
         auto&       in_flight = submission_resource.in_flight;
 
-        TryAssert(in_flight.wait(), "Failed to wait in_flight fence!");
-        TryAssert(in_flight.reset(), "Failed to reset in_flight fence!");
+        TryXAssert(in_flight.wait(), "Failed to wait in_flight fence!");
+        TryXAssert(in_flight.reset(), "Failed to reset in_flight fence!");
 
-        const auto&& [_, image_index] = TryAssert(m_swapchain->acquire_next_image(100ms, wait),
+        const auto&& [_, image_index] = TryXAssert(m_swapchain->acquire_next_image(100ms, wait),
                                                   "Failed to acquire next swapchain image!");
 
         const auto& swapchain_image_resource = m_image_resources[image_index];
@@ -179,8 +179,8 @@ class Application: public base::Application {
 
         // render in it
         auto& render_cmb = submission_resource.render_cmb;
-        TryAssert(render_cmb.reset(), std::format("Failed to reset render cmb {}!", image_index));
-        DiscardTryAssert((render_cmb.record([&](auto cmb) noexcept {
+        TryXAssert(render_cmb.reset(), std::format("Failed to reset render cmb {}!", image_index));
+        DiscardTryXAssert((render_cmb.record([&](auto cmb) noexcept {
                              cmb
                                .transition_image_layout(swapchain_image_resource.image,
                                                         gpu::ImageLayout::PRESENT_SRC,
@@ -197,11 +197,11 @@ class Application: public base::Application {
                          })),
                          std::format("Failed to record render cmb {}!", image_index));
 
-        DiscardTryAssert(render_cmb.submit(m_raster_queue, gpu::as_views(wait), PIPELINE_FLAGS, gpu::as_views(signal), in_flight),
+        DiscardTryXAssert(render_cmb.submit(m_raster_queue, gpu::as_views(wait), PIPELINE_FLAGS, gpu::as_views(signal), in_flight),
                          "Failed to submit render command buffer");
 
         // present it
-        DiscardTryAssert(m_raster_queue->present(gpu::as_views(m_swapchain), gpu::as_views(signal), as_view(image_index)),
+        DiscardTryXAssert(m_raster_queue->present(gpu::as_views(m_swapchain), gpu::as_views(signal), as_view(image_index)),
                          "Failed to present swapchain image!");
 
         if (++m_current_frame >= BUFFERING_COUNT) m_current_frame = 0;
@@ -210,11 +210,11 @@ class Application: public base::Application {
     constexpr auto example_name() const noexcept -> string_view { return "Triangle"; }
 
   private:
-    DeferInit<gpu::Shader>            m_vertex_shader;
-    DeferInit<gpu::Shader>            m_fragment_shader;
-    DeferInit<gpu::PipelineLayout>    m_pipeline_layout;
-    DeferInit<gpu::RenderPass>        m_render_pass;
-    DeferInit<gpu::Pipeline>          m_pipeline;
+    defer_init<gpu::Shader>            m_vertex_shader;
+    defer_init<gpu::Shader>            m_fragment_shader;
+    defer_init<gpu::PipelineLayout>    m_pipeline_layout;
+    defer_init<gpu::RenderPass>        m_render_pass;
+    defer_init<gpu::Pipeline>          m_pipeline;
     dynarray<SubmissionResource>     m_submission_resources;
     dynarray<SwapchainImageResource> m_image_resources;
     usize                             m_current_frame = 0_usize;

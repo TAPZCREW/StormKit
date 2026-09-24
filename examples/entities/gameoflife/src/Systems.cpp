@@ -13,7 +13,7 @@ import Components;
 
 using namespace stormkit;
 
-UpdateBoardSystem::UpdateBoardSystem(stormkit::image::Image&  board,
+UpdateBoardSystem::UpdateBoardSystem(stormkit::image::image&  board,
                                      Renderer&                renderer,
                                      entities::EntityManager& manager)
     : entities::System { manager, 0, { PositionComponent::TYPE } }, m_board { &board },

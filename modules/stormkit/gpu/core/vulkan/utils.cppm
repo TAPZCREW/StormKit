@@ -25,17 +25,17 @@ namespace cmonadic = stormkit::core::monadic;
 
 export namespace stormkit::gpu::vk {
     namespace meta {
-        template<typename Func, typename... Args>
-        concept IsVulkanFunc = std::invocable<Func, Args...>;
+        template<typename Func, typename... Ts>
+        concept IsVulkanFunc = std::invocable<Func, Ts...>;
 
-        template<typename Func, typename Out, typename... Args>
-        concept HasOutValueAsArgument = IsVulkanFunc<Func, Args..., Out*>;
+        template<typename Func, typename Out, typename... Ts>
+        concept HasOutValueAsArgument = IsVulkanFunc<Func, Ts..., Out*>;
 
-        template<typename Func, typename... Args>
-        concept HasNoReturnValue = IsVulkanFunc<Func, Args...> and cmeta::Is<std::invoke_result_t<Func, Args...>, void>;
+        template<typename Func, typename... Ts>
+        concept HasNoReturnValue = IsVulkanFunc<Func, Ts...> and cmeta::is<std::invoke_result_t<Func, Ts...>, void>;
 
-        template<typename Func, typename... Args>
-        concept HasResultReturnValue = IsVulkanFunc<Func, Args...> and cmeta::Is<std::invoke_result_t<Func, Args...>, VkResult>;
+        template<typename Func, typename... Ts>
+        concept HasResultReturnValue = IsVulkanFunc<Func, Ts...> and cmeta::is<std::invoke_result_t<Func, Ts...>, VkResult>;
     } // namespace meta
 
     template<std::integral T>
@@ -48,69 +48,69 @@ export namespace stormkit::gpu::vk {
     [[nodiscard]]
     constexpr auto version_patch(std::integral auto version) noexcept -> u32;
 
-    template<typename... Args, meta::IsVulkanFunc<Args...> Func>
-        requires meta::HasNoReturnValue<Func, Args...>
-    auto call(const Func& func, Args&&... args) noexcept -> void;
+    template<typename... Ts, meta::IsVulkanFunc<Ts...> Func>
+        requires meta::HasNoReturnValue<Func, Ts...>
+    auto call(const Func& func, Ts&&... args) noexcept -> void;
 
-    template<typename Out, typename... Args, meta::IsVulkanFunc<Args...> Func>
-        requires(not meta::HasNoReturnValue<Func, Args...>)
+    template<typename Out, typename... Ts, meta::IsVulkanFunc<Ts...> Func>
+        requires(not meta::HasNoReturnValue<Func, Ts...>)
     [[nodiscard]]
-    auto call(const Func& func, Args&&... args) noexcept -> Out;
+    auto call(const Func& func, Ts&&... args) noexcept -> Out;
 
-    template<typename Out, typename... Args, meta::HasOutValueAsArgument<Out, Args...> Func>
-        requires meta::HasNoReturnValue<Func, Args..., Out*>
+    template<typename Out, typename... Ts, meta::HasOutValueAsArgument<Out, Ts...> Func>
+        requires meta::HasNoReturnValue<Func, Ts..., Out*>
     [[nodiscard]]
-    auto call(const Func& func, Args&&... args) noexcept -> Out;
+    auto call(const Func& func, Ts&&... args) noexcept -> Out;
 
-    template<VkResult... SUCCESS_RESULTS, typename... Args, meta::HasResultReturnValue<Args...> Func>
-    auto call_checked(const Func& func, Args&&... args) noexcept -> Expected<void>;
+    template<VkResult... SUCCESS_RESULTS, typename... Ts, meta::HasResultReturnValue<Ts...> Func>
+    auto call_checked(const Func& func, Ts&&... args) noexcept -> expected<void>;
 
-    template<cmeta::Is<VkResult> Out, VkResult... SUCCESS_RESULTS, typename... Args, meta::HasResultReturnValue<Args...> Func>
-    auto call_checked(const Func& func, Args&&... args) noexcept -> Expected<Out>;
+    template<cmeta::is<VkResult> Out, VkResult... SUCCESS_RESULTS, typename... Ts, meta::HasResultReturnValue<Ts...> Func>
+    auto call_checked(const Func& func, Ts&&... args) noexcept -> expected<Out>;
 
-    template<typename Out, typename... Args, VkResult... SUCCESS_RESULTS, meta::HasOutValueAsArgument<Out, Args...> Func>
-        requires meta::HasResultReturnValue<Func, Args..., Out*>
-    auto call_checked(const Func& func, Args&&... args) noexcept -> Expected<Out>;
+    template<typename Out, typename... Ts, VkResult... SUCCESS_RESULTS, meta::HasOutValueAsArgument<Out, Ts...> Func>
+        requires meta::HasResultReturnValue<Func, Ts..., Out*>
+    auto call_checked(const Func& func, Ts&&... args) noexcept -> expected<Out>;
 
-    template<typename... Args, meta::HasResultReturnValue<Args...> Func>
-    auto call_unchecked(const Func& func, Args&&... args) noexcept -> void;
+    template<typename... Ts, meta::HasResultReturnValue<Ts...> Func>
+    auto call_unchecked(const Func& func, Ts&&... args) noexcept -> void;
 
-    template<cmeta::Is<VkResult> Out, typename... Args, meta::HasResultReturnValue<Args...> Func>
+    template<cmeta::is<VkResult> Out, typename... Ts, meta::HasResultReturnValue<Ts...> Func>
     [[nodiscard]]
-    auto call_unchecked(const Func& func, Args&&... args) noexcept -> VkResult;
+    auto call_unchecked(const Func& func, Ts&&... args) noexcept -> VkResult;
 
-    template<typename Out, typename... Args, meta::HasOutValueAsArgument<Out, Args...> Func>
-        requires meta::HasResultReturnValue<Func, Args..., Out*>
+    template<typename Out, typename... Ts, meta::HasOutValueAsArgument<Out, Ts...> Func>
+        requires meta::HasResultReturnValue<Func, Ts..., Out*>
     [[nodiscard]]
-    auto call_unchecked(const Func& func, Args&&... args) noexcept -> Out;
+    auto call_unchecked(const Func& func, Ts&&... args) noexcept -> Out;
 
-    template<typename Out, typename... Args, meta::HasOutValueAsArgument<Out, Args...> Func>
-        requires(meta::HasNoReturnValue<Func, Args..., Out*> and not cmeta::SameAs<Out, void>)
+    template<typename Out, typename... Ts, meta::HasOutValueAsArgument<Out, Ts...> Func>
+        requires(meta::HasNoReturnValue<Func, Ts..., Out*> and not cmeta::same_as<Out, void>)
     [[nodiscard]]
-    auto allocate(usize count, const Func& func, Args&&... args) noexcept -> dyn_array<Out>;
+    auto allocate(usize count, const Func& func, Ts&&... args) noexcept -> dynarray<Out>;
 
-    template<typename Out, typename... Args, VkResult... SUCCESS_RESULTS, meta::HasOutValueAsArgument<Out, Args...> Func>
-        requires(meta::HasResultReturnValue<Func, Args..., Out*> and not cmeta::SameAs<Out, void>)
-    auto allocate_checked(usize count, const Func& func, Args&&... args) noexcept -> Expected<dyn_array<Out>>;
+    template<typename Out, typename... Ts, VkResult... SUCCESS_RESULTS, meta::HasOutValueAsArgument<Out, Ts...> Func>
+        requires(meta::HasResultReturnValue<Func, Ts..., Out*> and not cmeta::same_as<Out, void>)
+    auto allocate_checked(usize count, const Func& func, Ts&&... args) noexcept -> expected<dynarray<Out>>;
 
-    template<typename Out, typename... Args, meta::HasOutValueAsArgument<Out, Args...> Func>
-        requires(meta::HasResultReturnValue<Func, Args..., Out*> and not cmeta::SameAs<Out, void>)
+    template<typename Out, typename... Ts, meta::HasOutValueAsArgument<Out, Ts...> Func>
+        requires(meta::HasResultReturnValue<Func, Ts..., Out*> and not cmeta::same_as<Out, void>)
     [[nodiscard]]
-    auto allocate_unchecked(usize count, const Func& func, Args&&... args) noexcept -> dyn_array<Out>;
+    auto allocate_unchecked(usize count, const Func& func, Ts&&... args) noexcept -> dynarray<Out>;
 
-    template<typename Out, typename... Args, meta::HasOutValueAsArgument<Out, Args..., u32*> Func>
-        requires(meta::HasNoReturnValue<Func, Args..., u32*, Out*> and not cmeta::SameAs<Out, void>)
+    template<typename Out, typename... Ts, meta::HasOutValueAsArgument<Out, Ts..., u32*> Func>
+        requires(meta::HasNoReturnValue<Func, Ts..., u32*, Out*> and not cmeta::same_as<Out, void>)
     [[nodiscard]]
-    auto enumerate(const Func& func, Args&&... args) noexcept -> dyn_array<Out>;
+    auto enumerate(const Func& func, Ts&&... args) noexcept -> dynarray<Out>;
 
-    template<typename Out, typename... Args, VkResult... SUCCESS_RESULTS, meta::HasOutValueAsArgument<Out, Args..., u32*> Func>
-        requires(meta::HasResultReturnValue<Func, Args..., u32*, Out*> and not cmeta::SameAs<Out, void>)
-    auto enumerate_checked(const Func& func, Args&&... args) noexcept -> Expected<dyn_array<Out>>;
+    template<typename Out, typename... Ts, VkResult... SUCCESS_RESULTS, meta::HasOutValueAsArgument<Out, Ts..., u32*> Func>
+        requires(meta::HasResultReturnValue<Func, Ts..., u32*, Out*> and not cmeta::same_as<Out, void>)
+    auto enumerate_checked(const Func& func, Ts&&... args) noexcept -> expected<dynarray<Out>>;
 
-    template<typename Out, typename... Args, meta::HasOutValueAsArgument<Out, Args..., u32*> Func>
-        requires(meta::HasResultReturnValue<Func, Args..., u32*, Out*> and not cmeta::SameAs<Out, void>)
+    template<typename Out, typename... Ts, meta::HasOutValueAsArgument<Out, Ts..., u32*> Func>
+        requires(meta::HasResultReturnValue<Func, Ts..., u32*, Out*> and not cmeta::same_as<Out, void>)
     [[nodiscard]]
-    auto enumerate_unchecked(const Func& func, Args&&... args) noexcept -> dyn_array<Out>;
+    auto enumerate_unchecked(const Func& func, Ts&&... args) noexcept -> dynarray<Out>;
 
     template<typename T>
     class Owned {
@@ -214,44 +214,44 @@ namespace stormkit::gpu::vk {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename... Args, meta::IsVulkanFunc<Args...> Func>
-        requires meta::HasNoReturnValue<Func, Args...> 
+    template<typename... Ts, meta::IsVulkanFunc<Ts...> Func>
+        requires meta::HasNoReturnValue<Func, Ts...> 
     STORMKIT_FORCE_INLINE
-    inline auto call(const Func& func, Args&&... args) noexcept -> void {
-        std::invoke(func, std::forward<Args>(args)...);
+    inline auto call(const Func& func, Ts&&... args) noexcept -> void {
+        std::invoke(func, std::forward<Ts>(args)...);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename Out, typename... Args, meta::IsVulkanFunc<Args...> Func>
-        requires(not meta::HasNoReturnValue<Func, Args...>)
+    template<typename Out, typename... Ts, meta::IsVulkanFunc<Ts...> Func>
+        requires(not meta::HasNoReturnValue<Func, Ts...>)
     STORMKIT_FORCE_INLINE
-    inline auto call(const Func& func, Args&&... args) noexcept -> Out {
-        return std::invoke(func, std::forward<Args>(args)...);
+    inline auto call(const Func& func, Ts&&... args) noexcept -> Out {
+        return std::invoke(func, std::forward<Ts>(args)...);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename Out, typename... Args, meta::HasOutValueAsArgument<Out, Args...> Func>
-        requires meta::HasNoReturnValue<Func, Args..., Out*> 
+    template<typename Out, typename... Ts, meta::HasOutValueAsArgument<Out, Ts...> Func>
+        requires meta::HasNoReturnValue<Func, Ts..., Out*> 
     STORMKIT_FORCE_INLINE
-    inline auto call(const Func& func, Args&&... args) noexcept -> Out {
+    inline auto call(const Func& func, Ts&&... args) noexcept -> Out {
         auto out = Out {};
-        std::invoke(func, std::forward<Args>(args)..., &out);
+        std::invoke(func, std::forward<Ts>(args)..., &out);
         return out;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<VkResult... _SUCCESS_RESULTS, typename... Args, meta::HasResultReturnValue<Args...> Func>
-    inline auto call_checked(const Func& func, Args&&... args) noexcept -> Expected<void> {
+    template<VkResult... _SUCCESS_RESULTS, typename... Ts, meta::HasResultReturnValue<Ts...> Func>
+    inline auto call_checked(const Func& func, Ts&&... args) noexcept -> expected<void> {
         static constexpr auto SUCCESS_RESULTS = array { VK_SUCCESS, _SUCCESS_RESULTS... };
 
-        using OutExpected = Expected<void>;
-        auto out_expected = OutExpected { std::in_place };
+        using Outexpected = expected<void>;
+        auto out_expected = Outexpected { std::in_place };
 
-        const auto result = std::invoke(func, std::forward<Args>(args)...);
-        if (not stdr::any_of(SUCCESS_RESULTS, cmonadic::is_equal(result))) [[likely]]
+        const auto result = std::invoke(func, std::forward<Ts>(args)...);
+        if (not stdr::any_of(SUCCESS_RESULTS, cmonadic::is(result))) [[likely]]
             out_expected = std::unexpected { vk::from_vk<Result>(result) };
 
         return out_expected;
@@ -259,15 +259,15 @@ namespace stormkit::gpu::vk {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<cmeta::Is<VkResult> Out, VkResult... _SUCCESS_RESULTS, typename... Args, meta::HasResultReturnValue<Args...> Func>
-    inline auto call_checked(const Func& func, Args&&... args) noexcept -> Expected<Out> {
+    template<cmeta::is<VkResult> Out, VkResult... _SUCCESS_RESULTS, typename... Ts, meta::HasResultReturnValue<Ts...> Func>
+    inline auto call_checked(const Func& func, Ts&&... args) noexcept -> expected<Out> {
         static constexpr auto SUCCESS_RESULTS = array { VK_SUCCESS, _SUCCESS_RESULTS... };
 
-        using OutExpected = Expected<Out>;
-        auto out_expected = OutExpected { std::in_place };
+        using Outexpected = expected<Out>;
+        auto out_expected = Outexpected { std::in_place };
 
-        const auto result = std::invoke(func, std::forward<Args>(args)...);
-        if (not stdr::any_of(SUCCESS_RESULTS, cmonadic::is_equal(result))) [[likely]]
+        const auto result = std::invoke(func, std::forward<Ts>(args)...);
+        if (not stdr::any_of(SUCCESS_RESULTS, cmonadic::is(result))) [[likely]]
             out_expected = std::unexpected { vk::from_vk<Result>(result) };
         else
             out_expected = result;
@@ -277,17 +277,17 @@ namespace stormkit::gpu::vk {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename Out, typename... Args, VkResult... _SUCCESS_RESULTS, meta::HasOutValueAsArgument<Out, Args...> Func>
-        requires meta::HasResultReturnValue<Func, Args..., Out*>
-    inline auto call_checked(const Func& func, Args&&... args) noexcept -> Expected<Out> {
+    template<typename Out, typename... Ts, VkResult... _SUCCESS_RESULTS, meta::HasOutValueAsArgument<Out, Ts...> Func>
+        requires meta::HasResultReturnValue<Func, Ts..., Out*>
+    inline auto call_checked(const Func& func, Ts&&... args) noexcept -> expected<Out> {
         static constexpr auto SUCCESS_RESULTS = array { VK_SUCCESS, _SUCCESS_RESULTS... };
 
-        using OutExpected = Expected<Out>;
-        auto out_expected = OutExpected { std::in_place };
+        using Outexpected = expected<Out>;
+        auto out_expected = Outexpected { std::in_place };
 
         auto       out    = Out {};
-        const auto result = std::invoke(func, std::forward<Args>(args)..., &out);
-        if (not stdr::any_of(SUCCESS_RESULTS, cmonadic::is_equal(result))) [[likely]]
+        const auto result = std::invoke(func, std::forward<Ts>(args)..., &out);
+        if (not stdr::any_of(SUCCESS_RESULTS, cmonadic::is(result))) [[likely]]
             out_expected = std::unexpected { vk::from_vk<Result>(result) };
         else
             out_expected = out;
@@ -297,56 +297,56 @@ namespace stormkit::gpu::vk {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename... Args, meta::HasResultReturnValue<Args...> Func>
+    template<typename... Ts, meta::HasResultReturnValue<Ts...> Func>
     STORMKIT_FORCE_INLINE
-    inline auto call_unchecked(const Func& func, Args&&... args) noexcept -> void {
-        const auto _ = std::invoke(func, std::forward<Args>(args)...);
+    inline auto call_unchecked(const Func& func, Ts&&... args) noexcept -> void {
+        const auto _ = std::invoke(func, std::forward<Ts>(args)...);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<cmeta::Is<VkResult> Out, typename... Args, meta::HasResultReturnValue<Args...> Func>
+    template<cmeta::is<VkResult> Out, typename... Ts, meta::HasResultReturnValue<Ts...> Func>
     STORMKIT_FORCE_INLINE
-    inline auto call_unchecked(const Func& func, Args&&... args) noexcept -> Out {
-        return std::invoke(func, std::forward<Args>(args)...);
+    inline auto call_unchecked(const Func& func, Ts&&... args) noexcept -> Out {
+        return std::invoke(func, std::forward<Ts>(args)...);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename Out, typename... Args, meta::HasOutValueAsArgument<Out, Args...> Func>
-        requires meta::HasResultReturnValue<Func, Args..., Out*>
+    template<typename Out, typename... Ts, meta::HasOutValueAsArgument<Out, Ts...> Func>
+        requires meta::HasResultReturnValue<Func, Ts..., Out*>
     STORMKIT_FORCE_INLINE
-    inline auto call_unchecked(const Func& func, Args&&... args) noexcept -> Out {
+    inline auto call_unchecked(const Func& func, Ts&&... args) noexcept -> Out {
         auto       out = Out {};
-        const auto _   = std::invoke(func, std::forward<Args>(args)..., &out);
+        const auto _   = std::invoke(func, std::forward<Ts>(args)..., &out);
         return out;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename Out, typename... Args, meta::HasOutValueAsArgument<Out, Args...> Func>
-        requires(meta::HasNoReturnValue<Func, Args..., Out*> and not cmeta::SameAs<Out, void>)
-    inline auto allocate(usize count, const Func& func, Args&&... args) noexcept -> dyn_array<Out> {
-        auto out = dyn_array<Out> {};
+    template<typename Out, typename... Ts, meta::HasOutValueAsArgument<Out, Ts...> Func>
+        requires(meta::HasNoReturnValue<Func, Ts..., Out*> and not cmeta::same_as<Out, void>)
+    inline auto allocate(usize count, const Func& func, Ts&&... args) noexcept -> dynarray<Out> {
+        auto out = dynarray<Out> {};
         out.resize(count, VK_NULL_HANDLE);
-        std::invoke(func, std::forward<Args>(args)..., stdr::data(out));
+        std::invoke(func, std::forward<Ts>(args)..., stdr::data(out));
         return out;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename Out, typename... Args, VkResult... _SUCCESS_RESULTS, meta::HasOutValueAsArgument<Out, Args...> Func>
-        requires(meta::HasResultReturnValue<Func, Args..., Out*> and not cmeta::SameAs<Out, void>)
-    inline auto allocate_checked(usize count, const Func& func, Args&&... args) noexcept -> Expected<dyn_array<Out>> {
+    template<typename Out, typename... Ts, VkResult... _SUCCESS_RESULTS, meta::HasOutValueAsArgument<Out, Ts...> Func>
+        requires(meta::HasResultReturnValue<Func, Ts..., Out*> and not cmeta::same_as<Out, void>)
+    inline auto allocate_checked(usize count, const Func& func, Ts&&... args) noexcept -> expected<dynarray<Out>> {
         static constexpr auto SUCCESS_RESULTS = array { VK_SUCCESS, _SUCCESS_RESULTS... };
 
-        using OutExpected = Expected<dyn_array<Out>>;
-        auto out_expected = OutExpected { std::in_place };
+        using Outexpected = expected<dynarray<Out>>;
+        auto out_expected = Outexpected { std::in_place };
 
         auto& out = out_expected.value();
         out.resize(count, VK_NULL_HANDLE);
-        const auto result = std::invoke(func, std::forward<Args>(args)..., stdr::data(out));
-        if (not stdr::any_of(SUCCESS_RESULTS, cmonadic::is_equal(result))) [[likely]]
+        const auto result = std::invoke(func, std::forward<Ts>(args)..., stdr::data(out));
+        if (not stdr::any_of(SUCCESS_RESULTS, cmonadic::is(result))) [[likely]]
             out_expected = std::unexpected { vk::from_vk<Result>(result) };
 
         return out_expected;
@@ -354,50 +354,50 @@ namespace stormkit::gpu::vk {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename Out, typename... Args, meta::HasOutValueAsArgument<Out, Args...> Func>
-        requires(meta::HasResultReturnValue<Func, Args..., Out*> and not cmeta::SameAs<Out, void>)
-    inline auto allocate_unchecked(usize count, const Func& func, Args&&... args) noexcept -> dyn_array<Out> {
-        auto out = dyn_array<Out> {};
+    template<typename Out, typename... Ts, meta::HasOutValueAsArgument<Out, Ts...> Func>
+        requires(meta::HasResultReturnValue<Func, Ts..., Out*> and not cmeta::same_as<Out, void>)
+    inline auto allocate_unchecked(usize count, const Func& func, Ts&&... args) noexcept -> dynarray<Out> {
+        auto out = dynarray<Out> {};
         out.resize(count, VK_NULL_HANDLE);
-        const auto _ = std::invoke(func, std::forward<Args>(args)..., stdr::data(out));
+        const auto _ = std::invoke(func, std::forward<Ts>(args)..., stdr::data(out));
         return out;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename Out, typename... Args, meta::HasOutValueAsArgument<Out, Args..., u32*> Func>
-        requires(meta::HasNoReturnValue<Func, Args..., u32*, Out*> and not cmeta::SameAs<Out, void>)
-    inline auto enumerate(const Func& func, Args&&... args) noexcept -> dyn_array<Out> {
-        auto out  = dyn_array<Out> {};
+    template<typename Out, typename... Ts, meta::HasOutValueAsArgument<Out, Ts..., u32*> Func>
+        requires(meta::HasNoReturnValue<Func, Ts..., u32*, Out*> and not cmeta::same_as<Out, void>)
+    inline auto enumerate(const Func& func, Ts&&... args) noexcept -> dynarray<Out> {
+        auto out  = dynarray<Out> {};
         auto size = 0_u32;
-        std::invoke(func, std::forward<Args>(args)..., &size, nullptr);
+        std::invoke(func, std::forward<Ts>(args)..., &size, nullptr);
         out.resize(size);
-        std::invoke(func, std::forward<Args>(args)..., &size, stdr::data(out));
+        std::invoke(func, std::forward<Ts>(args)..., &size, stdr::data(out));
 
         return out;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename Out, typename... Args, VkResult... _SUCCESS_RESULTS, meta::HasOutValueAsArgument<Out, Args..., u32*> Func>
-        requires(meta::HasResultReturnValue<Func, Args..., u32*, Out*> and not cmeta::SameAs<Out, void>)
-    inline auto enumerate_checked(const Func& func, Args&&... args) noexcept -> Expected<dyn_array<Out>> {
+    template<typename Out, typename... Ts, VkResult... _SUCCESS_RESULTS, meta::HasOutValueAsArgument<Out, Ts..., u32*> Func>
+        requires(meta::HasResultReturnValue<Func, Ts..., u32*, Out*> and not cmeta::same_as<Out, void>)
+    inline auto enumerate_checked(const Func& func, Ts&&... args) noexcept -> expected<dynarray<Out>> {
         static constexpr auto SUCCESS_RESULTS = array { VK_SUCCESS, _SUCCESS_RESULTS... };
 
-        using OutExpected = Expected<dyn_array<Out>>;
-        auto out_expected = OutExpected { std::in_place };
+        using Outexpected = expected<dynarray<Out>>;
+        auto out_expected = Outexpected { std::in_place };
 
-        auto out  = dyn_array<Out> {};
+        auto out  = dynarray<Out> {};
         auto size = 0_u32;
         {
-            const auto result = std::invoke(func, std::forward<Args>(args)..., &size, nullptr);
-            if (not stdr::any_of(SUCCESS_RESULTS, cmonadic::is_equal(result))) [[likely]]
+            const auto result = std::invoke(func, std::forward<Ts>(args)..., &size, nullptr);
+            if (not stdr::any_of(SUCCESS_RESULTS, cmonadic::is(result))) [[likely]]
                 out_expected = std::unexpected { vk::from_vk<Result>(result) };
         }
         out.resize(size);
         {
-            const auto result = std::invoke(func, std::forward<Args>(args)..., &size, stdr::data(out));
-            if (not stdr::any_of(SUCCESS_RESULTS, cmonadic::is_equal(result))) [[likely]]
+            const auto result = std::invoke(func, std::forward<Ts>(args)..., &size, stdr::data(out));
+            if (not stdr::any_of(SUCCESS_RESULTS, cmonadic::is(result))) [[likely]]
                 out_expected = std::unexpected { vk::from_vk<Result>(result) };
             else
                 out_expected = std::move(out);
@@ -408,14 +408,14 @@ namespace stormkit::gpu::vk {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename Out, typename... Args, meta::HasOutValueAsArgument<Out, Args..., u32*> Func>
-        requires(meta::HasResultReturnValue<Func, Args..., u32*, Out*> and not cmeta::SameAs<Out, void>)
-    inline auto enumerate_unchecked(const Func& func, Args&&... args) noexcept -> dyn_array<Out> {
-        auto       out  = dyn_array<Out> {};
+    template<typename Out, typename... Ts, meta::HasOutValueAsArgument<Out, Ts..., u32*> Func>
+        requires(meta::HasResultReturnValue<Func, Ts..., u32*, Out*> and not cmeta::same_as<Out, void>)
+    inline auto enumerate_unchecked(const Func& func, Ts&&... args) noexcept -> dynarray<Out> {
+        auto       out  = dynarray<Out> {};
         auto       size = 0_u32;
-        const auto _    = std::invoke(func, std::forward<Args>(args)..., &size, nullptr);
+        const auto _    = std::invoke(func, std::forward<Ts>(args)..., &size, nullptr);
         out.resize(size);
-        const auto _ = std::invoke(func, std::forward<Args>(args)..., &size, stdr::data(out));
+        const auto _ = std::invoke(func, std::forward<Ts>(args)..., &size, stdr::data(out));
 
         return out;
     }

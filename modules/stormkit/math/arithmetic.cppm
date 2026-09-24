@@ -15,55 +15,53 @@ import stormkit.core.meta.concepts;
 import stormkit.core.types;
 import stormkit.core.typesafe.safecasts;
 
-export {
-    namespace stormkit { inline namespace core { namespace math {
-        template<meta::arithmetic T>
-        [[nodiscard]]
-        constexpr auto floor(T v) noexcept -> T;
+export namespace stormkit::math {
+    template<meta::arithmetic T>
+    [[nodiscard]]
+    constexpr auto floor(T v) noexcept -> T;
 
-        template<meta::arithmetic T>
-        [[nodiscard]]
-        constexpr auto log2(T v) noexcept -> T;
+    template<meta::arithmetic T>
+    [[nodiscard]]
+    constexpr auto log2(T v) noexcept -> T;
 
-        template<meta::arithmetic T>
-        [[nodiscard]]
-        constexpr auto min(T a, T b) noexcept -> T;
+    template<meta::arithmetic T>
+    [[nodiscard]]
+    constexpr auto min(T a, T b) noexcept -> T;
 
-        template<meta::arithmetic T>
-        [[nodiscard]]
-        constexpr auto max(T a, T b) noexcept -> T;
+    template<meta::arithmetic T>
+    [[nodiscard]]
+    constexpr auto max(T a, T b) noexcept -> T;
 
-        template<meta::arithmetic T, meta::arithmetic U>
-        [[nodiscard]]
-        constexpr auto scale(U x, U rmin, U rmax, T tmin, T tmax) noexcept -> T;
+    template<meta::arithmetic T, meta::arithmetic U>
+    [[nodiscard]]
+    constexpr auto scale(U x, U rmin, U rmax, T tmin, T tmax) noexcept -> T;
 
-        template<meta::integral T>
-        [[nodiscard]]
-        constexpr auto scale(T x, T rmin, T rmax, T tmin, T tmax) noexcept -> T;
+    template<meta::integral T>
+    [[nodiscard]]
+    constexpr auto scale(T x, T rmin, T rmax, T tmin, T tmax) noexcept -> T;
 
-        template<meta::floating_point T>
-        [[nodiscard]]
-        constexpr auto scale(T x, T rmin, T rmax, T tmin, T tmax) noexcept -> T;
+    template<meta::floating_point T>
+    [[nodiscard]]
+    constexpr auto scale(T x, T rmin, T rmax, T tmin, T tmax) noexcept -> T;
 
-        template<stormkit::core::meta::arithmetic T>
-        [[nodiscard]]
-        constexpr auto abs(T n) noexcept -> T;
+    template<meta::arithmetic T>
+    [[nodiscard]]
+    constexpr auto abs(T n) noexcept -> T;
 
-        template<meta::arithmetic T>
-        [[nodiscard]]
-        constexpr auto is_positive(T value) noexcept -> bool;
+    template<meta::arithmetic T>
+    [[nodiscard]]
+    constexpr auto is_positive(T value) noexcept -> bool;
 
-        template<meta::arithmetic T>
-        [[nodiscard]]
-        constexpr auto is_negative(T value) noexcept -> bool;
-    }}} // namespace stormkit::core::math
-}
+    template<meta::arithmetic T>
+    [[nodiscard]]
+    constexpr auto is_negative(T value) noexcept -> bool;
+} // namespace stormkit::math
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
 ////////////////////////////////////////////////////////////////////
 
-namespace stormkit { inline namespace core { namespace math {
+namespace stormkit::math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::arithmetic T>
@@ -140,12 +138,15 @@ namespace stormkit { inline namespace core { namespace math {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<stormkit::core::meta::arithmetic T>
+    template<meta::arithmetic T>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto abs(T n) noexcept -> T {
         if constexpr (not stormkit::meta::signed_type<T>) return n;
-        else
-            return as<T>(std::abs(n));
+        else {
+            if (n >= 0) return n;
+            else
+                return n * T { -1 };
+        }
     }
 
     /////////////////////////////////////
@@ -168,35 +169,35 @@ namespace stormkit { inline namespace core { namespace math {
             return false;
     }
 
-#ifndef STORMKIT_COMPILER_MSVC
-    #ifndef STORMKIT_OS_WINDOWS
-        #undef STORMKIT_CORE_API
-        #define STORMKIT_CORE_API
-    #endif
+    // #ifndef STORMKIT_COMPILER_MSVC
+    //     #ifndef STORMKIT_OS_WINDOWS
+    //         #undef STORMKIT_CORE_API
+    //         #define STORMKIT_CORE_API
+    //     #endif
 
-    #define INSTANCIATE(t)                                                  \
-        template STORMKIT_CORE_API auto is_positive<t>(t) noexcept -> bool; \
-        template STORMKIT_CORE_API auto is_negative<t>(t) noexcept -> bool; \
-        template STORMKIT_CORE_API auto abs<t>(t) noexcept -> t;            \
-        template STORMKIT_CORE_API auto min<t>(t, t) noexcept -> t;         \
-        template STORMKIT_CORE_API auto max<t>(t, t) noexcept -> t;         \
-        template STORMKIT_CORE_API auto log2<t>(t) noexcept -> t;           \
-        template STORMKIT_CORE_API auto floor<t>(t) noexcept -> t;
+    //     #define INSTANCIATE(t)                                                  \
+//         template STORMKIT_CORE_API auto is_positive<t>(t) noexcept -> bool; \
+//         template STORMKIT_CORE_API auto is_negative<t>(t) noexcept -> bool; \
+//         template STORMKIT_CORE_API auto abs<t>(t) noexcept -> t;            \
+//         template STORMKIT_CORE_API auto min<t>(t, t) noexcept -> t;         \
+//         template STORMKIT_CORE_API auto max<t>(t, t) noexcept -> t;         \
+//         template STORMKIT_CORE_API auto log2<t>(t) noexcept -> t;           \
+//         template STORMKIT_CORE_API auto floor<t>(t) noexcept -> t;
 
-    INSTANCIATE(u8);
-    INSTANCIATE(i8);
-    INSTANCIATE(u16);
-    INSTANCIATE(i16);
-    INSTANCIATE(u32);
-    INSTANCIATE(i32);
-    INSTANCIATE(u64);
-    INSTANCIATE(i64);
-    // INSTANCIATE(u128);
-    // INSTANCIATE(i128);
-    INSTANCIATE(f32);
-    INSTANCIATE(f64);
+    //    INSTANCIATE(u8);
+    //    INSTANCIATE(i8);
+    //    INSTANCIATE(u16);
+    //    INSTANCIATE(i16);
+    //    INSTANCIATE(u32);
+    //    INSTANCIATE(i32);
+    //    INSTANCIATE(u64);
+    //    INSTANCIATE(i64);
+    //    // INSTANCIATE(u128);
+    //    // INSTANCIATE(i128);
+    //    INSTANCIATE(f32);
+    //    INSTANCIATE(f64);
 
-    #undef INSTANCIATE
-#endif
+    //    #undef INSTANCIATE
+    // #endif
 
-}}} // namespace stormkit::core::math
+} // namespace stormkit::math

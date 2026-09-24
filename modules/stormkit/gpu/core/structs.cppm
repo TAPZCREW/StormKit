@@ -4,7 +4,6 @@
 
 module;
 
-#include <stormkit/core/flags_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 #include <stormkit/gpu/vulkan.hpp>
@@ -12,7 +11,6 @@ module;
 export module stormkit.gpu.core:structs;
 
 import std;
-import frozen;
 
 import stormkit.core;
 
@@ -315,8 +313,8 @@ export {
         using ClearValue = std::variant<ClearColor, ClearDepthStencil>;
         using SpirvID    = u32;
 
-        template<class T>
-        using Expected = std::expected<T, Result>;
+        template<typename T>
+        using expected = std::expected<T, Result>;
 
         [[nodiscard]]
         constexpr auto compute_mip_level(const math::uextent2& extent) noexcept -> u32;
@@ -326,16 +324,16 @@ export {
         [[nodiscard]]
         auto to_string(const PhysicalDeviceInfo& data) noexcept;
 
-        template<core::meta::HashType Ret = hash32>
+        template<core::meta::hash_type Ret = hash32>
         constexpr auto hasher(const Viewport& value) noexcept -> Ret;
 
-        template<core::meta::HashType Ret = hash32>
+        template<core::meta::hash_type Ret = hash32>
         constexpr auto hasher(const Scissor& value) noexcept -> Ret;
 
-        template<core::meta::HashType Ret = hash32>
+        template<core::meta::hash_type Ret = hash32>
         constexpr auto hasher(const ClearColor& value) noexcept -> Ret;
 
-        template<core::meta::HashType Ret = hash32>
+        template<core::meta::hash_type Ret = hash32>
         constexpr auto hasher(const ClearDepthStencil& value) noexcept -> Ret;
     } // namespace stormkit::gpu
 }
@@ -418,7 +416,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::HashType Ret>
+    template<core::meta::hash_type Ret>
     constexpr auto hasher(const Viewport& value) noexcept -> Ret {
         return hash(value.position, value.extent, value.depth);
     }
@@ -426,21 +424,21 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
 
-    template<core::meta::HashType Ret>
+    template<core::meta::hash_type Ret>
     constexpr auto hasher(const Scissor& value) noexcept -> Ret {
         return hash(value.offset, value.extent);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::HashType Ret>
+    template<core::meta::hash_type Ret>
     constexpr auto hasher(const ClearColor& value) noexcept -> Ret {
         return hash(value.color);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::HashType Ret>
+    template<core::meta::hash_type Ret>
     constexpr auto hasher(const ClearDepthStencil& value) noexcept -> Ret {
         return hash(value.depth, value.stencil);
     }

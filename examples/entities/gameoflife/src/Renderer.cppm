@@ -31,7 +31,7 @@ export {
 
         auto renderFrame() -> void;
 
-        auto updateBoard(const stormkit::image::Image& board) -> void;
+        auto updateBoard(const stormkit::image::image& board) -> void;
 
       private:
         auto do_initBaseRenderObjects() -> void;
@@ -46,7 +46,7 @@ export {
         stormkit::gpu::Fence*                    m_current_fence = nullptr;
 
         const stormkit::gpu::Queue*           m_queue = nullptr;
-        dyn_array<stormkit::gpu::ImageView> m_surface_views;
+        dynarray<stormkit::gpu::ImageView> m_surface_views;
 
         std::unique_ptr<stormkit::gpu::DescriptorSetLayout> m_descriptor_set_layout;
         std::unique_ptr<stormkit::gpu::DescriptorPool>      m_descriptor_pool;
@@ -54,8 +54,8 @@ export {
         std::unique_ptr<stormkit::gpu::RenderPass> m_render_pass;
 
         struct Board {
-            dyn_array<stormkit::gpu::Image>       images;
-            dyn_array<stormkit::gpu::ImageView>   image_views;
+            dynarray<stormkit::gpu::Image>       images;
+            dynarray<stormkit::gpu::ImageView>   image_views;
             std::unique_ptr<stormkit::gpu::Sampler> sampler;
 
             stormkit::u32 current_image = 0;
@@ -68,8 +68,8 @@ export {
             std::unique_ptr<stormkit::gpu::DescriptorSet> descriptor_set;
         } m_board;
 
-        dyn_array<stormkit::gpu::CommandBuffer> m_command_buffers;
-        dyn_array<stormkit::gpu::Framebuffer>   m_framebuffers;
+        dynarray<stormkit::gpu::CommandBuffer> m_command_buffers;
+        dynarray<stormkit::gpu::Framebuffer>   m_framebuffers;
     };
 
 #ifdef STORMKIT_BUILD_MODULES

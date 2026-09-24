@@ -95,18 +95,18 @@ namespace stormkit::gpu {
             using DeviceObject<Base>::operator=;
             using TagType = DescriptorPoolTag;
 
-            auto create_descriptor_set(this const auto&, view::DescriptorSetLayout layout) noexcept -> Expected<DescriptorSet>;
+            auto create_descriptor_set(this const auto&, view::DescriptorSetLayout layout) noexcept -> expected<DescriptorSet>;
             auto create_descriptor_sets(this const auto&, usize count, view::DescriptorSetLayout layout) noexcept
-              -> Expected<dyn_array<DescriptorSet>>;
+              -> expected<dynarray<DescriptorSet>>;
 
             auto allocate_descriptor_set(this const auto&, view::DescriptorSetLayout layout) noexcept
-              -> Expected<Heap<DescriptorSet>>;
+              -> expected<heap_ptr<DescriptorSet>>;
             auto allocate_descriptor_sets(this const auto&, usize count, view::DescriptorSetLayout layout) noexcept
-              -> Expected<dyn_array<Heap<DescriptorSet>>>;
+              -> expected<dynarray<heap_ptr<DescriptorSet>>>;
 
           private:
             auto create_vk_descriptor_sets(usize, view::DescriptorSetLayout&&) const noexcept
-              -> Expected<dyn_array<VkDescriptorSet>>;
+              -> expected<dynarray<VkDescriptorSet>>;
 
             static auto delete_vk_descriptor_set(view::Device, view::DescriptorPool, VkDescriptorSet) noexcept -> void;
         };
@@ -124,7 +124,7 @@ namespace stormkit::gpu {
         DescriptorSetImplementation(DescriptorSetImplementation&&) noexcept;
         auto operator=(DescriptorSetImplementation&&) noexcept -> DescriptorSetImplementation&;
 
-        auto do_init(PrivateTag, VkDescriptorSet&&, DescriptorSetDeleter&&) noexcept -> Expected<void>;
+        auto do_init(PrivateTag, VkDescriptorSet&&, DescriptorSetDeleter&&) noexcept -> expected<void>;
 
       protected:
         using NamedConstructor::allocate;
@@ -145,7 +145,7 @@ namespace stormkit::gpu {
     } // namespace view
 
     class STORMKIT_GPU_API DescriptorSetLayoutImplementation
-        : public GpuObjectImplementation<DescriptorSetLayoutTag, dyn_array<DescriptorSetLayoutBinding>> {
+        : public GpuObjectImplementation<DescriptorSetLayoutTag, dynarray<DescriptorSetLayoutBinding>> {
       public:
         DescriptorSetLayoutImplementation(PrivateTag, view::Device&&) noexcept;
         ~DescriptorSetLayoutImplementation() noexcept;
@@ -156,10 +156,10 @@ namespace stormkit::gpu {
         DescriptorSetLayoutImplementation(DescriptorSetLayoutImplementation&&) noexcept;
         auto operator=(DescriptorSetLayoutImplementation&&) noexcept -> DescriptorSetLayoutImplementation&;
 
-        auto do_init(PrivateTag, dyn_array<DescriptorSetLayoutBinding>&&) noexcept -> Expected<void>;
+        auto do_init(PrivateTag, dynarray<DescriptorSetLayoutBinding>&&) noexcept -> expected<void>;
 
       protected:
-        dyn_array<DescriptorSetLayoutBinding> m_bindings;
+        dynarray<DescriptorSetLayoutBinding> m_bindings;
     };
 
     namespace view {
@@ -195,7 +195,7 @@ namespace stormkit::gpu {
         DescriptorPoolImplementation(DescriptorPoolImplementation&&) noexcept;
         auto operator=(DescriptorPoolImplementation&&) noexcept -> DescriptorPoolImplementation&;
 
-        auto do_init(PrivateTag, array_view<const Size>&&, u32) noexcept -> Expected<void>;
+        auto do_init(PrivateTag, array_view<const Size>&&, u32) noexcept -> expected<void>;
     };
 
     namespace view {
@@ -206,15 +206,15 @@ namespace stormkit::gpu {
         };
     } // namespace view
 
-    template<core::meta::HashType Ret = hash32>
+    template<core::meta::hash_type Ret = hash32>
     constexpr auto hasher(view::DescriptorSetLayout value) noexcept -> Ret;
-    template<core::meta::HashType Ret = hash32>
+    template<core::meta::hash_type Ret = hash32>
     constexpr auto hasher(const DescriptorSetLayoutBinding& value) noexcept -> Ret;
-    template<core::meta::HashType Ret = hash32>
+    template<core::meta::hash_type Ret = hash32>
     constexpr auto hasher(const BufferDescriptor& value) noexcept -> Ret;
-    template<core::meta::HashType Ret = hash32>
+    template<core::meta::hash_type Ret = hash32>
     constexpr auto hasher(const ImageDescriptor& value) noexcept -> Ret;
-    template<core::meta::HashType Ret = hash32>
+    template<core::meta::hash_type Ret = hash32>
     constexpr auto hasher(const Descriptor& value) noexcept -> Ret;
 } // namespace stormkit::gpu
 
@@ -237,9 +237,9 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto DescriptorPoolInterface<Base>::create_descriptor_set(this const auto&          self,
                                                                      view::DescriptorSetLayout layout) noexcept
-      -> Expected<DescriptorSet> {
+      -> expected<DescriptorSet> {
         auto   device    = self.owner();
-        auto   vk_handle = Try(self.create_vk_descriptor_sets(1, std::move(layout))).front();
+        auto   vk_handle = TryX(self.create_vk_descriptor_sets(1, std::move(layout))).front();
         Return DescriptorSet::create(device,
                                      std::move(vk_handle),
                                      bind_front(self.delete_vk_descriptor_set, std::move(device), gpu::as_view(self)));
@@ -252,9 +252,9 @@ namespace stormkit::gpu {
     inline auto DescriptorPoolInterface<Base>::create_descriptor_sets(this const auto&          self,
                                                                       usize                     count,
                                                                       view::DescriptorSetLayout layout) noexcept
-      -> Expected<dyn_array<DescriptorSet>> {
+      -> expected<dynarray<DescriptorSet>> {
         auto   device = self.owner();
-        Return transform(Try(self.create_vk_descriptor_sets(count, std::move(layout))), [&self, device](auto vk_handle) noexcept {
+        Return transform(TryX(self.create_vk_descriptor_sets(count, std::move(layout))), [&self, device](auto vk_handle) noexcept {
             return DescriptorSet::create(device,
                                          std::move(vk_handle),
                                          bind_front(self.delete_vk_descriptor_set, std::move(device), gpu::as_view(self)));
@@ -267,9 +267,9 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto DescriptorPoolInterface<Base>::allocate_descriptor_set(this const auto&          self,
                                                                        view::DescriptorSetLayout layout) noexcept
-      -> Expected<Heap<DescriptorSet>> {
+      -> expected<heap_ptr<DescriptorSet>> {
         auto   device    = self.owner();
-        auto   vk_handle = Try(self.create_vk_descriptor_sets(1, std::move(layout))).front();
+        auto   vk_handle = TryX(self.create_vk_descriptor_sets(1, std::move(layout))).front();
         Return DescriptorSet::allocate(device,
                                        std::move(vk_handle),
                                        bind_front(self.delete_vk_descriptor_set, std::move(device), gpu::as_view(self)));
@@ -282,9 +282,9 @@ namespace stormkit::gpu {
     inline auto DescriptorPoolInterface<Base>::allocate_descriptor_sets(this const auto&          self,
                                                                         usize                     count,
                                                                         view::DescriptorSetLayout layout) noexcept
-      -> Expected<dyn_array<Heap<DescriptorSet>>> {
+      -> expected<dynarray<heap_ptr<DescriptorSet>>> {
         auto   device = self.owner();
-        Return transform(Try(self.create_vk_descriptor_sets(count, std::move(layout))), [&self, device](auto vk_handle) noexcept {
+        Return transform(TryX(self.create_vk_descriptor_sets(count, std::move(layout))), [&self, device](auto vk_handle) noexcept {
             return DescriptorSet::allocate(device,
                                            std::move(vk_handle),
                                            bind_front(self.delete_vk_descriptor_set, std::move(device), gpu::as_view(self)));
@@ -413,7 +413,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::HashType Ret>
+    template<core::meta::hash_type Ret>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(view::DescriptorSetLayout value) noexcept -> Ret {
         auto out = Ret {};
@@ -423,7 +423,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::HashType Ret>
+    template<core::meta::hash_type Ret>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const DescriptorSetLayoutBinding& value) noexcept -> Ret {
         return hash<Ret>(value.binding, value.type, value.stages, value.descriptor_count);
@@ -431,7 +431,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::HashType Ret>
+    template<core::meta::hash_type Ret>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const BufferDescriptor& value) noexcept -> Ret {
         return hash<Ret>(value.type, value.binding, value.buffer, value.range, value.offset);
@@ -439,7 +439,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::HashType Ret>
+    template<core::meta::hash_type Ret>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const ImageDescriptor& value) noexcept -> Ret {
         return hash<Ret>(value.type, value.binding, value.layout, value.image_view, value.sampler);
@@ -447,7 +447,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::HashType Ret>
+    template<core::meta::hash_type Ret>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const Descriptor& value) noexcept -> Ret {
         return std::visit([](const auto& descriptor) static noexcept { return hash<Ret>(descriptor); }, value);

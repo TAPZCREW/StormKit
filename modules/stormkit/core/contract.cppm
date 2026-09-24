@@ -15,7 +15,6 @@ export module stormkit.core.contract;
 
 import std;
 
-import stormkit.core.stacktrace;
 import stormkit.core.types;
 
 namespace stdr = std::ranges;

@@ -27,7 +27,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto QueueInterface<Base>::wait_idle() const noexcept -> Expected<void> {
+    auto QueueInterface<Base>::wait_idle() const noexcept -> expected<void> {
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
 
@@ -38,7 +38,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     auto QueueInterface<Base>::submit(array_view<const SubmitInfo> submit_infos, std::optional<view::Fence> fence) const noexcept
-      -> Expected<void> {
+      -> expected<void> {
         struct SubmitInfoRange {
             array_view<const VkSemaphore>          wait_semaphores;
             array_view<const VkPipelineStageFlags> wait_dst_stages;
@@ -52,7 +52,7 @@ namespace stormkit::gpu {
             auto _command_buffers_count   = 0uz;
             auto _signal_semaphores_count = 0uz;
 
-            for (auto&& submit_info : submit_infos) {
+            for (const auto& submit_info : submit_infos) {
                 _wait_semaphores_count   = stdr::size(submit_info.wait_semaphores);
                 _wait_dst_stages_count   = stdr::size(submit_info.wait_dst_stages);
                 _command_buffers_count   = stdr::size(submit_info.command_buffers);
@@ -67,19 +67,19 @@ namespace stormkit::gpu {
 
         auto memory_resource = stdp::monotonic_buffer_resource { bytes_count };
 
-        auto wait_semaphores_buf = pmr::dyn_array<pmr::dyn_array<VkSemaphore>> { &memory_resource };
+        auto wait_semaphores_buf = pmr::dynarray<pmr::dynarray<VkSemaphore>> { &memory_resource };
         wait_semaphores_buf.reserve(stdr::size(submit_infos));
-        auto wait_dst_stages_buf = pmr::dyn_array<pmr::dyn_array<VkPipelineStageFlags>> { &memory_resource };
+        auto wait_dst_stages_buf = pmr::dynarray<pmr::dynarray<VkPipelineStageFlags>> { &memory_resource };
         wait_dst_stages_buf.reserve(stdr::size(submit_infos));
-        auto command_buffers_buf = pmr::dyn_array<pmr::dyn_array<VkCommandBuffer>> { &memory_resource };
+        auto command_buffers_buf = pmr::dynarray<pmr::dynarray<VkCommandBuffer>> { &memory_resource };
         command_buffers_buf.reserve(stdr::size(submit_infos));
-        auto signal_semaphores_buf = pmr::dyn_array<pmr::dyn_array<VkSemaphore>> { &memory_resource };
+        auto signal_semaphores_buf = pmr::dynarray<pmr::dynarray<VkSemaphore>> { &memory_resource };
         signal_semaphores_buf.reserve(stdr::size(submit_infos));
 
         const auto submit_ranges = [&] noexcept {
-            auto vec = pmr::dyn_array<SubmitInfoRange> { &memory_resource };
+            auto vec = pmr::dynarray<SubmitInfoRange> { &memory_resource };
             vec.reserve(stdr::size(submit_infos));
-            for (auto&& submit_info : submit_infos) {
+            for (const auto& submit_info : submit_infos) {
                 auto& wait_semaphores = wait_semaphores_buf.emplace_back(std::from_range,
                                                                          submit_info.wait_semaphores
                                                                            | stdv::transform(vk::monadic::to_vk()));
@@ -124,7 +124,7 @@ namespace stormkit::gpu {
                                                .pSignalSemaphores    = stdr::data(submit_range.signal_semaphores),
                                            };
                                        })
-                                     | stdr::to<dyn_array<VkSubmitInfo>>();
+                                     | stdr::to<dynarray<VkSubmitInfo>>();
 
         const auto vk_fence = either(fence, vk::monadic::to_vk(), core::monadic::init<VkFence>(VK_NULL_HANDLE));
 
@@ -142,7 +142,7 @@ namespace stormkit::gpu {
     template<typename Base>
     auto QueueInterface<Base>::present(array_view<const view::SwapChain> swapchains,
                                        array_view<const view::Semaphore> wait_semaphores,
-                                       array_view<const u32>             image_indices) const noexcept -> Expected<Result> {
+                                       array_view<const u32>             image_indices) const noexcept -> expected<Result> {
         EXPECTS(stdr::size(wait_semaphores) >= 1);
         EXPECTS(stdr::size(image_indices) >= 1);
 
@@ -152,12 +152,12 @@ namespace stormkit::gpu {
         const auto bytes_count     = swapchains_count * sizeof(VkSwapchainKHR) + wait_semaphores_count * sizeof(VkSemaphore);
         auto       memory_resource = stdp::monotonic_buffer_resource { bytes_count };
 
-        const auto vk_swapchains = pmr::dyn_array<VkSwapchainKHR> {
+        const auto vk_swapchains = pmr::dynarray<VkSwapchainKHR> {
             std::from_range,
             swapchains | stdv::transform(vk::monadic::to_vk()),
             &memory_resource
         };
-        const auto vk_semaphores = pmr::dyn_array<VkSemaphore> {
+        const auto vk_semaphores = pmr::dynarray<VkSemaphore> {
             std::from_range,
             wait_semaphores | stdv::transform(vk::monadic::to_vk()),
             &memory_resource
@@ -177,7 +177,7 @@ namespace stormkit::gpu {
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
         const auto
-          result = Try((vk::call_checked<VkResult, VK_ERROR_OUT_OF_DATE_KHR, VK_SUBOPTIMAL_KHR>(device_table.vkQueuePresentKHR,
+          result = TryX((vk::call_checked<VkResult, VK_ERROR_OUT_OF_DATE_KHR, VK_SUBOPTIMAL_KHR>(device_table.vkQueuePresentKHR,
                                                                                                 *this,
                                                                                                 &present_info)));
         Return vk::from_vk<Result>(result);

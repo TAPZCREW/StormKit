@@ -33,12 +33,12 @@ class cartesian_product_view final : public std::ranges::view_base {
         using aux = cartesian_iterator<propagate_const, size, size, ViewsTuple>;
 
     public:
-        using aux::iterator_category;
-        using aux::iterator_concept;
-        using aux::difference_type;
-        using aux::value_type;
-        using aux::reference;
-        using aux::pointer;
+        using typename aux::iterator_category;
+        using typename aux::iterator_concept;
+        using typename aux::difference_type;
+        using typename aux::value_type;
+        using typename aux::reference;
+        using typename aux::pointer;
 
         cartesian_iterator() = default;
 

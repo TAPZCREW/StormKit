@@ -15,7 +15,7 @@ import std;
 import stormkit.core.meta;
 import stormkit.core.contract;
 import stormkit.core.types;
-import stormkit.core.containers.safecasts;
+import stormkit.core.typesafe.safecasts;
 
 namespace stdr = std::ranges;
 namespace stdp = std::pmr;
@@ -44,7 +44,7 @@ namespace stormkit { inline namespace core {
     template<typename T>
     STORMKIT_FORCE_INLINE
     constexpr auto zero_bytes(T& value) noexcept -> void {
-        auto bytes = as<array_view>(as_bytes, value);
+        auto bytes = mutable_bytes_of(value);
         stdr::fill(bytes, byte { 0 });
     }
 
@@ -69,7 +69,7 @@ namespace stormkit { inline namespace core {
 
             stdr::reverse(repr);
 
-            return std::launder(std::bit_cast<T>(repr));
+            return std::bit_cast<T>(repr);
         }
     }
 }} // namespace stormkit::core

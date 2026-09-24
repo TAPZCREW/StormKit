@@ -5,11 +5,12 @@
 import std;
 
 import stormkit.core;
+import stormkit.math;
 import stormkit.test;
 
 #include <stormkit/test/test_macro.hpp>
 
-using namespace stormkit::core;
+using namespace stormkit;
 using namespace std::literals;
 
 namespace {

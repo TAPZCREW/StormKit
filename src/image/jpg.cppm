@@ -22,30 +22,25 @@ import std;
 
 import stormkit.core;
 import stormkit.image;
+import stormkit.math;
 
 namespace stdr = std::ranges;
+namespace stdfs = std::filesystem;
 
 export namespace stormkit::image::details {
     [[nodiscard]]
-    auto load_jpg(byte_view data) noexcept -> std::expected<image::Image, image::Image::Error>;
+    auto load_jpg(array_view<const byte>) noexcept -> image::result<image>;
 
     [[nodiscard]]
-    auto save_jpg(const image::Image& image, const std::filesystem::path& filepath) noexcept
-      -> std::expected<void, image::Image::Error>;
+    auto save_jpg(const image&, const stdfs::path&) noexcept -> image::result<void>;
 
     [[nodiscard]]
-    auto save_jpg(const image::Image& image) noexcept -> std::expected<byte_dynarray, image::Image::Error>;
+    auto save_jpg(const image&) noexcept -> image::result<dynarray<byte>>;
 } // namespace stormkit::image::details
 
 namespace stormkit::image::details {
-    template<class E>
-    using Unexpected = std::unexpected<E>;
-    using Error      = image::Image::Error;
-    using Reason     = image::Image::Error::Reason;
-    using Format     = image::Image::Format;
-
     namespace jpg {
-        struct ErrorData {
+        struct error_data {
             std::jmp_buf setjmp_buffer;
             string       msg;
         };
@@ -55,7 +50,7 @@ namespace stormkit::image::details {
         auto error_callback(jpeg_common_struct* st) noexcept -> void {
             EXPECTS(st != nullptr);
 
-            auto error_data = reinterpret_cast<ErrorData*>(st->client_data);
+            auto error_data = reinterpret_cast<struct error_data*>(st->client_data);
 
             auto message = string {};
             message.resize(JMSG_STR_PARM_MAX);
@@ -69,24 +64,23 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto load_jpg(byte_view data) noexcept -> std::expected<image::Image, image::Image::Error> {
-        auto          image_memory = byte_dynarray {};
-        volatile auto format       = Format {}; // NOTE volatile for error: variable ‘format’ might be
-                                                // clobbered by ‘longjmp’ or ‘vfork’ [-Werror=clobbered]
-        auto extent    = math::uextent3 {};
-        auto info      = jpeg_decompress_struct {};
-        auto error_mgr = jpeg_error_mgr {};
+    auto load_jpg(array_view<const byte> data) noexcept -> image::result<image> {
+        auto          image_memory = dynarray<byte> {};
+        volatile auto format       = image_format {}; // NOTE volatile for error: variable ‘format’ might be
+                                                      // clobbered by ‘longjmp’ or ‘vfork’ [-Werror=clobbered]
+        auto          extent       = math::uextent3 {};
+        auto          info         = jpeg_decompress_struct {};
+        auto          error_mgr    = jpeg_error_mgr {};
 
-        auto error_data = jpg::ErrorData {};
+        auto error_data = jpg::error_data {};
 
         info.err             = jpeg_std_error(&error_mgr);
         info.client_data     = &error_data;
         error_mgr.error_exit = jpg::error_callback;
 
         jpeg_create_decompress(&info);
-        if (setjmp(error_data.setjmp_buffer)) {
-            return std::unexpected(Error { .reason = Reason::FAILED_TO_PARSE, .str_error = error_data.msg });
-        }
+        if (setjmp(error_data.setjmp_buffer)) return std::unexpected { status_code(image_status_code::FAILED_TO_PARSE) };
+        // return std::unexpected(Error { .reason = Reason::FAILED_TO_PARSE, .str_error = error_data.msg });
 
         jpeg_mem_src(&info, reinterpret_cast<const unsigned char*>(stdr::data(data)), as<u32>(stdr::size(data)));
         jpeg_read_header(&info, TRUE);
@@ -95,9 +89,9 @@ namespace stormkit::image::details {
         extent.width  = info.output_width;
         extent.height = info.output_height;
         extent.depth  = 1;
-        if (info.output_components == 1) format = Format::R8_UNORM;
-        if (info.output_components == 2) format = Format::RG8_UNORM;
-        if (info.output_components == 3) format = Format::RGB8_UNORM;
+        if (info.output_components == 1) format = image_format::R8_UNORM;
+        if (info.output_components == 2) format = image_format::RG8_UNORM;
+        if (info.output_components == 3) format = image_format::RGB8_UNORM;
 
         image_memory.resize(as<usize>(extent.width * extent.height * extent.depth * as<u32>(info.out_color_components)));
 
@@ -113,10 +107,11 @@ namespace stormkit::image::details {
 
         if (setjmp(error_data.setjmp_buffer)) {
             jpeg_destroy_decompress(&info);
-            return std::unexpected(Error { .reason = Reason::FAILED_TO_PARSE, .str_error = error_data.msg });
+            return std::unexpected { status_code(image_status_code::FAILED_TO_PARSE) };
+            // return std::unexpected(Error { .reason = Reason::FAILED_TO_PARSE, .str_error = error_data.msg });
         }
 
-        auto image_data = image::Image::ImageData {};
+        auto image_data = image::image_data_t {};
 
         image_data.extent            = extent;
         image_data.channel_count     = get_format_channel_count(format);
@@ -127,21 +122,20 @@ namespace stormkit::image::details {
         image_data.data              = std::move(image_memory);
         image_data.format            = format;
 
-        return Image { std::move(image_data) };
+        return image { std::move(image_data) };
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto save_jpg(const image::Image& image, const std::filesystem::path& filepath) noexcept
-      -> std::expected<void, image::Image::Error> {
+    auto save_jpg(const image& image, const stdfs::path& filepath) noexcept -> image::result<void> {
         auto _filename = filepath;
 
-        auto image_rgb = image.convert_to(Format::RGB8_UNORM);
+        auto image_rgb = image.convert_to(image_format::RGB8_UNORM);
 
         auto info      = jpeg_compress_struct {};
         auto error_mgr = jpeg_error_mgr {};
 
-        auto error_data = jpg::ErrorData {};
+        auto error_data = jpg::error_data {};
 
         info.err             = jpeg_std_error(&error_mgr);
         info.client_data     = &error_data;
@@ -150,8 +144,9 @@ namespace stormkit::image::details {
         for (auto i : range(image_rgb.mip_levels())) {
             if (i >= 1u) _filename += to_native_encoding(std::format("_mip{}", i));
 
-            auto file = io::File::open(_filename, io::Access::WRITE);
-            if (not file) return std::unexpected(Error { .reason = Reason::FAILED_TO_SAVE, .str_error = error_data.msg });
+            auto file = io::binary_file::open(_filename, io::access::WRITE);
+            if (not file) return std::unexpected { status_code(image_status_code::FAILED_TO_SAVE) };
+            // return std::unexpected(Error { .reason = Reason::FAILED_TO_SAVE, .str_error = error_data.msg });
 
             auto        data   = image_rgb.data(0, 0, 0);
             const auto& extent = image_rgb.extent(0);
@@ -162,14 +157,14 @@ namespace stormkit::image::details {
 #else
               fdopen
 #endif
-              (file->native_descriptor(), "w");
+              (reinterpret_cast<iptr>(file->native_descriptor()), "w");
 
             jpeg_create_compress(&info);
             jpeg_stdio_dest(&info, out);
 
             info.image_width      = extent.width;
             info.image_height     = extent.height;
-            info.input_components = get_format_channel_count(Format::RGB8_UNORM);
+            info.input_components = get_format_channel_count(image_format::RGB8_UNORM);
             info.in_color_space   = JCS_RGB;
             jpeg_set_defaults(&info);
             jpeg_set_quality(&info, 75, TRUE);
@@ -192,7 +187,8 @@ namespace stormkit::image::details {
 
         if (setjmp(error_data.setjmp_buffer)) {
             jpeg_destroy_compress(&info);
-            return std::unexpected(Error { .reason = Reason::FAILED_TO_SAVE, .str_error = error_data.msg });
+            return std::unexpected { status_code(image_status_code::FAILED_TO_SAVE) };
+            // return std::unexpected(Error { .reason = Reason::FAILED_TO_SAVE, .str_error = error_data.msg });
         }
 
         return {};
@@ -200,17 +196,17 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto save_jpg(const image::Image& image) noexcept -> std::expected<byte_dynarray, image::Image::Error> {
+    auto save_jpg(const image& image) noexcept -> image::result<dynarray<byte>> {
         using uchar_ptr = unsigned char*;
 
         auto output_ptr = uchar_ptr { nullptr };
 
-        auto image_rgb = image.convert_to(Format::RGB8_UNORM);
+        auto image_rgb = image.convert_to(image_format::RGB8_UNORM);
 
         auto info      = jpeg_compress_struct {};
         auto error_mgr = jpeg_error_mgr {};
 
-        auto error_data = jpg::ErrorData {};
+        auto error_data = jpg::error_data {};
 
         info.err             = jpeg_std_error(&error_mgr);
         info.client_data     = &error_data;
@@ -227,7 +223,7 @@ namespace stormkit::image::details {
 
         info.image_width      = extent.width;
         info.image_height     = extent.height;
-        info.input_components = get_format_channel_count(Format::RGB8_UNORM);
+        info.input_components = get_format_channel_count(image_format::RGB8_UNORM);
         info.in_color_space   = JCS_RGB;
         jpeg_set_defaults(&info);
         jpeg_set_quality(&info, 75, TRUE);
@@ -247,13 +243,14 @@ namespace stormkit::image::details {
 
         if (setjmp(error_data.setjmp_buffer)) {
             jpeg_destroy_compress(&info);
-            return std::unexpected(Error { .reason = Reason::FAILED_TO_SAVE, .str_error = error_data.msg });
+            return std::unexpected { status_code(image_status_code::FAILED_TO_SAVE) };
+            // return std::unexpected(Error { .reason = Reason::FAILED_TO_SAVE, .str_error = error_data.msg });
         }
 
-        auto output = byte_dynarray {};
+        auto output = dynarray<byte> {};
         output.reserve((out_size));
 
-        std::ranges::copy(as<array_view>(as_bytes, output_ptr, out_size), std::back_inserter(output));
+        stdr::copy(array_view { std::bit_cast<const byte*>(output_ptr), out_size }, std::back_inserter(output));
         if (output_ptr != nullptr) std::free(output_ptr);
 
         return output;

@@ -14,8 +14,6 @@ module stormkit.gpu.execution;
 
 import std;
 
-import frozen;
-
 import stormkit.core;
 
 import stormkit.gpu.core;
@@ -31,7 +29,7 @@ namespace cmonadic = stormkit::core::monadic;
 namespace stormkit::gpu {
     namespace {
         constexpr auto
-          OLD_LAYOUT_ACCESS_MAP = frozen::make_unordered_map<VkImageLayout, std::pair<VkAccessFlags, VkPipelineStageFlags>>({
+          OLD_LAYOUT_ACCESS_MAP = make_static_hash_map<VkImageLayout, std::pair<VkAccessFlags, VkPipelineStageFlags>>({
             { VK_IMAGE_LAYOUT_UNDEFINED,                        { VK_ACCESS_NONE, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT }            },
             { VK_IMAGE_LAYOUT_PREINITIALIZED,                   { VK_ACCESS_NONE, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT }            },
             { VK_IMAGE_LAYOUT_GENERAL,
@@ -52,8 +50,8 @@ namespace stormkit::gpu {
             { VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,                  { VK_ACCESS_MEMORY_READ_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT }    },
         });
 
-        constexpr auto NEW_LAYOUT_ACCESS_MAP = frozen::make_unordered_map<VkImageLayout,
-                                                                          std::pair<VkAccessFlags, VkPipelineStageFlags>>({
+        constexpr auto NEW_LAYOUT_ACCESS_MAP = make_static_hash_map<VkImageLayout,
+                                                                    std::pair<VkAccessFlags, VkPipelineStageFlags>>({
           { VK_IMAGE_LAYOUT_UNDEFINED,                        { VK_ACCESS_NONE, {} }                                               },
           { VK_IMAGE_LAYOUT_PREINITIALIZED,                   { VK_ACCESS_NONE, {} }                                               },
           { VK_IMAGE_LAYOUT_GENERAL,
@@ -75,11 +73,11 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto CommandBufferInterface<Base>::reset() noexcept -> Expected<void> {
+    auto CommandBufferInterface<Base>::reset() noexcept -> expected<void> {
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
 
-        Try(vk::call_checked(device_table.vkResetCommandBuffer, *this, 0));
+        TryX(vk::call_checked(device_table.vkResetCommandBuffer, *this, 0));
         *Base::m_state = CommandBuffer::State::INITIAL;
 
         Return {};
@@ -89,14 +87,14 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     auto CommandBufferInterface<Base>::begin(bool one_time_submit, InheritanceInfo inheritance_info_variant) noexcept
-      -> Expected<void> {
+      -> expected<void> {
         auto& state = *Base::m_state;
         EXPECTS(state == CommandBuffer::State::INITIAL);
 
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
 
-        auto rendering_color_attachments   = dyn_array<VkFormat> {};
+        auto rendering_color_attachments   = dynarray<VkFormat> {};
         auto vk_rendering_inheritance_info = init_by<VkCommandBufferInheritanceRenderingInfo>([](auto& info) noexcept {
             info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO;
             info.pNext = nullptr;
@@ -121,7 +119,7 @@ namespace stormkit::gpu {
 
                   rendering_color_attachments                           = inheritance_info.color_attachments
                                                                           | stdv::transform(gpu::vk::monadic::to_vk<VkFormat>())
-                                                                          | stdr::to<dyn_array<VkFormat>>();
+                                                                          | stdr::to<dynarray<VkFormat>>();
                   vk_rendering_inheritance_info.viewMask                = inheritance_info.view_mask;
                   vk_rendering_inheritance_info.colorAttachmentCount    = as<u32>(stdr::size(inheritance_info.color_attachments));
                   vk_rendering_inheritance_info.pColorAttachmentFormats = stdr::data(rendering_color_attachments);
@@ -159,7 +157,7 @@ namespace stormkit::gpu {
             .pInheritanceInfo = &vk_inheritance_info,
         };
 
-        Try(vk::call_checked(device_table.vkBeginCommandBuffer, *this, &begin_info));
+        TryX(vk::call_checked(device_table.vkBeginCommandBuffer, *this, &begin_info));
         state = CommandBuffer::State::RECORDING;
 
         Return {};
@@ -168,14 +166,14 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto CommandBufferInterface<Base>::end() noexcept -> Expected<void> {
+    auto CommandBufferInterface<Base>::end() noexcept -> expected<void> {
         auto& state = *Base::m_state;
         EXPECTS(state == CommandBuffer::State::RECORDING);
 
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
 
-        Try(vk::call_checked(device_table.vkEndCommandBuffer, *this));
+        TryX(vk::call_checked(device_table.vkEndCommandBuffer, *this));
         state = CommandBuffer::State::EXECUTABLE;
 
         Return {};
@@ -270,20 +268,21 @@ namespace stormkit::gpu {
             }
             if (attachment.clear_value) {
                 attachment_info.clearValue = std::
-                  visit(Overloaded { [](const ClearColor& clear_color) static noexcept -> decltype(auto) {
-                                        return VkClearValue {
-                                            .color = VkClearColorValue { .float32 = { clear_color.color.r,
-                                                                                      clear_color.color.b,
-                                                                                      clear_color.color.g,
-                                                                                      clear_color.color.a } },
-                                        };
-                                    },
-                                     [](const ClearDepthStencil& clear_depth_stencil) static noexcept -> decltype(auto) {
-                                         return VkClearValue {
-                                             .depthStencil = VkClearDepthStencilValue { .depth   = clear_depth_stencil.depth,
-                                                                                       .stencil = clear_depth_stencil.stencil },
-                                         };
-                                     } },
+                  visit(overload_set {
+                          [](const ClearColor& clear_color) static noexcept -> decltype(auto) {
+                              return VkClearValue {
+                                  .color = VkClearColorValue { .float32 = { clear_color.color.r,
+                                                                            clear_color.color.b,
+                                                                            clear_color.color.g,
+                                                                            clear_color.color.a } },
+                              };
+                          },
+                          [](const ClearDepthStencil& clear_depth_stencil) static noexcept -> decltype(auto) {
+                              return VkClearValue {
+                                  .depthStencil = VkClearDepthStencilValue { .depth   = clear_depth_stencil.depth,
+                                                                            .stencil = clear_depth_stencil.stencil },
+                              };
+                          } },
                         *attachment.clear_value);
             }
 
@@ -417,7 +416,7 @@ namespace stormkit::gpu {
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
 
-        const auto bind_point = (pipeline.type() == Pipeline::Type::RASTER)
+        const auto bind_point = (pipeline.type() == Pipeline::type::RASTER)
                                   ? VK_PIPELINE_BIND_POINT_GRAPHICS
                                   : VK_PIPELINE_BIND_POINT_COMPUTE;
 
@@ -706,7 +705,7 @@ namespace stormkit::gpu {
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
 
-        const auto bind_point = (pipeline.type() == Pipeline::Type::RASTER)
+        const auto bind_point = (pipeline.type() == Pipeline::type::RASTER)
                                   ? VK_PIPELINE_BIND_POINT_GRAPHICS
                                   : VK_PIPELINE_BIND_POINT_COMPUTE;
 
@@ -1131,7 +1130,7 @@ namespace stormkit::gpu {
     template<typename Base>
     auto CommandBufferInterface<Base>::push_constants(view::PipelineLayout pipeline_layout,
                                                       ShaderStageFlag      stage,
-                                                      byte_view<>          data,
+                                                      array_view<const byte>            data,
                                                       u32 offset) const noexcept -> const CommandBufferInterface& {
         EXPECTS(not std::empty(data));
 

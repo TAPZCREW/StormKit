@@ -75,12 +75,12 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     auto SwapChainInterface<Base>::acquire_next_image(std::chrono::nanoseconds wait,
-                                                      view::Semaphore image_available) const noexcept -> Expected<NextImage> {
+                                                      view::Semaphore image_available) const noexcept -> expected<NextImage> {
         const auto& device       = Base::owner();
         const auto& device_table = device.device_table();
 
         auto       id     = u32 { 0 };
-        const auto result = Try((vk::call_checked<VkResult, VK_ERROR_OUT_OF_DATE_KHR, VK_SUBOPTIMAL_KHR>(
+        const auto result = TryX((vk::call_checked<VkResult, VK_ERROR_OUT_OF_DATE_KHR, VK_SUBOPTIMAL_KHR>(
           device_table.vkAcquireNextImageKHR,
           device,
           *this,
@@ -96,18 +96,18 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto SwapChainImplementation::do_init(PrivateTag, const CreateInfo& create_info) noexcept -> Expected<void> {
+    auto SwapChainImplementation::do_init(PrivateTag, const CreateInfo& create_info) noexcept -> expected<void> {
         const auto& device          = owner();
         const auto& device_table    = device.device_table();
         const auto& physical_device = device.physical_device();
 
-        const auto capabilities  = Try(vk::call_checked<VkSurfaceCapabilitiesKHR>(vkGetPhysicalDeviceSurfaceCapabilitiesKHR,
+        const auto capabilities  = TryX(vk::call_checked<VkSurfaceCapabilitiesKHR>(vkGetPhysicalDeviceSurfaceCapabilitiesKHR,
                                                                                   physical_device,
                                                                                   create_info.surface));
-        const auto formats       = Try(vk::enumerate_checked<VkSurfaceFormatKHR>(vkGetPhysicalDeviceSurfaceFormatsKHR,
+        const auto formats       = TryX(vk::enumerate_checked<VkSurfaceFormatKHR>(vkGetPhysicalDeviceSurfaceFormatsKHR,
                                                                                  physical_device,
                                                                                  create_info.surface));
-        const auto present_modes = Try(vk::enumerate_checked<VkPresentModeKHR>(vkGetPhysicalDeviceSurfacePresentModesKHR,
+        const auto present_modes = TryX(vk::enumerate_checked<VkPresentModeKHR>(vkGetPhysicalDeviceSurfacePresentModesKHR,
                                                                                physical_device,
                                                                                create_info.surface));
 
@@ -145,8 +145,8 @@ namespace stormkit::gpu {
         ENSURES(device_table.vkCreateSwapchainKHR != nullptr);
         ENSURES(device_table.vkGetSwapchainImagesKHR != nullptr);
 
-        m_vk_handle = Try(vk::call_checked<VkSwapchainKHR>(device_table.vkCreateSwapchainKHR, device, &vk_create_info, nullptr));
-        const auto vk_images = Try(vk::enumerate_checked<VkImage>(device_table.vkGetSwapchainImagesKHR, device, m_vk_handle));
+        m_vk_handle = TryX(vk::call_checked<VkSwapchainKHR>(device_table.vkCreateSwapchainKHR, device, &vk_create_info, nullptr));
+        const auto vk_images = TryX(vk::enumerate_checked<VkImage>(device_table.vkGetSwapchainImagesKHR, device, m_vk_handle));
 
         m_image_count = as<u32>(stdr::size(vk_images));
         m_images      = transform(vk_images, [this, &device](auto image) noexcept {

@@ -44,9 +44,9 @@ namespace stormkit::gpu {
         using TagType = BufferTag;
 
         BufferInterface(const BufferInterface&) noexcept
-            requires(cmeta::IsCopyConstructible<DeviceObject<Base>>);
+            requires(cmeta::copy_constructible<DeviceObject<Base>>);
         auto operator=(const BufferInterface&) noexcept -> BufferInterface&
-            requires(cmeta::IsCopyAssignable<DeviceObject<Base>>);
+            requires(cmeta::copy_assignable<DeviceObject<Base>>);
 
         BufferInterface(BufferInterface&&) noexcept;
         auto operator=(BufferInterface&&) noexcept -> BufferInterface&;
@@ -61,33 +61,33 @@ namespace stormkit::gpu {
         [[nodiscard]]
         auto is_persistently_mapped() const noexcept -> bool;
 
-        auto map(ioffset offset) noexcept -> Expected<byte*>;
-        auto map(ioffset offset, usize size) noexcept -> Expected<byte_mut_view<>>;
+        auto map(ioffset offset) noexcept -> expected<byte*>;
+        auto map(ioffset offset, usize size) noexcept -> expected<array_view<byte>>;
 
         template<typename T>
-        auto map_as(ioffset offset) noexcept -> Expected<ref<T>>;
+        auto map_as(ioffset offset) noexcept -> expected<ref<T>>;
 
         bool mapped() const noexcept;
 
         template<typename Self>
         [[nodiscard]]
-        auto data(this Self& self) noexcept -> cmeta::ForwardConst<Self, byte>*;
+        auto data(this Self& self) noexcept -> cmeta::forward_const_to<Self, byte>*;
         template<typename Self>
         [[nodiscard]]
-        auto data(this Self& self, usize size) noexcept -> cmeta::If<cmeta::IsConst<Self>, byte_mut_view<>, byte_view<>>;
+        auto data(this Self& self, usize size) noexcept -> cmeta::lazy_conditional<cmeta::const_type<Self>, array_view<byte>, array_view<const byte>>;
 
         template<typename T>
         [[nodiscard]]
         auto data_as(this auto& self) noexcept -> ref<T>;
 
-        auto flush(ioffset offset, usize size) const noexcept -> Expected<void>;
+        auto flush(ioffset offset, usize size) const noexcept -> expected<void>;
         auto unmap() noexcept -> void;
 
-        auto upload(byte_view<> data, ioffset offset = 0) noexcept -> Expected<void>;
+        auto upload(array_view<const byte> data, ioffset offset = 0) noexcept -> expected<void>;
 
         template<typename T>
-            requires(not stormkit::meta::IsStdSpan<T>)
-        auto upload(const T& data, ioffset offset = 0) noexcept -> Expected<void>;
+            requires(not stormkit::meta::std_span<T>)
+        auto upload(const T& data, ioffset offset = 0) noexcept -> expected<void>;
 
         [[nodiscard]]
         auto allocation() const noexcept -> vk::Observer<VmaAllocation>;
@@ -107,7 +107,7 @@ namespace stormkit::gpu {
         BufferImplementation(BufferImplementation&&) noexcept;
         auto operator=(BufferImplementation&&) noexcept -> BufferImplementation&;
 
-        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
+        auto do_init(PrivateTag, const CreateInfo&) noexcept -> expected<void>;
 
       protected:
         BufferUsageFlag    m_usages            = {};
@@ -159,7 +159,7 @@ namespace stormkit::gpu {
             u64          offset = 0;
         };
 
-        template<core::meta::HashType Ret = hash32>
+        template<core::meta::hash_type Ret = hash32>
         constexpr auto hasher(const Buffer::CreateInfo& value) noexcept -> Ret;
     }
 } // namespace stormkit::gpu
@@ -174,7 +174,7 @@ namespace stormkit::gpu {
     template<typename Base>
     STORMKIT_FORCE_INLINE
     inline BufferInterface<Base>::BufferInterface(const BufferInterface& other) noexcept
-        requires(cmeta::IsCopyConstructible<DeviceObject<Base>>)
+        requires(cmeta::copy_constructible<DeviceObject<Base>>)
         : DeviceObject<Base> { other } {
     }
 
@@ -183,7 +183,7 @@ namespace stormkit::gpu {
     template<typename Base>
         STORMKIT_FORCE_INLINE
     inline auto BufferInterface<Base>::operator=(const BufferInterface& other) noexcept -> BufferInterface&
-        requires(cmeta::IsCopyAssignable<DeviceObject<Base>>)
+        requires(cmeta::copy_assignable<DeviceObject<Base>>)
     = default;
 
     /////////////////////////////////////
@@ -244,9 +244,9 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     STORMKIT_FORCE_INLINE
-    inline auto BufferInterface<Base>::map(ioffset offset, usize size) noexcept -> Expected<byte_mut_view<>> {
-        auto   ptr = Try(map(offset));
-        Return as_bytes_mut(ptr, size);
+    inline auto BufferInterface<Base>::map(ioffset offset, usize size) noexcept -> expected<array_view<byte>> {
+        auto   ptr = TryX(map(offset));
+        Return view_of(as_bytes, ptr, size);
     }
 
     /////////////////////////////////////
@@ -254,8 +254,8 @@ namespace stormkit::gpu {
     template<typename Base>
     template<typename T>
     STORMKIT_FORCE_INLINE
-    inline auto BufferInterface<Base>::map_as(ioffset offset) noexcept -> Expected<ref<T>> {
-        const auto ptr = Try(map(offset));
+    inline auto BufferInterface<Base>::map_as(ioffset offset) noexcept -> expected<ref<T>> {
+        const auto ptr = TryX(map(offset));
         Return     from_bytes_mut<T>(ptr);
     }
 
@@ -272,11 +272,11 @@ namespace stormkit::gpu {
     template<typename Base>
     template<typename Self>
     STORMKIT_FORCE_INLINE
-    inline auto BufferInterface<Base>::data(this Self& self) noexcept -> cmeta::ForwardConst<Self, byte>* {
+    inline auto BufferInterface<Base>::data(this Self& self) noexcept -> cmeta::forward_const_to<Self, byte>* {
         EXPECTS(self.m_vma_allocation and self.m_vk_handle);
         EXPECTS(self.m_mapped_pointer);
 
-        using Out = cmeta::ForwardConst<decltype(self), byte>*;
+        using Out = cmeta::forward_const_to<decltype(self), byte>*;
         return std::bit_cast<Out>(self.m_mapped_pointer);
     }
 
@@ -286,8 +286,8 @@ namespace stormkit::gpu {
     template<typename Self>
     STORMKIT_FORCE_INLINE
     inline auto BufferInterface<Base>::data(this Self& self, usize size) noexcept
-      -> cmeta::If<cmeta::IsConst<Self>, byte_mut_view<>, byte_view<>> {
-        using Out = array_view<cmeta::ForwardConst<Self, byte>>;
+      -> cmeta::lazy_conditional<cmeta::const_type<Self>, array_view<byte>, array_view<const byte>> {
+        using Out = array_view<cmeta::forward_const_to<Self, byte>>;
         return Out { std::bit_cast<typename Out::element_type>(self.data()), size };
     }
 
@@ -297,18 +297,18 @@ namespace stormkit::gpu {
     template<typename T, typename Self>
     STORMKIT_FORCE_INLINE
     inline auto BufferInterface<Base>::data_as(this Self& self) noexcept -> ref<T> {
-        using Type = cmeta::ForwardConst<decltype(self), T>*;
-        return as_ref_like<Self>(std::bit_cast<Type>(self.data()));
+        using type = cmeta::forward_const_to<decltype(self), T>*;
+        return as_ref_like<Self>(std::bit_cast<type>(self.data()));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
     template<typename T>
-        requires(not stormkit::meta::IsStdSpan<T>)
+        requires(not stormkit::meta::std_span<T>)
     STORMKIT_FORCE_INLINE
-    inline auto BufferInterface<Base>::upload(const T& data, ioffset offset) noexcept -> Expected<void> {
-        const auto bytes = as_bytes(data);
+    inline auto BufferInterface<Base>::upload(const T& data, ioffset offset) noexcept -> expected<void> {
+        const auto bytes = view_of(as_bytes, data);
         return upload(bytes, offset);
     }
 
@@ -392,7 +392,7 @@ namespace stormkit::gpu {
 
     ///////////////////////////////////
     ///////////////////////////////////
-    template<cmeta::HashType Ret = hash32>
+    template<cmeta::hash_type Ret = hash32>
     constexpr auto hasher(const Buffer::CreateInfo& create_info) noexcept -> Ret {
         return hash(create_info.usages, create_info.size, create_info.properties);
     }

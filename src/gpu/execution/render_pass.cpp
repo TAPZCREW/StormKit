@@ -36,7 +36,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto RenderPassImplementation::do_init(PrivateTag, const RenderPassDescription& description) noexcept -> Expected<void> {
+    auto RenderPassImplementation::do_init(PrivateTag, const RenderPassDescription& description) noexcept -> expected<void> {
         m_description = core::allocate_unsafe<RenderPassDescription>(description);
 
         const auto attachments = transform(m_description->attachments, [](auto&& attachment) static noexcept {
@@ -53,11 +53,11 @@ namespace stormkit::gpu {
             };
         });
 
-        auto color_attachment_refs   = dyn_array<dyn_array<VkAttachmentReference>> {};
+        auto color_attachment_refs   = dynarray<dynarray<VkAttachmentReference>> {};
         auto depth_attachment_ref    = std::optional<VkAttachmentReference> {};
-        auto resolve_attachment_refs = dyn_array<dyn_array<VkAttachmentReference>> {};
-        auto subpasses               = dyn_array<VkSubpassDescription> {};
-        auto subpasses_deps          = dyn_array<VkSubpassDependency> {};
+        auto resolve_attachment_refs = dynarray<dynarray<VkAttachmentReference>> {};
+        auto subpasses               = dynarray<VkSubpassDescription> {};
+        auto subpasses_deps          = dynarray<VkSubpassDependency> {};
 
         color_attachment_refs.reserve(stdr::size(m_description->subpasses));
         resolve_attachment_refs.reserve(stdr::size(m_description->subpasses));
@@ -110,7 +110,7 @@ namespace stormkit::gpu {
         const auto& device       = owner();
         const auto& device_table = device.device_table();
 
-        m_vk_handle = Try(vk::call_checked<VkRenderPass>(device_table.vkCreateRenderPass, device, &create_info, nullptr));
+        m_vk_handle = TryX(vk::call_checked<VkRenderPass>(device_table.vkCreateRenderPass, device, &create_info, nullptr));
         Return {};
     }
 

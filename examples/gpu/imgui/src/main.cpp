@@ -9,7 +9,6 @@ import gpu_app;
 
 #include <stormkit/core/try_expected.hpp>
 #include <stormkit/gpu/vulkan.hpp>
-#include <stormkit/log/log_macro.hpp>
 #include <stormkit/main/main_macro.hpp>
 
 #define IMGUI_IMPL_VULKAN_NO_PROTOTYPES
@@ -51,23 +50,23 @@ class Application: public base::Application {
 
     auto init_resources() -> void {
         // initialilze descriptor pool
-        m_descriptor_pool = TryAssert(gpu::DescriptorPool::create(m_device, POOL_SIZES, BUFFERING_COUNT),
-                                      "Failed to create descriptor pool!");
+        m_descriptor_pool = TryXAssert(gpu::DescriptorPool::create(m_device, POOL_SIZES, BUFFERING_COUNT),
+                                       "Failed to create descriptor pool!");
 
         // create present engine resources
         m_submission_resources = init_by<dynarray<SubmissionResource>>([&](auto& out) noexcept {
             out.reserve(BUFFERING_COUNT);
             for (auto _ : range(BUFFERING_COUNT)) {
                 out.push_back({
-                  .in_flight       = TryAssert(gpu::Fence::create_signaled(m_device),
-                                               "Failed to create swapchain image "
-                                               "in flight fence!"),
-                  .image_available = TryAssert(gpu::Semaphore::create(m_device),
-                                               "Failed to create "
-                                               "present wait semaphore!"),
-                  .render_cmb      = TryAssert(m_command_pool->create_command_buffer(),
-                                               "Failed to create transition "
-                                               "command buffers!"),
+                  .in_flight       = TryXAssert(gpu::Fence::create_signaled(m_device),
+                                                "Failed to create swapchain image "
+                                                "in flight fence!"),
+                  .image_available = TryXAssert(gpu::Semaphore::create(m_device),
+                                                "Failed to create "
+                                                "present wait semaphore!"),
+                  .render_cmb      = TryXAssert(m_command_pool->create_command_buffer(),
+                                                "Failed to create transition "
+                                                "command buffers!"),
                 });
             }
         });
@@ -76,42 +75,42 @@ class Application: public base::Application {
         const auto& images = m_swapchain->images();
 
         const auto image_count     = stdr::size(images);
-        auto       transition_cmbs = TryAssert(m_command_pool->create_command_buffers(image_count),
-                                               "Failed to create transition command buffers!");
+        auto       transition_cmbs = TryXAssert(m_command_pool->create_command_buffers(image_count),
+                                                "Failed to create transition command buffers!");
         m_image_resources.reserve(stdr::size(images));
 
         auto image_index = 0u;
         for (const auto& swap_image : images) {
-            auto view = TryAssert(gpu::ImageView::create(m_device, { swap_image }), "Failed to create swapchain image view!");
+            auto view = TryXAssert(gpu::ImageView::create(m_device, { swap_image }), "Failed to create swapchain image view!");
 
             m_image_resources.push_back({ .image           = swap_image,
                                           .view            = std::move(view),
-                                          .render_finished = TryAssert(gpu::Semaphore::create(m_device),
-                                                                       "Failed to create render "
-                                                                       "signal semaphore!") });
+                                          .render_finished = TryXAssert(gpu::Semaphore::create(m_device),
+                                                                        "Failed to create render "
+                                                                        "signal semaphore!") });
 
             auto& transition_cmb = transition_cmbs[image_index];
-            DiscardTryAssert((transition_cmb.record([&](auto cmb) noexcept {
-                                 cmb.begin_debug_region(std::format("Transition image {}", image_index))
-                                   .transition_image_layout(swap_image,
-                                                            gpu::ImageLayout::UNDEFINED,
-                                                            gpu::ImageLayout::PRESENT_SRC)
-                                   .end_debug_region();
-                             })),
-                             std::format("Failed to record transition cmb {}!", image_index));
+            DiscardTryXAssert((transition_cmb.record([&](auto cmb) noexcept {
+                                  cmb.begin_debug_region(std::format("Transition image {}", image_index))
+                                    .transition_image_layout(swap_image,
+                                                             gpu::ImageLayout::UNDEFINED,
+                                                             gpu::ImageLayout::PRESENT_SRC)
+                                    .end_debug_region();
+                              })),
+                              std::format("Failed to record transition cmb {}!", image_index));
 
             ++image_index;
         }
 
-        const auto fence = TryAssert(gpu::Fence::create(m_device), "Failed to create transition fence!");
+        const auto fence = TryXAssert(gpu::Fence::create(m_device), "Failed to create transition fence!");
 
         const auto cmbs = to_views(transition_cmbs);
 
-        TryAssert(m_raster_queue->submit({ .command_buffers = cmbs }, fence),
-                  "Failed to submit texture transition command buffers!");
+        TryXAssert(m_raster_queue->submit({ .command_buffers = cmbs }, fence),
+                   "Failed to submit texture transition command buffers!");
 
         // wait for transition to be done
-        TryAssert(fence.wait(), "");
+        TryXAssert(fence.wait(), "");
     }
 
     auto init_imgui() -> void {
@@ -212,11 +211,11 @@ class Application: public base::Application {
         const auto& wait      = submission_resource.image_available;
         auto&       in_flight = submission_resource.in_flight;
 
-        TryAssert(in_flight.wait(), "Failed to wait in_flight fence!");
-        TryAssert(in_flight.reset(), "Failed to reset in_flight fence!");
+        TryXAssert(in_flight.wait(), "Failed to wait in_flight fence!");
+        TryXAssert(in_flight.reset(), "Failed to reset in_flight fence!");
 
-        const auto&& [_, image_index] = TryAssert(m_swapchain->acquire_next_image(100ms, wait),
-                                                  "Failed to acquire next swapchain image!");
+        const auto&& [_, image_index] = TryXAssert(m_swapchain->acquire_next_image(100ms, wait),
+                                                   "Failed to acquire next swapchain image!");
 
         const auto& swapchain_image_resource = m_image_resources[image_index];
         const auto& signal                   = swapchain_image_resource.render_finished;
@@ -233,32 +232,36 @@ class Application: public base::Application {
 
         // render in it
         auto& render_cmb = submission_resource.render_cmb;
-        TryAssert(render_cmb.reset(), std::format("Failed to reset render cmb {}!", image_index));
-        DiscardTryAssert((render_cmb.record([&](auto cmb) noexcept {
-                             cmb
-                               .transition_image_layout(swapchain_image_resource.image,
-                                                        gpu::ImageLayout::PRESENT_SRC,
-                                                        gpu::ImageLayout::ATTACHMENT_OPTIMAL)
-                               .begin_debug_region("Render imgui")
-                               .begin_rendering(rendering_info);
+        TryXAssert(render_cmb.reset(), std::format("Failed to reset render cmb {}!", image_index));
+        DiscardTryXAssert((render_cmb.record([&](auto cmb) noexcept {
+                              cmb
+                                .transition_image_layout(swapchain_image_resource.image,
+                                                         gpu::ImageLayout::PRESENT_SRC,
+                                                         gpu::ImageLayout::ATTACHMENT_OPTIMAL)
+                                .begin_debug_region("Render imgui")
+                                .begin_rendering(rendering_info);
 
-                             ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmb);
+                              ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmb);
 
-                             cmb
-                               .end_rendering() //
-                               .end_debug_region()
-                               .transition_image_layout(swapchain_image_resource.image,
-                                                        gpu::ImageLayout::ATTACHMENT_OPTIMAL,
-                                                        gpu::ImageLayout::PRESENT_SRC);
-                         })),
-                         std::format("Failed to record render cmb {}!", image_index));
+                              cmb
+                                .end_rendering() //
+                                .end_debug_region()
+                                .transition_image_layout(swapchain_image_resource.image,
+                                                         gpu::ImageLayout::ATTACHMENT_OPTIMAL,
+                                                         gpu::ImageLayout::PRESENT_SRC);
+                          })),
+                          std::format("Failed to record render cmb {}!", image_index));
 
-        DiscardTryAssert(render_cmb.submit(m_raster_queue, gpu::as_views(wait), PIPELINE_FLAGS, gpu::as_views(signal), in_flight),
-                         "Failed to submit render command buffer");
+        DiscardTryXAssert(render_cmb.submit(m_raster_queue,
+                                            gpu::as_views(wait),
+                                            PIPELINE_FLAGS,
+                                            gpu::as_views(signal),
+                                            in_flight),
+                          "Failed to submit render command buffer");
 
         // present it
-        DiscardTryAssert(m_raster_queue->present(gpu::as_views(m_swapchain), gpu::as_views(signal), as_view(image_index)),
-                         "Failed to present swapchain image");
+        DiscardTryXAssert(m_raster_queue->present(gpu::as_views(m_swapchain), gpu::as_views(signal), as_view(image_index)),
+                          "Failed to present swapchain image");
 
         if (++m_current_frame >= BUFFERING_COUNT) m_current_frame = 0;
     }
@@ -271,10 +274,10 @@ class Application: public base::Application {
     constexpr auto example_name() const noexcept -> string_view { return "Imgui"; }
 
   private:
-    DeferInit<gpu::DescriptorPool>    m_descriptor_pool;
+    defer_init<gpu::DescriptorPool>  m_descriptor_pool;
     dynarray<SubmissionResource>     m_submission_resources;
     dynarray<SwapchainImageResource> m_image_resources;
-    usize                             m_current_frame = 0_usize;
+    usize                            m_current_frame = 0_usize;
 };
 
 auto main(array_view<const string_view> args) -> int {

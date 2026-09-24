@@ -13,6 +13,9 @@ export module stormkit;
 
 export import stormkit.core;
 
+#if STORMKIT_LIB_MATH_ENABLED and defined(STORMKIT_IMPORT_MATH)
+export import stormkit.math;
+#endif
 #if STORMKIT_LIB_LOG_ENABLED and defined(STORMKIT_IMPORT_LOG)
 export import stormkit.log;
 #endif

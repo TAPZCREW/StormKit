@@ -54,9 +54,9 @@ option("rad", { default = false, category = "root menu/build" })
 
 ---------------------------- module options ----------------------------
 option("log", { default = true, category = "root menu/modules" })
-option("math", { default = false, category = "root menu/modules" })
+option("math", { default = true, category = "root menu/modules" })
 option("entities", { default = false, category = "root menu/modules" })
-option("image", { default = false, category = "root menu/modules", deps = { "log" } })
+option("image", { default = true, category = "root menu/modules", deps = { "math", "log" } })
 option("wsi", { default = false, category = "root menu/modules", deps = { "log" } })
 option("gpu", { default = false, category = "root menu/modules", deps = { "log", "image", "wsi" } })
 option("lua", { default = false, category = "root menu/modules", deps = { "log" } })

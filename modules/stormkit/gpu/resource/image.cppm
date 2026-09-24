@@ -121,7 +121,7 @@ namespace stormkit::gpu {
 
         static auto from_existing(view::Device device, const CreateInfo& create_info, VkImage image) noexcept -> Image;
 
-        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
+        auto do_init(PrivateTag, const CreateInfo&) noexcept -> expected<void>;
 
       protected:
         bool m_no_delete = false;
@@ -210,7 +210,7 @@ namespace stormkit::gpu {
         SamplerImplementation(SamplerImplementation&&) noexcept;
         auto operator=(SamplerImplementation&&) noexcept -> SamplerImplementation&;
 
-        auto do_init(PrivateTag, const Settings&) noexcept -> Expected<void>;
+        auto do_init(PrivateTag, const Settings&) noexcept -> expected<void>;
 
       protected:
         Settings m_settings = {};
@@ -251,7 +251,7 @@ namespace stormkit::gpu {
         ImageViewImplementation(ImageViewImplementation&&) noexcept;
         auto operator=(ImageViewImplementation&&) noexcept -> ImageViewImplementation&;
 
-        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
+        auto do_init(PrivateTag, const CreateInfo&) noexcept -> expected<void>;
 
       protected:
         ImageViewType         m_type              = {};
@@ -293,7 +293,7 @@ namespace stormkit::gpu {
             ImageSubresourceRange range;
         };
 
-        template<core::meta::HashType Ret = hash32>
+        template<core::meta::hash_type Ret = hash32>
         constexpr auto hasher(const Image::CreateInfo& value) noexcept -> Ret;
     }
 } // namespace stormkit::gpu
@@ -630,7 +630,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::HashType Ret = hash32>
+    template<core::meta::hash_type Ret = hash32>
     constexpr auto hasher(const Image::CreateInfo& create_info) noexcept -> Ret {
         return hash(create_info.extent,
                     create_info.format,

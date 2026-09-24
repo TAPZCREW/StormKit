@@ -22,7 +22,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto SamplerImplementation::do_init(PrivateTag, const Settings& settings) noexcept -> Expected<void> {
+    auto SamplerImplementation::do_init(PrivateTag, const Settings& settings) noexcept -> expected<void> {
         m_settings             = settings;
         const auto create_info = VkSamplerCreateInfo {
             .sType                   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
@@ -46,7 +46,7 @@ namespace stormkit::gpu {
         };
         const auto& device = owner();
 
-        m_vk_handle = Try(vk::call_checked<VkSampler>(device.device_table().vkCreateSampler, device, &create_info, nullptr));
+        m_vk_handle = TryX(vk::call_checked<VkSampler>(device.device_table().vkCreateSampler, device, &create_info, nullptr));
         Return {};
     }
 

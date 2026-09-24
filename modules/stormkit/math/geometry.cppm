@@ -20,16 +20,16 @@ import stormkit.math.arithmetic;
 import stormkit.math.extent;
 import stormkit.math.linear.vector;
 
-export namespace stormkit { inline namespace core { namespace math {
+export namespace stormkit::math {
     template<core::meta::arithmetic T>
     struct rect {
-        using value_type  = T;
+        using value_type = T;
         using value_type = T;
 
         value_type           x      = value_type { 0 };
         value_type           y      = value_type { 0 };
-        Positive<value_type> width  = value_type { 0 };
-        Positive<value_type> height = value_type { 0 };
+        positive<value_type> width  = value_type { 0 };
+        positive<value_type> height = value_type { 0 };
 
         constexpr auto position() const noexcept -> vec2<value_type>;
         constexpr auto extent() const noexcept -> extent2<value_type>;
@@ -47,7 +47,7 @@ export namespace stormkit { inline namespace core { namespace math {
 
     template<core::meta::arithmetic T>
     struct bounding_rect {
-        using value_type  = T;
+        using value_type = T;
         using value_type = T;
 
         value_type left   = value_type { 0 };
@@ -98,9 +98,9 @@ export namespace stormkit { inline namespace core { namespace math {
 
     template<typename T>
     constexpr auto AABB(const vec2<T>& pos, const rect<T>& rect) noexcept -> bool;
-}}} // namespace stormkit::core::math
+} // namespace stormkit::math
 
-namespace stormkit { inline namespace core { namespace math {
+namespace stormkit::math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<core::meta::arithmetic T>
@@ -258,4 +258,4 @@ namespace stormkit { inline namespace core { namespace math {
     constexpr auto AABB(const vec2<T>& pos, const rect<T>& rect) noexcept -> bool {
         return AABB(pos, to_bounding_rect(rect));
     }
-}}} // namespace stormkit::core::math
+} // namespace stormkit::math

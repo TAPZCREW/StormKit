@@ -129,7 +129,7 @@ namespace stormkit::gpu {
         namespace trait {
             template<>
             struct GpuObject<InstanceTag> {
-                using ValueType   = VkInstance;
+                using value_type   = VkInstance;
                 using DeleterType = PFN_vkDestroyInstance;
                 using ObjectType  = Instance;
                 using ViewType    = view::Instance;
@@ -139,7 +139,7 @@ namespace stormkit::gpu {
 
             template<>
             struct GpuObject<DebugCallbackTag> {
-                using ValueType   = VkDebugUtilsMessengerEXT;
+                using value_type   = VkDebugUtilsMessengerEXT;
                 using DeleterType = PFN_vkDestroyDebugUtilsMessengerEXT;
                 using ObjectType  = DebugCallback;
                 using ViewType    = view::DebugCallback;
@@ -150,7 +150,7 @@ namespace stormkit::gpu {
 
             template<>
             struct GpuObject<SurfaceTag> {
-                using ValueType   = VkSurfaceKHR;
+                using value_type   = VkSurfaceKHR;
                 using DeleterType = PFN_vkDestroySurfaceKHR;
                 using ObjectType  = Surface;
                 using ViewType    = view::Surface;
@@ -161,9 +161,9 @@ namespace stormkit::gpu {
 
             template<>
             struct GpuObject<PhysicalDeviceTag> {
-                using ValueType        = VkPhysicalDevice;
+                using value_type        = VkPhysicalDevice;
                 using DeleterType      = decltype(monadic::noop());
-                using DoInitReturnType = void;
+                using DoInitreturn_type = void;
                 using ObjectType       = PhysicalDevice;
                 using ViewType         = view::PhysicalDevice;
                 using OwnerType        = Instance;
@@ -173,7 +173,7 @@ namespace stormkit::gpu {
 
             template<>
             struct GpuObject<DeviceTag> {
-                using ValueType   = VkDevice;
+                using value_type   = VkDevice;
                 using DeleterType = PFN_vkDestroyDevice VolkDeviceTable::*;
                 using ObjectType  = Device;
                 using ViewType    = view::Device;
@@ -184,7 +184,7 @@ namespace stormkit::gpu {
 
             template<>
             struct GpuObject<FenceTag> {
-                using ValueType   = VkFence;
+                using value_type   = VkFence;
                 using DeleterType = PFN_vkDestroyFence VolkDeviceTable::*;
                 using ObjectType  = Fence;
                 using ViewType    = view::Fence;
@@ -195,7 +195,7 @@ namespace stormkit::gpu {
 
             template<>
             struct GpuObject<SemaphoreTag> {
-                using ValueType   = VkSemaphore;
+                using value_type   = VkSemaphore;
                 using DeleterType = PFN_vkDestroySemaphore VolkDeviceTable::*;
                 using ObjectType  = Semaphore;
                 using ViewType    = view::Semaphore;

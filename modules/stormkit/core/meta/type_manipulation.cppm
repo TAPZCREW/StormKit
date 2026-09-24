@@ -41,7 +41,11 @@ module;
     template<typename First, typename... Ts>                                                               \
     concept view_pointer = apply_to<First, meta::view_pointer, Ts...>;                                     \
     template<typename First, typename... Ts>                                                               \
+    concept view_pointer_to = apply_to<First, meta::view_pointer_to, Ts...>;                               \
+    template<typename First, typename... Ts>                                                               \
     concept owning_pointer = apply_to<First, meta::owning_pointer, Ts...>;                                 \
+    template<typename First, typename... Ts>                                                               \
+    concept owning_pointer_to = apply_to<First, meta::owning_pointer_to, Ts...>;                           \
     template<typename First, typename... Ts>                                                               \
     concept pointer = apply_to<First, meta::pointer, Ts...>;                                               \
     template<typename First, typename... Ts>                                                               \
@@ -170,6 +174,19 @@ namespace stormkit { inline namespace core { namespace meta::details {
 
     template<typename T, typename U>
     struct forward_ref_to;
+
+    template<typename...>
+    struct replace_first;
+
+    template<typename A, template<class...> typename C, typename B, typename... Ts>
+    struct replace_first<A, C<B, Ts...>> {
+        using type = C<A, Ts...>;
+    };
+
+    template<typename A, template<class, auto, class...> typename C, typename B, auto D, typename... Ts>
+    struct replace_first<A, C<B, D, Ts...>> {
+        using type = C<A, D, Ts...>;
+    };
 }}} // namespace stormkit::core::meta::details
 
 export namespace stormkit { inline namespace core { namespace meta {
@@ -215,21 +232,30 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<template<typename> typename TypeModifier, template<typename...> concept C, typename... Ts>
     concept apply = C<TypeModifier<Ts>...>;
 
+    template<typename T, typename Container>
+    using replace_first = details::replace_first<T, Container>::type;
+
     namespace decayed {
         template<typename First, template<typename...> concept C, typename... Ts>
         concept apply_to = apply<meta::to_decayed_type, C, Ts..., First>;
 
-        template<typename S, template<typename...> typename T>
-        concept specialization_of = meta::specialization_of<meta::to_plain_type<S>, T>;
+        template<typename S, template<class...> typename T>
+        concept specialization_of = meta::specialization_of<meta::to_decayed_type<S>, T>;
+
+        template<typename S, template<auto...> typename T>
+        concept specialization_of_nttp_v = meta::specialization_of_nttp_v<meta::to_decayed_type<S>, T>;
 
         template<typename S, template<class, auto...> typename T>
-        concept specialization_of_nttp_tv = meta::specialization_of_nttp_tv<meta::to_plain_type<S>, T>;
+        concept specialization_of_nttp_tv = meta::specialization_of_nttp_tv<meta::to_decayed_type<S>, T>;
 
-        template<typename S, template<class, class, auto> typename T>
-        concept specialization_of_nttp_ttv = meta::specialization_of_nttp_ttv<meta::to_plain_type<S>, T>;
+        template<typename S, template<class, class, auto...> typename T>
+        concept specialization_of_nttp_ttv = meta::specialization_of_nttp_ttv<meta::to_decayed_type<S>, T>;
 
-        template<typename S, template<class, class, auto, class...> typename T>
-        concept specialization_of_nttp_ttvts = meta::specialization_of_nttp_ttvts<meta::to_plain_type<S>, T>;
+        template<typename S, template<class, auto, template<class> class...> typename T>
+        concept specialization_of_nttp_tvc = meta::specialization_of_nttp_tvc<meta::to_decayed_type<S>, T>;
+
+        template<typename S, template<class, class, auto, template<class> class...> typename T>
+        concept specialization_of_nttp_ttvc = meta::specialization_of_nttp_ttvc<meta::to_decayed_type<S>, T>;
 
         CONCEPTS
     } // namespace decayed
@@ -238,17 +264,23 @@ export namespace stormkit { inline namespace core { namespace meta {
         template<typename First, template<typename...> concept C, typename... Ts>
         concept apply_to = apply<meta::to_plain_type, C, First, Ts...>;
 
-        template<typename S, template<typename...> typename T>
+        template<typename S, template<class...> typename T>
         concept specialization_of = meta::specialization_of<meta::to_plain_type<S>, T>;
+
+        template<typename S, template<auto...> typename T>
+        concept specialization_of_nttp_v = meta::specialization_of_nttp_v<meta::to_plain_type<S>, T>;
 
         template<typename S, template<class, auto...> typename T>
         concept specialization_of_nttp_tv = meta::specialization_of_nttp_tv<meta::to_plain_type<S>, T>;
 
-        template<typename S, template<class, class, auto> typename T>
+        template<typename S, template<class, class, auto...> typename T>
         concept specialization_of_nttp_ttv = meta::specialization_of_nttp_ttv<meta::to_plain_type<S>, T>;
 
-        template<typename S, template<class, class, auto, class...> typename T>
-        concept specialization_of_nttp_ttvts = meta::specialization_of_nttp_ttvts<meta::to_plain_type<S>, T>;
+        template<typename S, template<class, auto, template<class> class...> typename T>
+        concept specialization_of_nttp_tvc = meta::specialization_of_nttp_tvc<meta::to_plain_type<S>, T>;
+
+        template<typename S, template<class, class, auto, template<class> class...> typename T>
+        concept specialization_of_nttp_ttvc = meta::specialization_of_nttp_ttvc<meta::to_plain_type<S>, T>;
 
         CONCEPTS
     } // namespace plain

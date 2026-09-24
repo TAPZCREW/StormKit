@@ -24,9 +24,9 @@ export {
     #include "Renderer.mpp"
 #endif
 
-    class UpdateBoardSystem final: public stormkit::entities::System {
+    typename UpdateBoardSystem final: public stormkit::entities::System {
       public:
-        UpdateBoardSystem(stormkit::image::Image&            board,
+        UpdateBoardSystem(stormkit::image::image&            board,
                           Renderer&                          renderer,
                           stormkit::entities::EntityManager& manager);
         ~UpdateBoardSystem() override;
@@ -47,7 +47,7 @@ export {
         auto on_message_received(const stormkit::entities::Message& message) -> void override {};
 
         bool                    m_is_on_edit_mode = true;
-        stormkit::image::Image* m_board           = nullptr;
+        stormkit::image::image* m_board           = nullptr;
         Renderer*               m_renderer        = nullptr;
 
         Clock::time_point m_last_update;

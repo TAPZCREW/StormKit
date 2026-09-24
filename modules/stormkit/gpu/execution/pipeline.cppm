@@ -60,19 +60,19 @@ namespace stormkit::gpu {
         PipelineCacheImplementation(PipelineCacheImplementation&&) noexcept;
         auto operator=(PipelineCacheImplementation&&) noexcept -> PipelineCacheImplementation&;
 
-        static auto load_from_file(view::Device device, stdfs::path cache_path) noexcept -> LoadSaveExpected<PipelineCache>;
+        static auto load_from_file(view::Device device, stdfs::path cache_path) noexcept -> LoadSaveexpected<PipelineCache>;
         static auto allocate_load_from_file(view::Device device, stdfs::path cache_path) noexcept
-          -> LoadSaveExpected<Heap<PipelineCache>>;
+          -> LoadSaveexpected<heap_ptr<PipelineCache>>;
 
-        auto do_init(PrivateTag, stdfs::path&&) noexcept -> LoadSaveExpected<void>;
+        auto do_init(PrivateTag, stdfs::path&&) noexcept -> LoadSaveexpected<void>;
 
       protected:
         using NamedConstructor::allocate;
         using NamedConstructor::create;
 
-        auto create_new_pipeline_cache() noexcept -> LoadSaveExpected<void>;
-        auto read_pipeline_cache() noexcept -> LoadSaveExpected<void>;
-        auto save_cache() noexcept -> LoadSaveExpected<void>;
+        auto create_new_pipeline_cache() noexcept -> LoadSaveexpected<void>;
+        auto read_pipeline_cache() noexcept -> LoadSaveexpected<void>;
+        auto save_cache() noexcept -> LoadSaveexpected<void>;
 
         static constexpr auto MAGIC   = u32 { 0xDEADBEEF };
         static constexpr auto VERSION = u32 { 1u };
@@ -118,10 +118,10 @@ namespace stormkit::gpu {
         PipelineLayoutImplementation(PipelineLayoutImplementation&&) noexcept;
         auto operator=(PipelineLayoutImplementation&&) noexcept -> PipelineLayoutImplementation&;
 
-        auto do_init(PrivateTag, const RasterPipelineLayout&) noexcept -> Expected<void>;
+        auto do_init(PrivateTag, const RasterPipelineLayout&) noexcept -> expected<void>;
 
       protected:
-        Heap<RasterPipelineLayout> m_layout;
+        heap_ptr<RasterPipelineLayout> m_layout;
 
         friend class view::PipelineLayoutImplementation;
     };
@@ -149,7 +149,7 @@ namespace stormkit::gpu {
         struct PipelineInterfaceBase {
             using StateVariant = std::variant<RasterPipelineState>;
 
-            enum class Type {
+            enum typename Type {
                 RASTER,
                 COMPUTE,
                 RAYTRACING,
@@ -177,7 +177,7 @@ namespace stormkit::gpu {
             using DeviceObject<Base>::operator=;
             using TagType = PipelineTag;
 
-            using PipelineInterfaceBase::Type;
+            using PipelineInterfaceBase::type;
 
             [[nodiscard]]
             auto type() const noexcept -> Type;
@@ -189,16 +189,16 @@ namespace stormkit::gpu {
     class STORMKIT_GPU_API PipelineImplementation
         : public GpuObjectImplementation<PipelineTag, const PipelineInterfaceBase::RasterizationCreateInfo&>,
           public core::NamedConstructor<PipelineImplementation,
-                                        ConstructorArgs<view::Device>,
-                                        DoInitArgs<const PipelineInterfaceBase::LegacyRasterizationCreateInfo&>> {
+                                        ConstructorTs<view::Device>,
+                                        DoInitTs<const PipelineInterfaceBase::LegacyRasterizationCreateInfo&>> {
         using StateVariant = PipelineInterfaceBase::StateVariant;
 
         using LegacyNamedConstructor = NamedConstructor<PipelineImplementation,
-                                                        ConstructorArgs<view::Device>,
-                                                        DoInitArgs<const PipelineInterfaceBase::LegacyRasterizationCreateInfo&>>;
+                                                        ConstructorTs<view::Device>,
+                                                        DoInitTs<const PipelineInterfaceBase::LegacyRasterizationCreateInfo&>>;
 
       public:
-        using Type                          = PipelineInterfaceBase::Type;
+        using type                          = PipelineInterfaceBase::type;
         using RasterizationCreateInfo       = PipelineInterfaceBase::RasterizationCreateInfo;
         using LegacyRasterizationCreateInfo = PipelineInterfaceBase::LegacyRasterizationCreateInfo;
 
@@ -216,12 +216,12 @@ namespace stormkit::gpu {
         using LegacyNamedConstructor::allocate;
         using LegacyNamedConstructor::create;
 
-        auto do_init(PrivateTag, const RasterizationCreateInfo&) noexcept -> Expected<void>;
-        auto do_init(PrivateTag, const LegacyRasterizationCreateInfo&) noexcept -> Expected<void>;
+        auto do_init(PrivateTag, const RasterizationCreateInfo&) noexcept -> expected<void>;
+        auto do_init(PrivateTag, const LegacyRasterizationCreateInfo&) noexcept -> expected<void>;
 
       protected:
         Type               m_type;
-        Heap<StateVariant> m_state;
+        heap_ptr<StateVariant> m_state;
 
         friend class view::PipelineImplementation;
     };
@@ -231,7 +231,7 @@ namespace stormkit::gpu {
             using StateVariant = PipelineInterfaceBase::StateVariant;
 
           public:
-            using Type = PipelineInterfaceBase::Type;
+            using type = PipelineInterfaceBase::type;
 
             PipelineImplementation(const gpu::Pipeline& of) noexcept;
             template<cmeta::IsContainerOrPointerOf<gpu::Pipeline> TContainerOrPointer>
@@ -306,7 +306,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto PipelineCacheImplementation::load_from_file(view::Device device, stdfs::path cache_path) noexcept
-      -> LoadSaveExpected<PipelineCache> {
+      -> LoadSaveexpected<PipelineCache> {
         Return NamedConstructor::create(std::move(device), std::move(cache_path));
     }
 
@@ -314,7 +314,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto PipelineCacheImplementation::allocate_load_from_file(view::Device device, stdfs::path cache_path) noexcept
-      -> LoadSaveExpected<Heap<PipelineCache>> {
+      -> LoadSaveexpected<heap_ptr<PipelineCache>> {
         Return NamedConstructor::allocate(std::move(device), std::move(cache_path));
     }
 

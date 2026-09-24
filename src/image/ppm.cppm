@@ -5,6 +5,7 @@
 module;
 
 #include <stormkit/core/contract_macro.hpp>
+#include <stormkit/core/try_expected.hpp>
 
 export module stormkit.image:ppm;
 
@@ -13,57 +14,48 @@ import std;
 import stormkit.core;
 import stormkit.image;
 
+namespace stdfs = std::filesystem;
+
 export namespace stormkit::image::details {
     [[nodiscard]]
-    auto load_ppm(byte_view data) noexcept -> std::expected<image::Image, image::Image::Error>;
+    auto load_ppm(array_view<const byte>) noexcept -> image::result<image>;
 
     [[nodiscard]]
-    auto save_ppm(const image::Image& image, image::Image::CodecTs args, const std::filesystem::path& filepath) noexcept
-      -> std::expected<void, image::Image::Error>;
+    auto save_ppm(const image&, image_codec_format, const stdfs::path&) noexcept -> image::result<void>;
 
     [[nodiscard]]
-    auto save_ppm(const image::Image& image, image::Image::CodecTs args) noexcept
-      -> std::expected<byte_dynarray, image::Image::Error>;
+    auto save_ppm(const image&, image_codec_format) noexcept -> image::result<dynarray<byte>>;
 } // namespace stormkit::image::details
 
 using namespace std::literals;
 
-namespace stormkit::image::details {
-    template<class E>
-    using Unexpected = std::unexpected<E>;
-    using Error      = image::Image::Error;
-    using Reason     = image::Image::Error::Reason;
-    using Format     = image::Image::Format;
+namespace stdr = std::ranges;
 
+namespace stormkit::image::details {
     /////////////////////////////////////
     /////////////////////////////////////
-    auto load_ppm(byte_view) noexcept -> std::expected<image::Image, image::Image::Error> {
+    auto load_ppm(array_view<const byte>) noexcept -> image::result<image> {
         assert(false, "Not implemented yet !");
         return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto save_ppm(const image::Image& image, image::Image::CodecTs args, const std::filesystem::path& filepath) noexcept
-      -> std::expected<void, image::Image::Error> {
-        return save_ppm(image, args)
-          .and_then([&filepath](auto&& val) noexcept {
-              return io::write(filepath, val).transform_error([](auto&&) static noexcept {
-                  return Error { .reason = Error::Reason::FAILED_TO_SAVE, .str_error = "" };
-              });
-          })
-          .transform(monadic::discard());
+    auto save_ppm(const image& image, image_codec_format format, const stdfs::path& filepath) noexcept
+      -> image::result<void> {
+        TryTo(bytes, save_ppm(image, format));
+        Try(io::writefile(filepath, bytes));
+        return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto save_ppm(const image::Image& image, image::Image::CodecTs args) noexcept
-      -> std::expected<byte_dynarray, image::Image::Error> {
-        const auto  output_image = image.convert_to(Format::RGB8_UNORM);
+    auto save_ppm(const image& image, image_codec_format format) noexcept -> image::result<dynarray<byte>> {
+        const auto  output_image = image.convert_to(image_format::RGB8_UNORM);
         const auto& data         = output_image.image_data();
 
-        auto output = byte_dynarray {};
-        if (args == image::Image::CodecTs::ASCII) {
+        auto output = dynarray<byte> {};
+        if (format == image_codec_format::ASCII) {
             auto result = std::format("P3\n{}\n{}\n255\n"sv, data.extent.width, data.extent.height);
 
             const auto& extent = output_image.extent();
@@ -75,14 +67,14 @@ namespace stormkit::image::details {
                 if (j == extent.width) result += '\n';
             }
 
-            output.reserve(std::size(result));
-            std::ranges::copy(as<array_view>(as_bytes, result), std::back_inserter(output));
-        } else if (args == image::Image::CodecTs::BINARY) {
+            output.reserve(std::size(result) * sizeof(char));
+            stdr::copy(view_of(as_bytes, result), std::back_inserter(output));
+        } else if (format == image_codec_format::BINARY) {
             auto header = std::format("P3\n{}\n{}\n255\n"sv, data.extent.width, data.extent.height);
-            output.reserve(std::size(output) + std::size(output_image));
+            output.reserve((std::size(header) + std::size(output_image)) * sizeof(char));
 
-            std::ranges::copy(as<array_view>(as_bytes, header), std::back_inserter(output));
-            std::ranges::copy(output_image, std::back_inserter(output));
+            stdr::copy(view_of(as_bytes, header), std::back_inserter(output));
+            stdr::copy(output_image.data(), std::back_inserter(output));
         }
 
         return output;

@@ -30,7 +30,7 @@ namespace stormkit::gpu {
     auto FrameBufferImplementation::do_init(PrivateTag,
                                             view::RenderPass&&           render_pass,
                                             const math::uextent2&        extent,
-                                            dyn_array<view::ImageView>&& attachments) noexcept -> Expected<void> {
+                                            dynarray<view::ImageView>&& attachments) noexcept -> expected<void> {
         m_extent                  = extent;
         m_attachments             = std::move(attachments);
         const auto vk_attachments = transform(m_attachments, vk::monadic::to_vk());
@@ -50,7 +50,7 @@ namespace stormkit::gpu {
         const auto& device       = owner();
         const auto& device_table = device.device_table();
 
-        m_vk_handle = Try(vk::call_checked<VkFramebuffer>(device_table.vkCreateFramebuffer, device, &create_info, nullptr));
+        m_vk_handle = TryX(vk::call_checked<VkFramebuffer>(device_table.vkCreateFramebuffer, device, &create_info, nullptr));
         Return {};
     }
 } // namespace stormkit::gpu

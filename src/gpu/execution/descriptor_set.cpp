@@ -30,9 +30,9 @@ namespace stormkit::gpu {
         const auto& device_table = device.device_table();
 
         auto&& [_, _, _writes] = [this, descriptors = std::move(descriptors)] noexcept -> decltype(auto) {
-            auto buffers = dyn_array<VkDescriptorBufferInfo> {};
-            auto images  = dyn_array<VkDescriptorImageInfo> {};
-            auto writes  = dyn_array<VkWriteDescriptorSet> {};
+            auto buffers = dynarray<VkDescriptorBufferInfo> {};
+            auto images  = dynarray<VkDescriptorImageInfo> {};
+            auto writes  = dynarray<VkWriteDescriptorSet> {};
             buffers.reserve(std::size(descriptors));
             images.reserve(std::size(descriptors));
             writes.reserve(std::size(descriptors));
@@ -95,7 +95,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     auto DescriptorSetImplementation::do_init(PrivateTag,
                                               VkDescriptorSet&&      descriptor_set,
-                                              DescriptorSetDeleter&& deleter) noexcept -> Expected<void> {
+                                              DescriptorSetDeleter&& deleter) noexcept -> expected<void> {
         m_vk_handle = std::move(descriptor_set);
         m_deleter   = std::move(deleter);
 

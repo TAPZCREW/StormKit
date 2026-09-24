@@ -32,14 +32,14 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto SurfaceImplementation::do_init(PrivateTag, const OffscreenCreateInfo&) noexcept -> Expected<void> {
+    auto SurfaceImplementation::do_init(PrivateTag, const OffscreenCreateInfo&) noexcept -> expected<void> {
         assert(false, "not implemented yet");
         return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto SurfaceImplementation::do_init(PrivateTag, const CreateInfo& create_info) noexcept -> Expected<void> {
+    auto SurfaceImplementation::do_init(PrivateTag, const CreateInfo& create_info) noexcept -> expected<void> {
         const auto& window = *create_info.window;
 
         EXPECTS(window.is_open());
@@ -101,7 +101,7 @@ namespace stormkit::gpu {
         };
 
         const auto create_surface =
-          [&window, &make_wayland_surface, &make_xcb_surface] noexcept -> std23::function_ref<Expected<VkSurfaceKHR>()> {
+          [&window, &make_wayland_surface, &make_xcb_surface] noexcept -> std23::function_ref<expected<VkSurfaceKHR>()> {
             const auto is_wayland = window.wm() == wsi::WM::WAYLAND;
 
             if (is_wayland) return make_wayland_surface;
@@ -124,7 +124,7 @@ namespace stormkit::gpu {
         assertWithMessage(true, "This platform WSI is not supported !");
 #endif
 
-        m_vk_handle = Try(create_surface());
+        m_vk_handle = TryX(create_surface());
 
         Return {};
     }

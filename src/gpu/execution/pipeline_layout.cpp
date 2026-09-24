@@ -27,7 +27,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto PipelineLayoutImplementation::do_init(PrivateTag, const RasterPipelineLayout& layout) noexcept -> Expected<void> {
+    auto PipelineLayoutImplementation::do_init(PrivateTag, const RasterPipelineLayout& layout) noexcept -> expected<void> {
         m_layout = core::allocate_unsafe<RasterPipelineLayout>(layout);
 
         const auto set_layouts = transform(m_layout->descriptor_set_layouts, vk::monadic::to_vk());
@@ -53,7 +53,7 @@ namespace stormkit::gpu {
         const auto& device       = owner();
         const auto& device_table = device.device_table();
 
-        m_vk_handle = Try(vk::call_checked<VkPipelineLayout>(device_table.vkCreatePipelineLayout, device, &create_info, nullptr));
+        m_vk_handle = TryX(vk::call_checked<VkPipelineLayout>(device_table.vkCreatePipelineLayout, device, &create_info, nullptr));
         Return {};
     }
 } // namespace stormkit::gpu

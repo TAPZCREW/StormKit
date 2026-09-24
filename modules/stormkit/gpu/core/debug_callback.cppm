@@ -55,7 +55,7 @@ namespace stormkit::gpu {
         DebugCallbackImplementation(DebugCallbackImplementation&&) noexcept;
         auto operator=(DebugCallbackImplementation&&) noexcept -> DebugCallbackImplementation&;
 
-        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
+        auto do_init(PrivateTag, const CreateInfo&) noexcept -> expected<void>;
     };
 
     namespace view {

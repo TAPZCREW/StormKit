@@ -175,24 +175,24 @@ namespace stormkit::gpu {
             capabilities.limits.max_framebuffer_width               = properties.limits.maxFramebufferWidth;
             capabilities.limits.max_framebuffer_height              = properties.limits.maxFramebufferHeight;
             capabilities.limits.max_framebuffer_layers              = properties.limits.maxFramebufferLayers;
-            capabilities.limits.framebuffer_color_sample_counts     = narrow<
+            capabilities.limits.framebuffer_color_sample_counts     = unchecked_narrow<
               SampleCountFlag>(properties.limits.framebufferColorSampleCounts);
-            capabilities.limits.framebuffer_depth_sample_counts = narrow<
+            capabilities.limits.framebuffer_depth_sample_counts = unchecked_narrow<
               SampleCountFlag>(properties.limits.framebufferDepthSampleCounts);
-            capabilities.limits.framebuffer_stencil_sample_counts = narrow<
+            capabilities.limits.framebuffer_stencil_sample_counts = unchecked_narrow<
               SampleCountFlag>(properties.limits.framebufferStencilSampleCounts);
-            capabilities.limits.framebuffer_no_attachments_sample_counts = narrow<
+            capabilities.limits.framebuffer_no_attachments_sample_counts = unchecked_narrow<
               SampleCountFlag>(properties.limits.framebufferNoAttachmentsSampleCounts);
             capabilities.limits.max_color_attachments             = properties.limits.maxColorAttachments;
-            capabilities.limits.sampled_image_color_sample_counts = narrow<
+            capabilities.limits.sampled_image_color_sample_counts = unchecked_narrow<
               SampleCountFlag>(properties.limits.sampledImageColorSampleCounts);
-            capabilities.limits.sampled_image_integer_sample_counts = narrow<
+            capabilities.limits.sampled_image_integer_sample_counts = unchecked_narrow<
               SampleCountFlag>(properties.limits.sampledImageIntegerSampleCounts);
-            capabilities.limits.sampled_image_depth_sample_counts = narrow<
+            capabilities.limits.sampled_image_depth_sample_counts = unchecked_narrow<
               SampleCountFlag>(properties.limits.sampledImageDepthSampleCounts);
-            capabilities.limits.sampled_image_stencil_sample_counts = narrow<
+            capabilities.limits.sampled_image_stencil_sample_counts = unchecked_narrow<
               SampleCountFlag>(properties.limits.sampledImageStencilSampleCounts);
-            capabilities.limits.storage_image_sample_counts = narrow<SampleCountFlag>(properties.limits.storageImageSampleCounts);
+            capabilities.limits.storage_image_sample_counts = unchecked_narrow<SampleCountFlag>(properties.limits.storageImageSampleCounts);
             capabilities.limits.max_sample_mask_words       = properties.limits.maxSampleMaskWords;
             capabilities.limits.timestamp_compute_and_engine         = properties.limits.timestampComputeAndGraphics;
             capabilities.limits.timestamp_period                     = properties.limits.timestampPeriod;
@@ -269,28 +269,28 @@ namespace stormkit::gpu {
             return capabilities;
         }
 
-        auto memory_types(const PhysicalDeviceImplementation& physical_device) noexcept -> dyn_array<MemoryPropertyFlag> {
+        auto memory_types(const PhysicalDeviceImplementation& physical_device) noexcept -> dynarray<MemoryPropertyFlag> {
             const auto& handle               = physical_device.native_handle();
             const auto  vk_memory_properties = vk::call<VkPhysicalDeviceMemoryProperties>(vkGetPhysicalDeviceMemoryProperties,
                                                                                           handle);
 
             return transform(array_view { vk_memory_properties.memoryTypes, 32 }, [](const auto& type) static noexcept {
-                return narrow<MemoryPropertyFlag>(type.propertyFlags);
+                return unchecked_narrow<MemoryPropertyFlag>(type.propertyFlags);
             });
         }
 
-        auto queue_families(const PhysicalDeviceImplementation& physical_device) noexcept -> dyn_array<QueueFamily> {
+        auto queue_families(const PhysicalDeviceImplementation& physical_device) noexcept -> dynarray<QueueFamily> {
             const auto& handle = physical_device.native_handle();
             return transform(vk::enumerate<VkQueueFamilyProperties>(vkGetPhysicalDeviceQueueFamilyProperties, handle),
                              [](const auto& family) static noexcept {
-                                 return QueueFamily { .flags = narrow<QueueFlag>(family.queueFlags), .count = family.queueCount };
+                                 return QueueFamily { .flags = unchecked_narrow<QueueFlag>(family.queueFlags), .count = family.queueCount };
                              });
         }
 
         auto extensions(const PhysicalDeviceImplementation& physical_device, const PhysicalDeviceInfo& info) noexcept
-          -> dyn_array<string> {
+          -> dynarray<string> {
             const auto& handle     = physical_device.native_handle();
-            const auto  extensions = TryAssert(vk::enumerate_checked<VkExtensionProperties>(vkEnumerateDeviceExtensionProperties,
+            const auto  extensions = TryXAssert(vk::enumerate_checked<VkExtensionProperties>(vkEnumerateDeviceExtensionProperties,
                                                                                             handle,
                                                                                             nullptr),
                                                format("Failed to enumerate device {} extensions properties", info.device_name));
@@ -303,7 +303,7 @@ namespace stormkit::gpu {
         }
 
         auto formats_properties(const PhysicalDeviceImplementation& physical_device) noexcept
-          -> dyn_array<std::pair<PixelFormat, FormatProperties>> {
+          -> dynarray<std::pair<PixelFormat, FormatProperties>> {
             const auto& handle = physical_device.native_handle();
             return transform(cm::enumerate<PixelFormat>(), [&handle](const auto val) noexcept {
                 return std::make_pair(val,

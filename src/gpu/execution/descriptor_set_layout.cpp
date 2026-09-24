@@ -27,8 +27,8 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto DescriptorSetLayoutImplementation::do_init(PrivateTag, dyn_array<DescriptorSetLayoutBinding>&& bindings) noexcept
-      -> Expected<void> {
+    auto DescriptorSetLayoutImplementation::do_init(PrivateTag, dynarray<DescriptorSetLayoutBinding>&& bindings) noexcept
+      -> expected<void> {
         m_bindings             = std::move(bindings);
         const auto vk_bindings = transform(m_bindings, [](const DescriptorSetLayoutBinding& binding) static noexcept {
             return VkDescriptorSetLayoutBinding {
@@ -50,7 +50,7 @@ namespace stormkit::gpu {
 
         const auto& device       = owner();
         const auto& device_table = device.device_table();
-        m_vk_handle = Try(vk::call_checked<
+        m_vk_handle = TryX(vk::call_checked<
                           VkDescriptorSetLayout>(device_table.vkCreateDescriptorSetLayout, device, &create_info, nullptr));
 
         Return {};

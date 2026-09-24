@@ -66,7 +66,7 @@ namespace stormkit::gpu {
         namespace trait {
             template<>
             struct GpuObject<ShaderTag> {
-                using ValueType   = VkShaderModule;
+                using value_type   = VkShaderModule;
                 using DeleterType = PFN_vkDestroyShaderModule VolkDeviceTable::*;
                 using ObjectType  = Shader;
                 using ViewType    = view::Shader;
@@ -77,7 +77,7 @@ namespace stormkit::gpu {
 
             template<>
             struct GpuObject<BufferTag> {
-                using ValueType   = VkBuffer;
+                using value_type   = VkBuffer;
                 using DeleterType = PFN_vkDestroyBuffer VolkDeviceTable::*;
                 using ObjectType  = Buffer;
                 using ViewType    = view::Buffer;
@@ -88,7 +88,7 @@ namespace stormkit::gpu {
 
             template<>
             struct GpuObject<ImageTag> {
-                using ValueType   = VkImage;
+                using value_type   = VkImage;
                 using DeleterType = PFN_vkDestroyImage VolkDeviceTable::*;
                 using ObjectType  = Image;
                 using ViewType    = view::Image;
@@ -99,7 +99,7 @@ namespace stormkit::gpu {
 
             template<>
             struct GpuObject<ImageViewTag> {
-                using ValueType   = VkImageView;
+                using value_type   = VkImageView;
                 using DeleterType = PFN_vkDestroyImageView VolkDeviceTable::*;
                 using ObjectType  = ImageView;
                 using ViewType    = view::ImageView;
@@ -110,7 +110,7 @@ namespace stormkit::gpu {
 
             template<>
             struct GpuObject<SamplerTag> {
-                using ValueType   = VkSampler;
+                using value_type   = VkSampler;
                 using DeleterType = PFN_vkDestroySampler VolkDeviceTable::*;
                 using ObjectType  = Sampler;
                 using ViewType    = view::Sampler;

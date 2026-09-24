@@ -36,7 +36,7 @@ auto Renderer::renderFrame() -> void {
     }
 
     const auto viewports = [&] {
-        auto v = dyn_array<gpu::Viewport> {};
+        auto v = dynarray<gpu::Viewport> {};
         v.emplace_back(gpu::Viewport {
           .extent = surface_extentf,
           .depth  = { 0, 1 }
@@ -46,7 +46,7 @@ auto Renderer::renderFrame() -> void {
     }();
 
     const auto scissors = [&] {
-        auto s = dyn_array<gpu::Scissor> {};
+        auto s = dynarray<gpu::Scissor> {};
         s.emplace_back(gpu::Scissor { .extent = surface_extent });
 
         return s;
@@ -80,7 +80,7 @@ auto Renderer::renderFrame() -> void {
     m_surface->present(frame);
 }
 
-auto Renderer::updateBoard(const stormkit::image::Image& board) -> void {
+auto Renderer::updateBoard(const stormkit::image::image& board) -> void {
     m_board.current_image += 1;
     m_board.current_image %= std::size(m_board.images);
 
@@ -173,9 +173,9 @@ auto Renderer::do_initMeshRenderObjects() -> void {
         .dynamic_state        = { { gpu::DynamicState::Viewport, gpu::DynamicState::Scissor } },
         .shader_state         = { .shaders = makeConstObserverArray(m_board.vertex_shader, m_board.fragment_shader) },
         /*.vertex_input_state   = { .binding_descriptions =
-                                    to_dyn_array(MESH_VERTEX_BINDING_DESCRIPTIONS),
+                                    to_dynarray(MESH_VERTEX_BINDING_DESCRIPTIONS),
                                   .input_attribute_descriptions =
-                                    to_dyn_array(MESH_VERTEX_ATTRIBUTE_DESCRIPTIONS) },*/
+                                    to_dynarray(MESH_VERTEX_ATTRIBUTE_DESCRIPTIONS) },*/
         .layout = { .descriptor_set_layouts = makeConstObserverArray(m_descriptor_set_layout) }
     };
 

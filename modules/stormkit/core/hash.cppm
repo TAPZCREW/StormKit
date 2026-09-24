@@ -15,7 +15,6 @@ import stormkit.core.meta.concepts;
 import stormkit.core.meta.type_query;
 import stormkit.core.meta.tag_invoke;
 import stormkit.core.hash.crc;
-import stormkit.core.containers.safecasts;
 import stormkit.core.typesafe.safecasts;
 import stormkit.core.typesafe.ref_ptr;
 
@@ -34,13 +33,13 @@ export namespace stormkit { inline namespace core {
       public:
         template<typename T>
         static constexpr auto operator()(const T& value) noexcept
-            requires(not meta::trivially_copyable<T> and not IS_TAG_INVOKABLE<T>)
+            requires(not meta::has_unique_object_representations<T> and not IS_TAG_INVOKABLE<T>)
         = delete ("No hasher defined for this type");
 
         template<typename T>
         [[nodiscard]]
         static constexpr auto operator()(const T& value) noexcept -> Ret
-            requires(meta::trivially_copyable<T> and not IS_TAG_INVOKABLE<T>);
+            requires(meta::has_unique_object_representations<T> and not IS_TAG_INVOKABLE<T>);
 
         template<typename T>
         [[nodiscard]]
@@ -81,11 +80,11 @@ namespace stormkit { inline namespace core {
     template<typename T>
     STORMKIT_FORCE_INLINE
     constexpr auto hash_fn<Ret>::operator()(const T& value) noexcept -> Ret
-        requires(meta::trivially_copyable<T> and not IS_TAG_INVOKABLE<T>)
+        requires(meta::has_unique_object_representations<T> and not IS_TAG_INVOKABLE<T>)
     {
-        if constexpr (meta::is<Ret, hash32>) return hash::crc32(as<array_view>(as_bytes, value));
+        if constexpr (meta::is<Ret, hash32>) return hash::crc32(view_of(as_bytes, value));
         else
-            return hash::crc64(as<array_view>(as_bytes, value));
+            return hash::crc64(view_of(as_bytes, value));
     }
 
     /////////////////////////////////////

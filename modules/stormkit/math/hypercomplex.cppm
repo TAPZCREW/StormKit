@@ -9,9 +9,9 @@ export module stormkit.math.hypercomplex;
 import std;
 
 export {
-    namespace stormkit { inline namespace core { namespace math {
+    namespace stormkit::math {
 
-    }}} // namespace stormkit::core::math
+    } // namespace stormkit::math
 }
 
 ////////////////////////////////////////////////////////////////////

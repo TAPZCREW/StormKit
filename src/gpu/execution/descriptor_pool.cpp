@@ -27,7 +27,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     auto DescriptorPoolInterface<Base>::create_vk_descriptor_sets(usize count, view::DescriptorSetLayout&& layout) const noexcept
-      -> Expected<dyn_array<VkDescriptorSet>> {
+      -> expected<dynarray<VkDescriptorSet>> {
         const auto vk_layout     = vk::to_vk(layout);
         const auto allocate_info = VkDescriptorSetAllocateInfo {
             .sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
@@ -50,7 +50,7 @@ namespace stormkit::gpu {
                                                                  view::DescriptorPool pool,
                                                                  VkDescriptorSet      set) noexcept -> void {
         const auto& device_table = device.device_table();
-        TryAssert(vk::call_checked(device_table.vkFreeDescriptorSets, device, pool, 1, &set), "Failed to free a descriptor set");
+        TryXAssert(vk::call_checked(device_table.vkFreeDescriptorSets, device, pool, 1, &set), "Failed to free a descriptor set");
     }
 
     template class DescriptorPoolInterface<DescriptorPoolImplementation>;
@@ -59,7 +59,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     auto DescriptorPoolImplementation::do_init(PrivateTag, array_view<const Size>&& sizes, u32 max_sets) noexcept
-      -> Expected<void> {
+      -> expected<void> {
         const auto pool_sizes = transform(sizes, [](const Size& size) static noexcept {
             return VkDescriptorPoolSize {
                 .type            = vk::to_vk<VkDescriptorType>(size.type),
@@ -79,7 +79,7 @@ namespace stormkit::gpu {
         const auto& device       = owner();
         const auto& device_table = device.device_table();
 
-        m_vk_handle = Try(vk::call_checked<VkDescriptorPool>(device_table.vkCreateDescriptorPool, device, &create_info, nullptr));
+        m_vk_handle = TryX(vk::call_checked<VkDescriptorPool>(device_table.vkCreateDescriptorPool, device, &create_info, nullptr));
         Return {};
     }
 } // namespace stormkit::gpu

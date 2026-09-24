@@ -35,6 +35,8 @@ target("core", function()
     add_configfiles(path.join(include_dir, "(stormkit/core/config.hpp.in)"))
     add_includedirs("$(builddir)/.gens/include", { public = true })
 
+    add_headerfiles(path.join(include_dir, "(stormkit/polyfill/**.hpp)"))
+    add_headerfiles(path.join(include_dir, "(stormkit/polyfill/**.h)"))
     add_headerfiles(path.join(include_dir, "(status-code/**.hpp)"))
     add_headerfiles(path.join(include_dir, "(status-code/**.ipp)"))
     add_headerfiles(path.join(include_dir, "(stormkit/core/**.hpp)"), "$(builddir)/.gens/include/(stormkit/core/*.hpp)")

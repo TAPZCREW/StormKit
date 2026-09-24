@@ -4,7 +4,6 @@
 
 module;
 
-#include <stormkit/core/flags_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 #include <stormkit/gpu/api.hpp>
@@ -21,13 +20,13 @@ import :vulkan.volk;
 export {
     namespace stormkit::gpu {
         namespace details {
-            template<meta::IsEnumeration>
+            template<meta::enumeration>
             inline constexpr auto IS_VULKAN_ENUMERATION = false;
         }
 
         namespace meta {
             template<typename T>
-            concept IsVulkanEnumeration = core::meta::IsEnumeration<T> and details::IS_VULKAN_ENUMERATION<T>;
+            concept IsVulkanEnumeration = core::meta::enumeration<T> and details::IS_VULKAN_ENUMERATION<T>;
         }
 
         inline constexpr auto QUEUE_FAMILY_IGNORED = std::numeric_limits<u32>::max();
@@ -303,13 +302,10 @@ export {
             SAMPLED_IMAGE               = VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT,
             SAMPLED_IMAGE_FILTER_LINEAR = VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT,
             SAMPLED_IMAGE_FILTER_MINMAX = VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_MINMAX_BIT,
-            SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT
-              = VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT,
-            SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE
-              = VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT,
+            SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT = VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT,
+            SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE = VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT,
             SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER = VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT,
-            SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER
-              = VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT,
+            SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER = VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT,
             STORAGE_IMAGE               = VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT,
             STORAGE_IMAGE_ATOMIC        = VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT,
             STORAGE_TEXEL_BUFFER        = VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT,
@@ -754,18 +750,18 @@ export {
 
         namespace vk {
             template<typename T = VkFlags, meta::IsVulkanEnumeration U>
-                requires(core::meta::IsPlainEnumeration<T> or core::meta::Is<T, VkFlags>)
+                requires(core::meta::c_enum<T> or core::meta::is<T, VkFlags>)
             [[nodiscard]]
             constexpr auto to_vk(U value) noexcept -> T;
 
             template<meta::IsVulkanEnumeration T, typename U>
-                requires(core::meta::IsPlainEnumeration<U> or core::meta::Is<U, VkFlags>)
+                requires(core::meta::c_enum<U> or core::meta::is<U, VkFlags>)
             [[nodiscard]]
             constexpr auto from_vk(U value) noexcept -> T;
         } // namespace vk
 
         [[nodiscard]]
-        constexpr auto from_image(image::Image::Format format) -> PixelFormat;
+        constexpr auto from_image(image::image::Format format) -> PixelFormat;
 
         [[nodiscard]]
         constexpr auto is_depth_only_format(PixelFormat format) noexcept -> bool;
@@ -3587,23 +3583,23 @@ namespace stormkit::gpu {
         /////////////////////////////////////
         /////////////////////////////////////
         template<typename T = VkFlags, meta::IsVulkanEnumeration U>
-            requires(core::meta::IsPlainEnumeration<T> or core::meta::Is<T, VkFlags>)
+            requires(core::meta::c_enum<T> or core::meta::is<T, VkFlags>)
         STORMKIT_FORCE_INLINE
     	STORMKIT_CONST
         STORMKIT_INTRINSIC
         constexpr auto to_vk(U value) noexcept -> T {
-            return narrow<T>(value);
+            return unchecked_narrow<T>(value);
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         template<meta::IsVulkanEnumeration T, typename U>
-            requires(core::meta::IsPlainEnumeration<U> or core::meta::Is<U, VkFlags>)
+            requires(core::meta::c_enum<U> or core::meta::is<U, VkFlags>)
         STORMKIT_FORCE_INLINE
     	STORMKIT_CONST
         STORMKIT_INTRINSIC
         constexpr auto from_vk(U value) noexcept -> T {
-            return narrow<T>(value);
+            return unchecked_narrow<T>(value);
         }
     } // namespace vk
 
@@ -3611,64 +3607,64 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
 	STORMKIT_CONST
-    constexpr auto from_image(image::Image::Format format) -> PixelFormat {
+    constexpr auto from_image(image::image::Format format) -> PixelFormat {
         switch (format) {
-            case image::Image::Format::R8_SNORM: return PixelFormat::R8_SNORM;
-            case image::Image::Format::RG8_SNORM: return PixelFormat::RG8_SNORM;
-            case image::Image::Format::RGB8_SNORM: return PixelFormat::RGB8_SNORM;
-            case image::Image::Format::RGBA8_SNORM: return PixelFormat::RGBA8_SNORM;
-            case image::Image::Format::R8_UNORM: return PixelFormat::R8_UNORM;
-            case image::Image::Format::RG8_UNORM: return PixelFormat::RG8_UNORM;
-            case image::Image::Format::RGB8_UNORM: return PixelFormat::RGB8_UNORM;
-            case image::Image::Format::RGBA8_UNORM: return PixelFormat::RGBA8_UNORM;
-            case image::Image::Format::R16_SNORM: return PixelFormat::R16_SNORM;
-            case image::Image::Format::RG16_SNORM: return PixelFormat::RG16_SNORM;
-            case image::Image::Format::RGB16_SNORM: return PixelFormat::RGB16_SNORM;
-            case image::Image::Format::RGBA16_SNORM: return PixelFormat::RGBA16_SNORM;
-            case image::Image::Format::R16_UNORM: return PixelFormat::R16_UNORM;
-            case image::Image::Format::RG16_UNORM: return PixelFormat::RG16_UNORM;
-            case image::Image::Format::RGB16_UNORM: return PixelFormat::RGB16_UNORM;
-            case image::Image::Format::RGBA16_UNORM: return PixelFormat::RGBA16_UNORM;
-            case image::Image::Format::RGBA4_UNORM: return PixelFormat::RGBA4_UNORM_PACK16;
-            case image::Image::Format::BGR8_UNORM: return PixelFormat::BGR8_UNORM;
-            case image::Image::Format::BGRA8_UNORM: return PixelFormat::BGRA8_UNORM;
-            case image::Image::Format::R8I: return PixelFormat::R8I;
-            case image::Image::Format::RG8I: return PixelFormat::RG8I;
-            case image::Image::Format::RGB8I: return PixelFormat::RGB8I;
-            case image::Image::Format::RGBA8I: return PixelFormat::RGBA8I;
-            case image::Image::Format::R8U: return PixelFormat::R8U;
-            case image::Image::Format::RG8U: return PixelFormat::RG8U;
-            case image::Image::Format::RGB8U: return PixelFormat::RGB8U;
-            case image::Image::Format::RGBA8U: return PixelFormat::RGBA8U;
-            case image::Image::Format::R16I: return PixelFormat::R16I;
-            case image::Image::Format::RG16I: return PixelFormat::RG16I;
-            case image::Image::Format::RGB16I: return PixelFormat::RGB16I;
-            case image::Image::Format::RGBA16I: return PixelFormat::RGBA16I;
-            case image::Image::Format::R16U: return PixelFormat::R16U;
-            case image::Image::Format::RG16U: return PixelFormat::RG16U;
-            case image::Image::Format::RGB16U: return PixelFormat::RGB16U;
-            case image::Image::Format::RGBA16U: return PixelFormat::RGBA16U;
-            case image::Image::Format::R32I: return PixelFormat::R32I;
-            case image::Image::Format::RG32I: return PixelFormat::RG32I;
-            case image::Image::Format::RGB32I: return PixelFormat::RGB32I;
-            case image::Image::Format::RGBA32I: return PixelFormat::RGBA32I;
-            case image::Image::Format::R32U: return PixelFormat::R32U;
-            case image::Image::Format::RG32U: return PixelFormat::RG32U;
-            case image::Image::Format::RGB32U: return PixelFormat::RGB32U;
-            case image::Image::Format::RGBA32U: return PixelFormat::RGBA32U;
-            case image::Image::Format::R16F: return PixelFormat::R16F;
-            case image::Image::Format::RG16F: return PixelFormat::RG16F;
-            case image::Image::Format::RGB16F: return PixelFormat::RGB16F;
-            case image::Image::Format::RGBA16F: return PixelFormat::RGBA16F;
-            case image::Image::Format::R32F: return PixelFormat::R32F;
-            case image::Image::Format::RG32F: return PixelFormat::RG32F;
-            case image::Image::Format::RGB32F: return PixelFormat::RGB32F;
-            case image::Image::Format::RGBA32F: return PixelFormat::RGBA32F;
-            case image::Image::Format::SRGB8: return PixelFormat::SRGB8;
-            case image::Image::Format::SRGBA8: return PixelFormat::SRGBA8;
-            case image::Image::Format::SBGR8: return PixelFormat::SBGR8;
-            case image::Image::Format::SBGRA8: return PixelFormat::SBGRA8;
-            case image::Image::Format::UNDEFINED: return PixelFormat::UNDEFINED;
+            case image::image::Format::R8_SNORM: return PixelFormat::R8_SNORM;
+            case image::image::Format::RG8_SNORM: return PixelFormat::RG8_SNORM;
+            case image::image::Format::RGB8_SNORM: return PixelFormat::RGB8_SNORM;
+            case image::image::Format::RGBA8_SNORM: return PixelFormat::RGBA8_SNORM;
+            case image::image::Format::R8_UNORM: return PixelFormat::R8_UNORM;
+            case image::image::Format::RG8_UNORM: return PixelFormat::RG8_UNORM;
+            case image::image::Format::RGB8_UNORM: return PixelFormat::RGB8_UNORM;
+            case image::image::Format::RGBA8_UNORM: return PixelFormat::RGBA8_UNORM;
+            case image::image::Format::R16_SNORM: return PixelFormat::R16_SNORM;
+            case image::image::Format::RG16_SNORM: return PixelFormat::RG16_SNORM;
+            case image::image::Format::RGB16_SNORM: return PixelFormat::RGB16_SNORM;
+            case image::image::Format::RGBA16_SNORM: return PixelFormat::RGBA16_SNORM;
+            case image::image::Format::R16_UNORM: return PixelFormat::R16_UNORM;
+            case image::image::Format::RG16_UNORM: return PixelFormat::RG16_UNORM;
+            case image::image::Format::RGB16_UNORM: return PixelFormat::RGB16_UNORM;
+            case image::image::Format::RGBA16_UNORM: return PixelFormat::RGBA16_UNORM;
+            case image::image::Format::RGBA4_UNORM: return PixelFormat::RGBA4_UNORM_PACK16;
+            case image::image::Format::BGR8_UNORM: return PixelFormat::BGR8_UNORM;
+            case image::image::Format::BGRA8_UNORM: return PixelFormat::BGRA8_UNORM;
+            case image::image::Format::R8I: return PixelFormat::R8I;
+            case image::image::Format::RG8I: return PixelFormat::RG8I;
+            case image::image::Format::RGB8I: return PixelFormat::RGB8I;
+            case image::image::Format::RGBA8I: return PixelFormat::RGBA8I;
+            case image::image::Format::R8U: return PixelFormat::R8U;
+            case image::image::Format::RG8U: return PixelFormat::RG8U;
+            case image::image::Format::RGB8U: return PixelFormat::RGB8U;
+            case image::image::Format::RGBA8U: return PixelFormat::RGBA8U;
+            case image::image::Format::R16I: return PixelFormat::R16I;
+            case image::image::Format::RG16I: return PixelFormat::RG16I;
+            case image::image::Format::RGB16I: return PixelFormat::RGB16I;
+            case image::image::Format::RGBA16I: return PixelFormat::RGBA16I;
+            case image::image::Format::R16U: return PixelFormat::R16U;
+            case image::image::Format::RG16U: return PixelFormat::RG16U;
+            case image::image::Format::RGB16U: return PixelFormat::RGB16U;
+            case image::image::Format::RGBA16U: return PixelFormat::RGBA16U;
+            case image::image::Format::R32I: return PixelFormat::R32I;
+            case image::image::Format::RG32I: return PixelFormat::RG32I;
+            case image::image::Format::RGB32I: return PixelFormat::RGB32I;
+            case image::image::Format::RGBA32I: return PixelFormat::RGBA32I;
+            case image::image::Format::R32U: return PixelFormat::R32U;
+            case image::image::Format::RG32U: return PixelFormat::RG32U;
+            case image::image::Format::RGB32U: return PixelFormat::RGB32U;
+            case image::image::Format::RGBA32U: return PixelFormat::RGBA32U;
+            case image::image::Format::R16F: return PixelFormat::R16F;
+            case image::image::Format::RG16F: return PixelFormat::RG16F;
+            case image::image::Format::RGB16F: return PixelFormat::RGB16F;
+            case image::image::Format::RGBA16F: return PixelFormat::RGBA16F;
+            case image::image::Format::R32F: return PixelFormat::R32F;
+            case image::image::Format::RG32F: return PixelFormat::RG32F;
+            case image::image::Format::RGB32F: return PixelFormat::RGB32F;
+            case image::image::Format::RGBA32F: return PixelFormat::RGBA32F;
+            case image::image::Format::SRGB8: return PixelFormat::SRGB8;
+            case image::image::Format::SRGBA8: return PixelFormat::SRGBA8;
+            case image::image::Format::SBGR8: return PixelFormat::SBGR8;
+            case image::image::Format::SBGRA8: return PixelFormat::SBGRA8;
+            case image::image::Format::UNDEFINED: return PixelFormat::UNDEFINED;
 
             default: break;
         }

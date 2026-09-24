@@ -21,7 +21,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto BufferInterface<Base>::map(ioffset offset) noexcept -> Expected<byte*> {
+    auto BufferInterface<Base>::map(ioffset offset) noexcept -> expected<byte*> {
         EXPECTS(allocation() and Base::native_handle());
         EXPECTS(offset < as<ioffset>(size()));
 
@@ -29,7 +29,7 @@ namespace stormkit::gpu {
         const auto& allocator  = device.allocator();
         const auto& allocation = this->allocation();
 
-        auto ptr = Try(vk::call_checked<void*>(vmaMapMemory, allocator, allocation));
+        auto ptr = TryX(vk::call_checked<void*>(vmaMapMemory, allocator, allocation));
 
         Base::m_mapped_pointer = std::bit_cast<byte*>(ptr);
         Base::m_mapped_pointer += offset;
@@ -39,7 +39,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto BufferInterface<Base>::flush(ioffset offset, usize size) const noexcept -> Expected<void> {
+    auto BufferInterface<Base>::flush(ioffset offset, usize size) const noexcept -> expected<void> {
         EXPECTS(allocation() and Base::native_handle());
         EXPECTS(offset <= as<ioffset>(this->size()));
         EXPECTS(size <= this->size());
@@ -57,7 +57,7 @@ namespace stormkit::gpu {
     auto BufferInterface<Base>::unmap() noexcept -> void {
         if (not mapped()) return;
 
-        if constexpr (cmeta::SameAs<Base, view::BufferImplementation>)
+        if constexpr (cmeta::same_as<Base, view::BufferImplementation>)
             if (is_persistently_mapped()) return;
 
         EXPECTS(allocation() and Base::native_handle());
@@ -74,7 +74,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Base>
-    auto BufferInterface<Base>::upload(byte_view<> data, ioffset offset) noexcept -> Expected<void> {
+    auto BufferInterface<Base>::upload(array_view<const byte> data, ioffset offset) noexcept -> expected<void> {
         EXPECTS(stdr::size(data) <= this->size());
 
         if (is_persistently_mapped()) {
@@ -82,7 +82,7 @@ namespace stormkit::gpu {
             Return {};
         }
 
-        auto gpu_data = Try(map(offset, stdr::size(data)));
+        auto gpu_data = TryX(map(offset, stdr::size(data)));
         stdr::copy(data, stdr::begin(gpu_data));
         unmap();
 
@@ -94,7 +94,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto BufferImplementation::do_init(PrivateTag, const CreateInfo& _create_info) noexcept -> Expected<void> {
+    auto BufferImplementation::do_init(PrivateTag, const CreateInfo& _create_info) noexcept -> expected<void> {
         m_usages                 = _create_info.usages;
         m_size                   = _create_info.size;
         m_memory_properties      = _create_info.properties;
@@ -112,7 +112,7 @@ namespace stormkit::gpu {
             .queueFamilyIndexCount = 0,
             .pQueueFamilyIndices   = nullptr,
         };
-        m_vk_handle = Try(vk::call_checked<VkBuffer>(device_table.vkCreateBuffer, device, &create_info, nullptr));
+        m_vk_handle = TryX(vk::call_checked<VkBuffer>(device_table.vkCreateBuffer, device, &create_info, nullptr));
 
         const auto vma_create_info = VmaAllocationCreateInfo {
             .flags          = 0,
@@ -126,15 +126,15 @@ namespace stormkit::gpu {
         };
         const auto allocator = device.allocator();
         auto       out       = VmaAllocation { VK_NULL_HANDLE };
-        Try(vk::call_checked(vmaAllocateMemoryForBuffer, allocator, m_vk_handle, &vma_create_info, &out, nullptr));
+        TryX(vk::call_checked(vmaAllocateMemoryForBuffer, allocator, m_vk_handle, &vma_create_info, &out, nullptr));
         m_vma_allocation = { [allocator](VmaAllocation handle) noexcept {
             if (handle) { vmaFreeMemory(allocator, handle); }
         } };
         m_vma_allocation = std::move(out);
-        Try(vk::call_checked(vmaBindBufferMemory, allocator, m_vma_allocation, m_vk_handle));
+        TryX(vk::call_checked(vmaBindBufferMemory, allocator, m_vma_allocation, m_vk_handle));
 
         if (m_is_persistently_mapped) {
-            auto ptr         = Try(vk::call_checked<void*>(vmaMapMemory, allocator, m_vma_allocation));
+            auto ptr         = TryX(vk::call_checked<void*>(vmaMapMemory, allocator, m_vma_allocation));
             m_mapped_pointer = std::bit_cast<byte*>(ptr);
         }
 
@@ -149,7 +149,7 @@ namespace stormkit::gpu {
     //                                             const VkMemoryRequirements&) noexcept -> u32 {
     //     for (const auto i : range(mem_properties.memoryTypeCount)) {
     //         if ((type_filter & (1 << i))
-    //             and (check_flag_bit(static_cast<VkMemoryPropertyFlagBits>(mem_properties.memoryTypes[i].propertyFlags),
+    //             and (has_flag_bit(static_cast<VkMemoryPropertyFlagBits>(mem_properties.memoryTypes[i].propertyFlags),
     //                                 properties)))
     //             return i;
     //     }

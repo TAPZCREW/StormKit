@@ -12,25 +12,20 @@ import std;
 import stormkit.core;
 import stormkit.image;
 
+namespace stdfs = std::filesystem;
+
 export namespace stormkit::image::details {
     [[nodiscard]]
-    auto load_ktx(byte_view data) noexcept -> std::expected<image::Image, image::Image::Error>;
+    auto load_ktx(array_view<const byte>) noexcept -> image::result<image>;
 
     [[nodiscard]]
-    auto save_ktx(const image::Image& image, const std::filesystem::path& filepath) noexcept
-      -> std::expected<void, image::Image::Error>;
+    auto save_ktx(const image&, const stdfs::path&) noexcept -> image::result<void>;
 
     [[nodiscard]]
-    auto save_ktx(const image::Image& image) noexcept -> std::expected<byte_dynarray, image::Image::Error>;
+    auto save_ktx(const image&) noexcept -> image::result<dynarray<byte>>;
 } // namespace stormkit::image::details
 
 namespace stormkit::image::details {
-    template<class E>
-    using Unexpected = std::unexpected<E>;
-    using Error      = image::Image::Error;
-    using Reason     = image::Image::Error::Reason;
-    using Format     = image::Image::Format;
-
     /////////////////////////////////////
     /////////////////////////////////////
     /*constexpr auto toStormFormat(gli::format format) noexcept {*/
@@ -100,7 +95,7 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto load_ktx([[maybe_unused]] byte_view data) noexcept -> std::expected<image::Image, image::Image::Error> {
+    auto load_ktx(array_view<const byte>) noexcept -> image::result<image> {
         /*auto image = gli::load_ktx(reinterpret_cast<const char*>(std::data(data)),
          * std::size(data));*/
         /**/
@@ -113,17 +108,17 @@ namespace stormkit::image::details {
         /*    return std::unexpected(Error { .reason    = Reason::FAILED_TO_PARSE,*/
         /*                                   .str_error = "Unsupported pixel format" });*/
         /**/
-        /*auto image_memory = byte_dynarray {};*/
+        /*auto image_memory = dynarray<byte> {};*/
         /*image_memory.resize(image.size());*/
         /**/
-        /*std::ranges::copy(as<array_view>(as_bytes, image.data(), image.size()), std::begin(image_memory));*/
+        /*std::ranges::copy(view_of(as_bytes, image.data(), image.size()), std::begin(image_memory));*/
         /**/
-        /*auto image_data = image::Image::ImageData {};*/
+        /*auto image_data = image::image::ImageData {};*/
         /**/
         /*image_data.extent = math::extentI { image.extent().x, image.extent().y, image.extent().z
          * };*/
         /*image_data.channel_count     = get_format_channel_count(format);*/
-        /*image_data.bytes_per_channel = getSizeof(format);*/
+        /*image_data.bytes_per_channel = get_format_component_size(format);*/
         /*image_data.mip_levels        = mip_levels;*/
         /*image_data.faces             = faces;*/
         /*image_data.layers            = layers;*/
@@ -137,14 +132,14 @@ namespace stormkit::image::details {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto save_ktx(const image::Image&, const std::filesystem::path&) noexcept -> std::expected<void, image::Image::Error> {
+    auto save_ktx(const image&, const stdfs::path&) noexcept -> image::result<void> {
         assert(false, "Not implemented yet !");
         return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto save_ktx(const image::Image&) noexcept -> std::expected<byte_dynarray, image::Image::Error> {
+    auto save_ktx(const image&) noexcept -> image::result<dynarray<byte>> {
         assert(false, "Not implemented yet !");
         return {};
     }

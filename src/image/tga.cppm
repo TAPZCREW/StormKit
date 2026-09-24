@@ -14,41 +14,37 @@ import stormkit.core;
 
 import stormkit.image;
 
+namespace stdfs = std::filesystem;
+
 export namespace stormkit::image::details {
     [[nodiscard]]
-    auto load_tga(byte_view data) noexcept -> std::expected<image::Image, image::Image::Error>;
+    auto load_tga(array_view<const byte>) noexcept -> image::result<image>;
 
     [[nodiscard]]
-    auto save_tga(const image::Image& image, const std::filesystem::path& filepath) noexcept
-      -> std::expected<void, image::Image::Error>;
+    auto save_tga(const image&, const stdfs::path&) noexcept -> image::result<void>;
 
     [[nodiscard]]
-    auto save_tga(const image::Image& image) noexcept -> std::expected<byte_dynarray, image::Image::Error>;
+    auto save_tga(const image&) noexcept -> image::result<dynarray<byte>>;
 } // namespace stormkit::image::details
 
 namespace stormkit::image::details {
-    template<class E>
-    using Unexpected = std::unexpected<E>;
-    using Error      = image::Image::Error;
-    using Reason     = image::Image::Error::Reason;
-
     /////////////////////////////////////
     /////////////////////////////////////
-    auto load_tga(byte_view) noexcept -> std::expected<image::Image, image::Image::Error> {
+    auto load_tga(array_view<const byte>) noexcept -> image::result<image> {
         assert(false, "Not implemented yet !");
         return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto save_tga(const image::Image&, const std::filesystem::path&) noexcept -> std::expected<void, image::Image::Error> {
+    auto save_tga(const image&, const stdfs::path&) noexcept -> image::result<void> {
         assert(false, "Not implemented yet !");
         return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto save_tga(const image::Image&) noexcept -> std::expected<byte_dynarray, image::Image::Error> {
+    auto save_tga(const image&) noexcept -> image::result<dynarray<byte>> {
         assert(false, "Not implemented yet !");
         return {};
     }

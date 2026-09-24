@@ -91,10 +91,10 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto InstanceImplementation::do_init(PrivateTag, const CreateInfo& create_info) noexcept -> Expected<void> {
-        const auto exts = Try(vk::enumerate_checked<VkExtensionProperties>(vkEnumerateInstanceExtensionProperties, nullptr));
+    auto InstanceImplementation::do_init(PrivateTag, const CreateInfo& create_info) noexcept -> expected<void> {
+        const auto exts = TryX(vk::enumerate_checked<VkExtensionProperties>(vkEnumerateInstanceExtensionProperties, nullptr));
         m_extensions    = transform(exts, [](const auto& ext) static noexcept { return string { ext.extensionName }; });
-        const auto available_layers = Try(vk::enumerate_checked<VkLayerProperties>(vkEnumerateInstanceLayerProperties));
+        const auto available_layers = TryX(vk::enumerate_checked<VkLayerProperties>(vkEnumerateInstanceLayerProperties));
         // std::println("{}", available_layers | stdv::transform([](const auto& layer) static noexcept {
         //                        return std::string_view { layer.layerName };
         //                    }));
@@ -105,7 +105,7 @@ namespace stormkit::gpu {
                                                  return stdr::contains(VALIDATION_LAYERS, string_view { layer.layerName });
                                              },
                                              [](const auto& layer) static noexcept { return layer.layerName; })
-                                         : dyn_array<czstring>();
+                                         : dynarray<czstring>();
 
         const auto instance_extensions = [enable_validation_layers = create_info.enable_validation_layers] noexcept {
             auto e = concat(BASE_EXTENSIONS, SURFACE_EXTENSIONS, WSI_SURFACE_EXTENSIONS);
@@ -142,25 +142,25 @@ namespace stormkit::gpu {
             .ppEnabledExtensionNames = stdr::data(instance_extensions),
         };
 
-        m_vk_handle = Try(vk::call_checked<VkInstance>(vkCreateInstance, &vk_create_info, nullptr));
+        m_vk_handle = TryX(vk::call_checked<VkInstance>(vkCreateInstance, &vk_create_info, nullptr));
 
-        Try(do_load_instance());
-        Try(do_retrieve_physical_devices());
+        TryX(do_load_instance());
+        TryX(do_retrieve_physical_devices());
 
         Return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto InstanceImplementation::do_load_instance() noexcept -> Expected<void> {
+    auto InstanceImplementation::do_load_instance() noexcept -> expected<void> {
         volkLoadInstanceOnly(m_vk_handle);
         Return {};
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto InstanceImplementation::do_retrieve_physical_devices() noexcept -> Expected<void> {
-        m_physical_devices = transform(Try(vk::enumerate_checked<VkPhysicalDevice>(vkEnumeratePhysicalDevices, m_vk_handle)),
+    auto InstanceImplementation::do_retrieve_physical_devices() noexcept -> expected<void> {
+        m_physical_devices = transform(TryX(vk::enumerate_checked<VkPhysicalDevice>(vkEnumeratePhysicalDevices, m_vk_handle)),
                                        [this](auto physical_device) noexcept {
                                            return PhysicalDevice::create(view::Instance { *this }, std::move(physical_device));
                                        });

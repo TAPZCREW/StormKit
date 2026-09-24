@@ -52,7 +52,7 @@ namespace stormkit::gpu {
         [[nodiscard]]
         auto images() const noexcept -> array_view<const Image>;
         auto acquire_next_image(std::chrono::nanoseconds wait, view::Semaphore image_available) const noexcept
-          -> Expected<NextImage>;
+          -> expected<NextImage>;
     };
 
     class STORMKIT_GPU_API
@@ -71,14 +71,14 @@ namespace stormkit::gpu {
         SwapChainImplementation(SwapChainImplementation&&) noexcept;
         auto operator=(SwapChainImplementation&&) noexcept -> SwapChainImplementation&;
 
-        auto do_init(PrivateTag, const CreateInfo&) noexcept -> Expected<void>;
+        auto do_init(PrivateTag, const CreateInfo&) noexcept -> expected<void>;
 
       protected:
         math::uextent2 m_extent;
         PixelFormat    m_pixel_format;
         u32            m_image_count;
 
-        dyn_array<Image> m_images;
+        dynarray<Image> m_images;
     };
 
     namespace view {

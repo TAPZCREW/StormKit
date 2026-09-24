@@ -8,5 +8,5 @@ import :structs;
 
 export namespace stormkit::gpu {
     STORMKIT_GPU_API
-    auto initialize_backend() -> Expected<void>;
+    auto initialize_backend() -> expected<void>;
 } // namespace stormkit::gpu

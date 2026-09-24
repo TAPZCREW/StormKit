@@ -93,9 +93,9 @@ namespace stormkit::gpu {
         template<typename>
         class CommandPoolInterface;
 
-        using LoadSaveError = DecoratedError<std::variant<core::SystemError, Result>>;
+        using LoadSaveError = DecoratedError<std::variant<core::System_error, Result>>;
         template<typename T>
-        using LoadSaveExpected = core::Expected<T, LoadSaveError>;
+        using LoadSaveexpected = core::expected<T, LoadSaveError>;
 
         using SwapChain           = SwapChainInterface<SwapChainImplementation>;
         using FrameBuffer         = FrameBufferInterface<FrameBufferImplementation>;
@@ -128,7 +128,7 @@ namespace stormkit::gpu {
         namespace trait {
             template<>
             struct GpuObject<SwapChainTag> {
-                using ValueType   = VkSwapchainKHR;
+                using value_type   = VkSwapchainKHR;
                 using DeleterType = PFN_vkDestroySwapchainKHR VolkDeviceTable::*;
                 using ObjectType  = SwapChain;
                 using ViewType    = view::SwapChain;
@@ -139,7 +139,7 @@ namespace stormkit::gpu {
 
             template<>
             struct GpuObject<FrameBufferTag> {
-                using ValueType   = VkFramebuffer;
+                using value_type   = VkFramebuffer;
                 using DeleterType = PFN_vkDestroyFramebuffer VolkDeviceTable::*;
                 using ObjectType  = FrameBuffer;
                 using ViewType    = view::FrameBuffer;
@@ -150,7 +150,7 @@ namespace stormkit::gpu {
 
             template<>
             struct GpuObject<RenderPassTag> {
-                using ValueType   = VkRenderPass;
+                using value_type   = VkRenderPass;
                 using DeleterType = PFN_vkDestroyRenderPass VolkDeviceTable::*;
                 using ObjectType  = RenderPass;
                 using ViewType    = view::RenderPass;
@@ -161,19 +161,19 @@ namespace stormkit::gpu {
 
             template<>
             struct GpuObject<PipelineCacheTag> {
-                using ValueType        = VkPipelineCache;
+                using value_type        = VkPipelineCache;
                 using DeleterType      = PFN_vkDestroyPipelineCache VolkDeviceTable::*;
                 using ObjectType       = PipelineCache;
                 using ViewType         = view::PipelineCache;
                 using OwnerType        = Device;
-                using DoInitReturnType = LoadSaveExpected<void>;
+                using DoInitreturn_type = LoadSaveexpected<void>;
 
                 static constexpr auto DEBUG_TYPE = DebugObjectType::PIPELINE_CACHE;
             };
 
             template<>
             struct GpuObject<PipelineLayoutTag> {
-                using ValueType   = VkPipelineLayout;
+                using value_type   = VkPipelineLayout;
                 using DeleterType = PFN_vkDestroyPipelineLayout VolkDeviceTable::*;
                 using ObjectType  = PipelineLayout;
                 using ViewType    = view::PipelineLayout;
@@ -184,7 +184,7 @@ namespace stormkit::gpu {
 
             template<>
             struct GpuObject<PipelineTag> {
-                using ValueType   = VkPipeline;
+                using value_type   = VkPipeline;
                 using DeleterType = PFN_vkDestroyPipeline VolkDeviceTable::*;
                 using ObjectType  = Pipeline;
                 using ViewType    = view::Pipeline;
@@ -195,19 +195,19 @@ namespace stormkit::gpu {
 
             template<>
             struct GpuObject<DescriptorSetTag> {
-                using ValueType        = VkDescriptorSet;
+                using value_type        = VkDescriptorSet;
                 using DeleterType      = decltype(cmonadic::noop());
                 using ObjectType       = DescriptorSet;
                 using ViewType         = view::DescriptorSet;
                 using OwnerType        = Device;
-                using DoInitReturnType = void;
+                using DoInitreturn_type = void;
 
                 static constexpr auto DEBUG_TYPE = DebugObjectType::DESCRIPTOR_SET;
             };
 
             template<>
             struct GpuObject<DescriptorSetLayoutTag> {
-                using ValueType   = VkDescriptorSetLayout;
+                using value_type   = VkDescriptorSetLayout;
                 using DeleterType = PFN_vkDestroyDescriptorSetLayout VolkDeviceTable::*;
                 using ObjectType  = DescriptorSetLayout;
                 using ViewType    = view::DescriptorSetLayout;
@@ -218,7 +218,7 @@ namespace stormkit::gpu {
 
             template<>
             struct GpuObject<DescriptorPoolTag> {
-                using ValueType   = VkDescriptorPool;
+                using value_type   = VkDescriptorPool;
                 using DeleterType = PFN_vkDestroyDescriptorPool VolkDeviceTable::*;
                 using ObjectType  = DescriptorPool;
                 using ViewType    = view::DescriptorPool;
@@ -229,31 +229,31 @@ namespace stormkit::gpu {
 
             template<>
             struct GpuObject<QueueTag> {
-                using ValueType        = VkQueue;
+                using value_type        = VkQueue;
                 using DeleterType      = decltype(cmonadic::noop());
                 using ObjectType       = Queue;
                 using ViewType         = view::Queue;
                 using OwnerType        = Device;
-                using DoInitReturnType = void;
+                using DoInitreturn_type = void;
 
                 static constexpr auto DEBUG_TYPE = DebugObjectType::QUEUE;
             };
 
             template<>
             struct GpuObject<CommandBufferTag> {
-                using ValueType        = VkCommandBuffer;
+                using value_type        = VkCommandBuffer;
                 using DeleterType      = decltype(cmonadic::noop());
                 using ObjectType       = CommandBuffer;
                 using ViewType         = view::CommandBuffer;
                 using OwnerType        = Device;
-                using DoInitReturnType = void;
+                using DoInitreturn_type = void;
 
                 static constexpr auto DEBUG_TYPE = DebugObjectType::COMMAND_BUFFER;
             };
 
             template<>
             struct GpuObject<CommandPoolTag> {
-                using ValueType   = VkCommandPool;
+                using value_type   = VkCommandPool;
                 using DeleterType = PFN_vkDestroyCommandPool VolkDeviceTable::*;
                 using ObjectType  = CommandPool;
                 using ViewType    = view::CommandPool;

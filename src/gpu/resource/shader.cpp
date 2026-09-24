@@ -23,7 +23,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto ShaderImplementation::do_init(PrivateTag, dyn_array<SpirvID>&& data, ShaderStageFlag type) -> Expected<void> {
+    auto ShaderImplementation::do_init(PrivateTag, dynarray<SpirvID>&& data, ShaderStageFlag type) -> expected<void> {
         m_source = std::move(data);
         m_type   = type;
 
@@ -36,7 +36,7 @@ namespace stormkit::gpu {
         };
 
         const auto& device = owner();
-        m_vk_handle        = Try(vk::call_checked<
+        m_vk_handle        = TryX(vk::call_checked<
                                  VkShaderModule>(device.device_table().vkCreateShaderModule, device, &create_info, nullptr));
         Return {};
     }

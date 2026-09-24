@@ -24,7 +24,7 @@ export {
     #include "Renderer.mpp"
 #endif
 
-    class UpdateBoardSystem;
+    typename UpdateBoardSystem;
 
     class App: public stormkit::App {
       public:
@@ -49,7 +49,7 @@ export {
 
         stormkit::entities::EntityManager m_entities;
 
-        stormkit::image::Image m_board;
+        stormkit::image::image m_board;
 
         UpdateBoardSystem* m_update_system = nullptr;
     };

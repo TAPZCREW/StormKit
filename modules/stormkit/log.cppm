@@ -38,9 +38,6 @@ export {
     template<>
     inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::log::severity> = true;
 
-    template<>
-    inline constexpr auto stormkit::core::meta::ENABLE_AS_STRING_AS_FORMATTER<stormkit::log::severity> = true;
-
     namespace stormkit::log {
         STORMKIT_LOG_API
         auto parse_args(array_view<const string_view> args) noexcept -> void;
@@ -654,5 +651,5 @@ namespace stormkit::log {
         return module { str };
     }
 
-    static_assert(meta::has_as_string<stormkit::log::severity> and meta::ENABLE_AS_STRING_AS_FORMATTER<stormkit::log::severity>);
+    auto test = std::format("{}", severity::INFO);
 } // namespace stormkit::log

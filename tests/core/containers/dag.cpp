@@ -21,7 +21,7 @@ namespace {
           { "topological_sort",
             [] {
                 using my_dag         = dag<i32>;
-                using Edge           = std::pair<my_dag::index_type, my_dag::index_type>;
+                using edge_type      = std::pair<my_dag::index_type, my_dag::index_type>;
                 constexpr auto edges = into<array>({
                   my_dag::edge { 0, 5 },
                   my_dag::edge { 0, 2 },

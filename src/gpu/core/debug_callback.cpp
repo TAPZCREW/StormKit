@@ -25,7 +25,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto DebugCallbackImplementation::do_init(PrivateTag, const CreateInfo& create_info) noexcept -> Expected<void> {
+    auto DebugCallbackImplementation::do_init(PrivateTag, const CreateInfo& create_info) noexcept -> expected<void> {
         constexpr auto severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
                                   | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
                                   | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -44,7 +44,7 @@ namespace stormkit::gpu {
             .pUserData       = create_info.user_data,
         };
 
-        m_vk_handle = Try(vk::call_checked<
+        m_vk_handle = TryX(vk::call_checked<
                           VkDebugUtilsMessengerEXT>(vkCreateDebugUtilsMessengerEXT, owner(), &vk_create_info, nullptr));
         Return {};
     }

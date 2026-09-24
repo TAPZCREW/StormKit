@@ -25,17 +25,17 @@ namespace stormkit::gpu {
             template<typename Tag>
             concept GpuObjectHasTraitDefined = requires() {
                 trait::GpuObject<Tag> {};
-                typename trait::GpuObject<Tag>::ValueType;
+                typename trait::GpuObject<Tag>::value_type;
                 typename trait::GpuObject<Tag>::DeleterType;
                 typename trait::GpuObject<Tag>::ObjectType;
                 typename trait::GpuObject<Tag>::ViewType;
 
-                { trait::GpuObject<Tag>::DEBUG_TYPE } -> cmeta::SameAs<const DebugObjectType&>;
+                { trait::GpuObject<Tag>::DEBUG_TYPE } -> cmeta::same_as<const DebugObjectType&>;
             };
 
             template<typename T>
-            concept HasDoInitReturnType = GpuObjectHasTraitDefined<T> and requires() {
-                typename trait::GpuObject<T>::DoInitReturnType;
+            concept HasDoInitreturn_type = GpuObjectHasTraitDefined<T> and requires() {
+                typename trait::GpuObject<T>::DoInitreturn_type;
             };
 
             template<typename T>
@@ -47,29 +47,29 @@ namespace stormkit::gpu {
 
         namespace details {
             template<typename T>
-            struct GpuObjectDoInitReturnType {
-                using Type = Expected<void>;
+            struct GpuObjectDoInitreturn_type {
+                using type = expected<void>;
             };
 
-            template<HasDoInitReturnType T>
-            struct GpuObjectDoInitReturnType<T> {
-                using Type = typename trait::GpuObject<cmeta::CanonicalType<T>>::DoInitReturnType;
+            template<HasDoInitreturn_type T>
+            struct GpuObjectDoInitreturn_type<T> {
+                using type = typename trait::GpuObject<cmeta::to_plain_type<T>>::DoInitreturn_type;
             };
         } // namespace details
 
         export {
             template<typename T>
-            using GpuObjectDoInitReturnType = details::GpuObjectDoInitReturnType<T>::Type;
+            using GpuObjectDoInitreturn_type = details::GpuObjectDoInitreturn_type<T>::type;
 
             template<typename T>
             concept IsGpuObject = HasTagType<T>
                                   and GpuObjectHasTraitDefined<typename T::TagType>
-                                  and cmeta::SameAs<T, typename trait::GpuObject<typename T::TagType>::ObjectType>;
+                                  and cmeta::same_as<T, typename trait::GpuObject<typename T::TagType>::ObjectType>;
 
             template<typename T>
             concept IsGpuView = HasTagType<T>
                                 and GpuObjectHasTraitDefined<typename T::TagType>
-                                and cmeta::SameAs<T, typename trait::GpuObject<typename T::TagType>::ViewType>;
+                                and cmeta::same_as<T, typename trait::GpuObject<typename T::TagType>::ViewType>;
 
             template<typename T>
             concept IsGpuObjectOrView = IsGpuObject<T> or IsGpuView<T>;

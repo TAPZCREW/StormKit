@@ -37,7 +37,6 @@ import stormkit.core.types;
 import stormkit.core.private_tag;
 import stormkit.core.typesafe.flags;
 import stormkit.core.typesafe.safecasts;
-import stormkit.core.containers.safecasts;
 
 export {
     namespace stormkit { inline namespace core { namespace io {
@@ -120,10 +119,10 @@ export {
                 mutable std::atomic<usize> m_size       = 0;
             };
 
-            using File = file_descriptor<open_mode::BINARY>;
+            using binary_file = file_descriptor<open_mode::BINARY>;
             template<open_mode MODE = open_mode::UTF8>
                 requires(MODE != open_mode::BINARY)
-            using TextFile = file_descriptor<MODE>;
+            using text_file = file_descriptor<MODE>;
 
             template<open_mode MODE = open_mode::UTF8>
             auto readfile_to(const stdfs::path& path, array_view<meta::open_mode_to_char_type<MODE>> output) noexcept
@@ -259,7 +258,7 @@ namespace stormkit { inline namespace core { namespace io {
     inline auto file_descriptor<MODE>::read_to(array_view<char> out) noexcept -> system_result<usize>
         requires(MODE == open_mode::UTF8 or MODE == open_mode::AINSI)
     {
-        return read_to(as<array_view>(as_bytes, out));
+        return read_to(mutable_bytes_of(out));
     }
 
     ////////////////////////////////////////
@@ -269,7 +268,7 @@ namespace stormkit { inline namespace core { namespace io {
     inline auto file_descriptor<MODE>::read_to(array_view<wchar> out) noexcept -> system_result<usize>
         requires(MODE == open_mode::WIDE)
     {
-        return read_to(as<array_view>(as_bytes, out));
+        return read_to(mutable_bytes_of(out));
     }
 
     ////////////////////////////////////////
@@ -302,7 +301,7 @@ namespace stormkit { inline namespace core { namespace io {
     inline auto file_descriptor<MODE>::write(array_view<const char> data) noexcept -> system_result<usize>
         requires(MODE == open_mode::UTF8 or MODE == open_mode::AINSI)
     {
-        return write(as<array_view>(as_bytes, data));
+        return write(bytes_of(data));
     }
 
     ////////////////////////////////////////
@@ -312,7 +311,7 @@ namespace stormkit { inline namespace core { namespace io {
     inline auto file_descriptor<MODE>::write(array_view<const wchar> data) noexcept -> system_result<usize>
         requires(MODE == open_mode::WIDE)
     {
-        return write(as<array_view>(as_bytes, data));
+        return write(bytes_of(data));
     }
 
     ////////////////////////////////////////
@@ -429,7 +428,7 @@ namespace stormkit { inline namespace core { namespace io {
     STORMKIT_FORCE_INLINE
     inline auto readfile_to(const stdfs::path& path, array_view<meta::open_mode_to_char_type<MODE>> out) noexcept
       -> system_result<usize> {
-        TryTo(file, (TextFile<MODE>::open(path, access::READ)));
+        TryTo(file, (text_file<MODE>::open(path, access::READ)));
         ENSURES(stdr::size(out) >= file.size());
         TryTo(readed, file.read_to(out));
         return { readed };
@@ -440,7 +439,7 @@ namespace stormkit { inline namespace core { namespace io {
     template<open_mode MODE>
     STORMKIT_FORCE_INLINE
     inline auto readfile(const stdfs::path& path) noexcept -> system_result<dynarray<meta::open_mode_to_char_type<MODE>>> {
-        TryTo(file, (TextFile<MODE>::open(path, access::READ)));
+        TryTo(file, (text_file<MODE>::open(path, access::READ)));
         auto out = dynarray<meta::open_mode_to_char_type<MODE>> {};
         out.resize(file.size());
         TryTo(readed, file.read_to(out));
@@ -452,7 +451,7 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto readfile_to(const stdfs::path& path, array_view<byte> out) noexcept -> system_result<usize> {
-        TryTo(file, File::open(path, access::READ));
+        TryTo(file, binary_file::open(path, access::READ));
         TryTo(readed, file.read_to(out));
         return { readed };
     }
@@ -461,7 +460,7 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto readfile(const stdfs::path& path) noexcept -> system_result<dynarray<byte>> {
-        TryTo(file, (File::open(path, access::READ)));
+        TryTo(file, (binary_file::open(path, access::READ)));
         auto out = dynarray<byte> {};
         out.resize(file.size());
         TryTo(readed, file.read_to(out));
@@ -475,7 +474,7 @@ namespace stormkit { inline namespace core { namespace io {
         STORMKIT_FORCE_INLINE
     inline auto writefile(const stdfs::path& path, array_view<const meta::open_mode_to_char_type<MODE>> data) noexcept
       -> system_result<usize> {
-        TryTo(file, (TextFile<MODE>::open(path, access::WRITE)));
+        TryTo(file, (text_file<MODE>::open(path, access::WRITE)));
         TryTo(writed, file.write(data));
         return { writed };
     }
@@ -484,7 +483,7 @@ namespace stormkit { inline namespace core { namespace io {
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto writefile(const stdfs::path& path, array_view<byte> data) noexcept -> system_result<usize> {
-        TryTo(file, (File::open(path, access::WRITE)));
+        TryTo(file, (binary_file::open(path, access::WRITE)));
         TryTo(writed, file.write(data));
         return { writed };
     }

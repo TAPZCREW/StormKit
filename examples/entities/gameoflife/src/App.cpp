@@ -32,9 +32,9 @@ auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] czstring argv[])
 
     do_initWindow();
 
-    m_board = image::Image {
+    m_board = image::image {
         { BOARD_SIZE, BOARD_SIZE },
-        image::Image::Format::RGBA8_UNORM
+        image::image::Format::RGBA8_UNORM
     };
 
     auto event_handler = wsi::EventHandler { *m_window };
