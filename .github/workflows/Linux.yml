@@ -1,15 +1,11 @@
 ---
-name: Linux
+name: linux
 
 on:
   pull_request:
     branches: [develop]
     paths-ignore:
-      - .github/workflows/Windows.yml
-      - .github/workflows/macOS.yml
-      - .github/workflows/iOS.yml
-      - .github/workflows/Android.yml
-      - .github/workflows/AutoMerger.yml
+      - .github/workflows/**.yml
       - .gitignore
       - LICENSE
       - README.md
@@ -17,27 +13,21 @@ on:
   push:
     branches: [main, develop]
     paths-ignore:
-      - .github/workflows/Windows.yml
-      - .github/workflows/macOS.yml
-      - .github/workflows/iOS.yml
-      - .github/workflows/Android.yml
-      - .github/workflows/AutoMerger.yml
+      - .github/workflows/**.yml
       - .gitignore
       - LICENSE
       - README.md
 
-env:
-  LLVM_VERSION: "-23"
-
 jobs:
   build:
-    name: ${{ matrix.compiler }} ${{ matrix.arch }}  (${{ matrix.kind }}/${{ matrix.mode }})
+    name: ${{ matrix.compiler }}-${{ matrix.cpplib }} ${{ matrix.arch }}  (${{ matrix.kind }}/${{ matrix.mode }})
 
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-26.04]
-        compiler: [LLVM-libc++]
+        compiler: [llvm]
+        cpplib: [libc++]
         arch: [x64]
         kind: [static, shared]
         mode: [release, debug]
@@ -46,7 +36,7 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
 
     concurrency:
-      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.kind
+      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.cpplib }}-${{ matrix.arch }}-${{ matrix.kind
         }}-${{ matrix.mode }}
 
     steps:
@@ -57,6 +47,7 @@ jobs:
           ref: ${{ github.ref }}
 
       - name: Add LLVM apt repository
+        if: ${{ matrix.compiler == "llvm" }}
         uses: myci-actions/add-deb-repo@11
         with:
           repo: deb http://apt.llvm.org/noble/ llvm-toolchain-noble main
@@ -80,6 +71,14 @@ jobs:
               libdwarf-dev
               mold
               nasm
+              ninja-build
+          version: 1.0
+
+      - name: Install LLVM
+        if: ${{ matrix.compiler == "llvm" }}
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with: 
+          packages: |
               llvm
               llvm-dev
               llvm-runtime
@@ -97,11 +96,7 @@ jobs:
               libomp-dev
               libclc-dev
               libunwind-dev
-              ninja-build
           version: 1.0
-
-      # - name: Force Install libc++
-      #   run: sudo apt install libc++${{ env.LLVM_VERSION }}-dev
 
       - name: Set XMake env
         run: |
@@ -147,7 +142,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.XMAKE_PKG_INSTALLDIR }}
-          key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ steps.packages_cachekey.outputs.hash }}
+          key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.cpplib }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ steps.packages_cachekey.outputs.hash }}
 
       - name: Configure & Install dependencies
         id: configure
@@ -161,7 +156,8 @@ jobs:
            --sanitizers=n \
            --mold=y \
            --on_ci=y \
-           ${{ (matrix.compiler == 'LLVM-libc++') && '--toolchain=llvm --sdk="/usr/lib/llvm$LLVM_VERSION/" --runtimes="c++_shared"' || '' }} \
+           ${{ (matrix.compiler == 'llvm') && '--toolchain=llvm --sdk="/usr/lib/llvm$LLVM_VERSION/"' || '' }} \
+           ${{ (matrix.cpplib == 'libc++') && '--runtimes="c++_shared"' || '' }} \
            --lto=${{ (matrix.mode == 'release') && 'y' || 'n' }}
 
       - name: Cache packages
@@ -186,5 +182,5 @@ jobs:
         id: upload
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.kind }}-${{ matrix.mode }}
+          name: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.cpplib }}-${{ matrix.arch }}-${{ matrix.kind }}-${{ matrix.mode }}
           path: ${{ github.workspace }}/output

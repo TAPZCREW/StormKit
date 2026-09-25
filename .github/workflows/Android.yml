@@ -4,26 +4,14 @@ on:
   push:
     branches: [  ]
     paths-ignore:
-      - '.github/workflows/Archlinux.yml'
-      - '.github/workflows/Windows.yml'
-      - '.github/workflows/macOS.yml'
-      - '.github/workflows/iOS.yml'
-      - '.github/workflows/Ubuntu.yml'
-      - '.github/workflows/FreeBSD.yml'
-      - '.github/workflows/AutoMerger.yml'
+      - .github/workflows/**.yml
       - '.gitignore'
       - 'LICENSE'
       - 'README.md'
   pull_request:
     branches: [  ]
     paths-ignore:
-      - '.github/workflows/Archlinux.yml'
-      - '.github/workflows/Windows.yml'
-      - '.github/workflows/macOS.yml'
-      - '.github/workflows/iOS.yml'
-      - '.github/workflows/Ubuntu.yml'
-      - '.github/workflows/FreeBSD.yml'
-      - '.github/workflows/AutoMerger.yml'
+      - .github/workflows/**.yml
       - '.gitignore'
       - 'LICENSE'
       - 'README.md'

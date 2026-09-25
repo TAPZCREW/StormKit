@@ -1,14 +1,10 @@
-name: Windows
+name: windows
 
 on:
   pull_request:
     branches: [develop]
     paths-ignore:
-      - .github/workflows/Linux.yml
-      - .github/workflows/macOS.yml
-      - .github/workflows/iOS.yml
-      - .github/workflows/Android.yml
-      - .github/workflows/AutoMerger.yml
+      - .github/workflows/**.yml
       - .gitignore
       - LICENSE
       - README.md
@@ -16,24 +12,21 @@ on:
   push:
     branches: [main, develop]
     paths-ignore:
-      - .github/workflows/Linux.yml
-      - .github/workflows/macOS.yml
-      - .github/workflows/iOS.yml
-      - .github/workflows/Android.yml
-      - .github/workflows/AutoMerger.yml
+      - .github/workflows/**.yml
       - .gitignore
       - LICENSE
       - README.md
 
 jobs:
   build:
-    name: ${{ matrix.compiler }} ${{ matrix.arch }}  (${{ matrix.kind }}/${{ matrix.mode }})
+    name: ${{ matrix.compiler }}-${{ matrix.cpplib }} ${{ matrix.arch }}  (${{ matrix.kind }}/${{ matrix.mode }})
 
     strategy:
       fail-fast: false
       matrix:
         os: [windows-2025]
-        compiler: [LLVM-libc++]
+        compiler: [llvm]
+        cpplib: [libc++]
         arch: [x64]
         kind: [static, shared]
         mode: [release, debug]
@@ -42,7 +35,7 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
 
     concurrency:
-      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.kind }}-${{ matrix.mode }}
+      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.cpplib }}-${{ matrix.arch }}-${{ matrix.kind }}-${{ matrix.mode }}
 
     steps:
       - name: Configure Pagefile
@@ -105,36 +98,35 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.XMAKE_PKG_INSTALLDIR }}
-          key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ steps.packages_cachekey.outputs.hash }}
+          key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.cpplib }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ steps.packages_cachekey.outputs.hash }}
 
       - name: Restore cached LLVM
         id: restore-llvmcache
-        if: ${{ startsWith(matrix.compiler, 'LLVM') }}
+        if: ${{ startsWith(matrix.compiler, 'llvm') }}
         uses: actions/cache/restore@v4
         with:
           path: ${{ github.workspace }}/llvm.7z
           key: ${{ matrix.os }}-LLVM-24-${{ matrix.arch }}
 
       - name: Download LLVM
-        if: ${{ startsWith(matrix.compiler, 'LLVM') && !steps.restore-llvmcache.outputs.cache-hit }}
+        if: ${{ startsWith(matrix.compiler, 'llvm') && !steps.restore-llvmcache.outputs.cache-hit }}
         run: |
           curl.exe -o "${{ github.workspace }}/llvm.7z" -LO https://github.com/Arthapz/llvm-prebuilt/releases/download/llvm-24/llvm.7z
 
       - name: Extract LLVM
-        if: ${{ startsWith(matrix.compiler, 'LLVM') }}
+        if: ${{ startsWith(matrix.compiler, 'llvm') }}
         run: |
           7z x "${{ github.workspace }}/llvm.7z" -o"${{ github.workspace }}/llvm"
 
       - name: Cache LLVM
-        if: ${{ startsWith(matrix.compiler, 'LLVM') && !steps.restore-llvmcache.outputs.cache-hit }}
+        if: ${{ startsWith(matrix.compiler, 'llvm') && !steps.restore-llvmcache.outputs.cache-hit }}
         uses: actions/cache/save@v4
         with:
           path: ${{ github.workspace }}/llvm
           key: ${{ steps.restore-llvmcache.outputs.cache-primary-key }}
 
       - name: Configure & Install dependencies
-        id: configure_llvm_libcpp
-        if: ${{ matrix.compiler == 'LLVM-libc++' }}
+        id: configure
         run: |
           xmake f -vD `
            --yes `
@@ -143,41 +135,9 @@ jobs:
            --examples=y `
            --tests=y `
            --on_ci=y `
-           --toolchain=llvm `
            --sanitizers=n `
-           --sdk="${{ github.workspace }}/llvm/llvm" `
-           --runtimes="c++_shared" `
-           --policies="platform.longpaths"
-
-      - name: Configure & Install dependencies
-        id: configure_llvm_msstl
-        if: ${{ matrix.compiler == 'LLVM-msstl' }}
-        run: |
-          xmake f -vD `
-           --yes `
-           -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} `
-           -k ${{ matrix.kind }} `
-           --examples=y `
-           --tests=y `
-           --on_ci=y `
-           --toolchain=llvm `
-           --sanitizers=n `
-           --sdk="${{ github.workspace }}/llvm/llvm" `
-           --policies="platform.longpaths"
-
-      - name: Configure & Install dependencies
-        id: configure_msvc
-        if: ${{ matrix.compiler == 'MSVC' }}
-        run: |
-          xmake f -vD `
-           --yes `
-           -a ${{ matrix.arch }} `
-           -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} `
-           -k ${{ matrix.kind }} `
-           --examples=y `
-           --tests=y `
-           --on_ci=y `
-           --sanitizers=n `
+           ${{ (matrix.compiler == 'llvm') && '--toolchain=llvm --sdk="{{ github.workspace }}/llvm/llvm"' || '' }} \
+           ${{ (matrix.cpplib == 'libc++') && '--runtimes="c++_shared"' || '' }} \
            --policies="platform.longpaths"
 
       - name: Cache packages
@@ -193,12 +153,6 @@ jobs:
           xmake b -vD
 
       - name: Run unit tests
-        if: ${{ matrix.compiler == 'LLVM-libc++' }}
-        run: |
-          xmake test -vD
-
-      - name: Run unit tests
-        if: ${{ matrix.compiler != 'LLVM-libc++' }}
         run: |
           xmake test -vD
 
@@ -206,7 +160,7 @@ jobs:
         run: xmake install -vD --installdir="${{ github.workspace }}/output"
 
       - name: Add libc++ dll
-        if: ${{ matrix.compiler == 'LLVM-libc++' }}
+        if: ${{ matrix.cpplib == 'libc++' }}
         run: |
           cp "${{ github.workspace }}/llvm/llvm/bin/c++.dll" "${{ github.workspace }}/output/bin/"
           cp "${{ github.workspace }}/llvm/llvm/lib/clang/24/lib/windows/clang_rt.asan_dynamic-x86_64.dll" "${{ github.workspace }}/output/bin/"
@@ -215,5 +169,5 @@ jobs:
         id: upload
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-LLVM-${{ matrix.kind }}-${{ matrix.mode }}
+          name: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.cpplib }}-${{ matrix.arch }}-${{ matrix.kind }}-${{ matrix.mode }}
           path: ${{ github.workspace }}/output
