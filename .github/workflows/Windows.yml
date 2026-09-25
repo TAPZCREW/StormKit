@@ -209,7 +209,7 @@ jobs:
         if: ${{ matrix.compiler == 'LLVM-libc++' }}
         run: |
           cp "${{ github.workspace }}/llvm/llvm/bin/c++.dll" "${{ github.workspace }}/output/bin/"
-          cp "${{ github.workspace }}/llvm/llvm/lib/clang/22/lib/windows/clang_rt.asan_dynamic-x86_64.dll" "${{ github.workspace }}/output/bin/"
+          cp "${{ github.workspace }}/llvm/llvm/lib/clang/24/lib/windows/clang_rt.asan_dynamic-x86_64.dll" "${{ github.workspace }}/output/bin/"
 
       - name: Upload artifacts
         id: upload
