@@ -894,8 +894,4 @@ namespace stormkit::math {
         out[3, 2] = -dot(z, eye);
         out[3, 3] = 1;
     }
-
-    static_assert(stormkit::core::meta::has_format_as<fmat4, char>);
-    inline constexpr auto f = fmat4 {};
-    auto                  a = std::format("{}", fmat4 {});
 } // namespace stormkit::math
