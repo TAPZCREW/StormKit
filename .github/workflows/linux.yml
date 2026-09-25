@@ -49,7 +49,7 @@ jobs:
           ref: ${{ github.ref }}
 
       - name: Add LLVM apt repository
-        if: ${{ matrix.compiler == "llvm" }}
+        if: ${{ (matrix.compiler == 'llvm') }}
         uses: myci-actions/add-deb-repo@11
         with:
           repo: deb http://apt.llvm.org/noble/ llvm-toolchain-noble main
