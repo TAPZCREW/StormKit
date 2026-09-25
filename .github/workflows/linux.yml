@@ -77,7 +77,7 @@ jobs:
           version: 1.0
 
       - name: Install LLVM
-        if: ${{ matrix.compiler == "llvm" }}
+        if: ${{ (matrix.compiler == 'llvm') }}
         uses: awalsh128/cache-apt-pkgs-action@latest
         with: 
           packages: |
