@@ -80,23 +80,40 @@ jobs:
               libdwarf-dev
               mold
               nasm
-              llvm${{ env.LLVM_VERSION }}
-              llvm${{ env.LLVM_VERSION }}-dev
-              llvm${{ env.LLVM_VERSION }}-runtime
-              clang${{ env.LLVM_VERSION }}
-              clang-tools${{ env.LLVM_VERSION }}
-              libclang-common${{ env.LLVM_VERSION }}-dev
-              libclang${{ env.LLVM_VERSION }}-dev
-              libclang1${{ env.LLVM_VERSION }}
-              python3-clang${{ env.LLVM_VERSION }}
-              libclang-rt${{ env.LLVM_VERSION }}-dev
-              libpolly${{ env.LLVM_VERSION }}-dev
-              lld${{ env.LLVM_VERSION }}
-              libc++${{ env.LLVM_VERSION }}-dev
-              libc++abi${{ env.LLVM_VERSION }}-dev
-              libomp${{ env.LLVM_VERSION }}-dev
-              libclc${{ env.LLVM_VERSION }}-dev
-              libunwind${{ env.LLVM_VERSION }}-dev
+              llvm
+              llvm-dev
+              llvm-runtime
+              clang
+              clang-tools
+              libclang-common-dev
+              libclang-dev
+              libclang1
+              python3-clang
+              libclang-rt-dev
+              libpolly-dev
+              lld
+              libc++-dev
+              libc++abi-dev
+              libomp-dev
+              libclc-dev
+              libunwind-dev
+              # llvm${{ env.LLVM_VERSION }}
+              # llvm${{ env.LLVM_VERSION }}-dev
+              # llvm${{ env.LLVM_VERSION }}-runtime
+              # clang${{ env.LLVM_VERSION }}
+              # clang-tools${{ env.LLVM_VERSION }}
+              # libclang-common${{ env.LLVM_VERSION }}-dev
+              # libclang${{ env.LLVM_VERSION }}-dev
+              # libclang1${{ env.LLVM_VERSION }}
+              # python3-clang${{ env.LLVM_VERSION }}
+              # libclang-rt${{ env.LLVM_VERSION }}-dev
+              # libpolly${{ env.LLVM_VERSION }}-dev
+              # lld${{ env.LLVM_VERSION }}
+              # libc++${{ env.LLVM_VERSION }}-dev
+              # libc++abi${{ env.LLVM_VERSION }}-dev
+              # libomp${{ env.LLVM_VERSION }}-dev
+              # libclc${{ env.LLVM_VERSION }}-dev
+              # libunwind${{ env.LLVM_VERSION }}-dev
               ninja-build
           version: 1.0
 
