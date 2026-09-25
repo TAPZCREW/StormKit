@@ -138,7 +138,7 @@ jobs:
            --tests=y `
            --on_ci=y `
            --sanitizers=n `
-           ${{ (matrix.compiler == 'llvm') && '--toolchain=llvm --sdk="{{ github.workspace }}/llvm/llvm"' || '' }} `
+           ${{ (matrix.compiler == 'llvm') && '--toolchain=llvm --sdk="{{ github.workspace }}/llvm"' || '' }} `
            ${{ (matrix.cpplib == 'libc++') && '--runtimes="c++_shared"' || '' }} `
            --policies="platform.longpaths"
 
@@ -164,8 +164,8 @@ jobs:
       - name: Add libc++ dll
         if: ${{ matrix.cpplib == 'libc++' }}
         run: |
-          cp "${{ github.workspace }}/llvm/llvm/bin/c++.dll" "${{ github.workspace }}/output/bin/"
-          cp "${{ github.workspace }}/llvm/llvm/lib/clang/24/lib/windows/clang_rt.asan_dynamic-x86_64.dll" "${{ github.workspace }}/output/bin/"
+          cp "${{ github.workspace }}/llvm/bin/c++.dll" "${{ github.workspace }}/output/bin/"
+          cp "${{ github.workspace }}/llvm/lib/clang/24/lib/windows/clang_rt.asan_dynamic-x86_64.dll" "${{ github.workspace }}/output/bin/"
 
       - name: Upload artifacts
         id: upload
