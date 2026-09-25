@@ -5,7 +5,7 @@ on:
     branches: [  ]
     paths-ignore:
       - .github/workflows/**.yml
-      - !.github/workflows/android.yml
+      - '!.github/workflows/android.yml'
       - '.gitignore'
       - 'LICENSE'
       - 'README.md'
@@ -13,7 +13,7 @@ on:
     branches: [  ]
     paths-ignore:
       - .github/workflows/**.yml
-      - !.github/workflows/android.yml
+      - '!.github/workflows/android.yml'
       - '.gitignore'
       - 'LICENSE'
       - 'README.md'

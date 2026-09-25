@@ -5,7 +5,7 @@ on:
     branches: [develop]
     paths-ignore:
       - .github/workflows/**.yml
-      - !.github/workflows/windows.yml
+      - '!.github/workflows/windows.yml'
       - .gitignore
       - LICENSE
       - README.md
@@ -14,7 +14,7 @@ on:
     branches: [main, develop]
     paths-ignore:
       - .github/workflows/**.yml
-      - !.github/workflows/windows.yml
+      - '!.github/workflows/windows.yml'
       - .gitignore
       - LICENSE
       - README.md
