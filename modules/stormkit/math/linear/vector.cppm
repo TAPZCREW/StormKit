@@ -333,8 +333,4 @@ namespace stormkit::math {
         out[2] = a[0] * b[1] - a[1] * b[0];
         out[3] = T { 0 };
     }
-
-    static_assert(stormkit::core::meta::has_format_as<fvec2, char>);
-    inline constexpr auto f = fvec2 {};
-    auto                  a = std::format("{}", fvec2 {});
 } // namespace stormkit::math
