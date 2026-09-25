@@ -19,7 +19,7 @@ namespace {
     auto           _   = test::test_suite {
         "core.typesafe",
         {
-          { "ref.refs_of<dynarray>.all_ref",
+          { "ref.refs_of_dynarray.all_ref",
             [] static noexcept {
                 auto a = 0;
                 auto b = 1;
@@ -47,7 +47,7 @@ namespace {
                 auto i = 0;
                 for (const auto& ref : refs) EXPECTS(*ref == i++);
             } },
-          { "ref.refs_of<hash_set>.all_ref",
+          { "ref.refs_of_hash_set.all_ref",
             [] static noexcept {
                 auto a = 0;
                 auto b = 1;
@@ -61,7 +61,7 @@ namespace {
                 auto i = 0;
                 for (const auto& ref : refs) EXPECTS(*ref == i++);
             } },
-          { "ref.refs_of<dynarray>.all_ptr",
+          { "ref.refs_of_dynarray.all_ptr",
             [] static noexcept {
                 auto a = allocate_unsafe<int>(0);
                 auto b = allocate_unsafe<int>(1);
@@ -95,7 +95,7 @@ namespace {
                 delete d;
                 delete e;
             } },
-          { "ref.refs_of<hash_set>.all_ptr",
+          { "ref.refs_of_hash_set.all_ptr",
             [] static noexcept {
                 auto a = allocate_unsafe<int>(0);
                 auto b = allocate_unsafe<int>(1);
@@ -112,7 +112,7 @@ namespace {
                 delete d;
                 delete e;
             } },
-          { "ref.as<dynarray>.from_range",
+          { "ref.as_dynarray.from_range",
             [] static noexcept {
                 // auto vec  = array { 1, 3, 5, 6, 9 };
                 // auto refs = as<dynarray>(vec);
@@ -120,7 +120,7 @@ namespace {
                 // auto i = 0u;
                 // for (const auto& ref : refs) EXPECTS(*ref == vec[i++]);
             } },
-          { "ref.as<hash_set>.from_range",
+          { "ref.as_hash_set.from_range",
             [] static noexcept {
                 // auto vec  = array { 1, 3, 5, 6, 9 };
                 // auto refs = as<hash_set>(vec);
