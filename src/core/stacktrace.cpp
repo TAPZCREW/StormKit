@@ -70,11 +70,10 @@ namespace stormkit { inline namespace core {
             std::println(stderr, "================= CALLSTACK (thread id: {}) =================", std::this_thread::get_id());
 #ifdef STD_STACKTRACE_SUPPORTED
         const auto st    = std::stacktrace::current();
-        auto       i     = 0;
         auto       count = 0;
         for (const auto& frame : st) {
-            if (i < ignore_count) {
-                i += 1;
+            if (count < ignore_count) {
+                count += 1;
                 continue;
             }
     #ifdef STORMKIT_COMPILER_MSSTL
@@ -115,7 +114,7 @@ namespace stormkit { inline namespace core {
             if (not stdr::empty(frame.source_file()) and frame.source_line() != 0) {
                 std::println(stderr,
                              "{}# {}{}\n    at {}:{}",
-                             (i++ - ignore_count),
+                             (count - ignore_count),
                              BLUE_TEXT_STYLE | object_address,
                              formatted_symbol,
                              GREEN_TEXT_STYLE | frame.source_file(),
@@ -123,33 +122,44 @@ namespace stormkit { inline namespace core {
             } else if (not stdr::empty(frame.source_file())) {
                 std::println(stderr,
                              "{}# {}{}\n    at {}",
-                             (i++ - ignore_count),
+                             (count - ignore_count),
                              BLUE_TEXT_STYLE | object_address,
                              formatted_symbol,
                              GREEN_TEXT_STYLE | frame.source_file());
             } else {
-                std::println(stderr, "{}# {}{}", (i++ - ignore_count), BLUE_TEXT_STYLE | object_address, formatted_symbol);
+                std::println(stderr, "{}# {}{}", (count - ignore_count), BLUE_TEXT_STYLE | object_address, formatted_symbol);
             }
             ++count;
         }
 
-        if (count == 0) std::println("No stacktrace available!");
+        if ((count - ignore_count) == 0) std::println("No stacktrace available!");
 #elifdef STORMKIT_OS_LINUX
         // auto       frames = array<void*, 1024> {};
-        // const auto count  = backtrace(stdr::data(frames_raw), stdr::size(frames_raw));
+        // const auto count  = backtrace(stdr::data(frames), stdr::size(frames));
         void*      frames[100];
-        const auto count = backtrace(stdr::data(frames_raw), stdr::size(frames_raw));
-        if (count > 0) {
-            const auto syms_ = backtrace_symbols(stdr::data(frames), count);
-            for (auto i : range(as<usize>(count))) std::println(stderr, "{}", std::strlen(syms_[i]));
+        const auto frame_count = backtrace(frames, stdr::size(frames_raw));
+        if (frame_count > 0) {
+            const auto syms_ = backtrace_symbols(stdr::data(frames), frame_count);
+            for (auto i : range(as<usize>(frame_count))) std::println(stderr, "{}", std::strlen(syms_[i]));
 
-            const auto syms = array_view<char*> { syms_, as<usize>(count) }
+            const auto syms = array_view<char*> { syms_, as<usize>(frame_count) }
                               | stdv::transform([](const char* str) static noexcept -> string_view {
                                     return string_view { str, std::strlen(str) };
                                 })
                               | stdr::to<dynarray<string_view>>();
 
-            std::println(stderr, "{}", syms);
+            auto count = 0;
+            for (auto sym : syms) {
+                if (count < ignore_count) {
+                    count += 1;
+                    continue;
+                }
+
+                std::println(stderr, "{}# {}", (count - ignore_count), syms);
+                ++count;
+            }
+
+            if ((count - ignore_count) == 0) std::println("No stacktrace available!");
 
             std::free(syms_);
         } else
