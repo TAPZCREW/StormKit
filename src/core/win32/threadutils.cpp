@@ -55,8 +55,8 @@ namespace stormkit { inline namespace core {
         ////////////////////////////////////////
         ////////////////////////////////////////
         template<typename T>
-        auto getThreadHandle(T& thread) {
-            return reinterpret_cast<HANDLE>(thread.native_handle());
+        auto get_thread_handle(const T& thread) {
+            return reinterpret_cast<HANDLE>(const_cast<T&>(thread).native_handle());
         }
     } // namespace details
 
@@ -70,14 +70,14 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     auto set_thread_name(std::thread& thread, string_view name) noexcept -> void {
-        const auto handle = details::getThreadHandle(thread);
+        const auto handle = details::get_thread_handle(thread);
         details::set_thread_name(handle, name);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     auto set_thread_name(std::jthread& thread, string_view name) noexcept -> void {
-        const auto handle = details::getThreadHandle(thread);
+        const auto handle = details::get_thread_handle(thread);
         details::set_thread_name(handle, name);
     }
 
@@ -91,14 +91,14 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     auto get_thread_name(const std::thread& thread) noexcept -> string {
-        const auto handle = details::getThreadHandle(thread);
+        const auto handle = details::get_thread_handle(thread);
         return details::get_thread_name(handle);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     auto get_thread_name(const std::jthread& thread) noexcept -> string {
-        const auto handle = details::getThreadHandle(thread);
+        const auto handle = details::get_thread_handle(thread);
         return details::get_thread_name(handle);
     }
 }} // namespace stormkit::core
