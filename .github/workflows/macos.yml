@@ -97,15 +97,15 @@ jobs:
         id: bootstrap
         uses: ./.github/actions/setup
         with:
-          os: "macos"
-          arch: matrix.arch
-          compiler: matrix.compiler
+          os: macos
+          arch: ${{ matrix.arch }}
+          compiler: ${{ matrix.compiler }}
 
       - name: Build & Tests
         id: build_and_tests
         uses: ./.github/actions/build
         with:
-          os: "macos"
+          os: macos
           arch: ${{ matrix.arch }}
           compiler: ${{ matrix.compiler }}
           cpplib: "libc++"

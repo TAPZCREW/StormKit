@@ -106,8 +106,8 @@ jobs:
         uses: ./.github/actions/setup
         with:
           os: linux
-          arch: matrix.arch
-          compiler: matrix.compiler
+          arch: ${{ matrix.arch }}
+          compiler: ${{ matrix.compiler }}
           llvm_version: 24
 
       - name: Build & Tests

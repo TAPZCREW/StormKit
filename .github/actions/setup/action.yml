@@ -8,6 +8,8 @@ inputs:
     required: true
   compiler:
     required: true
+  llvm_version:
+    required: false
 
 outputs:
   dep_hash:
@@ -36,9 +38,10 @@ runs:
     - name: Install compilers
       uses: ./.github/actions/install-compilers
       with:
-        os: inputs.os
-        arch: inputs.arch
-        compiler: inputs.compiler
+        os: ${{ inputs.os }}
+        arch: ${{ inputs.arch }}
+        compiler: ${{ inputs.compiler }}
+        llvm_version: ${{ inputs.llvm_version }}
     
     - name: Set XMake env
       run: |
