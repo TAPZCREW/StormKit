@@ -92,7 +92,7 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
 
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.os }}
       cancel-in-progress: true
 
     steps:
@@ -108,6 +108,8 @@ jobs:
           os: linux
           arch: matrix.arch
           compiler: matrix.compiler
+
+      - run: ls ${{ runner.workspace }}/.github/actions
 
       - name: Build & Tests
         id: build_and_tests
