@@ -135,11 +135,11 @@ namespace stormkit { inline namespace core {
 
         if (count == 0) std::println("No stacktrace available!");
 #elifdef STORMKIT_OS_LINUX
-        auto frames_raw = array<void*, 1024> {};
-        auto count      = backtrace(stdr::data(frames_raw), stdr::size(frames_raw));
+        // auto       frames = array<void*, 1024> {};
+        // const auto count  = backtrace(stdr::data(frames_raw), stdr::size(frames_raw));
+        void*      frames[100];
+        const auto count = backtrace(stdr::data(frames_raw), stdr::size(frames_raw));
         if (count > 0) {
-            auto frames = array_view<void*> { frames_raw }.subspan(count);
-
             const auto syms_ = backtrace_symbols(stdr::data(frames), count);
             for (auto i : range(as<usize>(count))) std::println(stderr, "{}", std::strlen(syms_[i]));
 
