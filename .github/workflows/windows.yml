@@ -131,6 +131,8 @@ jobs:
         id: configure
         run: |
           xmake f -vD `
+          echo $GITHUB_WORKSPACE
+          ls $GITHUB_WORKSPACE/llvm
            --yes `
            -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} `
            -k ${{ matrix.kind }} `
