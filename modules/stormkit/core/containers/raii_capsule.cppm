@@ -17,7 +17,7 @@ export namespace stormkit { inline namespace core {
     template<typename T, auto CONSTRUCTOR, auto DELETER, typename Tag, auto RELEASE_VALUE = T {}>
     class raii_capsule {
       public:
-        using value_type     = value_type;
+        using value_type     = T;
         using reference_type = value_type&;
 
         template<typename... Ts>
@@ -42,7 +42,7 @@ export namespace stormkit { inline namespace core {
         constexpr auto handle() noexcept -> reference_type;
         constexpr auto handle() const noexcept -> value_type;
         constexpr auto release() noexcept -> value_type;
-        constexpr auto reset(T handle = RELEASE_VALUE) noexcept -> void;
+        constexpr auto reset(value_type handle = RELEASE_VALUE) noexcept -> void;
 
       private:
         constexpr raii_capsule() noexcept;
