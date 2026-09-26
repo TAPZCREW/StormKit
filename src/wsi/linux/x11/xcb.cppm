@@ -26,8 +26,8 @@ export namespace stormkit::wsi::linux::x11 {
     };
 
     namespace xcb {
-        using Connection   = RAIICapsule<xcb_connection_t*, xcb_connect, xcb_disconnect, struct ConnectionTag, nullptr>;
-        using ErrorContext = RAIICapsule<
+        using Connection   = raii_capsule<xcb_connection_t*, xcb_connect, xcb_disconnect, struct ConnectionTag, nullptr>;
+        using ErrorContext = raii_capsule<
           xcb_errors_context_t*,
           monadic::init_by<xcb_errors_context_t*,
                            [](xcb_errors_context_t*& val, xcb_connection_t* connection) static noexcept {
@@ -36,18 +36,18 @@ export namespace stormkit::wsi::linux::x11 {
           xcb_errors_context_free,
           struct ErrorContextTag,
           nullptr>;
-        using GenericError = RAIICapsule<xcb_generic_error_t*, monadic::noop(), std::free, struct GenericErrorTag, nullptr>;
+        using GenericError = raii_capsule<xcb_generic_error_t*, monadic::noop(), std::free, struct GenericErrorTag, nullptr>;
         using InternAtomReply
-          = RAIICapsule<xcb_intern_atom_reply_t*, xcb_intern_atom_reply, std::free, struct InternAtomReplyTag, nullptr>;
+          = raii_capsule<xcb_intern_atom_reply_t*, xcb_intern_atom_reply, std::free, struct InternAtomReplyTag, nullptr>;
         using AtomNameReply
-          = RAIICapsule<xcb_get_atom_name_reply_t*, xcb_get_atom_name_reply, std::free, struct AtomNameReplyTag, nullptr>;
-        using InputXIQueryDeviceReply = RAIICapsule<xcb_input_xi_query_device_reply_t*,
+          = raii_capsule<xcb_get_atom_name_reply_t*, xcb_get_atom_name_reply, std::free, struct AtomNameReplyTag, nullptr>;
+        using InputXIQueryDeviceReply = raii_capsule<xcb_input_xi_query_device_reply_t*,
                                                     xcb_input_xi_query_device_reply,
                                                     std::free,
                                                     struct InputXIQueryDeviceReplyTag,
                                                     nullptr>;
         using KeySymbols
-          = RAIICapsule<xcb_key_symbols_t*, xcb_key_symbols_alloc, xcb_key_symbols_free, struct KeySymbolsTag, nullptr>;
+          = raii_capsule<xcb_key_symbols_t*, xcb_key_symbols_alloc, xcb_key_symbols_free, struct KeySymbolsTag, nullptr>;
 
         constexpr auto atom_error(string_view msg, string_view atom_name) -> decltype(auto);
     } // namespace xcb

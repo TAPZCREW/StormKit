@@ -53,7 +53,7 @@ export namespace stormkit::wsi::linux::x11::xcb {
     // /////////////////////////////////////
     // template<typename T>
     // auto get_xft_value(string_view name) -> std::optional<T> {
-    //     using XcbXrmDatabase = RAIICapsule<xcb_xrm_database_t*,
+    //     using XcbXrmDatabase = raii_capsule<xcb_xrm_database_t*,
     //                                        xcb_xrm_database_from_default,
     //                                        xcb_xrm_database_free,
     //                                        struct XRMDbTag,

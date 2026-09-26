@@ -12,5 +12,5 @@ export module stormkit.wsi:linux.common.fd;
 import stormkit.core;
 
 export namespace stormkit::wsi::linux::common {
-    using FD = stormkit::RAIICapsule<i32, monadic::noop(), close, struct FDTag, -1>;
+    using FD = stormkit::raii_capsule<i32, monadic::noop(), close, struct FDTag, -1>;
 }

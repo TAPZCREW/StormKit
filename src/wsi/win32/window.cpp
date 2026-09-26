@@ -54,7 +54,7 @@ auto adjust_extent(const math::uextent2& extent, DWORD style, DWORD style_ex) no
 }
 
 namespace stormkit::wsi::win32 {
-    using HBrush = RAIICapsule<HBRUSH, CreateSolidBrush, DeleteObject, struct HBrushTag, nullptr>;
+    using HBrush = raii_capsule<HBRUSH, CreateSolidBrush, DeleteObject, struct HBrushTag, nullptr>;
 
     namespace {
         constexpr auto CLASS_NAME = "Stormkit_Window";

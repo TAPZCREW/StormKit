@@ -27,15 +27,15 @@ namespace stormkit::wsi::linux::x11 {
         if (stdr::empty(monitors) or update) {
             auto& globals = xcb::get_globals();
 
-            using Monitors = RAIICapsule<xcb_randr_get_monitors_reply_t*,
+            using Monitors = raii_capsule<xcb_randr_get_monitors_reply_t*,
                                          xcb_randr_get_monitors_reply,
                                          std::free,
                                          struct MonitorTag>;
-            using Output   = RAIICapsule<xcb_randr_get_output_info_reply_t*,
+            using Output   = raii_capsule<xcb_randr_get_output_info_reply_t*,
                                          xcb_randr_get_output_info_reply,
                                          std::free,
                                          struct OutputTag>;
-            using CRTC = RAIICapsule<xcb_randr_get_crtc_info_reply_t*, xcb_randr_get_crtc_info_reply, std::free, struct CRTCTag>;
+            using CRTC = raii_capsule<xcb_randr_get_crtc_info_reply_t*, xcb_randr_get_crtc_info_reply, std::free, struct CRTCTag>;
 
             const auto root = xcb_setup_roots_iterator(xcb_get_setup(globals.connection)).data;
 

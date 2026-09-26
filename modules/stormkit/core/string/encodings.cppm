@@ -123,6 +123,7 @@ namespace stormkit { inline namespace core {
                             nullptr,
                             nullptr);
 #else
+        auto state = std::mbstate_t {};
         output.resize(stdr::size(input));
 
         for (const auto& c : input) [[maybe_unused]]

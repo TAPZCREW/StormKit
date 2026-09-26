@@ -19,9 +19,9 @@ import stormkit.wsi;
 
 export namespace stormkit::wsi::linux::common {
     namespace xkb {
-        using Keymap  = RAIICapsule<xkb_keymap*, xkb_keymap_new_from_string, xkb_keymap_unref, struct KeymapTag, nullptr>;
-        using State   = RAIICapsule<xkb_state*, xkb_state_new, xkb_state_unref, struct StateTag, nullptr>;
-        using Context = RAIICapsule<xkb_context*, xkb_context_new, xkb_context_unref, struct ContextTag, nullptr>;
+        using Keymap  = raii_capsule<xkb_keymap*, xkb_keymap_new_from_string, xkb_keymap_unref, struct KeymapTag, nullptr>;
+        using State   = raii_capsule<xkb_state*, xkb_state_new, xkb_state_unref, struct StateTag, nullptr>;
+        using Context = raii_capsule<xkb_context*, xkb_context_new, xkb_context_unref, struct ContextTag, nullptr>;
 
         struct Mods {
             xkb_mod_index_t shift;

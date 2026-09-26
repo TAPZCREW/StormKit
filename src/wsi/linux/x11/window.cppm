@@ -45,13 +45,13 @@ export namespace stormkit::wsi::linux::x11 {
             Destructor(globals.connection, val);
         };
         using Window
-          = RAIICapsule<xcb_window_t, xcb_generate_id, XCB_DELETER<xcb_destroy_window>, struct WindowTag, XCB_WINDOW_NONE>;
+          = raii_capsule<xcb_window_t, xcb_generate_id, XCB_DELETER<xcb_destroy_window>, struct WindowTag, XCB_WINDOW_NONE>;
         using ColorMap
-          = RAIICapsule<xcb_colormap_t, xcb_generate_id, XCB_DELETER<xcb_free_colormap>, struct ColorMapTag, XCB_NONE>;
+          = raii_capsule<xcb_colormap_t, xcb_generate_id, XCB_DELETER<xcb_free_colormap>, struct ColorMapTag, XCB_NONE>;
         using GraphicsContext
-          = RAIICapsule<xcb_gcontext_t, xcb_generate_id, XCB_DELETER<xcb_free_gc>, struct GraphicsContextTag, XCB_NONE>;
-        using Image  = RAIICapsule<xcb_image_t*, xcb_image_create_native, xcb_image_destroy, struct ImageTag, nullptr>;
-        using Pixmap = RAIICapsule<xcb_pixmap_t, xcb_generate_id, XCB_DELETER<xcb_free_pixmap>, struct PixmapTag, XCB_NONE>;
+          = raii_capsule<xcb_gcontext_t, xcb_generate_id, XCB_DELETER<xcb_free_gc>, struct GraphicsContextTag, XCB_NONE>;
+        using Image  = raii_capsule<xcb_image_t*, xcb_image_create_native, xcb_image_destroy, struct ImageTag, nullptr>;
+        using Pixmap = raii_capsule<xcb_pixmap_t, xcb_generate_id, XCB_DELETER<xcb_free_pixmap>, struct PixmapTag, XCB_NONE>;
     } // namespace xcb
 
     class Window: public stormkit::wsi::common::WindowBase {

@@ -112,9 +112,9 @@ export namespace stormkit::wsi::win32 {
 
         HWND m_window_handle = nullptr;
 
-        using Hdc = RAIICapsule<HDC, CreateCompatibleDC, DeleteDC, struct HdcTag, nullptr>;
+        using Hdc = raii_capsule<HDC, CreateCompatibleDC, DeleteDC, struct HdcTag, nullptr>;
         using HBitmap
-          = RAIICapsule<HBITMAP, CreateDIBSection, DeleteObject, struct HBitmapTag, nullptr>;
+          = raii_capsule<HBITMAP, CreateDIBSection, DeleteObject, struct HBitmapTag, nullptr>;
 
         struct GDIFrameData {
             GDIFrameData();
