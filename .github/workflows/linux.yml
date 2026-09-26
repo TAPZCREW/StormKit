@@ -145,9 +145,6 @@ jobs:
       - name: Configure & Install dependencies
         id: configure
         run: |
-          which clang
-          echo $GITHUB_WORKSPACE
-          ls /usr/lib/
           xmake f -vD -a ${{ (matrix.arch  == 'x64') && 'x86_64' || (matrix.arch == 'arm64') && 'aarch64' || matrix.arch }} \
            --yes \
            -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} \

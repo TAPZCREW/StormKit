@@ -8,6 +8,10 @@ namespace("stormkit", function()
                     target:add("shflags", "-flto=thin", { force = true })
                 end
             end
+            if get_config("toolchain") then
+                target:add("ldflags", "-fuse-ld=lld", { force = true })
+                target:add("shflags", "-fuse-ld=lld", { force = true })
+            end
             if get_config("mold") and not is_subhost("windows") then
                 local arg = "-fuse-ld=mold"
                 if type(get_config("mold")) == "string" then arg = "-fuse-ld=" .. get_config("mold") end
