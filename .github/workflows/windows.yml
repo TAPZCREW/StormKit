@@ -70,7 +70,7 @@ jobs:
           dep_hash: ${{ matrix.dep_hash }}
           cache_key: ${{ matrix.cache_key }}
           additional_flags: |
-            ${{ (matrix.compiler == 'llvm') && '--sdk="$env:GITHUB_WORKSPACE/llvm/llvm"' || '' }} `
+            ${{ (matrix.compiler == 'llvm') && '--sdk="$GITHUB_WORKSPACE/llvm/llvm"' || '' }} \
             --policies="platform.longpaths"
 
       - name: Upload artifacts

@@ -124,7 +124,7 @@ jobs:
           cache_key: ${{ matrix.cache_key }}
           additional_flags: |
             ${{ (matrix.compiler == 'llvm' && matrix.cpplib == 'libc++') && '--sdk="/usr/lib/llvm-24"' || '' }} \
-            ${{ (matrix.compiler == 'llvm' && matrix.cpplib == 'libc++') && '--ldflags="-fuse-ld=lld -L/usr/lib/llvm-$LLVM_VERSION/lib/ -lc++abi" --shflags="-fuse-ld=lld -L/usr/lib/llvm-$LLVM_VERSION/lib/ -lc++abi"' || '' }} \
+            ${{ (matrix.compiler == 'llvm' && matrix.cpplib == 'libc++') && '--ldflags="-fuse-ld=lld -L/usr/lib/llvm-24/lib/ -lc++abi" --shflags="-fuse-ld=lld -L/usr/lib/llvm-24/lib/ -lc++abi"' || '' }} \
             ${{ (matrix.cpplib == 'libc++') && '--runtimes="c++_static"' || '' }}
 
       - name: Upload artifacts
