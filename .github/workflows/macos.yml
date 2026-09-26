@@ -103,7 +103,7 @@ jobs:
           cache_key: matrix.cache_key
           additional_flags: |
            --sdk="$(brew --prefix llvm)" \
-           --sc="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend" \
+           --sc="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend"
 
       - name: Upload artifacts
         id: upload
