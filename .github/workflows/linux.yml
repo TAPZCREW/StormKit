@@ -76,27 +76,16 @@ jobs:
             mold
             nasm
             ninja-build
-            libctypes-ocaml-dev
-            libllvm-${{ env.LLVM_VERSION }}-ocaml-dev
             libllvm${{ env.LLVM_VERSION }}
             llvm-${{ env.LLVM_VERSION }}
             llvm-${{ env.LLVM_VERSION }}-dev
-            llvm-${{ env.LLVM_VERSION }}-doc
-            llvm-${{ env.LLVM_VERSION }}-examples
             llvm-${{ env.LLVM_VERSION }}-runtime
             clang-${{ env.LLVM_VERSION }}
             clang-tools-${{ env.LLVM_VERSION }}
-            clang-${{ env.LLVM_VERSION }}-doc
             libclang-common-${{ env.LLVM_VERSION }}-dev
             libclang-${{ env.LLVM_VERSION }}-dev
             libclang1-${{ env.LLVM_VERSION }}
-            clang-format-${{ env.LLVM_VERSION }}
-            python3-clang-${{ env.LLVM_VERSION }}
-            clangd-${{ env.LLVM_VERSION }}
-            clang-tidy-${{ env.LLVM_VERSION }}
             libclang-rt-${{ env.LLVM_VERSION }}-dev
-            libpolly-${{ env.LLVM_VERSION }}-dev
-            libfuzzer-${{ env.LLVM_VERSION }}-dev
             lldb-${{ env.LLVM_VERSION }}
             lld-${{ env.LLVM_VERSION }}
             libc++-${{ env.LLVM_VERSION }}-dev
@@ -104,15 +93,6 @@ jobs:
             libomp-${{ env.LLVM_VERSION }}-dev
             libclc-${{ env.LLVM_VERSION }}-dev
             libunwind-${{ env.LLVM_VERSION }}-dev
-            libmlir-${{ env.LLVM_VERSION }}-dev
-            mlir-${{ env.LLVM_VERSION }}-tools
-            libbolt-${{ env.LLVM_VERSION }}-dev
-            bolt-${{ env.LLVM_VERSION }}
-            flang-${{ env.LLVM_VERSION }}
-            libclang-rt-${{ env.LLVM_VERSION }}-dev-wasm32
-            libclang-rt-${{ env.LLVM_VERSION }}-dev-wasm64
-            libc++-${{ env.LLVM_VERSION }}-dev-wasm32
-            libc++abi-${{ env.LLVM_VERSION }}-dev-wasm32
             libllvmlibc-${{ env.LLVM_VERSION }}-dev 
           version: 1.0
 
