@@ -10,6 +10,7 @@ runs:
   steps:
     - name: Installation
       run: xmake install --installdir="${{ runner.workspace }}/output"
+      shell: bash
 
     - name: Upload artifacts
       id: upload
