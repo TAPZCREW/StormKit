@@ -1,7 +1,7 @@
 namespace("stormkit", function()
     rule("flags", function()
         on_config("linux", function(target)
-            if is_mode("debug") then
+            if is_mode("debug", "releasedbg") then
                 target:add("ldflags", "-rdynamic")
                 target:add("shflags", "-rdynamic")
             end
