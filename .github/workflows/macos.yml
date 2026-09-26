@@ -73,7 +73,6 @@ jobs:
       - name: Setup XMake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: Arthapz/xmake#branch@dev2
           actions-cache-folder: .xmake-cache
 
       - name: Cache XMake
@@ -137,7 +136,7 @@ jobs:
 
       - name: Upload artifacts
         id: upload
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.kind }}-${{ matrix.mode }}
           path: ${{ github.workspace }}/output

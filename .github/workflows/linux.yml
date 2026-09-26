@@ -52,7 +52,6 @@ jobs:
           ref: ${{ github.ref }}
 
       - name: Add LLVM apt repository
-        if: ${{ (matrix.compiler == 'llvm') }}
         uses: myci-actions/add-deb-repo@11
         with:
           repo: deb http://apt.llvm.org/resolute/ llvm-toolchain-resolute main
@@ -66,24 +65,17 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: |
-              build-essential
-              cmake
-              apt-file
-              ninja-build
-              meson
-              pkg-config
-              libelf-dev
-              libdwarf-dev
-              mold
-              nasm
-              ninja-build
-          version: 1.0
-
-      - name: Install LLVM
-        if: ${{ (matrix.compiler == 'llvm') }}
-        uses: awalsh128/cache-apt-pkgs-action@latest
-        with: 
-          packages: |
+            build-essential
+            cmake
+            apt-file
+            ninja-build
+            meson
+            pkg-config
+            libelf-dev
+            libdwarf-dev
+            mold
+            nasm
+            ninja-build
             libllvm-${{ env.LLVM_VERSION }}-ocaml-dev
             libllvm${{ env.LLVM_VERSION }}
             llvm-${{ env.LLVM_VERSION }}
