@@ -20,6 +20,9 @@ on:
       - LICENSE
       - README.md
 
+env:
+  LLVM_VERSION: "24"
+
 jobs:
   build:
     name: ${{ matrix.compiler }}-${{ matrix.cpplib }} ${{ matrix.arch }}  (${{ matrix.kind }}/${{ matrix.mode }})
@@ -81,23 +84,43 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@latest
         with: 
           packages: |
-              llvm
-              llvm-dev
-              llvm-runtime
-              clang
-              clang-tools
-              libclang-common-dev
-              libclang-dev
-              libclang1
-              python3-clang
-              libclang-rt-dev
-              libpolly-dev
-              lld
-              libc++-dev
-              libc++abi-dev
-              libomp-dev
-              libclc-dev
-              libunwind-dev
+            libllvm-${{ env.LLVM_VERSION }}-ocaml-dev
+            libllvm${{ env.LLVM_VERSION }}
+            llvm-${{ env.LLVM_VERSION }}
+            llvm-${{ env.LLVM_VERSION }}-dev
+            llvm-${{ env.LLVM_VERSION }}-doc
+            llvm-${{ env.LLVM_VERSION }}-examples
+            llvm-${{ env.LLVM_VERSION }}-runtime
+            clang-${{ env.LLVM_VERSION }}
+            clang-tools-${{ env.LLVM_VERSION }}
+            clang-${{ env.LLVM_VERSION }}-doc
+            libclang-common-${{ env.LLVM_VERSION }}-dev
+            libclang-${{ env.LLVM_VERSION }}-dev
+            libclang1-${{ env.LLVM_VERSION }}
+            clang-format-${{ env.LLVM_VERSION }}
+            python3-clang-${{ env.LLVM_VERSION }}
+            clangd-${{ env.LLVM_VERSION }}
+            clang-tidy-${{ env.LLVM_VERSION }}
+            libclang-rt-${{ env.LLVM_VERSION }}-dev
+            libpolly-${{ env.LLVM_VERSION }}-dev
+            libfuzzer-${{ env.LLVM_VERSION }}-dev
+            lldb-${{ env.LLVM_VERSION }}
+            lld-${{ env.LLVM_VERSION }}
+            libc++-${{ env.LLVM_VERSION }}-dev
+            libc++abi-${{ env.LLVM_VERSION }}-dev
+            libomp-${{ env.LLVM_VERSION }}-dev
+            libclc-${{ env.LLVM_VERSION }}-dev
+            libunwind-${{ env.LLVM_VERSION }}-dev
+            libmlir-${{ env.LLVM_VERSION }}-dev
+            mlir-${{ env.LLVM_VERSION }}-tools
+            libbolt-${{ env.LLVM_VERSION }}-dev
+            bolt-${{ env.LLVM_VERSION }}
+            flang-${{ env.LLVM_VERSION }}
+            libclang-rt-${{ env.LLVM_VERSION }}-dev-wasm32
+            libclang-rt-${{ env.LLVM_VERSION }}-dev-wasm64
+            libc++-${{ env.LLVM_VERSION }}-dev-wasm32
+            libc++abi-${{ env.LLVM_VERSION }}-dev-wasm32
+            libllvmlibc-${{ env.LLVM_VERSION }}-dev 
           version: 1.0
 
       - name: Set XMake env
@@ -149,7 +172,6 @@ jobs:
       - name: Configure & Install dependencies
         id: configure
         run: |
-          ls /usr/lib/llvm
           which clang
           xmake f -vD -a ${{ (matrix.arch  == 'x64') && 'x86_64' || (matrix.arch == 'arm64') && 'aarch64' || matrix.arch }} \
            --yes \
@@ -160,7 +182,7 @@ jobs:
            --sanitizers=n \
            --mold=y \
            --on_ci=y \
-           ${{ (matrix.compiler == 'llvm') && '--toolchain=llvm' || '' }} \
+           ${{ (matrix.compiler == 'llvm') && '--toolchain=llvm' --sdk="/usr/lib/llvm-$LLVM_VERSION" || '' }} \
            ${{ (matrix.cpplib == 'libc++') && '--runtimes="c++_shared"' || '' }} \
            --lto=${{ (matrix.mode == 'release') && 'y' || 'n' }}
 
