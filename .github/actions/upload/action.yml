@@ -1,0 +1,19 @@
+name: upload
+description: Upload artifacts
+
+inputs:
+  name:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Installation
+      run: xmake install --installdir="${{ runner.workspace }}/output"
+
+    - name: Upload artifacts
+      id: upload
+      uses: actions/upload-artifact@v7
+      with:
+        path: ${{ runner.workspace }}/output
+        name: ${{ inputs.name }}

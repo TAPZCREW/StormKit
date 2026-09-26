@@ -89,133 +89,40 @@ jobs:
         cpplib: [libc++]
         arch: [x64]
         kind: [static, shared]
-        mode: [release, debug]
+        mode: [releasedbg, debug]
 
     runs-on: ${{ matrix.os }}
     if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
 
-    concurrency:
-      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.cpplib }}-${{ matrix.arch }}-${{ matrix.kind }}-${{ matrix.cpplib }}-${{ matrix.mode }}
-
     steps:
-      - name: Use current date as xmake package cache key
-        id: cache_key
-        run: echo "key=$(date +'%W')" >> $GITHUB_OUTPUT
-        shell: bash
-
-      - name: Checkout
-        uses: actions/checkout@v7
+      - name: Bootstrap
+        id: bootstrap
+        uses: ../actions/setup
         with:
-          fetch-depth: 0
+          os: matrix.os
+          arch: matrix.arch
+          compiler: matrix.compiler
 
-      - name: Add LLVM apt repository
-        uses: myci-actions/add-deb-repo@11
+      - name: Build & Tests
+        id: build_and_tests
+        uses: ../actions/build
         with:
-          repo: deb http://apt.llvm.org/resolute/ llvm-toolchain-resolute main
-          repo-name: llvm
-          keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
-
-      - name: Update apt repositories
-        run: sudo apt update
-
-      - name: Install system dependencies
-        uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: |
-            build-essential
-            cmake
-            apt-file
-            ninja-build
-            meson
-            pkg-config
-            libelf-dev
-            libdwarf-dev
-            mold
-            nasm
-            ninja-build
-            libllvm${{ env.LLVM_VERSION }}
-            llvm-${{ env.LLVM_VERSION }}
-            llvm-${{ env.LLVM_VERSION }}-dev
-            llvm-${{ env.LLVM_VERSION }}-runtime
-            clang-${{ env.LLVM_VERSION }}
-            clang-tools-${{ env.LLVM_VERSION }}
-            libclang-common-${{ env.LLVM_VERSION }}-dev
-            libclang-${{ env.LLVM_VERSION }}-dev
-            libclang1-${{ env.LLVM_VERSION }}
-            libclang-rt-${{ env.LLVM_VERSION }}-dev
-            lldb-${{ env.LLVM_VERSION }}
-            lld-${{ env.LLVM_VERSION }}
-            libc++-${{ env.LLVM_VERSION }}-dev
-            libc++abi-${{ env.LLVM_VERSION }}-dev
-            libomp-${{ env.LLVM_VERSION }}-dev
-            libclc-${{ env.LLVM_VERSION }}-dev
-            libunwind-${{ env.LLVM_VERSION }}-dev
-            libllvmlibc-${{ env.LLVM_VERSION }}-dev 
-          version: 1.0
-
-      - name: Set XMake env
-        run: |
-          echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" >> $GITHUB_ENV
-
-      - name: Setup XMake
-        uses: xmake-io/github-action-setup-xmake@v1
-        with:
-          xmake-version: branch@dev
-          actions-cache-folder: .xmake-cache-W${{ steps.cache_key.outputs.key }}
-
-      - name: Update xmake repository
-        run: xmake repo --update
-
-      - name: Retrieve dependencies hash
-        id: dep_hash
-        run: echo "hash=$(xmake l utils.ci.packageskey)" >> $GITHUB_OUTPUT
-      
-      - name: Restore cached packages
-        id: restore-depcache
-        uses: actions/cache/restore@v6
-        with:
-          path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
-          key: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.compiler }}-${{ matrix.cpplib }}-${{ matrix.mode }}-${{ steps.dep_hash.outputs.hash }}-W${{ steps.cache_key.outputs.key }}
-
-      - name: Configure & Install dependencies
-        id: configure
-        run: |
-          xmake f \
-           --arch=${{ (matrix.arch  == 'x64') && 'x86_64' || (matrix.arch == 'arm64') && 'aarch64' || matrix.arch }} \
-           --mode=${{ matrix.mode }} \
-           --kind=${{ matrix.kind }} \
-           --examples=y \
-           --tests=y \
-           --sanitizers=n \
-           --mold=y \
-           --on_ci=y \
-           --lto=${{ (matrix.mode == 'release') && 'y' || 'n' }} \
-           ${{ (matrix.compiler == 'llvm') && '--toolchain=llvm --sdk="/usr/lib/llvm-$LLVM_VERSION"' || '' }} \
-           ${{ (matrix.compiler == 'llvm') && '--ldflags="-fuse-ld=lld -L/usr/lib/llvm-$LLVM_VERSION/lib/ -lc++abi" --shflags="-fuse-ld=lld -L/usr/lib/llvm-$LLVM_VERSION/lib/ -lc++abi"' || '' }} \
-           ${{ (matrix.cpplib == 'libc++') && '--runtimes="c++_static"' || '' }} \
-           --yes
-
-      - name: Cache xmake dependencies
-        if: ${{ !steps.restore-depcache.outputs.cache-hit }}
-        uses: actions/cache/save@v6
-        with:
-          path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
-          key: ${{ steps.restore-depcache.outputs.cache-primary-key }}
-
-      - name: Build
-        id: build
-        run: |
-          xmake b
-
-      - name: Run unit tests
-        run: xmake test -v
-
-      - name: Installation
-        run: xmake install -v --installdir="${{ runner.workspace }}/output"
+          os: matrix.os
+          arch: matrix.arch
+          compiler: matrix.compiler
+          cpplib: matrix.cpplib
+          mode: matrix.mode
+          kind: matrix.kind
+          dep_hash: matrix.dep_hash
+          cache_key: matrix.cache_key
+          additional_flags: |
+            ${{ (matrix.compiler == 'llvm' && matrix.cpplib == 'libc++') && '--sdk="/usr/lib/llvm-$LLVM_VERSION"' || '' }} \
+            ${{ (matrix.compiler == 'llvm' && matrix.cpplib == 'libc++') && '--ldflags="-fuse-ld=lld -L/usr/lib/llvm-$LLVM_VERSION/lib/ -lc++abi" --shflags="-fuse-ld=lld -L/usr/lib/llvm-$LLVM_VERSION/lib/ -lc++abi"' || '' }} \
+            ${{ (matrix.cpplib == 'libc++') && '--runtimes="c++_static"' || '' }}
 
       - name: Upload artifacts
         id: upload
-        uses: actions/upload-artifact@v7
+        uses: ../actions/upload
         with:
           name: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.compiler }}-${{ matrix.cpplib }}-${{ matrix.kind }}-${{ matrix.mode }}
-          path: ${{ runner.workspace }}/output
+

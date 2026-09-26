@@ -72,99 +72,41 @@ jobs:
       matrix:
         os: [macOS-26]
         compiler: [llvm]
+        cpplib: [libc++]
         arch: [arm64]
         kind: [static, shared]
-        mode: [release, debug]
+        mode: [releasedbg, debug]
 
     runs-on: ${{ matrix.os }}${{ (matrix.arch == 'x64') && '-large' || '' }}
     if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
 
-    concurrency:
-      group:
-        ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.kind }}-${{ matrix.mode }}
-
     steps:
-      - name: Use current date as xmake package cache key
-        id: cache_key
-        run: echo "key=$(date +'%W')" >> $GITHUB_OUTPUT
-        shell: bash
-
-      - name: Install build tools
-        uses: tecolicom/actions-use-homebrew-tools@v1
+      - name: Bootstrap
+        id: bootstrap
+        uses: ../actions/setup
         with:
-          tools: llvm ninja meson cmake mold nasm pkgconf
-          verbose: true
+          os: matrix.os
+          arch: matrix.arch
+          compiler: matrix.compiler
 
-      - name: Checkout
-        uses: actions/checkout@v7
+      - name: Build & Tests
+        id: build_and_tests
+        uses: ../actions/build
         with:
-          fetch-depth: 0
-
-      - name: Set XMake env
-        run: |
-          echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" >> $GITHUB_ENV
-
-      - name: Setup XMake
-        uses: xmake-io/github-action-setup-xmake@v1
-        with:
-          xmake-version: branch@dev
-          actions-cache-folder: .xmake-cache-W${{ steps.cache_key.outputs.key }}
-
-      - name: Update XMake repository
-        run: xmake repo --update
-
-      - name: Retrieve dependencies hash
-        id: dep_hash
-        run: echo "hash=$(xmake l utils.ci.packageskey)" >> $GITHUB_OUTPUT
-      
-      - name: Restore cached packages
-        id: restore-depcache
-        uses: actions/cache/restore@v6
-        with:
-          path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
-          key: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.compiler }}-${{ matrix.mode }}-${{ steps.dep_hash.outputs.hash }}-W${{ steps.cache_key.outputs.key }}
-
-      - name: Configure & Install dependencies
-        id: configure
-        run: |
-          xmake f \
-           --mode=${{ matrix.mode }} \
-           --kind=${{ matrix.kind }} \
-           --examples=y \
-           --tests=y \
-           --sanitizers=n \
-           --mold=y \
-           --on_ci=y \
-           --lto=${{ (matrix.mode == 'release') && 'y' || 'n' }} \
-           --toolchain=llvm \
+          os: matrix.os
+          arch: matrix.arch
+          compiler: matrix.compiler
+          cpplib: matrix.cpplib
+          mode: matrix.mode
+          kind: matrix.kind
+          dep_hash: matrix.dep_hash
+          cache_key: matrix.cache_key
+          additional_flags: |
            --sdk="$(brew --prefix llvm)" \
            --sc="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend" \
-           --runtimes="c++_static" \
-           --yes
-
-      - name: Cache xmake dependencies
-        if: ${{ !steps.restore-depcache.outputs.cache-hit }}
-        uses: actions/cache/save@v6
-        with:
-          path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
-          key: ${{ steps.restore-depcache.outputs.cache-primary-key }}
-
-      - name: Build
-        id: build
-        run: |
-          xmake b
-
-      - name: Run unit tests
-        id: tests
-        run: xmake test -v
-
-      - name: Installation
-        id: install
-        run: xmake install -v --installdir="${{ runner.workspace }}/output"
 
       - name: Upload artifacts
         id: upload
-        uses: actions/upload-artifact@v7
+        uses: ../actions/upload
         with:
           name: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.compiler }}-${{ matrix.kind }}-${{ matrix.mode }}
-          path: ${{ runner.workspace }}/output
