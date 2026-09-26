@@ -5,7 +5,7 @@ module;
 
 #include <csignal>
 
-module stormkit.core.stacktrace;
+module stormkit.core.signal_handler;
 
 import std;
 
