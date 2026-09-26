@@ -138,7 +138,7 @@ jobs:
            --tests=y `
            --on_ci=y `
            --sanitizers=n `
-           ${{ (matrix.compiler == 'llvm') && '--toolchain=llvm --sdk="${GITHUB_WORKSPACE}/llvm"' || '' }} `
+           ${{ (matrix.compiler == 'llvm') && '--toolchain=llvm --sdk="$GITHUB_WORKSPACE/llvm"' || '' }} `
            ${{ (matrix.cpplib == 'libc++') && '--runtimes="c++_shared"' || '' }} `
            --policies="platform.longpaths"
 
