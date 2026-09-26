@@ -28,6 +28,7 @@ import stormkit.core.typesafe.safecasts;
 import stormkit.core.parallelism.threadutils;
 
 namespace stdr = std::ranges;
+namespace stdv = std::views;
 
 using namespace std::literals;
 
@@ -134,7 +135,7 @@ namespace stormkit { inline namespace core {
 
         auto       frames = array_view<void*> { frames_raw }.subspan(count);
         const auto syms   = array_view<char*> { backtrace_symbols(stdr::data(frames), count), as<usize>(count) }
-                            | stdr::transform([](char* str) static noexcept { return string_view { str }; })
+                            | stdv::transform([](char* str) static noexcept { return string_view { str }; })
                             | stdr::to<dynarray>();
 
         std::println("{}", syms);
