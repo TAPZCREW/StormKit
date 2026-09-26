@@ -182,7 +182,7 @@ jobs:
            --sanitizers=n \
            --mold=y \
            --on_ci=y \
-           ${{ (matrix.compiler == 'llvm') && '--toolchain=llvm' --sdk="/usr/lib/llvm-$LLVM_VERSION" || '' }} \
+           ${{ (matrix.compiler == 'llvm') && '--toolchain=llvm --sdk="/usr/lib/llvm-$LLVM_VERSION"' || '' }} \
            ${{ (matrix.cpplib == 'libc++') && '--runtimes="c++_shared"' || '' }} \
            --lto=${{ (matrix.mode == 'release') && 'y' || 'n' }}
 
