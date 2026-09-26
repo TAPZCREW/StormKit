@@ -156,7 +156,7 @@ jobs:
            --mold=y \
            --on_ci=y \
            ${{ (matrix.compiler == 'llvm') && '--toolchain=llvm --sdk="/usr/lib/llvm-$LLVM_VERSION"' || '' }} \
-           ${{ (matrix.cpplib == 'libc++') && '--runtimes="c++_shared"' || '' }} \
+           ${{ (matrix.cpplib == 'libc++') && '--runtimes="c++_static"' || '' }} \
            --lto=${{ (matrix.mode == 'release') && 'y' || 'n' }}
 
       - name: Cache packages

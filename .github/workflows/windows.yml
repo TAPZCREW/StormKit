@@ -138,7 +138,7 @@ jobs:
            --on_ci=y `
            --sanitizers=n `
            ${{ (matrix.compiler == 'llvm') && '--toolchain=llvm --sdk="$env:GITHUB_WORKSPACE/llvm/llvm"' || '' }} `
-           ${{ (matrix.cpplib == 'libc++') && '--runtimes="c++_shared"' || '' }} `
+           ${{ (matrix.cpplib == 'libc++') && '--runtimes="c++_static"' || '' }} `
            --policies="platform.longpaths"
 
       - name: Cache packages

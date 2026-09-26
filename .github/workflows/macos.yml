@@ -112,7 +112,7 @@ jobs:
            --toolchain=llvm \
            --sdk="$(brew --prefix llvm)" \
            --sc="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend" \
-           --runtimes="c++_shared"
+           --runtimes="c++_static"
 
       - name: Cache packages
         if: ${{ !steps.restore-packagescache.outputs.cache-hit }}
