@@ -47,7 +47,7 @@ runs:
          --yes \
          ${{ inputs.compiler == 'llvm' && '--toolchain=llvm' || '' }} \
          ${{ (inputs.compiler == 'llvm' && inputs.cpplib == 'libc++') && '--runtimes="c++_static"' || '' }} \
-         ${{ additional_flags && additional_flags or '' }}
+         ${{ inputs.additional_flags || '' }}
       shell: bash
 
     - name: Cache xmake dependencies
