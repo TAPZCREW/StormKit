@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macOS-15]
+        os: [macOS-26]
         compiler: [llvm]
         arch: [arm64]
         kind: [static, shared]
