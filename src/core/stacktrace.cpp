@@ -159,7 +159,7 @@ namespace stormkit { inline namespace core {
                 ++count;
             }
 
-            if ((count - ignore_count) == 0) std::println("No stacktrace available!");
+            if ((count - ignore_count) == 0) std::println(stderr, "No stacktrace available!");
 
             std::free(syms_);
         } else
