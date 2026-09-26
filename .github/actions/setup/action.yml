@@ -34,7 +34,7 @@ runs:
         disk-root: "D:"
 
     - name: Install compilers
-      uses: ./.github/actions/install-llvm
+      uses: ./.github/actions/install-compilers
       with:
         os: inputs.os
         arch: inputs.arch
