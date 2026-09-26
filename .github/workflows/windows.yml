@@ -129,9 +129,9 @@ jobs:
       - name: Configure & Install dependencies
         id: configure
         run: |
-          xmake f -vD `
           echo $env:GITHUB_WORKSPACE
           ls $env:GITHUB_WORKSPACE/llvm
+          xmake f -vD `
            --yes `
            -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} `
            -k ${{ matrix.kind }} `
