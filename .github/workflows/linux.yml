@@ -39,7 +39,7 @@ on:
       - README.md
 
   push:
-    branches: [main, develop]
+    branches: [develop]
     paths-ignore:
       - '.src/*/win32/**.cppm'
       - '.src/*/win32/**.c'

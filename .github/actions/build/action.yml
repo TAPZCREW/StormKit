@@ -35,7 +35,7 @@ runs:
       id: configure
       run: |
         xmake f \
-         --arch=${{ (inputs.arch  == 'x64') && 'x86_64' || (inputs.arch == 'arm64') && 'aarch64' || inputs.arch }} \
+         --arch=${{ (inputs.arch  == 'x64' && inputs.os == 'linux') && 'x86_64' || inputs.arch }} \
          --mode=${{ inputs.mode }} \
          --kind=${{ inputs.kind }} \
          --examples=y \
