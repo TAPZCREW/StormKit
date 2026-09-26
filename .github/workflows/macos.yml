@@ -111,8 +111,8 @@ jobs:
           cpplib: "libc++"
           mode: ${{ matrix.mode }}
           kind: ${{ matrix.kind }}
-          dep_hash: ${{ matrix.dep_hash }}
-          cache_key: ${{ matrix.cache_key }}
+          dep_hash: ${{ steps.bootstrap.dep_hash }}
+          cache_key: ${{ steps.bootstrap.cache_key }}
           additional_flags: |
            --sdk="$(brew --prefix llvm)" \
            --sc="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend"
