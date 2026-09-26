@@ -140,13 +140,11 @@ namespace stormkit { inline namespace core {
         const auto frame_count = backtrace(stdr::data(frames), stdr::size(frames));
         if (frame_count > 0) {
             const auto syms_ = backtrace_symbols(stdr::data(frames), frame_count);
-            for (auto i : range(as<usize>(frame_count))) std::println(stderr, "{}", std::strlen(syms_[i]));
-
-            const auto syms = array_view<char*> { syms_, as<usize>(frame_count) }
-                              | stdv::transform([](const char* str) static noexcept -> string_view {
+            const auto syms  = array_view<char*> { syms_, as<usize>(frame_count) }
+                               | stdv::transform([](const char* str) static noexcept -> string_view {
                                     return string_view { str, std::strlen(str) };
-                                })
-                              | stdr::to<dynarray<string_view>>();
+                                 })
+                               | stdr::to<dynarray<string_view>>();
 
             auto count = 0;
             for (auto sym : syms) {
@@ -155,7 +153,7 @@ namespace stormkit { inline namespace core {
                     continue;
                 }
 
-                // std::println(stderr, "A {}# {}", (count - ignore_count), sym);
+                std::println(stderr, "A {}# {}", (count - ignore_count), sym);
                 ++count;
             }
 
