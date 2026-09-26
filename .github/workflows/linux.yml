@@ -1,15 +1,12 @@
 ---
-name: Linux
+name: linux
 
 on:
   pull_request:
     branches: [develop]
     paths-ignore:
-      - .github/workflows/Windows.yml
-      - .github/workflows/macOS.yml
-      - .github/workflows/iOS.yml
-      - .github/workflows/Android.yml
-      - .github/workflows/AutoMerger.yml
+      - .github/workflows/*.yml
+      - '!.github/workflows/linux.yml'
       - .gitignore
       - LICENSE
       - README.md
@@ -17,27 +14,25 @@ on:
   push:
     branches: [main, develop]
     paths-ignore:
-      - .github/workflows/Windows.yml
-      - .github/workflows/macOS.yml
-      - .github/workflows/iOS.yml
-      - .github/workflows/Android.yml
-      - .github/workflows/AutoMerger.yml
+      - .github/workflows/**.yml
+      - '!.github/workflows/linux.yml'
       - .gitignore
       - LICENSE
       - README.md
 
 env:
-  LLVM_VERSION: "-23"
+  LLVM_VERSION: "24"
 
 jobs:
   build:
-    name: ${{ matrix.compiler }} ${{ matrix.arch }}  (${{ matrix.kind }}/${{ matrix.mode }})
+    name: ${{ matrix.compiler }}-${{ matrix.cpplib }} ${{ matrix.arch }}  (${{ matrix.kind }}/${{ matrix.mode }})
 
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-26.04]
-        compiler: [LLVM-libc++]
+        compiler: [llvm]
+        cpplib: [libc++]
         arch: [x64]
         kind: [static, shared]
         mode: [release, debug]
@@ -46,12 +41,12 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
 
     concurrency:
-      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.kind
+      group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.cpplib }}-${{ matrix.arch }}-${{ matrix.kind
         }}-${{ matrix.mode }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           ref: ${{ github.ref }}
@@ -59,7 +54,7 @@ jobs:
       - name: Add LLVM apt repository
         uses: myci-actions/add-deb-repo@11
         with:
-          repo: deb http://apt.llvm.org/noble/ llvm-toolchain-noble main
+          repo: deb http://apt.llvm.org/resolute/ llvm-toolchain-resolute main
           repo-name: llvm
           keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
 
@@ -70,38 +65,36 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: |
-              build-essential
-              cmake
-              apt-file
-              ninja-build
-              meson
-              pkg-config
-              libelf-dev
-              libdwarf-dev
-              mold
-              nasm
-              llvm
-              llvm-dev
-              llvm-runtime
-              clang
-              clang-tools
-              libclang-common-dev
-              libclang-dev
-              libclang1
-              python3-clang
-              libclang-rt-dev
-              libpolly-dev
-              lld
-              libc++-dev
-              libc++abi-dev
-              libomp-dev
-              libclc-dev
-              libunwind-dev
-              ninja-build
+            build-essential
+            cmake
+            apt-file
+            ninja-build
+            meson
+            pkg-config
+            libelf-dev
+            libdwarf-dev
+            mold
+            nasm
+            ninja-build
+            libllvm${{ env.LLVM_VERSION }}
+            llvm-${{ env.LLVM_VERSION }}
+            llvm-${{ env.LLVM_VERSION }}-dev
+            llvm-${{ env.LLVM_VERSION }}-runtime
+            clang-${{ env.LLVM_VERSION }}
+            clang-tools-${{ env.LLVM_VERSION }}
+            libclang-common-${{ env.LLVM_VERSION }}-dev
+            libclang-${{ env.LLVM_VERSION }}-dev
+            libclang1-${{ env.LLVM_VERSION }}
+            libclang-rt-${{ env.LLVM_VERSION }}-dev
+            lldb-${{ env.LLVM_VERSION }}
+            lld-${{ env.LLVM_VERSION }}
+            libc++-${{ env.LLVM_VERSION }}-dev
+            libc++abi-${{ env.LLVM_VERSION }}-dev
+            libomp-${{ env.LLVM_VERSION }}-dev
+            libclc-${{ env.LLVM_VERSION }}-dev
+            libunwind-${{ env.LLVM_VERSION }}-dev
+            libllvmlibc-${{ env.LLVM_VERSION }}-dev 
           version: 1.0
-
-      # - name: Force Install libc++
-      #   run: sudo apt install libc++${{ env.LLVM_VERSION }}-dev
 
       - name: Set XMake env
         run: |
@@ -116,7 +109,7 @@ jobs:
 
       - name: Restore cached XMake
         id: restore-xmakecache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: ${{ env.XMAKE_ROOTDIR }}
           key: ${{ matrix.os }}-${{ matrix.arch }}-W${{ steps.xmake_cachekey.outputs.key }}
@@ -129,7 +122,7 @@ jobs:
 
       - name: Cache XMake
         if: ${{ !steps.restore-xmakecache.outputs.cache-hit }}
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: ${{ env.XMAKE_ROOTDIR }}
           key: ${{ steps.restore-xmakecache.outputs.cache-primary-key }}
@@ -144,10 +137,10 @@ jobs:
 
       - name: Restore cached packages
         id: restore-packagescache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: ${{ env.XMAKE_PKG_INSTALLDIR }}
-          key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ steps.packages_cachekey.outputs.hash }}
+          key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.cpplib }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ steps.packages_cachekey.outputs.hash }}
 
       - name: Configure & Install dependencies
         id: configure
@@ -156,17 +149,19 @@ jobs:
            --yes \
            -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} \
            -k ${{ matrix.kind }} \
+           ${{ (matrix.compiler == 'llvm') && '--ldflags="-fuse-ld=lld -L/usr/lib/llvm-$LLVM_VERSION/lib/ -lc++abi" --shflags="-fuse-ld=lld -L/usr/lib/llvm-$LLVM_VERSION/lib/ -lc++abi"' || '' }} \
            --examples=y \
            --tests=y \
            --sanitizers=n \
            --mold=y \
            --on_ci=y \
-           ${{ (matrix.compiler == 'LLVM-libc++') && '--toolchain=llvm --sdk="/usr/lib/llvm$LLVM_VERSION/" --runtimes="c++_shared"' || '' }} \
+           ${{ (matrix.compiler == 'llvm') && '--toolchain=llvm --sdk="/usr/lib/llvm-$LLVM_VERSION"' || '' }} \
+           ${{ (matrix.cpplib == 'libc++') && '--runtimes="c++_shared"' || '' }} \
            --lto=${{ (matrix.mode == 'release') && 'y' || 'n' }}
 
       - name: Cache packages
         if: ${{ !steps.restore-packagescache.outputs.cache-hit }}
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: ${{ env.XMAKE_PKG_INSTALLDIR }}
           key: ${{ steps.restore-packagescache.outputs.cache-primary-key }}
@@ -184,7 +179,7 @@ jobs:
 
       - name: Upload artifacts
         id: upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.kind }}-${{ matrix.mode }}
+          name: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.cpplib }}-${{ matrix.arch }}-${{ matrix.kind }}-${{ matrix.mode }}
           path: ${{ github.workspace }}/output
