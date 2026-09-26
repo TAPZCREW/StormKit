@@ -111,6 +111,9 @@ jobs:
           arch: ${{ matrix.arch }}
           compiler: ${{ matrix.compiler }}
 
+      - run: echo "${{ steps.bootstrap.dep_hash }}"
+        shell: bash
+
       - name: Build & Tests
         id: build_and_tests
         uses: ./.github/actions/build
