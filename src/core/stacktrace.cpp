@@ -155,7 +155,7 @@ namespace stormkit { inline namespace core {
                     continue;
                 }
 
-                std::println(stderr, "{}# {}", (count - ignore_count), syms);
+                std::println(stderr, "{}# {}", (count - ignore_count), sym);
                 ++count;
             }
 
