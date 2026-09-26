@@ -47,7 +47,7 @@ namespace stormkit { inline namespace core {
         auto buf = ::MapViewOfFile(m_handle, file_access, 0, 0, as<DWORD>(m_size));
         if (buf == nullptr) return std::unexpected { error_code::from_win32() };
 
-        m_data = { std::bit_cast<byte*>(buf), m_size };
+        m_data = { reinterpret_cast<byte*>(buf), m_size };
 
         return {};
     }
