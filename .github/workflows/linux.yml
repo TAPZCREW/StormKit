@@ -109,8 +109,6 @@ jobs:
           arch: matrix.arch
           compiler: matrix.compiler
 
-      - run: ls ${{ runner.workspace }}/StormKit/.github/actions
-
       - name: Build & Tests
         id: build_and_tests
         uses: ./.github/actions/build

@@ -19,6 +19,7 @@ inputs:
   cache_key:
     required: true
   additional_flags:
+    required: false
 
 runs:
   using: composite
@@ -45,7 +46,7 @@ runs:
          --lto=${{ (inputs.mode == 'release') && 'y' || 'n' }} \
          --yes \
          ${{ inputs.compiler == 'llvm' && '--toolchain=llvm' || '' }} \
-         ${{ (inputs.compiler == 'llvm' && inputs.cpplib == "libc++") && '--runtimes=c++_static' || '' }} \
+         ${{ (inputs.compiler == 'llvm' && inputs.cpplib == 'libc++') && '--runtimes="c++_static"' || '' }} \
          ${{ additional_flags && additional_flags or '' }}
       shell: bash
 
