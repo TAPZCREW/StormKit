@@ -172,7 +172,7 @@ namespace stormkit::wsi::linux::x11 {
         }
 
         {
-            using Reply = RAIICapsule<xcb_get_geometry_reply_t*, xcb_get_geometry_reply, std::free, struct XCBGeometryReplyTag>;
+            using Reply = raii_capsule<xcb_get_geometry_reply_t*, xcb_get_geometry_reply, std::free, struct XCBGeometryReplyTag>;
 
             const auto cookie = xcb_get_geometry(connection, m_window);
             const auto reply  = Reply::create(connection, cookie, nullptr);
@@ -182,7 +182,7 @@ namespace stormkit::wsi::linux::x11 {
         }
 
         {
-            using Reply = RAIICapsule<xcb_get_geometry_reply_t*, xcb_get_geometry_reply, std::free, struct XCBGeometryReplyTag>;
+            using Reply = raii_capsule<xcb_get_geometry_reply_t*, xcb_get_geometry_reply, std::free, struct XCBGeometryReplyTag>;
 
             const auto cookie = xcb_get_geometry(connection, m_window);
             const auto reply  = Reply::create(connection, cookie, nullptr);
@@ -201,7 +201,7 @@ namespace stormkit::wsi::linux::x11 {
             static constexpr auto major_version = XCB_XKB_MAJOR_VERSION;
             static constexpr auto minor_version = XCB_XKB_MINOR_VERSION;
 
-            using Reply       = RAIICapsule<xcb_xkb_use_extension_reply_t*,
+            using Reply       = raii_capsule<xcb_xkb_use_extension_reply_t*,
                                             xcb_xkb_use_extension_reply,
                                             std::free,
                                             struct XCBXKBReplyTag>;
@@ -216,7 +216,7 @@ namespace stormkit::wsi::linux::x11 {
         auto xfixes_ext_reply = xcb_get_extension_data(connection, &xcb_xfixes_id);
         ensures(xfixes_ext_reply, "Failed to enable XCB_XFIXES extension");
         {
-            using Reply = RAIICapsule<xcb_xfixes_query_version_reply_t*,
+            using Reply = raii_capsule<xcb_xfixes_query_version_reply_t*,
                                       xcb_xfixes_query_version_reply,
                                       std::free,
                                       struct XFixesQueryTag>;
@@ -231,7 +231,7 @@ namespace stormkit::wsi::linux::x11 {
         auto xcb_input_ext_reply = xcb_get_extension_data(connection, &xcb_input_id);
         ensures(xcb_input_ext_reply, "Failed to enable XCB_INPUT extension");
         {
-            using Reply = RAIICapsule<xcb_input_xi_query_version_reply_t*,
+            using Reply = raii_capsule<xcb_input_xi_query_version_reply_t*,
                                       xcb_input_xi_query_version_reply,
                                       std::free,
                                       struct InputXIQueryTag>;
@@ -395,7 +395,7 @@ namespace stormkit::wsi::linux::x11 {
     /////////////////////////////////////
     /////////////////////////////////////
     auto Window::handle_events() noexcept -> void {
-        using Event = RAIICapsule<xcb_generic_event_t*, xcb_poll_for_event, std::free, struct EventTag>;
+        using Event = raii_capsule<xcb_generic_event_t*, xcb_poll_for_event, std::free, struct EventTag>;
 
         auto& globals = xcb::get_globals();
 
