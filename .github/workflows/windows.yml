@@ -160,11 +160,11 @@ jobs:
       - name: Installation
         run: xmake install -vD --installdir="${{ github.workspace }}/output"
 
-      - name: Add libc++ dll
-        if: ${{ matrix.cpplib == 'libc++' }}
-        run: |
-          cp "${{ github.workspace }}/llvm/llvm/bin/c++.dll" "${{ github.workspace }}/output/bin/"
-          cp "${{ github.workspace }}/llvm/llvm/lib/clang/24/lib/windows/clang_rt.asan_dynamic-x86_64.dll" "${{ github.workspace }}/output/bin/"
+      # - name: Add libc++ dll
+      #   if: ${{ matrix.cpplib == 'libc++' }}
+      #   run: |
+      #     cp "${{ github.workspace }}/llvm/llvm/bin/c++.dll" "${{ github.workspace }}/output/bin/"
+      #     cp "${{ github.workspace }}/llvm/llvm/lib/clang/24/lib/windows/clang_rt.asan_dynamic-x86_64.dll" "${{ github.workspace }}/output/bin/"
 
       - name: Upload artifacts
         id: upload
