@@ -51,7 +51,7 @@ namespace stormkit {
     /////////////////////////////////////
     /////////////////////////////////////
     auto thread_pool::join_all() noexcept -> void {
-        for (const auto _ : range(m_worker_count)) post_task<void>(task_type::TERMINATE, [] {}, thread_pool::NO_FUTURE);
+        for (const auto _ : range(m_worker_count)) post_task<void>(task_type::TERMINATE, [] {}, no_future);
 
         for (auto& thread : m_workers)
             if (thread.joinable()) thread.join();

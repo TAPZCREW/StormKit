@@ -53,7 +53,7 @@ namespace {
                       std::println("Hello from a thread!");
                       val = 8;
                   },
-                  thread_pool::NO_FUTURE);
+                  no_future);
 
                 std::this_thread::sleep_for(1s);
 
@@ -72,9 +72,9 @@ namespace {
                             std::println("Hello from a thread!");
                             val = 8;
                         },
-                        thread_pool::NO_FUTURE);
+                        no_future);
                   },
-                  thread_pool::NO_FUTURE);
+                  no_future);
 
                 std::this_thread::sleep_for(1s);
 
@@ -92,7 +92,7 @@ namespace {
                           std::println("Hello from a thread!");
                           val = 8;
                       },
-                      thread_pool::NO_FUTURE);
+                      no_future);
                 } };
 
                 std::this_thread::sleep_for(1s);
