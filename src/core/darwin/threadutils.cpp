@@ -4,11 +4,9 @@ extern "C" {
 #include "threadutils_impl.h"
 }
 
-module stormkit.core;
+module stormkit.core.parallelism.threadutils;
 
 import std;
-
-import :parallelism.threadutils;
 
 namespace stormkit { inline namespace core {
     ////////////////////////////////////////
