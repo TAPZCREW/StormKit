@@ -62,11 +62,11 @@ namespace stormkit { inline namespace core {
 
         if (not std::empty(thread_name))
             std::println(stderr,
-                         "================= CALLSTACK (thread name: {}, id: {}) =================",
+                         "================= CALLSTACK (thread name: {}, id: {:0#x}) =================",
                          thread_name,
                          std::this_thread::get_id());
         else
-            std::println(stderr, "================= CALLSTACK (thread id: {}) =================", std::this_thread::get_id());
+            std::println(stderr, "================= CALLSTACK (thread id: {:0#x}) =================", std::this_thread::get_id());
 #ifdef STD_STACKTRACE_SUPPORTED
         const auto st    = std::stacktrace::current();
         auto       i     = 0;
@@ -137,12 +137,18 @@ namespace stormkit { inline namespace core {
         auto frames_raw = array<void*, 1024> {};
         auto count      = backtrace(stdr::data(frames_raw), stdr::size(frames_raw));
         if (count > 0) {
-            auto       frames = array_view<void*> { frames_raw }.subspan(count);
-            const auto syms   = array_view<char*> { backtrace_symbols(stdr::data(frames), count), as<usize>(count) }
-                                | stdv::transform([](char* str) static noexcept -> string_view { return string_view { str }; })
-                                | stdr::to<dynarray<string_view>>();
+            auto frames = array_view<void*> { frames_raw }.subspan(count);
+
+            const auto syms_ = backtrace_symbols(stdr::data(frames), count);
+            const auto syms  = array_view<const char*> { syms_, as<usize>(count) }
+                               | stdv::transform([](const char* str) static noexcept -> string_view {
+                                    return string_view { str };
+                                 })
+                               | stdr::to<dynarray<string_view>>();
 
             std::println("{}", syms);
+
+            std::free(syms_);
         } else
             std::println("No stacktrace available!");
 #else
