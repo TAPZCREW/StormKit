@@ -12,6 +12,10 @@ module;
     #define STD_STACKTRACE_SUPPORTED
 #endif
 
+#if not defined(STD_STACKTRACE_SUPPORTED) and defined(STORMKIT_OS_LINUX)
+    #include <execinfo.h>
+#endif
+
 module stormkit.core.stacktrace;
 
 import std;
@@ -124,6 +128,16 @@ namespace stormkit { inline namespace core {
                 std::println(stderr, "{}# {}{}", (i++ - ignore_count), BLUE_TEXT_STYLE | object_address, formatted_symbol);
             }
         }
+#elifdef STORMKIT_OS_LINUX
+        auto frames_raw = array<void*, 1024> {};
+        auto count      = backtrace(str::data(frames_raw), stdr::data(frames_raw));
+
+        auto       frames = array_view { frames_raw }.subspan(count);
+        const auto syms   = array_view { backtrace_symbols(stdr::data(frames), count) }
+                            | stdr::transform([](char* str) static noexcept -> { return string_view { str }; })
+                            | stdr::to<dynarray>();
+
+        std::println("{}", syms);
 #else
         auto _ = ignore_count;
         std::println(stderr, "std::stacktrace not supported!");
