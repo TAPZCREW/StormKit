@@ -10,6 +10,7 @@ module;
 #ifdef STORMKIT_OS_WINDOWS
     #include <stormkit/core/platform/windows.hpp>
 #endif
+#include <cerrno>
 
 export module stormkit.core.errors;
 
