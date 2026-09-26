@@ -99,6 +99,11 @@ jobs:
         }}-${{ matrix.mode }}
 
     steps:
+      - name: Use current date as xmake package cache key
+        id: cache_key
+        run: echo "key=$(date +'%W')" >> $GITHUB_OUTPUT
+        shell: bash
+
       - name: Checkout
         uses: actions/checkout@v7
         with:
@@ -152,49 +157,27 @@ jobs:
 
       - name: Set XMake env
         run: |
-          echo "XMAKE_ROOTDIR=${{ github.workspace }}/.xmake-cache" >> $GITHUB_ENV
-          echo "XMAKE_PKG_INSTALLDIR=${{ github.workspace }}/.xmake-packages" >> $GITHUB_ENV
-          echo "${{ github.workspace }}/.xmake-cache" >> $GITHUB_PATH
-
-      - name: Generate XMake cachekey
-        id: xmake_cachekey
-        run: echo "key=$(date +'%W')" >> $GITHUB_OUTPUT
-        shell: bash
-
-      - name: Restore cached XMake
-        id: restore-xmakecache
-        uses: actions/cache/restore@v6
-        with:
-          path: ${{ env.XMAKE_ROOTDIR }}
-          key: ${{ matrix.os }}-${{ matrix.arch }}-W${{ steps.xmake_cachekey.outputs.key }}
+          echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" >> $GITHUB_ENV
 
       - name: Setup XMake
         uses: xmake-io/github-action-setup-xmake@v1
         with:
           xmake-version: branch@dev
-          actions-cache-folder: .xmake-cache
+          actions-cache-folder: .xmake-cache-W${{ steps.cache_key.outputs.key }}
 
-      - name: Cache XMake
-        if: ${{ !steps.restore-xmakecache.outputs.cache-hit }}
-        uses: actions/cache/save@v6
-        with:
-          path: ${{ env.XMAKE_ROOTDIR }}
-          key: ${{ steps.restore-xmakecache.outputs.cache-primary-key }}
-
-      - name: Update XMake repository
+      - name: Update xmake repository
         run: xmake repo --update
 
-      - name: Generate packages cachekey
-        id: packages_cachekey
+      - name: Retrieve dependencies hash
+        id: dep_hash
         run: echo "hash=$(xmake l utils.ci.packageskey)" >> $GITHUB_OUTPUT
-        shell: bash
-
+      
       - name: Restore cached packages
-        id: restore-packagescache
+        id: restore-depcache
         uses: actions/cache/restore@v6
         with:
-          path: ${{ env.XMAKE_PKG_INSTALLDIR }}
-          key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.cpplib }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ steps.packages_cachekey.outputs.hash }}
+          path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
+          key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.cpplib }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ steps.dep_hash.outputs.hash }}-W${{ steps.cache_key.outputs.key }}
 
       - name: Configure & Install dependencies
         id: configure
@@ -213,12 +196,12 @@ jobs:
            ${{ (matrix.cpplib == 'libc++') && '--runtimes="c++_static"' || '' }} \
            --lto=${{ (matrix.mode == 'release') && 'y' || 'n' }}
 
-      - name: Cache packages
-        if: ${{ !steps.restore-packagescache.outputs.cache-hit }}
+      - name: Cache xmake dependencies
+        if: ${{ !steps.restore-depcache.outputs.cache-hit }}
         uses: actions/cache/save@v6
         with:
-          path: ${{ env.XMAKE_PKG_INSTALLDIR }}
-          key: ${{ steps.restore-packagescache.outputs.cache-primary-key }}
+          path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
+          key: ${{ steps.restore-depcache.outputs.cache-primary-key }}
 
       - name: Build
         id: build
