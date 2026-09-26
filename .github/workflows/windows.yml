@@ -111,9 +111,6 @@ jobs:
           arch: ${{ matrix.arch }}
           compiler: ${{ matrix.compiler }}
 
-      - run: echo "${{ steps.bootstrap.dep_hash }}"
-        shell: bash
-
       - name: Build & Tests
         id: build_and_tests
         uses: ./.github/actions/build
@@ -124,8 +121,8 @@ jobs:
           cpplib: ${{ matrix.cpplib }}
           mode: ${{ matrix.mode }}
           kind: ${{ matrix.kind }}
-          dep_hash: ${{ steps.bootstrap.dep_hash }}
-          cache_key: ${{ steps.bootstrap.cache_key }}
+          dep_hash: ${{ steps.bootstrap.outputs.dep_hash }}
+          cache_key: ${{ steps.bootstrap.outputs.cache_key }}
           additional_flags: |
             ${{ case(matrix.compiler == 'llvm', format('--sdk={0}/llvm/llvm', runner.workspace), '') }} \
             --policies="platform.longpaths"

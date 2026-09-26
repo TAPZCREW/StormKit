@@ -59,3 +59,5 @@ outputs:
     value: ${{ steps.dep_hash.outputs.hash }}
   cache_key:
     value: ${{ steps.cache_key.outputs.key }}
+  test:
+    value: "aaaa"
