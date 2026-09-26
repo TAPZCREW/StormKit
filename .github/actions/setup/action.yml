@@ -40,14 +40,10 @@ runs:
         arch: inputs.arch
         compiler: inputs.compiler
     
-    - name: Set xmake env
-      if: inputs.os == "windows"
-      run: echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
     - name: Set XMake env
-      if: inputs.os != "windows"
       run: |
         echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" >> $GITHUB_ENV
+        shell: bash
 
     - name: Setup XMake
       uses: xmake-io/github-action-setup-xmake@v1
@@ -57,14 +53,10 @@ runs:
 
     - name: Update xmake repository
       run: xmake repo --update
+      shell: bash
 
     - name: Retrieve dependencies hash
       id: dep_hash
-      if: inputs.os == "windows"
-      run: echo "hash=$(xmake l utils.ci.packageskey)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-
-    - name: Retrieve dependencies hash
-      id: dep_hash
-      if: inputs.os != "windows"
       run: echo "hash=$(xmake l utils.ci.packageskey)" >> $GITHUB_OUTPUT
+      shell: bash
 
