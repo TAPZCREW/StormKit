@@ -130,7 +130,7 @@ namespace stormkit { inline namespace core {
         }
 #elifdef STORMKIT_OS_LINUX
         auto frames_raw = array<void*, 1024> {};
-        auto count      = backtrace(stdr::data(frames_raw), stdr::data(frames_raw));
+        auto count      = backtrace(stdr::data(frames_raw), stdr::size(frames_raw));
 
         auto       frames = array_view { frames_raw }.subspan(count);
         const auto syms   = array_view { backtrace_symbols(stdr::data(frames), count) }
