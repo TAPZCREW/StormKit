@@ -134,6 +134,7 @@ namespace stormkit { inline namespace core {
 
         if (count == 0) std::println("No stacktrace available!");
 #elifdef STORMKIT_OS_LINUX
+        std::println(stderr, "AAAAAAAA");
         auto frames_raw = array<void*, 1024> {};
         auto count      = backtrace(stdr::data(frames_raw), stdr::size(frames_raw));
         if (count > 0) {
@@ -146,11 +147,11 @@ namespace stormkit { inline namespace core {
                                  })
                                | stdr::to<dynarray<string_view>>();
 
-            std::println("{}", syms);
+            std::println(stderr, "{}", syms);
 
             std::free(syms_);
         } else
-            std::println("No stacktrace available!");
+            std::println(stderr, "No stacktrace available!");
 #else
         auto _ = ignore_count;
         std::println(stderr, "std::stacktrace not supported!");
