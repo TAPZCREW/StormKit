@@ -1,13 +1,14 @@
 namespace("stormkit", function()
     rule("flags", function()
         on_config("linux", function(target)
+            print("AAAAAAAAAAAAAAAAAAAAAAAAAA")
             if is_mode("debug", "releasedbg") then
                 if get_config("toolchain" == "llvm") then
-                    target:add("ldflags", "-Wl,--export-dynamic")
-                    target:add("shflags", "-Wl,--export-dynamic")
+                    target:add("ldflags", "-Wl,--export-dynamic", { force = true })
+                    target:add("shflags", "-Wl,--export-dynamic", { force = true })
                 else
-                    target:add("ldflags", "-rdynamic")
-                    target:add("shflags", "-rdynamic")
+                    target:add("ldflags", "-rdynamic", { force = true })
+                    target:add("shflags", "-rdynamic", { force = true })
                 end
             end
         end)
