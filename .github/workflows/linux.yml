@@ -76,6 +76,7 @@ jobs:
             mold
             nasm
             ninja-build
+            libctypes-ocaml-dev
             libllvm-${{ env.LLVM_VERSION }}-ocaml-dev
             libllvm${{ env.LLVM_VERSION }}
             llvm-${{ env.LLVM_VERSION }}
