@@ -62,13 +62,13 @@ jobs:
         uses: ./.github/actions/build
         with:
           os: "windows"
-          arch: matrix.arch
-          compiler: matrix.compiler
-          cpplib: matrix.cpplib
-          mode: matrix.mode
-          kind: matrix.kind
-          dep_hash: matrix.dep_hash
-          cache_key: matrix.cache_key
+          arch: ${{ matrix.arch }}
+          compiler: ${{ matrix.compiler }}
+          cpplib: ${{ matrix.cpplib }}
+          mode: ${{ matrix.mode }}
+          kind: ${{ matrix.kind }}
+          dep_hash: ${{ matrix.dep_hash }}
+          cache_key: ${{ matrix.cache_key }}
           additional_flags: |
             ${{ (matrix.compiler == 'llvm') && '--sdk="$env:GITHUB_WORKSPACE/llvm/llvm"' || '' }} `
             --policies="platform.longpaths"

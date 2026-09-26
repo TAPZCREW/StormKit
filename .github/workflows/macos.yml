@@ -103,13 +103,13 @@ jobs:
         uses: ./.github/actions/build
         with:
           os: "macos"
-          arch: matrix.arch
-          compiler: matrix.compiler
-          cpplib: matrix.cpplib
-          mode: matrix.mode
-          kind: matrix.kind
-          dep_hash: matrix.dep_hash
-          cache_key: matrix.cache_key
+          arch: ${{ matrix.arch }}
+          compiler: ${{ matrix.compiler }}
+          cpplib: "libc++"
+          mode: ${{ matrix.mode }}
+          kind: ${{ matrix.kind }}
+          dep_hash: ${{ matrix.dep_hash }}
+          cache_key: ${{ matrix.cache_key }}
           additional_flags: |
            --sdk="$(brew --prefix llvm)" \
            --sc="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend"
