@@ -24,7 +24,7 @@ import stormkit.core;
 import stormkit.image;
 import stormkit.math;
 
-namespace stdr = std::ranges;
+namespace stdr  = std::ranges;
 namespace stdfs = std::filesystem;
 
 export namespace stormkit::image::details {
@@ -153,11 +153,10 @@ namespace stormkit::image::details {
 
             auto out =
 #ifdef STORMKIT_OS_WINDOWS
-              _fdopen
+              _fdopen(reinterpret_cast<iptr>(file->native_descriptor()), "w");
 #else
-              fdopen
+              fdopen(file->native_descriptor(), "w");
 #endif
-              (reinterpret_cast<iptr>(file->native_descriptor()), "w");
 
             jpeg_create_compress(&info);
             jpeg_stdio_dest(&info, out);
