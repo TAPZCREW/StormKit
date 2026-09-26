@@ -25,6 +25,8 @@ import stormkit.math.linear.tensor;
 
 namespace cmeta = stormkit::core::meta;
 
+using namespace stormkit::literals;
+
 #define GEN_SWIZZLE2(a, b)                                                                       \
     template<typename Self>                                                                      \
     STORMKIT_FORCE_INLINE constexpr auto a##b(this Self& self) -> cmeta::remove_const_of<Self> { \
@@ -241,7 +243,7 @@ namespace stormkit::math {
             format_to(ctx, "{}", vector[3]);
         }
         if constexpr (N >= 5) {
-            for (auto i : range(4, N)) {
+            for (auto i : range(4_usize, N)) {
                 format_to(ctx, " .[");
                 format_to(ctx, "{}", i);
                 format_to(ctx, "] = ");

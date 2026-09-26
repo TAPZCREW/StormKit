@@ -24,7 +24,6 @@ export namespace stormkit::math {
     template<core::meta::arithmetic T>
     struct rect {
         using value_type = T;
-        using value_type = T;
 
         value_type           x      = value_type { 0 };
         value_type           y      = value_type { 0 };
@@ -47,7 +46,6 @@ export namespace stormkit::math {
 
     template<core::meta::arithmetic T>
     struct bounding_rect {
-        using value_type = T;
         using value_type = T;
 
         value_type left   = value_type { 0 };
