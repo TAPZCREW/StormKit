@@ -1,5 +1,11 @@
 namespace("stormkit", function()
     rule("flags", function()
+        on_config("linux", function(target)
+            if is_mode("debug") then
+                target:add("ldflags", "-rdynamic")
+                target:add("shflags", "-rdynamic")
+            end
+        end)
         on_config("linux", "mingw", "macosx", "ios", "android", function(target)
             if get_config("lto") then
                 target:set("policy", "build.optimization.lto", true)
