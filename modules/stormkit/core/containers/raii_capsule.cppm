@@ -17,11 +17,8 @@ export namespace stormkit { inline namespace core {
     template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE = T {}>
     class RAIICapsule {
       public:
-        using value_type     = T;
-        using ReferenceType = value_type&;
-
-        using value_type = value_type;
-        using reference  = ReferenceType;
+        using value_type     = value_type;
+        using reference_type = value_type&;
 
         template<typename... Ts>
         static constexpr auto create(Ts&&... args) noexcept -> RAIICapsule
@@ -42,7 +39,7 @@ export namespace stormkit { inline namespace core {
         constexpr auto operator=(RAIICapsule&& other) noexcept -> RAIICapsule&;
 
         constexpr      operator value_type() const noexcept;
-        constexpr auto handle() noexcept -> ReferenceType;
+        constexpr auto handle() noexcept -> reference_type;
         constexpr auto handle() const noexcept -> value_type;
         constexpr auto release() noexcept -> value_type;
         constexpr auto reset(T handle = RELEASE_VALUE) noexcept -> void;
@@ -136,7 +133,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, auto Constructor, auto Deleter, typename Tag, auto RELEASE_VALUE>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
-    constexpr auto RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::handle() noexcept -> ReferenceType {
+    constexpr auto RAIICapsule<T, Constructor, Deleter, Tag, RELEASE_VALUE>::handle() noexcept -> reference_type {
         return m_handle;
     }
 
