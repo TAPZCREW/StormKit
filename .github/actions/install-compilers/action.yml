@@ -15,7 +15,7 @@ runs:
   using: composite
   steps:
     - name: Add LLVM apt repository
-      if: ${{ inputs.os == 'ubuntu' }}
+      if: ${{ inputs.os == 'linux' }}
       uses: myci-actions/add-deb-repo@11
       with:
         repo: deb http://apt.llvm.org/resolute/ llvm-toolchain-resolute main
@@ -23,12 +23,12 @@ runs:
         keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
 
     - name: Update apt repositories
-      if: ${{ inputs.os == 'ubuntu' }}
+      if: ${{ inputs.os == 'linux' }}
       run: sudo apt update
       shell: bash
 
     - name: Install system dependencies
-      if: ${{ inputs.os == 'ubuntu' }}
+      if: ${{ inputs.os == 'linux' }}
       uses: awalsh128/cache-apt-pkgs-action@master
       with:
         version: system_dependencies
@@ -46,7 +46,7 @@ runs:
           ninja-build
 
     - name: Install LLVM
-      if: ${{ inputs.os == 'ubuntu' && inputs.compiler == 'llvm' }}
+      if: ${{ inputs.os == 'linux' && inputs.compiler == 'llvm' }}
       uses: awalsh128/cache-apt-pkgs-action@master
       with:
         version: llvm_dependencies
