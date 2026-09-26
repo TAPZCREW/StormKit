@@ -140,7 +140,7 @@ namespace stormkit { inline namespace core {
             auto frames = array_view<void*> { frames_raw }.subspan(count);
 
             const auto syms_ = backtrace_symbols(stdr::data(frames), count);
-            const auto syms  = array_view<const char*> { syms_, as<usize>(count) }
+            const auto syms  = array_view<char*> { syms_, as<usize>(count) }
                                | stdv::transform([](const char* str) static noexcept -> string_view {
                                     return string_view { str };
                                  })
