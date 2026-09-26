@@ -53,7 +53,7 @@ jobs:
         id: bootstrap
         uses: ./.github/actions/setup
         with:
-          os: matrix.os
+          os: "windows"
           arch: matrix.arch
           compiler: matrix.compiler
 
@@ -61,7 +61,7 @@ jobs:
         id: build_and_tests
         uses: ./.github/actions/build
         with:
-          os: matrix.os
+          os: "windows"
           arch: matrix.arch
           compiler: matrix.compiler
           cpplib: matrix.cpplib
@@ -77,4 +77,4 @@ jobs:
         id: upload
         uses: ./.github/actions/upload
         with:
-          name: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.compiler }}-${{ matrix.cpplib }}-${{ matrix.kind }}-${{ matrix.mode }}
+          name: Windows-${{ matrix.arch }}-${{ matrix.compiler }}-${{ matrix.cpplib }}-${{ matrix.kind }}-${{ matrix.mode }}
