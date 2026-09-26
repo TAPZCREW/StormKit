@@ -55,7 +55,7 @@ namespace stormkit { inline namespace core {
         });
 
         auto buf = mmap(nullptr, m_size, prot_access, MAP_SHARED, fd, 0);
-        if (buff == nullptr) return std::unexpected { error_code::from_errno() };
+        if (buf == nullptr) return std::unexpected { error_code::from_errno() };
 
         m_data = { reinterpret_cast<byte*>(buf), m_size };
 
