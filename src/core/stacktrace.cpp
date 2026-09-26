@@ -125,6 +125,7 @@ namespace stormkit { inline namespace core {
             }
         }
 #else
+
         auto _ = ignore_count;
         std::println(stderr, "std::stacktrace not supported!");
 #endif
