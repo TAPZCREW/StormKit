@@ -66,7 +66,7 @@ on:
 
 jobs:
   build:
-    name: ${{ matrix.compiler }} ${{ matrix.arch }}  (${{ matrix.kind }}/${{ matrix.mode }})
+    name: ${{ matrix.arch }}  (${{ matrix.kind }}/${{ matrix.mode }})
     strategy:
       fail-fast: false
       matrix:
@@ -81,7 +81,7 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
 
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.os }}
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.arch }}-${{ matrix.kind }}-${{ matrix.mode }}
       cancel-in-progress: true
   
     steps:
