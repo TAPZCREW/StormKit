@@ -149,7 +149,8 @@ jobs:
       - name: Configure & Install dependencies
         id: configure
         run: |
-          ls /home/runner/work/StormKit/StormKit/
+          ls /usr/lib/llvm
+          which clang
           xmake f -vD -a ${{ (matrix.arch  == 'x64') && 'x86_64' || (matrix.arch == 'arm64') && 'aarch64' || matrix.arch }} \
            --yes \
            -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} \
