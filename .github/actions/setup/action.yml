@@ -1,0 +1,65 @@
+name: setup
+description: Checkout, install compiler and fetch environment infos
+
+inputs:
+  os:
+    required: true
+  arch:
+    required: true
+  compiler:
+    required: true
+  llvm_version:
+    required: false
+
+outputs:
+  dep_hash:
+    description: Full version string of the compiler
+    value: ${{ steps.dep_hash.outputs.hash }}
+  cache_key:
+    description: Full version string of the compiler
+    value: ${{ steps.cache_key.outputs.key }}
+
+runs:
+  using: composite
+  steps:
+    - name: Use current date as xmake package cache key
+      id: cache_key
+      run: echo "key=$(date +'%W')" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Configure Pagefile
+      if: ${{ inputs.os == 'windows' }}
+      uses: al-cheb/configure-pagefile-action@v1.3
+      with:
+        minimum-size: 8GB
+        maximum-size: 32GB
+        disk-root: "D:"
+
+    - name: Install compilers
+      uses: ./.github/actions/install-compilers
+      with:
+        os: ${{ inputs.os }}
+        arch: ${{ inputs.arch }}
+        compiler: ${{ inputs.compiler }}
+        llvm_version: ${{ inputs.llvm_version }}
+    
+    - name: Set XMake env
+      run: |
+        echo "XMAKE_GLOBALDIR=${{ runner.workspace }}/xmake-global" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Setup XMake
+      uses: xmake-io/github-action-setup-xmake@v1
+      with:
+        xmake-version: branch@dev
+        actions-cache-folder: .xmake-cache-W${{ steps.cache_key.outputs.key }}
+
+    - name: Update xmake repository
+      run: xmake repo --update
+      shell: bash
+
+    - name: Retrieve dependencies hash
+      id: dep_hash
+      run: echo "hash=$(xmake l utils.ci.packageskey)" >> $GITHUB_OUTPUT
+      shell: bash
+

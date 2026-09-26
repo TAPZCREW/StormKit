@@ -27,14 +27,14 @@ on:
       - '.src/*/android/**.cpp'
       - '.src/*/android/**.h'
       - '.src/*/android/**.hpp'
-      - .github/workflows/**.yml
+      - '.github/workflows/*.yml'
       - '!.github/workflows/macos.yml'
       - .gitignore
       - LICENSE
       - README.md
 
   push:
-    branches: [main, develop]
+    branches: [develop]
     paths-ignore:
       - '.src/*/win32/**.cppm'
       - '.src/*/win32/**.c'
@@ -58,7 +58,7 @@ on:
       - '.src/*/android/**.cpp'
       - '.src/*/android/**.h'
       - '.src/*/android/**.hpp'
-      - .github/workflows/**.yml
+      - '.github/workflows/*.yml'
       - '!.github/workflows/macos.yml'
       - .gitignore
       - LICENSE
@@ -66,127 +66,56 @@ on:
 
 jobs:
   build:
-    name: ${{ matrix.compiler }} ${{ matrix.arch }}  (${{ matrix.kind }}/${{ matrix.mode }})
+    name: ${{ matrix.arch }} (${{ matrix.kind }}/${{ matrix.mode }})
     strategy:
       fail-fast: false
       matrix:
         os: [macOS-26]
         compiler: [llvm]
+        cpplib: [libc++]
         arch: [arm64]
         kind: [static, shared]
-        mode: [release, debug]
+        mode: [releasedbg, debug]
 
     runs-on: ${{ matrix.os }}${{ (matrix.arch == 'x64') && '-large' || '' }}
     if: ${{ !contains(github.event.head_commit.message, 'ci skip') }}
 
     concurrency:
-      group:
-        ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.kind
-        }}-${{ matrix.mode }}
-
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.arch }}-${{ matrix.kind }}-${{ matrix.mode }}
+      cancel-in-progress: true
+  
     steps:
-      - name: Use current date as xmake package cache key
-        id: cache_key
-        run: echo "key=$(date +'%W')" >> $GITHUB_OUTPUT
-        shell: bash
-
-      - name: Install build tools
-        uses: tecolicom/actions-use-homebrew-tools@v1
-        with:
-          tools: llvm ninja meson cmake mold nasm pkgconf
-          verbose: true
-
       - name: Checkout
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-          ref: ${{ github.ref }}
 
-      - name: Set XMake env
-        run: |
-          echo "XMAKE_ROOTDIR=${{ github.workspace }}/.xmake-cache" >> $GITHUB_ENV
-          echo "XMAKE_PKG_INSTALLDIR=${{ github.workspace }}/.xmake-packages" >> $GITHUB_ENV
-          echo "${{ github.workspace }}/.xmake-cache" >> $GITHUB_PATH
-
-      - name: Generate XMake cachekey
-        id: xmake_cachekey
-        run: echo "key=$(date +'%W')" >> $GITHUB_OUTPUT
-        shell: bash
-
-      - name: Restore cached XMake
-        id: restore-xmakecache
-        uses: actions/cache/restore@v6
+      - name: Bootstrap
+        id: bootstrap
+        uses: ./.github/actions/setup
         with:
-          path: ${{ env.XMAKE_ROOTDIR }}
-          key: ${{ matrix.os }}-${{ matrix.arch }}-W${{ steps.xmake_cachekey.outputs.key }}
+          os: macos
+          arch: ${{ matrix.arch }}
+          compiler: ${{ matrix.compiler }}
 
-      - name: Setup XMake
-        uses: xmake-io/github-action-setup-xmake@v1
+      - name: Build & Tests
+        id: build_and_tests
+        uses: ./.github/actions/build
         with:
-          actions-cache-folder: .xmake-cache
-
-      - name: Cache XMake
-        if: ${{ !steps.restore-xmakecache.outputs.cache-hit }}
-        uses: actions/cache/save@v6
-        with:
-          path: ${{ env.XMAKE_ROOTDIR }}
-          key: ${{ steps.restore-xmakecache.outputs.cache-primary-key }}
-
-      - name: Update XMake repository
-        run: xmake repo --update
-
-      - name: Generate packages cachekey
-        id: packages_cachekey
-        run: echo "hash=$(xmake l utils.ci.packageskey)" >> $GITHUB_OUTPUT
-        shell: bash
-
-      - name: Restore cached packages
-        id: restore-packagescache
-        uses: actions/cache/restore@v6
-        with:
-          path: ${{ env.XMAKE_PKG_INSTALLDIR }}
-          key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ steps.packages_cachekey.outputs.hash }}
-
-      - name: Configure & Install dependencies
-        id: configure
-        run: |
-          xmake f -vD \
-           --yes \
-           -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} \
-           -k ${{ matrix.kind }} \
-           --examples=y \
-           --tests=y \
-           --mold=n \
-           --on_ci=y \
-           --sanitizers=n \
-           --toolchain=llvm \
+          os: macos
+          arch: ${{ matrix.arch }}
+          compiler: ${{ matrix.compiler }}
+          cpplib: "libc++"
+          mode: ${{ matrix.mode }}
+          kind: ${{ matrix.kind }}
+          dep_hash: ${{ steps.bootstrap.dep_hash }}
+          cache_key: ${{ steps.bootstrap.cache_key }}
+          additional_flags: |
            --sdk="$(brew --prefix llvm)" \
-           --sc="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend" \
-           --runtimes="c++_static"
-
-      - name: Cache packages
-        if: ${{ !steps.restore-packagescache.outputs.cache-hit }}
-        uses: actions/cache/save@v6
-        with:
-          path: ${{ env.XMAKE_PKG_INSTALLDIR }}
-          key: ${{ steps.restore-packagescache.outputs.cache-primary-key }}
-
-      - name: Build
-        id: build
-        run: |
-          xmake b -v
-
-      - name: Run unit tests
-        id: tests
-        run: xmake test -v
-
-      - name: Installation
-        id: install
-        run: xmake install -v --installdir="${{ github.workspace }}/output"
+           --sc="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift-frontend"
 
       - name: Upload artifacts
         id: upload
-        uses: actions/upload-artifact@v7
+        uses: ./.github/actions/upload
         with:
-          name: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.arch }}-${{ matrix.kind }}-${{ matrix.mode }}
-          path: ${{ github.workspace }}/output
+          name: macOS-${{ matrix.arch }}-${{ matrix.compiler }}-${{ matrix.kind }}-${{ matrix.mode }}

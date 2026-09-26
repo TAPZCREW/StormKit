@@ -1,0 +1,106 @@
+name: install-compilers
+description: Install compilers
+
+inputs:
+  os:
+    required: true
+  arch:
+    required: true
+  compiler:
+    required: true
+  llvm_version:
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Add LLVM apt repository
+      if: ${{ inputs.os == 'linux' }}
+      uses: myci-actions/add-deb-repo@11
+      with:
+        repo: deb http://apt.llvm.org/resolute/ llvm-toolchain-resolute main
+        repo-name: llvm
+        keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
+
+    - name: Update apt repositories
+      if: ${{ inputs.os == 'linux' }}
+      run: sudo apt update
+      shell: bash
+
+    - name: Install system dependencies
+      if: ${{ inputs.os == 'linux' }}
+      uses: awalsh128/cache-apt-pkgs-action@master
+      with:
+        version: system_dependencies
+        packages: |
+          build-essential
+          cmake
+          apt-file
+          ninja-build
+          meson
+          pkg-config
+          libelf-dev
+          libdwarf-dev
+          mold
+          nasm
+          ninja-build
+
+    - name: Install LLVM
+      if: ${{ inputs.os == 'linux' && inputs.compiler == 'llvm' }}
+      uses: awalsh128/cache-apt-pkgs-action@master
+      with:
+        version: llvm_dependencies
+        packages: |
+          libllvm${{ inputs.llvm_version }}
+          llvm-${{ inputs.llvm_version }}
+          llvm-${{ inputs.llvm_version }}-dev
+          llvm-${{ inputs.llvm_version }}-runtime
+          clang-${{ inputs.llvm_version }}
+          clang-tools-${{ inputs.llvm_version }}
+          libclang-common-${{ inputs.llvm_version }}-dev
+          libclang-${{ inputs.llvm_version }}-dev
+          libclang1-${{ inputs.llvm_version }}
+          libclang-rt-${{ inputs.llvm_version }}-dev
+          lldb-${{ inputs.llvm_version }}
+          lld-${{ inputs.llvm_version }}
+          libc++-${{ inputs.llvm_version }}-dev
+          libc++abi-${{ inputs.llvm_version }}-dev
+          libomp-${{ inputs.llvm_version }}-dev
+          libclc-${{ inputs.llvm_version }}-dev
+          libunwind-${{ inputs.llvm_version }}-dev
+          libllvmlibc-${{ inputs.llvm_version }}-dev 
+
+    - name: Restore cached LLVM
+      id: restore-llvmcache
+      if: ${{ inputs.os == 'windows' && inputs.compiler == 'llvm' }}
+      uses: actions/cache/restore@v6
+      with:
+        path: ${{ runner.workspace }}/llvm.7z
+        key: ${{ matrix.os }}-LLVM-24-${{ matrix.arch }}
+
+    - name: Download LLVM
+      if: ${{ inputs.os == 'windows' && inputs.compiler == 'llvm' && !steps.restore-llvmcache.outputs.cache-hit }}
+      run: |
+        curl.exe -o "${{ runner.workspace }}/llvm.7z" -LO https://github.com/Arthapz/llvm-prebuilt/releases/download/llvm-24/llvm.7z
+      shell: bash
+
+    - name: Extract LLVM
+      if: ${{ inputs.os == 'windows' && inputs.compiler == 'llvm' }}
+      run: |
+        7z x "${{ runner.workspace }}/llvm.7z" -o"${{ runner.workspace }}/llvm"
+      shell: bash
+
+    - name: Cache LLVM
+      if: ${{ inputs.os == 'windows' && inputs.compiler == 'llvm' && !steps.restore-llvmcache.outputs.cache-hit }}
+      uses: actions/cache/save@v6
+      with:
+        path: ${{ runner.workspace }}/llvm
+        key: ${{ steps.restore-llvmcache.outputs.cache-primary-key }}
+
+    - name: Install build tools
+      if: ${{ inputs.os == 'macos' }}
+      uses: tecolicom/actions-use-homebrew-tools@v1
+      with:
+        tools: llvm ninja meson cmake mold nasm pkgconf
+        verbose: true
+
