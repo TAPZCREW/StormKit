@@ -18,6 +18,7 @@ import stormkit.core.meta.concepts;
 import stormkit.core.meta.algorithms;
 import stormkit.core.meta.type_query;
 import stormkit.core.string.format;
+import stormkit.core.string.algorithms;
 
 using namespace stormkit::literals;
 
