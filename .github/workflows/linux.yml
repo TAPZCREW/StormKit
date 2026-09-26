@@ -149,7 +149,7 @@ jobs:
            --yes \
            -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} \
            -k ${{ matrix.kind }} \
-           ${{ (matrix.compiler == 'llvm') && '--ldflags="-fuse-ld=lld -l/usr/lib/llvm-$LLVM_VERSION/lib/libc++abi.a" --shflags="-fuse-ld=lld -l/usr/lib/llvm-$LLVM_VERSION/lib/libc++abi.a"' || '' }} \
+           ${{ (matrix.compiler == 'llvm') && '--ldflags="-fuse-ld=lld -L/usr/lib/llvm-$LLVM_VERSION/lib/ -lc++abi.a" --shflags="-fuse-ld=lld -L/usr/lib/llvm-$LLVM_VERSION/lib/ -lc++abi"' || '' }} \
            --examples=y \
            --tests=y \
            --sanitizers=n \
