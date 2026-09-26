@@ -127,7 +127,7 @@ jobs:
           dep_hash: ${{ steps.bootstrap.outputs.dep_hash }}
           cache_key: ${{ steps.bootstrap.outputs.cache_key }}
           additional_flags: |
-            --platform=windows \
+            --plat=windows \
             ${{ case(matrix.compiler == 'llvm', format('--sdk="{0}/llvm/llvm"', runner.workspace), '') }} \
             --policies="platform.longpaths"
 
