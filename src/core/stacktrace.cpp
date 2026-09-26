@@ -68,8 +68,9 @@ namespace stormkit { inline namespace core {
         else
             std::println(stderr, "================= CALLSTACK (thread id: {}) =================", std::this_thread::get_id());
 #ifdef STD_STACKTRACE_SUPPORTED
-        const auto st = std::stacktrace::current();
-        auto       i  = 0;
+        const auto st    = std::stacktrace::current();
+        auto       i     = 0;
+        auto       count = 0;
         for (const auto& frame : st) {
             if (i < ignore_count) {
                 i += 1;
@@ -128,17 +129,22 @@ namespace stormkit { inline namespace core {
             } else {
                 std::println(stderr, "{}# {}{}", (i++ - ignore_count), BLUE_TEXT_STYLE | object_address, formatted_symbol);
             }
+            ++count;
         }
+
+        if (count == 0) std::println("No stacktrace available!");
 #elifdef STORMKIT_OS_LINUX
         auto frames_raw = array<void*, 1024> {};
         auto count      = backtrace(stdr::data(frames_raw), stdr::size(frames_raw));
+        if (count > 0) {
+            auto       frames = array_view<void*> { frames_raw }.subspan(count);
+            const auto syms   = array_view<char*> { backtrace_symbols(stdr::data(frames), count), as<usize>(count) }
+                                | stdv::transform([](char* str) static noexcept -> string_view { return string_view { str }; })
+                                | stdr::to<dynarray<string_view>>();
 
-        auto       frames = array_view<void*> { frames_raw }.subspan(count);
-        const auto syms   = array_view<char*> { backtrace_symbols(stdr::data(frames), count), as<usize>(count) }
-                            | stdv::transform([](char* str) static noexcept -> string_view { return string_view { str }; })
-                            | stdr::to<dynarray<string_view>>();
-
-        std::println("{}", syms);
+            std::println("{}", syms);
+        } else
+            std::println("No stacktrace available!");
 #else
         auto _ = ignore_count;
         std::println(stderr, "std::stacktrace not supported!");
