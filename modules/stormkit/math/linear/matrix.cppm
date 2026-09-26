@@ -584,7 +584,9 @@ namespace stormkit::math {
                 mul(matrix, transposed, mutable_view_of(result));
             });
 
-            return std::memcmp(stdr::data(result), stdr::data(IDENTITY), M * N * sizeof(T));
+            if not consteval { std::println("{}", result); }
+
+            return std::memcmp(stdr::data(result), stdr::data(IDENTITY), M * N * sizeof(T)) == 0;
         }
     }
 
