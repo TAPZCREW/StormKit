@@ -3,11 +3,9 @@ module;
 #include <pthread.h>
 #include <sys/prctl.h>
 
-module stormkit.core;
+module stormkit.core.parallelism.threadutils;
 
 import std;
-
-import stormkit.core.types;
 
 namespace stdr = std::ranges;
 
