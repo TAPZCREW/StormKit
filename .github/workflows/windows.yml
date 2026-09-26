@@ -70,7 +70,7 @@ jobs:
           dep_hash: ${{ steps.bootstrap.dep_hash }}
           cache_key: ${{ steps.bootstrap.cache_key }}
           additional_flags: |
-            ${{ (matrix.compiler == 'llvm') && '--sdk="$GITHUB_WORKSPACE/llvm/llvm"' || '' }} \
+            ${{ (matrix.compiler == 'llvm') && '--sdk="${{ runner.workspace }}/llvm/llvm"' || '' }} \
             --policies="platform.longpaths"
 
       - name: Upload artifacts
