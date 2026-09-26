@@ -114,13 +114,13 @@ jobs:
         uses: ./.github/actions/build
         with:
           os: linux
-          arch: matrix.arch
-          compiler: matrix.compiler
-          cpplib: matrix.cpplib
-          mode: matrix.mode
-          kind: matrix.kind
-          dep_hash: matrix.dep_hash
-          cache_key: matrix.cache_key
+          arch: ${{ matrix.arch }}
+          compiler: ${{ matrix.compiler }}
+          cpplib: ${{ matrix.cpplib }}
+          mode: ${{ matrix.mode }}
+          kind: ${{ matrix.kind }}
+          dep_hash: ${{ matrix.dep_hash }}
+          cache_key: ${{ matrix.cache_key }}
           additional_flags: |
             ${{ (matrix.compiler == 'llvm' && matrix.cpplib == 'libc++') && '--sdk="/usr/lib/llvm-$LLVM_VERSION"' || '' }} \
             ${{ (matrix.compiler == 'llvm' && matrix.cpplib == 'libc++') && '--ldflags="-fuse-ld=lld -L/usr/lib/llvm-$LLVM_VERSION/lib/ -lc++abi" --shflags="-fuse-ld=lld -L/usr/lib/llvm-$LLVM_VERSION/lib/ -lc++abi"' || '' }} \
