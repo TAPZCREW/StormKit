@@ -358,8 +358,8 @@ namespace stormkit { inline namespace core { namespace io {
             const auto succeed = GetFileSizeEx(m_descriptor, &size);
             if (succeed) m_size = as<usize>(size.QuadPart);
 #else
-            lseek(m_descriptor, 0, SEEK_SET);
-            m_size = as<usize>(lseek(m_descriptor, 0, SEEK_END));
+            const auto old_pos = lseek(m_descriptor, 0, SEEK_SET);
+            m_size             = as<usize>(lseek(m_descriptor, 0, SEEK_END));
             lseek(m_descriptor, as<i32>(old_pos), SEEK_SET);
 #endif
         }
