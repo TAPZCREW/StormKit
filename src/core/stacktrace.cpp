@@ -137,7 +137,7 @@ namespace stormkit { inline namespace core {
         // auto       frames = array<void*, 1024> {};
         // const auto count  = backtrace(stdr::data(frames), stdr::size(frames));
         void*      frames[100];
-        const auto frame_count = backtrace(frames, stdr::size(frames_raw));
+        const auto frame_count = backtrace(frames, stdr::size(frames));
         if (frame_count > 0) {
             const auto syms_ = backtrace_symbols(stdr::data(frames), frame_count);
             for (auto i : range(as<usize>(frame_count))) std::println(stderr, "{}", std::strlen(syms_[i]));
