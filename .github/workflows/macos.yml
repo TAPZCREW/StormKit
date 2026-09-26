@@ -64,9 +64,6 @@ on:
       - LICENSE
       - README.md
 
-env:
-  LLVM_VERSION=24
-
 jobs:
   build:
     name: ${{ matrix.arch }} (${{ matrix.kind }}/${{ matrix.mode }})
