@@ -56,14 +56,18 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     auto get_thread_name(const std::thread& thread) noexcept -> string {
-        const auto id = thread.native_handle();
+        // const_cast because native_handle() is not marked const, but we are not modifying the thread
+        // so should be fine
+        const auto id = const_cast<std::thread&>(thread).native_handle();
         return details::get_thread_name(id);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     auto get_thread_name(const std::jthread& thread) noexcept -> string {
-        const auto id = thread.native_handle();
+        // const_cast because native_handle() is not marked const, but we are not modifying the thread
+        // so should be fine
+        const auto id = const_cast<std::jthread&>(thread).native_handle();
         return details::get_thread_name(id);
     }
 }} // namespace stormkit::core
