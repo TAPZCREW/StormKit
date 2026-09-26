@@ -1,0 +1,68 @@
+name: build
+description: Configure, Build and test
+
+inputs:
+  os:
+    required: true
+  arch:
+    required: true
+  compiler:
+    required: true
+  cpplib:
+    required: true
+  mode:
+    required: true
+  kind:
+    required: true
+  dep_hash:
+    required: true
+  cache_key:
+    required: true
+  additional_flags:
+
+runs:
+  using: composite
+  steps:
+    - name: Restore cached packages
+      id: restore-depcache
+      uses: actions/cache/restore@v6
+      with:
+        path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
+        key: ${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.compiler }}-${{ inputs.cpplib }}-${{ inputs.mode }}-${{ inputs.dep_hash }}-W${{ inputs.cache_key }}
+
+    - name: Configure & Install dependencies
+      id: configure
+      run: |
+        xmake f \
+         --arch=${{ (inputs.arch  == 'x64') && 'x86_64' || (inputs.arch == 'arm64') && 'aarch64' || inputs.arch }} \
+         --mode=${{ inputs.mode }} \
+         --kind=${{ inputs.kind }} \
+         --examples=y \
+         --tests=y \
+         --sanitizers=n \
+         --mold=y \
+         --on_ci=y \
+         --lto=${{ (inputs.mode == 'release') && 'y' || 'n' }} \
+         --yes \
+         ${{ inputs.compiler == 'llvm' && '--toolchain=llvm' || '' }} \
+         ${{ (inputs.compiler == 'llvm' && inputs.cpplib == "libc++") && '--runtimes=c++_static' || '' }} \
+         ${{ additional_flags && additional_flags or '' }}
+      shell: bash
+
+    - name: Cache xmake dependencies
+      if: ${{ !steps.restore-depcache.outputs.cache-hit }}
+      uses: actions/cache/save@v6
+      with:
+        path: ${{ env.XMAKE_GLOBALDIR }}/.xmake/packages
+        key: ${{ steps.restore-depcache.outputs.cache-primary-key }}
+
+    - name: Build
+      id: build
+      run: |
+        xmake b
+      shell: bash
+
+    - name: Run unit tests
+      run: xmake test -v
+      shell: bash
+
