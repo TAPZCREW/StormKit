@@ -108,6 +108,7 @@ jobs:
           os: linux
           arch: matrix.arch
           compiler: matrix.compiler
+          llvm_version: 24
 
       - name: Build & Tests
         id: build_and_tests
@@ -122,7 +123,7 @@ jobs:
           dep_hash: ${{ matrix.dep_hash }}
           cache_key: ${{ matrix.cache_key }}
           additional_flags: |
-            ${{ (matrix.compiler == 'llvm' && matrix.cpplib == 'libc++') && '--sdk="/usr/lib/llvm-$LLVM_VERSION"' || '' }} \
+            ${{ (matrix.compiler == 'llvm' && matrix.cpplib == 'libc++') && '--sdk="/usr/lib/llvm-24"' || '' }} \
             ${{ (matrix.compiler == 'llvm' && matrix.cpplib == 'libc++') && '--ldflags="-fuse-ld=lld -L/usr/lib/llvm-$LLVM_VERSION/lib/ -lc++abi" --shflags="-fuse-ld=lld -L/usr/lib/llvm-$LLVM_VERSION/lib/ -lc++abi"' || '' }} \
             ${{ (matrix.cpplib == 'libc++') && '--runtimes="c++_static"' || '' }}
 

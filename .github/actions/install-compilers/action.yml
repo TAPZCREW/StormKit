@@ -8,6 +8,8 @@ inputs:
     required: true
   compiler:
     required: true
+  llvm_version:
+    required: false
 
 runs:
   using: composite
@@ -49,24 +51,24 @@ runs:
       with:
         version: llvm_dependencies
         packages: |
-          libllvm${{ env.LLVM_VERSION }}
-          llvm-${{ env.LLVM_VERSION }}
-          llvm-${{ env.LLVM_VERSION }}-dev
-          llvm-${{ env.LLVM_VERSION }}-runtime
-          clang-${{ env.LLVM_VERSION }}
-          clang-tools-${{ env.LLVM_VERSION }}
-          libclang-common-${{ env.LLVM_VERSION }}-dev
-          libclang-${{ env.LLVM_VERSION }}-dev
-          libclang1-${{ env.LLVM_VERSION }}
-          libclang-rt-${{ env.LLVM_VERSION }}-dev
-          lldb-${{ env.LLVM_VERSION }}
-          lld-${{ env.LLVM_VERSION }}
-          libc++-${{ env.LLVM_VERSION }}-dev
-          libc++abi-${{ env.LLVM_VERSION }}-dev
-          libomp-${{ env.LLVM_VERSION }}-dev
-          libclc-${{ env.LLVM_VERSION }}-dev
-          libunwind-${{ env.LLVM_VERSION }}-dev
-          libllvmlibc-${{ env.LLVM_VERSION }}-dev 
+          libllvm${{ inputs.llvm_version }}
+          llvm-${{ inputs.llvm_version }}
+          llvm-${{ inputs.llvm_version }}-dev
+          llvm-${{ inputs.llvm_version }}-runtime
+          clang-${{ inputs.llvm_version }}
+          clang-tools-${{ inputs.llvm_version }}
+          libclang-common-${{ inputs.llvm_version }}-dev
+          libclang-${{ inputs.llvm_version }}-dev
+          libclang1-${{ inputs.llvm_version }}
+          libclang-rt-${{ inputs.llvm_version }}-dev
+          lldb-${{ inputs.llvm_version }}
+          lld-${{ inputs.llvm_version }}
+          libc++-${{ inputs.llvm_version }}-dev
+          libc++abi-${{ inputs.llvm_version }}-dev
+          libomp-${{ inputs.llvm_version }}-dev
+          libclc-${{ inputs.llvm_version }}-dev
+          libunwind-${{ inputs.llvm_version }}-dev
+          libllvmlibc-${{ inputs.llvm_version }}-dev 
 
     - name: Restore cached LLVM
       id: restore-llvmcache
