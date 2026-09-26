@@ -35,7 +35,7 @@ runs:
       id: configure
       run: |
         xmake f \
-         --arch=${{ (inputs.arch  == 'x64' && inputs.os == 'linux') && 'x86_64' || inputs.arch }} \
+         --arch=${{ case(inputs.arch  == 'x64' && inputs.os == 'linux', 'x86_64', inputs.arch) }} \
          --mode=${{ inputs.mode }} \
          --kind=${{ inputs.kind }} \
          --examples=y \
@@ -43,10 +43,10 @@ runs:
          --sanitizers=n \
          --mold=y \
          --on_ci=y \
-         --lto=${{ (inputs.mode == 'release') && 'y' || 'n' }} \
+         --lto=${{ case(inputs.mode == 'release', 'y', 'n') }} \
          --yes \
-         ${{ inputs.compiler == 'llvm' && '--toolchain=llvm' || '' }} \
-         ${{ (inputs.compiler == 'llvm' && inputs.cpplib == 'libc++') && '--runtimes="c++_static"' || '' }} \
+         ${{ case(inputs.compiler == 'llvm', '--toolchain=llvm', '') }} \
+         ${{ case(inputs.compiler == 'llvm' && inputs.cpplib == 'libc++', '--runtimes="c++_static"', '') }} \
          ${{ inputs.additional_flags || '' }}
       shell: bash
 
