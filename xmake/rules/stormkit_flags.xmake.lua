@@ -2,8 +2,13 @@ namespace("stormkit", function()
     rule("flags", function()
         on_config("linux", function(target)
             if is_mode("debug", "releasedbg") then
-                target:add("ldflags", "-rdynamic")
-                target:add("shflags", "-rdynamic")
+                if get_config("toolchain" == "llvm") then
+                    target:add("ldflags", "-Wl,--export-dynamic")
+                    target:add("shflags", "-Wl,--export-dynamic")
+                else
+                    target:add("ldflags", "-rdynamic")
+                    target:add("shflags", "-rdynamic")
+                end
             end
         end)
         on_config("linux", "mingw", "macosx", "ios", "android", function(target)
@@ -14,7 +19,7 @@ namespace("stormkit", function()
                     target:add("shflags", "-flto=thin", { force = true })
                 end
             end
-            if get_config("toolchain") then
+            if get_config("toolchain") == "llvm" then
                 target:add("ldflags", "-fuse-ld=lld", { force = true })
                 target:add("shflags", "-fuse-ld=lld", { force = true })
             end
