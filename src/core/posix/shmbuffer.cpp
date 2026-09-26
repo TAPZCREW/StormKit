@@ -12,7 +12,9 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-module stormkit.core.containers;
+module stormkit.core.containers.shmbuffer;
+
+namespace stdr = std::ranges;
 
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
@@ -28,43 +30,34 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto shm_buffer::do_init(usize size, string name, io::Access access) noexcept -> std::expected<void, std::error_code> {
+    auto shm_buffer::do_init(usize size, string name, io::access access) noexcept -> system_result<void> {
         m_size                = size;
         m_name                = std::move(name);
         m_access              = access;
-        const auto shm_access = (has_flag_bit(m_access, io::Access::WRITE) ? O_RDWR : O_RDONLY)
+        const auto shm_access = (has_flag_bit(m_access, io::access::WRITE) ? O_RDWR : O_RDONLY)
                                 | ((m_handle != nullptr) ? O_TRUNC : O_CREAT);
 
         const auto mode = init_by<mode_t>([access = m_access](auto& mode) noexcept {
-            if (has_flag_bit(access, io::Access::READ)) mode |= S_IRUSR;
-            if (has_flag_bit(access, io::Access::WRITE)) mode |= S_IWUSR;
+            if (has_flag_bit(access, io::access::READ)) mode |= S_IRUSR;
+            if (has_flag_bit(access, io::access::WRITE)) mode |= S_IWUSR;
         });
 
-        m_handle = std::bit_cast<void*>(iptr { shm_open(stdr::data(m_name), shm_access, mode) });
-        if (not m_handle)
-            return std::unexpected {
-                std::error_code { as<i32>(errno), std::system_category() }
-            };
+        m_handle = reinterpret_cast<void*>(iptr { shm_open(stdr::data(m_name), shm_access, mode) });
+        if (m_handle == nullptr) return std::unexpected { error_code::from_errno() };
         const auto fd = unchecked_narrow<i32>(std::bit_cast<iptr>(m_handle));
 
         const auto ret = ftruncate(fd, as<off_t>(m_size));
-        if (ret < 0)
-            return std::unexpected {
-                std::error_code { as<i32>(errno), std::system_category() }
-            };
+        if (ret < 0) return std::unexpected { error_code::from_errno() };
 
         const auto prot_access = init_by<i32>([access = m_access](auto& prot_access) noexcept {
-            if (has_flag_bit(access, io::Access::READ)) prot_access |= PROT_READ;
-            if (has_flag_bit(access, io::Access::WRITE)) prot_access |= PROT_WRITE;
+            if (has_flag_bit(access, io::access::READ)) prot_access |= PROT_READ;
+            if (has_flag_bit(access, io::access::WRITE)) prot_access |= PROT_WRITE;
         });
 
         auto buf = mmap(nullptr, m_size, prot_access, MAP_SHARED, fd, 0);
-        if (not buf)
-            return std::unexpected {
-                std::error_code { as<i32>(errno), std::system_category() }
-            };
+        if (buf == nullptr) return std::unexpected { error_code::from_errno() };
 
-        m_data = { std::bit_cast<byte*>(buf), m_size };
+        m_data = { reinterpret_cast<byte*>(buf), m_size };
 
         return {};
     }
