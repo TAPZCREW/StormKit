@@ -27,7 +27,7 @@ on:
       - '.src/*/android/**.cpp'
       - '.src/*/android/**.h'
       - '.src/*/android/**.hpp'
-      - .github/workflows/**.yml
+      - '.github/workflows/*.yml'
       - '!.github/workflows/macos.yml'
       - .gitignore
       - LICENSE
@@ -58,7 +58,7 @@ on:
       - '.src/*/android/**.cpp'
       - '.src/*/android/**.h'
       - '.src/*/android/**.hpp'
-      - .github/workflows/**.yml
+      - '.github/workflows/*.yml'
       - '!.github/workflows/macos.yml'
       - .gitignore
       - LICENSE

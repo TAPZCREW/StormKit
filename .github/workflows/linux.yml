@@ -32,7 +32,7 @@ on:
       - '.src/*/android/**.hpp'
       - '**.m'
       - '**.swift'
-      - .github/workflows/*.yml
+      - '.github/workflows/*.yml'
       - '!.github/workflows/linux.yml'
       - .gitignore
       - LICENSE
@@ -68,7 +68,7 @@ on:
       - '.src/*/android/**.hpp'
       - '**.m'
       - '**.swift'
-      - .github/workflows/**.yml
+      - '.github/workflows/*.yml'
       - '!.github/workflows/linux.yml'
       - .gitignore
       - LICENSE

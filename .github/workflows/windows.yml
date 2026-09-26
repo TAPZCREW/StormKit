@@ -31,7 +31,7 @@ on:
       - '.src/*/android/**.hpp'
       - '**.m'
       - '**.swift'
-      - .github/workflows/**.yml
+      - '.github/workflows/*.yml'
       - '!.github/workflows/windows.yml'
       - .gitignore
       - LICENSE
@@ -67,7 +67,7 @@ on:
       - '.src/*/android/**.hpp'
       - '**.m'
       - '**.swift'
-      - .github/workflows/**.yml
+      - '.github/workflows/*.yml'
       - '!.github/workflows/windows.yml'
       - .gitignore
       - LICENSE
@@ -110,7 +110,6 @@ jobs:
           os: windows
           arch: ${{ matrix.arch }}
           compiler: ${{ matrix.compiler }}
-
 
       - name: Build & Tests
         id: build_and_tests
