@@ -9,6 +9,9 @@ inputs:
   compiler:
     required: true
 
+env:
+  LLVM_VERSION=24
+
 runs:
   using: composite
   steps:
