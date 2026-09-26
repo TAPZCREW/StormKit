@@ -47,10 +47,7 @@ namespace stormkit { inline namespace core {
         const auto fd = unchecked_narrow<i32>(std::bit_cast<iptr>(m_handle));
 
         const auto ret = ftruncate(fd, as<off_t>(m_size));
-        if (ret < 0)
-            return std::unexpected {
-                std::error_code { as<i32>(errno), std::system_category() }
-            };
+        if (ret < 0) return std::unexpected { error_code::from_errno() };
 
         const auto prot_access = init_by<i32>([access = m_access](auto& prot_access) noexcept {
             if (has_flag_bit(access, io::access::READ)) prot_access |= PROT_READ;
@@ -60,7 +57,7 @@ namespace stormkit { inline namespace core {
         auto buf = mmap(nullptr, m_size, prot_access, MAP_SHARED, fd, 0);
         if (buff == nullptr) return std::unexpected { error_code::from_errno() };
 
-        m_data = { std::bit_cast<byte*>(buf), m_size };
+        m_data = { reinterpret_cast<byte*>(buf), m_size };
 
         return {};
     }
