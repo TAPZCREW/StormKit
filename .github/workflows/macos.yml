@@ -5,6 +5,28 @@ on:
   pull_request:
     branches: [develop]
     paths-ignore:
+      - '.src/*/win32/**.cppm'
+      - '.src/*/win32/**.c'
+      - '.src/*/win32/**.cpp'
+      - '.src/*/win32/**.h'
+      - '.src/*/win32/**.hpp'
+      - '.src/*/ios/**.m'
+      - '.src/*/ios/**.swift'
+      - '.src/*/ios/**.cppm'
+      - '.src/*/ios/**.c'
+      - '.src/*/ios/**.cpp'
+      - '.src/*/ios/**.h'
+      - '.src/*/ios/**.hpp'
+      - '.src/*/linux/**.cppm'
+      - '.src/*/linux/**.c'
+      - '.src/*/linux/**.cpp'
+      - '.src/*/linux/**.h'
+      - '.src/*/linux/**.hpp'
+      - '.src/*/android/**.cppm'
+      - '.src/*/android/**.c'
+      - '.src/*/android/**.cpp'
+      - '.src/*/android/**.h'
+      - '.src/*/android/**.hpp'
       - .github/workflows/**.yml
       - '!.github/workflows/macos.yml'
       - .gitignore
@@ -14,6 +36,28 @@ on:
   push:
     branches: [main, develop]
     paths-ignore:
+      - '.src/*/win32/**.cppm'
+      - '.src/*/win32/**.c'
+      - '.src/*/win32/**.cpp'
+      - '.src/*/win32/**.h'
+      - '.src/*/win32/**.hpp'
+      - '.src/*/ios/**.m'
+      - '.src/*/ios/**.swift'
+      - '.src/*/ios/**.cppm'
+      - '.src/*/ios/**.c'
+      - '.src/*/ios/**.cpp'
+      - '.src/*/ios/**.h'
+      - '.src/*/ios/**.hpp'
+      - '.src/*/linux/**.cppm'
+      - '.src/*/linux/**.c'
+      - '.src/*/linux/**.cpp'
+      - '.src/*/linux/**.h'
+      - '.src/*/linux/**.hpp'
+      - '.src/*/android/**.cppm'
+      - '.src/*/android/**.c'
+      - '.src/*/android/**.cpp'
+      - '.src/*/android/**.h'
+      - '.src/*/android/**.hpp'
       - .github/workflows/**.yml
       - '!.github/workflows/macos.yml'
       - .gitignore
