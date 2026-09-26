@@ -16,7 +16,7 @@ runs:
   using: composite
   steps:
     - name: Add LLVM apt repository
-      if: ${{ inputs.os == "ubuntu" }}
+      if: ${{ inputs.os == 'ubuntu' }}
       uses: myci-actions/add-deb-repo@11
       with:
         repo: deb http://apt.llvm.org/resolute/ llvm-toolchain-resolute main
@@ -24,12 +24,12 @@ runs:
         keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
 
     - name: Update apt repositories
-      if: ${{ inputs.os == "ubuntu" }}
+      if: ${{ inputs.os == 'ubuntu' }}
       run: sudo apt update
       shell: bash
 
     - name: Install system dependencies
-      if: ${{ inputs.os == "ubuntu" }}
+      if: ${{ inputs.os == 'ubuntu' }}
       uses: awalsh128/cache-apt-pkgs-action@master
         with:
           version: system_dependencies
@@ -47,7 +47,7 @@ runs:
             ninja-build
 
     - name: Install LLVM
-      if: ${{ inputs.os == "ubuntu" && inputs.compiler == "llvm" }}
+      if: ${{ inputs.os == 'ubuntu' && inputs.compiler == 'llvm' }}
       uses: awalsh128/cache-apt-pkgs-action@master
         with:
           version: llvm_dependencies
@@ -73,33 +73,33 @@ runs:
 
     - name: Restore cached LLVM
       id: restore-llvmcache
-      if: ${{ inputs.os == "windows" && inputs.compiler == 'llvm' }}
+      if: ${{ inputs.os == 'windows' && inputs.compiler == 'llvm' }}
       uses: actions/cache/restore@v6
       with:
         path: ${{ runner.workspace }}/llvm.7z
         key: ${{ matrix.os }}-LLVM-24-${{ matrix.arch }}
 
     - name: Download LLVM
-      if: ${{ inputs.os == "windows" && inputs.compiler == 'llvm' && !steps.restore-llvmcache.outputs.cache-hit }}
+      if: ${{ inputs.os == 'windows' && inputs.compiler == 'llvm' && !steps.restore-llvmcache.outputs.cache-hit }}
       run: |
         curl.exe -o "${{ runner.workspace }}/llvm.7z" -LO https://github.com/Arthapz/llvm-prebuilt/releases/download/llvm-24/llvm.7z
       shell: bash
 
     - name: Extract LLVM
-      if: ${{ inputs.os == "windows" && inputs.compiler == 'llvm' }}
+      if: ${{ inputs.os == 'windows' && inputs.compiler == 'llvm' }}
       run: |
         7z x "${{ runner.workspace }}/llvm.7z" -o"${{ runner.workspace }}/llvm"
       shell: bash
 
     - name: Cache LLVM
-      if: ${{ inputs.os == "windows" && inputs.compiler == 'llvm' && !steps.restore-llvmcache.outputs.cache-hit }}
+      if: ${{ inputs.os == 'windows' && inputs.compiler == 'llvm' && !steps.restore-llvmcache.outputs.cache-hit }}
       uses: actions/cache/save@v6
       with:
         path: ${{ runner.workspace }}/llvm
         key: ${{ steps.restore-llvmcache.outputs.cache-primary-key }}
 
     - name: Install build tools
-      if: ${{ inputs.os == "macos" }}
+      if: ${{ inputs.os == 'macos' }}
       uses: tecolicom/actions-use-homebrew-tools@v1
       with:
         tools: llvm ninja meson cmake mold nasm pkgconf
