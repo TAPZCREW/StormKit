@@ -17,7 +17,7 @@ namespace {
     auto _ = test::test_suite {
         "core.math.linear.vector",
         {
-          { "linear.vector.operator_array_view",
+          { "linear.vector.view_of.linear",
             [] static {
                 auto       a     = math::ivec2 { 2, 3 };
                 const auto span  = view_of(math::as_linear, a);

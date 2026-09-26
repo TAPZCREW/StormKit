@@ -8,7 +8,7 @@ namespace("tests", function()
                     add_rules("stormkit::example")
 
                     on_config(function(target)
-                        function parseTestFile()
+                        function parse_test_file()
                             local code = io.readfile(file)
 
                             local suite_name_regex = [[test_suite%s-{.-"(.-)",]]
@@ -19,13 +19,17 @@ namespace("tests", function()
                             local test_names
                             for test_name in code:gmatch(test_name_regex) do
                                 test_names = test_names or {}
-                                if test_name ~= suite_name then table.insert(test_names, test_name) end
+                                if test_name ~= suite_name then
+                                    test_name = test_name:replace("<", "_")
+                                    test_name = test_name:replace(">", "_")
+                                    table.insert(test_names, test_name)
+                                end
                             end
 
                             return { suite_name = suite_name, test_names = test_names }
                         end
 
-                        local tests = parseTestFile()
+                        local tests = parse_test_file()
                         for _, test_name in ipairs(tests.test_names) do
                             target:add(
                                 "tests",
