@@ -26,7 +26,7 @@ runs:
       shell: bash
 
     - name: Configure Pagefile
-      if: ${{ inputs.os == "windows" }}
+      if: ${{ inputs.os == 'windows' }}
       uses: al-cheb/configure-pagefile-action@v1.3
       with:
         minimum-size: 8GB
