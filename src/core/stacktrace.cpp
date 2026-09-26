@@ -62,11 +62,11 @@ namespace stormkit { inline namespace core {
 
         if (not std::empty(thread_name))
             std::println(stderr,
-                         "================= CALLSTACK (thread name: {}, id: {:0#x}) =================",
+                         "================= CALLSTACK (thread name: {}, id: {}) =================",
                          thread_name,
                          std::this_thread::get_id());
         else
-            std::println(stderr, "================= CALLSTACK (thread id: {:0#x}) =================", std::this_thread::get_id());
+            std::println(stderr, "================= CALLSTACK (thread id: {}) =================", std::this_thread::get_id());
 #ifdef STD_STACKTRACE_SUPPORTED
         const auto st    = std::stacktrace::current();
         auto       i     = 0;
