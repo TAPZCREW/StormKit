@@ -12,7 +12,9 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-module stormkit.core.containers;
+module stormkit.core.containers.shmbuffer;
+
+namespace stdr = std::ranges;
 
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
