@@ -46,14 +46,14 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@latest
         with:
           fetch-depth: 0
           ref: ${{ github.ref }}
 
       - name: Add LLVM apt repository
         if: ${{ (matrix.compiler == 'llvm') }}
-        uses: myci-actions/add-deb-repo@11
+        uses: myci-actions/add-deb-repo@latest
         with:
           repo: deb http://apt.llvm.org/resolute/ llvm-toolchain-resolute main
           repo-name: llvm
@@ -132,24 +132,23 @@ jobs:
       - name: Generate XMake cachekey
         id: xmake_cachekey
         run: echo "key=$(date +'%W')" >> $GITHUB_OUTPUT
-        shell: bash
 
       - name: Restore cached XMake
         id: restore-xmakecache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@latest
         with:
           path: ${{ env.XMAKE_ROOTDIR }}
           key: ${{ matrix.os }}-${{ matrix.arch }}-W${{ steps.xmake_cachekey.outputs.key }}
 
       - name: Setup XMake
-        uses: xmake-io/github-action-setup-xmake@v1
+        uses: xmake-io/github-action-setup-xmake@latest
         with:
           xmake-version: branch@dev
           actions-cache-folder: .xmake-cache
 
       - name: Cache XMake
         if: ${{ !steps.restore-xmakecache.outputs.cache-hit }}
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@latest
         with:
           path: ${{ env.XMAKE_ROOTDIR }}
           key: ${{ steps.restore-xmakecache.outputs.cache-primary-key }}
@@ -160,11 +159,10 @@ jobs:
       - name: Generate packages cachekey
         id: packages_cachekey
         run: echo "hash=$(xmake l utils.ci.packageskey)" >> $GITHUB_OUTPUT
-        shell: bash
 
       - name: Restore cached packages
         id: restore-packagescache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@latest
         with:
           path: ${{ env.XMAKE_PKG_INSTALLDIR }}
           key: ${{ matrix.os }}-${{ matrix.compiler }}-${{ matrix.cpplib }}-${{ matrix.arch }}-${{ matrix.mode }}-${{ steps.packages_cachekey.outputs.hash }}
@@ -174,7 +172,7 @@ jobs:
         run: |
           which clang
           echo $GITHUB_WORKSPACE
-          ls /usr/lib/llvm-$LLVM_VERSION
+          ls /usr/lib/
           xmake f -vD -a ${{ (matrix.arch  == 'x64') && 'x86_64' || (matrix.arch == 'arm64') && 'aarch64' || matrix.arch }} \
            --yes \
            -m ${{ (matrix.mode == 'release' || matrix.mode == 'debug') && matrix.mode || 'releasedbg' }} \
