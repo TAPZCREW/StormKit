@@ -39,13 +39,13 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto get_thread_name(std::thread&) noexcept -> string {
+    auto get_thread_name(const std::thread&) noexcept -> string {
         return {};
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto get_thread_name(std::jthread&) noexcept -> string {
+    auto get_thread_name(const std::jthread&) noexcept -> string {
         return {};
     }
 }} // namespace stormkit::core

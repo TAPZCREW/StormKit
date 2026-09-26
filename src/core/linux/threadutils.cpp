@@ -7,6 +7,10 @@ module stormkit.core;
 
 import std;
 
+import stormkit.core.types;
+
+namespace stdr = std::ranges;
+
 namespace stormkit { inline namespace core {
     namespace details {
         ////////////////////////////////////////
@@ -19,8 +23,8 @@ namespace stormkit { inline namespace core {
         ////////////////////////////////////////
         auto get_thread_name(pthread_t id) noexcept -> string {
             auto name = array<char, 256> {};
-            pthread_getname_np(id, std::data(name), std::size(name));
-            return string { std::begin(name), std::begin(name) + std::strlen(std::data(name)) };
+            pthread_getname_np(id, stdr::data(name), stdr::size(name));
+            return string { stdr::begin(name), stdr::begin(name) + std::strlen(stdr::data(name)) };
         }
     } // namespace details
 
@@ -53,14 +57,14 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto get_thread_name(std::thread& thread) noexcept -> string {
+    auto get_thread_name(const std::thread& thread) noexcept -> string {
         const auto id = thread.native_handle();
         return details::get_thread_name(id);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto get_thread_name(std::jthread& thread) noexcept -> string {
+    auto get_thread_name(const std::jthread& thread) noexcept -> string {
         const auto id = thread.native_handle();
         return details::get_thread_name(id);
     }

@@ -90,14 +90,14 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto get_thread_name(std::thread& thread) noexcept -> string {
+    auto get_thread_name(const std::thread& thread) noexcept -> string {
         const auto handle = details::getThreadHandle(thread);
         return details::get_thread_name(handle);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    auto get_thread_name(std::jthread& thread) noexcept -> string {
+    auto get_thread_name(const std::jthread& thread) noexcept -> string {
         const auto handle = details::getThreadHandle(thread);
         return details::get_thread_name(handle);
     }
