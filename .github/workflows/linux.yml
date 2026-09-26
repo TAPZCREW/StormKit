@@ -98,7 +98,7 @@ jobs:
     steps:
       - name: Bootstrap
         id: bootstrap
-        uses: ../actions/setup
+        uses: ./.github/actions/setup
         with:
           os: matrix.os
           arch: matrix.arch
@@ -106,7 +106,7 @@ jobs:
 
       - name: Build & Tests
         id: build_and_tests
-        uses: ../actions/build
+        uses: ./.github/actions/build
         with:
           os: matrix.os
           arch: matrix.arch
@@ -123,7 +123,7 @@ jobs:
 
       - name: Upload artifacts
         id: upload
-        uses: ../actions/upload
+        uses: ./.github/actions/upload
         with:
           name: ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.compiler }}-${{ matrix.cpplib }}-${{ matrix.kind }}-${{ matrix.mode }}
 

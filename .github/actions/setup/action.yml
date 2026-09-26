@@ -38,7 +38,7 @@ runs:
       run: git config --system core.longpaths true
 
     - name: Install compilers
-      uses: ../install-llvm
+      uses: ./.github/actions/install-llvm
       with:
         os: inputs.os
         arch: inputs.arch
