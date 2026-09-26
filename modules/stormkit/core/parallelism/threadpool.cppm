@@ -20,11 +20,11 @@ import stormkit.core.typesafe;
 import stormkit.core.parallelism.threadutils;
 
 export namespace stormkit { inline namespace core {
+    inline constexpr struct no_future_type {
+    } no_future = {};
+
     class STORMKIT_CORE_API thread_pool {
       public:
-        static constexpr struct no_future_type {
-        } NO_FUTURE = {};
-
         template<typename T>
         using closure_type = std23::move_only_function<T()>;
 
