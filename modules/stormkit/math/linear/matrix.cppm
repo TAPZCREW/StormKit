@@ -449,8 +449,9 @@ namespace stormkit::math {
     constexpr auto transpose(mat_view<const T, M, N> matrix, mat_view<T, N, M> out) noexcept -> void {
         EXPECTS(matrix.data_handle() != out.data_handle());
 
+        if not consteval { std::println(stderr, "AAAA {} {}", N, M); }
         for (auto [i, j] : multi_range(N, M)) {
-            if not consteval { std::println("{} {}", i, j); }
+            if not consteval { std::println(stderr, "{} {}", i, j); }
             out[i, j] = matrix[j, i];
         }
     }
