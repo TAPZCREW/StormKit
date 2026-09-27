@@ -6,6 +6,7 @@ module;
 
 #include <climits>
 #include <cstdlib>
+#include <cuchar>
 
 #include <stormkit/core/platform_macro.hpp>
 
@@ -55,10 +56,10 @@ namespace stormkit { inline namespace core {
 
         auto len      = 0ull;
         auto input_it = stdr::data(input);
-        while ((len = std::mbrtoc16(std::bit_cast<char16_t*>(stdr::data(output)), input_it, MB_CUR_MAX, &state)) > 0ull)
+        while ((len = std::mbrtoc16(reinterpret_cast<char16_t*>(stdr::data(output)), input_it, MB_CUR_MAX, &state)) > 0ull)
             input_it += len;
 #else
-        output = std::bit_cast<char16_t*>(stdr::data(input));
+        output = reinterpret_cast<char16_t*>(stdr::data(input));
 #endif
 
         return output;
@@ -73,9 +74,9 @@ namespace stormkit { inline namespace core {
         output.resize(stdr::size(input));
 
         for (const auto& c : input) [[maybe_unused]]
-            auto _ = std::c16rtomb(std::bit_cast<char*>(stdr::data(output)), c, &state);
+            auto _ = std::c16rtomb(reinterpret_cast<char*>(stdr::data(output)), c, &state);
 #else
-        output = std::bit_cast<char*>(stdr::data(input));
+        output = reinterpret_cast<const char*>(stdr::data(input));
 #endif
 
         return output;
@@ -91,6 +92,8 @@ namespace stormkit { inline namespace core {
         output.resize(count);
 
         MultiByteToWideChar(CP_UTF8, 0, stdr::data(input), stdr::size(input), stdr::data(output), stdr::size(output));
+#elif defined(STORMKIT_COMPILER_CLANG)
+        output = reinterpret_cast<const char8_t*>(stdr::data(input));
 #else
         auto state = std::mbstate_t {};
         output.resize(stdr::size(input));
@@ -98,7 +101,7 @@ namespace stormkit { inline namespace core {
         auto len      = 0ull;
         auto input_it = stdr::data(input);
         auto i        = 0;
-        while ((len = std::mbrtoc8(std::bit_cast<char8_t*>(stdr::data(output)) + i++, input_it, MB_CUR_MAX, &state)) > 0ull)
+        while ((len = std::mbrtoc8(reinterpret_cast<char8_t*>(stdr::data(output)) + i++, input_it, MB_CUR_MAX, &state)) > 0ull)
             input_it += len;
 #endif
 
@@ -141,16 +144,16 @@ namespace stormkit { inline namespace core {
         output.resize(stdr::size(input) * unchecked_narrow<usize>(MB_LEN_MAX));
 
 #if defined(STORMKIT_COMPILER_MSVC)
-        auto bytes = view_of(as_bytes, output);
-        stdr::copy(view_of(as_bytes, input), stdr::begin(bytes));
+        auto bytes = bytes_of(output);
+        stdr::copy(bytes_of(input), stdr::begin(bytes));
 #elif defined(STORMKIT_COMPILER_CLANG)
-        output = std::bit_cast<char8_t*>(stdr::data(input));
+        output = reinterpret_cast<const char8_t*>(stdr::data(input));
 #else
         auto state    = std::mbstate_t {};
         auto len      = 0ull;
         auto input_it = stdr::data(input);
         auto i        = 0;
-        while ((len = std::mbrtoc8(std::bit_cast<char8_t*>(stdr::data(output)) + i++, input_it, MB_CUR_MAX, &state)) > 0ull)
+        while ((len = std::mbrtoc8(reinterpret_cast<char8_t*>(stdr::data(output)) + i++, input_it, MB_CUR_MAX, &state)) > 0ull)
             input_it += len;
 #endif
 
@@ -167,10 +170,10 @@ namespace stormkit { inline namespace core {
         output.resize(stdr::size(input));
 
 #if defined(STORMKIT_COMPILER_MSVC)
-        auto bytes = view_of(as_bytes, output);
-        stdr::copy(view_of(as_bytes, input), stdr::begin(bytes));
+        auto bytes = bytes_of(output);
+        stdr::copy(bytes_of(input), stdr::begin(bytes));
 #elif defined(STORMKIT_COMPILER_CLANG)
-        output = std::bit_cast<char*>(stdr::data(input));
+        output = reinterpret_cast<const char*>(stdr::data(input));
 #else
         auto state = std::mbstate_t {};
         for (const auto& c : input) std::c8rtomb(stdr::data(output), c, &state);

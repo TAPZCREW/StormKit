@@ -84,7 +84,7 @@ namespace stormkit { inline namespace core {
     #ifdef STORMKIT_COMPILER_MSSTL
             const auto frame_str        = std::to_string(frame);
             auto       splitted         = split(frame_str, "+");
-            const auto address          = as<u64>(splitted[1].substr(2), 16)
+            const auto address          = to<u64>(splitted[1].substr(2), 16)
                                             .transform_error([stderr, &splitted](auto&& err) noexcept {
                                        std::println(stderr, "Failed to parse {}, reason: {}", splitted[0], err);
                                        return 0;
