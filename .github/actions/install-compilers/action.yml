@@ -102,5 +102,5 @@ runs:
       uses: tecolicom/actions-use-homebrew-tools@v1
       with:
         tools: llvm ninja meson cmake mold nasm pkgconf
-        verbose: true
+        key: ${{ matrix.os }}-homebrew-${{ matrix.arch }}
 
