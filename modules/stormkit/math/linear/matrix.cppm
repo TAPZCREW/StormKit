@@ -541,9 +541,9 @@ namespace stormkit::math {
             //          | -3.00000, 6.00000, -3.00000|]
             const auto inverse = init_by<mat<T, N, N>>([&i0, &i1, &i2](auto& inverse) noexcept {
                 auto inverse_ = mat<T, N, N> {};
-                stdr::copy(i0, stdr::begin(inverse_.row(0)));
-                stdr::copy(i1, stdr::begin(inverse_.row(1)));
-                stdr::copy(i2, stdr::begin(inverse_.row(2)));
+                stdr::copy(view_of(as_linear, i0), stdr::begin(inverse_.row(0)));
+                stdr::copy(view_of(as_linear, i1), stdr::begin(inverse_.row(1)));
+                stdr::copy(view_of(as_linear, i2), stdr::begin(inverse_.row(2)));
 
                 if not consteval { std::println(stderr, "{}", inverse_); }
 
