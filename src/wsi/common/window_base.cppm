@@ -4,6 +4,7 @@
 
 module;
 
+#include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.wsi:common.window_base;
@@ -11,6 +12,8 @@ export module stormkit.wsi:common.window_base;
 import std;
 
 import stormkit.core;
+import stormkit.math.extent;
+import stormkit.math.linear;
 import stormkit.wsi;
 
 import :common.input_base;
@@ -93,14 +96,14 @@ export namespace stormkit::wsi::common {
 
       protected:
         struct {
-            bool                  open       = false;
-            bool                  minimized  = false;
-            bool                  active     = false;
-            bool                  fullscreen = false;
-            bool                  visible    = false;
-            math::uextent2        extent;
-            optref<const Monitor> current_monitor;
-            string                title;
+            bool                          open       = false;
+            bool                          minimized  = false;
+            bool                          active     = false;
+            bool                          fullscreen = false;
+            bool                          visible    = false;
+            math::uextent2                extent;
+            std::optional<const Monitor&> current_monitor;
+            string                        title;
 
             f32 dpi = 1.f;
 
@@ -142,14 +145,15 @@ namespace stormkit::wsi::common {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto WindowBase::current_monitor() const noexcept -> const Monitor& {
-        return m_state.current_monitor;
+        EXPECTS(m_state.current_monitor != std::nullopt);
+        return m_state.current_monitor.value();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto WindowBase::set_current_monitor(const Monitor& monitor) noexcept -> void {
-        m_state.current_monitor = as_optref(monitor);
+        m_state.current_monitor = monitor;
     }
 
     /////////////////////////////////////

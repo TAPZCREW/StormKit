@@ -105,7 +105,7 @@ target("wsi", function()
     add_headerfiles(path.join(include_dir, "(stormkit/wsi/**.hpp)"))
     add_includedirs(include_dir, { public = true })
 
-    add_deps("core", "log")
+    add_deps("core", "log", "math")
 
     add_packages(packages, { public = false })
 

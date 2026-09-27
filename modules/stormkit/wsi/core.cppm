@@ -26,8 +26,8 @@ export namespace stormkit::wsi {
         SWITCH,
     };
 
-    constexpr auto as_string(WM wm) noexcept -> string_view;
-    constexpr auto to_string(WM wm) noexcept -> string;
+    [[nodiscard]]
+    constexpr auto tag_invoke(as_fn<string_view>, WM value, const std::source_location&) noexcept -> string_view;
 
     STORMKIT_WSI_API
     auto parse_args(array_view<const string_view> args) noexcept -> void;
@@ -44,7 +44,7 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_string(WM wm) noexcept -> string_view {
+    constexpr auto tag_invoke(as_fn<string_view>, WM wm, const std::source_location&) noexcept -> string_view {
         switch (wm) {
             case WM::WIN32: return "WM::WIN32";
             case WM::WAYLAND: return "WM::WAYLAND";
@@ -58,12 +58,5 @@ namespace stormkit::wsi {
         }
 
         std::unreachable();
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    constexpr auto to_string(WM wm) noexcept -> string {
-        return string { as_string(wm) };
     }
 } // namespace stormkit::wsi
