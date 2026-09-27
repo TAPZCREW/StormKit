@@ -61,8 +61,7 @@ namespace stormkit { inline namespace core {
 #else
         output.resize(stdr::size(input));
         auto i = 0;
-        for (const auto& c : input) [[maybe_unused]]
-            output[i] = unchecked_narrow<char16_t>(c);
+        for (const auto& c : input) output[i] = unchecked_narrow<char16_t>(c);
 #endif
 
         return output;
@@ -76,13 +75,11 @@ namespace stormkit { inline namespace core {
         auto state = std::mbstate_t {};
         output.resize(stdr::size(input));
 
-        for (const auto& c : input) [[maybe_unused]]
-            auto _ = std::c16rtomb(reinterpret_cast<char*>(stdr::data(output)), c, &state);
+        for (const auto& c : input) auto _ = std::c16rtomb(reinterpret_cast<char*>(stdr::data(output)), c, &state);
 #else
         output.resize(stdr::size(input));
         auto i = 0;
-        for (const auto& c : input) [[maybe_unused]]
-            output[i] = unchecked_narrow<char>(c);
+        for (const auto& c : input) output[i] = unchecked_narrow<char>(c);
 #endif
 
         return output;
@@ -101,8 +98,7 @@ namespace stormkit { inline namespace core {
 #elif defined(STORMKIT_OS_MACOS)
         output.resize(stdr::size(input));
         auto i = 0;
-        for (const auto& c : input) [[maybe_unused]]
-            output[i] = unchecked_narrow<wchar_t>(c);
+        for (const auto& c : input) output[i] = unchecked_narrow<wchar_t>(c);
 #else
         auto state = std::mbstate_t {};
         output.resize(stdr::size(input));
@@ -137,14 +133,12 @@ namespace stormkit { inline namespace core {
 #elif defined(STORMKIT_OS_MACOS)
         output.resize(stdr::size(input));
         auto i = 0;
-        for (const auto& c : input) [[maybe_unused]]
-            output[i] = unchecked_narrow<char>(c);
+        for (const auto& c : input) output[i] = unchecked_narrow<char>(c);
 #else
         auto state = std::mbstate_t {};
         output.resize(stdr::size(input));
 
-        for (const auto& c : input) [[maybe_unused]]
-            auto _ = std::c8rtomb(stdr::data(output), unchecked_narrow<char>(c), &state);
+        for (const auto& c : input) auto _ = std::c8rtomb(stdr::data(output), unchecked_narrow<char>(c), &state);
 #endif
 
         return output;
