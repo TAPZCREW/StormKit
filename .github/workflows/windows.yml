@@ -83,7 +83,7 @@ jobs:
         os: [windows-2025]
         arch: [x64]
         compiler: [llvm]
-        cpplib: [libc++]
+        cpplib: [libc++, msstl]
         mode: [releasedbg, debug]
         kind: [static, shared]
 
@@ -110,9 +110,6 @@ jobs:
           os: windows
           arch: ${{ matrix.arch }}
           compiler: ${{ matrix.compiler }}
-
-      - run: ls "${{ runner.workspace }}/llvm/llvm"
-        shell: bash
 
       - name: Build & Tests
         id: build_and_tests
