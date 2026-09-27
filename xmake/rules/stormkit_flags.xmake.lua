@@ -1,6 +1,8 @@
 namespace("stormkit", function()
     rule("flags", function()
         on_config("linux", "mingw", "macosx", "ios", "android", function(target)
+            target:set("utf-8", true)
+
             if get_config("lto") then
                 target:set("policy", "build.optimization.lto", true)
                 if get_config("toolchain") == "llvm" or get_config("toolchain") == "clang" then
@@ -8,17 +10,27 @@ namespace("stormkit", function()
                     target:add("shflags", "-flto=thin", { force = true })
                 end
             end
-            if get_config("toolchain") then
-                target:add("ldflags", "-fuse-ld=lld", { force = true })
-                target:add("shflags", "-fuse-ld=lld", { force = true })
-            end
             if get_config("mold") and not is_subhost("windows") then
                 local arg = "-fuse-ld=mold"
                 if type(get_config("mold")) == "string" then arg = "-fuse-ld=" .. get_config("mold") end
                 target:add("ldflags", arg, { force = true })
                 target:add("shflags", arg, { force = true })
+            elseif get_config("toolchain") == "llvm" then
+                target:add("ldflags", "-fuse-ld=lld", { force = true })
+                target:add("shflags", "-fuse-ld=lld", { force = true })
             end
-            target:set("utf-8", true)
+
+            if is_plat("linux") then
+                if is_mode("debug", "releasedbg") then
+                    if get_config("toolchain") == "llvm" then
+                        target:add("ldflags", "-rdynamic", { force = true })
+                        target:add("shflags", "-rdynamic", { force = true })
+                    else
+                        target:add("ldflags", "-Wl,--export-dynamic", { force = true })
+                        target:add("shflags", "-Wl,--export-dynamic", { force = true })
+                    end
+                end
+            end
 
             if get_config("sanitizers") and is_mode("debug", "release", "releasedbg") and target:is_binary() then
                 target:set("policy", "build.sanitizer.address", true)
@@ -33,6 +45,8 @@ namespace("stormkit", function()
             end
         end)
         on_config("windows", function(target)
+            target:set("utf-8", true)
+
             import("core.tool.compiler")
             local rad_enabled = false
             if get_config("rad") and is_subhost("windows") then

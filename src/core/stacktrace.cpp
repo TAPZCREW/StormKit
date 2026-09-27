@@ -12,6 +12,15 @@ module;
     #define STD_STACKTRACE_SUPPORTED
 #endif
 
+#if not defined(STD_STACKTRACE_SUPPORTED) and defined(STORMKIT_OS_LINUX)
+    #include <execinfo.h>
+
+    #if defined(STORMKIT_COMPILER_CLANG)
+        #include <cxxabi.h>
+        #include <dlfcn.h>
+    #endif
+#endif
+
 module stormkit.core.stacktrace;
 
 import std;
@@ -19,11 +28,13 @@ import std;
 import stormkit.core.console;
 import stormkit.core.string;
 import stormkit.core.errors;
+import stormkit.core.ranges.numeric_range;
 import stormkit.core.types;
 import stormkit.core.typesafe.safecasts;
 import stormkit.core.parallelism.threadutils;
 
 namespace stdr = std::ranges;
+namespace stdv = std::views;
 
 using namespace std::literals;
 
@@ -63,11 +74,11 @@ namespace stormkit { inline namespace core {
         else
             std::println(stderr, "================= CALLSTACK (thread id: {}) =================", std::this_thread::get_id());
 #ifdef STD_STACKTRACE_SUPPORTED
-        const auto st = std::stacktrace::current();
-        auto       i  = 0;
+        const auto st    = std::stacktrace::current();
+        auto       count = 0;
         for (const auto& frame : st) {
-            if (i < ignore_count) {
-                i += 1;
+            if (count < ignore_count) {
+                count += 1;
                 continue;
             }
     #ifdef STORMKIT_COMPILER_MSSTL
@@ -108,7 +119,7 @@ namespace stormkit { inline namespace core {
             if (not stdr::empty(frame.source_file()) and frame.source_line() != 0) {
                 std::println(stderr,
                              "{}# {}{}\n    at {}:{}",
-                             (i++ - ignore_count),
+                             (count - ignore_count),
                              BLUE_TEXT_STYLE | object_address,
                              formatted_symbol,
                              GREEN_TEXT_STYLE | frame.source_file(),
@@ -116,14 +127,76 @@ namespace stormkit { inline namespace core {
             } else if (not stdr::empty(frame.source_file())) {
                 std::println(stderr,
                              "{}# {}{}\n    at {}",
-                             (i++ - ignore_count),
+                             (count - ignore_count),
                              BLUE_TEXT_STYLE | object_address,
                              formatted_symbol,
                              GREEN_TEXT_STYLE | frame.source_file());
             } else {
-                std::println(stderr, "{}# {}{}", (i++ - ignore_count), BLUE_TEXT_STYLE | object_address, formatted_symbol);
+                std::println(stderr, "{}# {}{}", (count - ignore_count), BLUE_TEXT_STYLE | object_address, formatted_symbol);
             }
+            ++count;
         }
+
+        if ((count - ignore_count) == 0) std::println("No stacktrace available!");
+#elifdef STORMKIT_OS_LINUX
+        auto frames = array<void*, 100> {};
+        // const auto count  = backtrace(stdr::data(frames), stdr::size(frames));
+        // void*      frames[100];
+        // /home/runner/work/StormKit/StormKit/build/linux/x86_64/debug/stormkit/tests/math-linear-matrix-debug
+        // (_ZZN8stormkit4mathW8stormkitW4mathW6linearW6matrix7inverseITkNS_4core4metaS1_W4coreW4metaW8concepts10arithmeticEfLm3EEEvNSt3__16mdspanIKT_NSB_7extentsImJXT0_EXT0_EEEENSB_12layout_rightENSB_16default_accessorISE_EEEENSC_ISD_SG_SH_NSI_ISD_EEEEENKUlRSD_E_clINS0_S3_W6tensor6tensorIfNS0_S4_13mat_interfaceIfLm3ELm3EEEJLm3ELm3EEEEEEDaSN_+0x176)
+        // [0x5e8efee1d986]
+        const auto frame_count = backtrace(stdr::data(frames), stdr::size(frames));
+        if (frame_count > 0) {
+            const auto syms_ = backtrace_symbols(stdr::data(frames), frame_count);
+            const auto syms  = array_view<char*> { syms_, as<usize>(frame_count) }
+                               | stdv::transform([](const char* str) static noexcept -> string_view {
+                                    return string_view { str, std::strlen(str) };
+                                 })
+                               | stdr::to<dynarray<string_view>>();
+
+            auto count = 0;
+            for (auto sym : syms) {
+                if (count < ignore_count) {
+                    count += 1;
+                    continue;
+                }
+
+                const auto splitted       = split(sym, " ");
+                const auto object_address = splitted[1].subview(1, stdr::size(splitted[1]) - 2);
+
+                const auto splitted2 = split(splitted[0], "(");
+                const auto object    = splitted2[0].subview(1, stdr::size(splitted2[0]));
+                auto       symbol    = splitted2[1].subview(1, stdr::size(splitted2[1]) - 2);
+
+                const auto formatted_symbol = [&]() noexcept -> string {
+                    auto info = Dl_info {};
+                    if (dladdr(frames[count], &info)) {
+                        auto       status    = 0;
+                        const auto demangled = abi::__cxa_demangle(info.dli_sname, nullptr, 0, &status);
+
+                        if (status == 0) {
+                            auto result = prettify(string_view { demangled });
+                            std::free(demangled);
+                            return result;
+                        }
+                    }
+
+                    return std::string { symbol };
+                }();
+
+                std::println(stderr,
+                             "{}# {} {}\n    in {}",
+                             (count - ignore_count),
+                             BLUE_TEXT_STYLE | object_address,
+                             YELLOW_TEXT_STYLE | formatted_symbol,
+                             object);
+                ++count;
+
+                if ((count - ignore_count) == 0) std::println(stderr, "No stacktrace available!");
+            }
+            std::free(syms_);
+        } else
+            std::println(stderr, "No stacktrace available!");
 #else
         auto _ = ignore_count;
         std::println(stderr, "std::stacktrace not supported!");
