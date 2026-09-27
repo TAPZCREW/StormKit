@@ -49,7 +49,8 @@ export namespace stormkit::math {
 
         template<typename Self>
         [[nodiscard]]
-        constexpr auto row(this Self& self, usize id) noexcept -> array_view<cmeta::forward_const_to<Self, T>, M>;
+        constexpr auto row(STORMKIT_LIFETIMEBOUND this Self& self, usize id) noexcept
+          -> array_view<cmeta::forward_const_to<Self, T>, N>;
     };
 
     template<cmeta::arithmetic T, usize M, usize N>
@@ -293,8 +294,9 @@ namespace stormkit::math {
     template<cmeta::arithmetic T, usize M, usize N>
     template<typename Self>
     constexpr auto mat_interface<T, M, N>::row(this Self& self, usize id) noexcept
-      -> array_view<cmeta::forward_const_to<Self, T>, M> {
-        return array_view<cmeta::forward_const_to<Self, T>, M> { self.begin() + id * M, N };
+      -> array_view<cmeta::forward_const_to<Self, T>, N> {
+        expects(id < M);
+        return array_view<cmeta::forward_const_to<Self, T>, N> { self.data() + id * M, N };
     }
 
     ////////////////////////////////////////
@@ -356,7 +358,6 @@ namespace stormkit::math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::is_square_mat_or_view T>
-       STORMKIT_PURE
     constexpr auto determinant(const T& matrix) noexcept -> cmeta::remove_const_of<cmeta::value_type<T>> {
         using value_type = cmeta::value_type<T>;
 
@@ -414,7 +415,6 @@ namespace stormkit::math {
                 for (auto row : range(col + 1, M)) {
                     for (;;) {
                         const auto del = matrix_[row, col] / matrix_[col, col];
-                        if not consteval { std::println("del: {}", del); }
                         for (auto j : range(col, M)) matrix_[row, j] -= del * matrix_[col, j];
 
                         if (is(matrix_[row, col], value_type { 0 })) break;
@@ -436,7 +436,6 @@ namespace stormkit::math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<cmeta::arithmetic T, usize M, usize N>
-       STORMKIT_PURE
     constexpr auto transpose(const mat<T, M, N>& matrix) noexcept -> mat<T, N, M> {
         auto out = mat<T, N, M> {};
         transpose(view_of(matrix), mutable_view_of(out));
@@ -487,7 +486,6 @@ namespace stormkit::math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::is_mat_or_view T>
-       STORMKIT_PURE
     constexpr auto is_inversible(const T& matrix) noexcept -> bool {
         static constexpr auto M = matrix.extent(0);
         static constexpr auto N = matrix.extent(1);
@@ -532,14 +530,23 @@ namespace stormkit::math {
             const auto i1 = cross(c, a);
             const auto i2 = cross(a, b);
 
-            const auto inverse = init_by<mat<T, N, N>>([&i0, &i1, &i2](auto& inverse) {
-                auto inverse_ = mat<T, N, N> {};
-                stdr::copy(i0, stdr::begin(inverse_.row(0)));
-                stdr::copy(i1, stdr::begin(inverse_.row(1)));
-                stdr::copy(i2, stdr::begin(inverse_.row(2)));
+            const auto inverse = init_by<mat<T, N, N>>(
+              [](auto& inverse, auto& i0, auto& i1, auto& i2) noexcept {
+                  auto inverse_ = mat<T, N, N> {};
+                  auto row_0    = inverse_.row(0);
+                  stdr::copy(i0, stdr::begin(row_0));
 
-                transpose(view_of(inverse_), mutable_view_of(inverse));
-            });
+                  auto row_1 = inverse_.row(1);
+                  stdr::copy(i1, stdr::begin(row_1));
+
+                  auto row_2 = inverse_.row(2);
+                  stdr::copy(i2, stdr::begin(row_2));
+
+                  transpose(view_of(inverse_), mutable_view_of(inverse));
+              },
+              i0,
+              i1,
+              i2);
 
             const auto one_over_determinant = T { 1 } / determinant(matrix);
             mul(view_of(inverse), one_over_determinant, out);
@@ -583,8 +590,6 @@ namespace stormkit::math {
                                                            transposed = view_of(transposed)](auto& result) noexcept {
                 mul(matrix, transposed, mutable_view_of(result));
             });
-
-            if not consteval { std::println("{}", result); }
 
             return std::memcmp(stdr::data(result), stdr::data(IDENTITY), M * N * sizeof(T)) == 0;
         }
