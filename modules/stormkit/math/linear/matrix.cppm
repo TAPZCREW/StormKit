@@ -358,7 +358,6 @@ namespace stormkit::math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::is_square_mat_or_view T>
-       STORMKIT_PURE
     constexpr auto determinant(const T& matrix) noexcept -> cmeta::remove_const_of<cmeta::value_type<T>> {
         using value_type = cmeta::value_type<T>;
 
@@ -437,7 +436,6 @@ namespace stormkit::math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<cmeta::arithmetic T, usize M, usize N>
-       STORMKIT_PURE
     constexpr auto transpose(const mat<T, M, N>& matrix) noexcept -> mat<T, N, M> {
         auto out = mat<T, N, M> {};
         transpose(view_of(matrix), mutable_view_of(out));
@@ -450,11 +448,7 @@ namespace stormkit::math {
     constexpr auto transpose(mat_view<const T, M, N> matrix, mat_view<T, N, M> out) noexcept -> void {
         EXPECTS(matrix.data_handle() != out.data_handle());
 
-        if not consteval { std::println(stderr, "AAAA {} {}", N, M); }
-        for (auto [i, j] : multi_range(N, M)) {
-            if not consteval { std::println(stderr, "{} {}", i, j); }
-            out[i, j] = matrix[j, i];
-        }
+        for (auto [i, j] : multi_range(N, M)) out[i, j] = matrix[j, i];
     }
 
     ////////////////////////////////////////
@@ -492,7 +486,6 @@ namespace stormkit::math {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::is_mat_or_view T>
-       STORMKIT_PURE
     constexpr auto is_inversible(const T& matrix) noexcept -> bool {
         static constexpr auto M = matrix.extent(0);
         static constexpr auto N = matrix.extent(1);
@@ -543,9 +536,7 @@ namespace stormkit::math {
                 stdr::copy(i1, stdr::begin(inverse_.row(1)));
                 stdr::copy(i2, stdr::begin(inverse_.row(2)));
 
-                if not consteval { std::println(stderr, "BBBB"); }
                 transpose(view_of(inverse_), mutable_view_of(inverse));
-                if not consteval { std::println(stderr, "CCCC"); }
             });
 
             const auto one_over_determinant = T { 1 } / determinant(matrix);
@@ -558,9 +549,7 @@ namespace stormkit::math {
                 cofactor(matrix, mutable_view_of(factor));
             });
             const auto transposed           = init_by<mat<T, N, N>>([factor = view_of(factor)](auto& transposed) noexcept {
-                if not consteval { std::println(stderr, "DDDD"); }
                 transpose(factor, mutable_view_of(transposed));
-                if not consteval { std::println(stderr, "EEEE"); }
             });
 
             mul(view_of(transposed), one_over_determinant, out);
