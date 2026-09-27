@@ -87,8 +87,12 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     consteval auto generate_consteval_message(assert_type type, string_view message) noexcept -> static_string {
-        auto       result = static_string {};
-        const auto str    = "[ASSERTION]"s + as_string(type) + ": " + message;
+        auto result = static_string {};
+#ifdef STORMKIT_COMPILER_MSSTL
+        const auto str = "[ASSERTION]"s + stdr::data(as_string(type)) + ": "s + stdr::data(message);
+#else
+        const auto str = "[ASSERTION]"s + as_string(type) + ": " + message;
+#endif
         stdr::copy(str, stdr::begin(result.buff));
         result.size = stdr::size(str);
         return result;
