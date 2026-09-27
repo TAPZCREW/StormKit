@@ -91,7 +91,7 @@ namespace {
                 EXPECTS((result[2, 1] == 2));
 
                 EXPECTS((result[0, 1] == 0));
-                EXPECTS((result[0, 2] == 0));
+                EXPECTS((result[1, 2] == 0));
             },
           }, {
             "linear.matrix.is_inversible",
