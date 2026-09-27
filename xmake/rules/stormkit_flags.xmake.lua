@@ -10,7 +10,7 @@ namespace("stormkit", function()
                     target:add("shflags", "-flto=thin", { force = true })
                 end
             end
-            if not is_plat("macos") then
+            if not is_plat("macosx") then
                 if get_config("mold") and not is_subhost("windows") then
                     local arg = "-fuse-ld=mold"
                     if type(get_config("mold")) == "string" then arg = "-fuse-ld=" .. get_config("mold") end
