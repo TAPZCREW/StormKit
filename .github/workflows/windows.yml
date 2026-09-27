@@ -83,7 +83,7 @@ jobs:
         os: [windows-2025]
         arch: [x64]
         compiler: [llvm]
-        cpplib: [libc++]
+        cpplib: [libc++, msstl]
         mode: [releasedbg, debug]
         kind: [static, shared]
 
