@@ -14,7 +14,8 @@ export module stormkit.image;
 import std;
 
 import stormkit.core;
-import stormkit.math;
+import stormkit.math.extent;
+import stormkit.math.linear;
 
 namespace stdfs = std::filesystem;
 
@@ -139,14 +140,13 @@ export namespace stormkit::image {
         auto operator=(image&& rhs) noexcept -> image&;
 
         [[nodiscard]]
-        auto load_from_file(const stdfs::path& filepath, image_codec codec = image_codec::AUTODETECT) noexcept
-          -> result<void>;
+        auto load_from_file(const stdfs::path& filepath, image_codec codec = image_codec::AUTODETECT) noexcept -> result<void>;
         [[nodiscard]]
         auto load_from_memory(array_view<const byte> data, image_codec codec = image_codec::AUTODETECT) noexcept -> result<void>;
         [[nodiscard]]
         auto save_to_file(const stdfs::path& filename,
-                          image_codec                  codec,
-                          image_codec_format           args = image_codec_format::BINARY) const noexcept -> result<void>;
+                          image_codec        codec,
+                          image_codec_format args = image_codec_format::BINARY) const noexcept -> result<void>;
 
         [[nodiscard]]
         auto save_to_memory(image_codec codec, image_codec_format args = image_codec_format::BINARY) const noexcept
