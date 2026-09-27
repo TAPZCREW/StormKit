@@ -14,6 +14,10 @@ module;
 
 #if not defined(STD_STACKTRACE_SUPPORTED) and defined(STORMKIT_OS_LINUX)
     #include <execinfo.h>
+
+    #if defined(STORMKIT_COMPILER_CLANG)
+        #include <cxxabi.h>
+    #endif
 #endif
 
 module stormkit.core.stacktrace;
@@ -159,10 +163,14 @@ namespace stormkit { inline namespace core {
                 const auto splitted       = split(sym, " ");
                 const auto object_address = splitted[1].subview(1, stdr::size(splitted[1]) - 2);
 
-                const auto splitted2        = split(splitted[0], "(");
-                const auto object           = splitted2[0].subview(1, stdr::size(splitted2[0]));
-                const auto symbol           = splitted2[1].subview(1, stdr::size(splitted2[1]) - 2);
-                const auto formatted_symbol = symbol;
+                const auto splitted2 = split(splitted[0], "(");
+                const auto object    = splitted2[0].subview(1, stdr::size(splitted2[0]));
+                auto       symbol    = splitted2[1].subview(1, stdr::size(splitted2[1]) - 2);
+
+                auto       status    = 0;
+                const auto demangled = abi::__cxa_demangle(stdr::data(symbol), nullptr, 0, &status);
+
+                const auto formatted_symbol = (status == 0) ? pretify(string_view { demangled }) : std::move(symbol);
 
                 std::println(stderr,
                              "{}# {} {}\n    in {}",
