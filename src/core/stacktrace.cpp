@@ -182,7 +182,6 @@ namespace stormkit { inline namespace core {
 
                             return std::string { symbol };
                         }
-                        ();
 
                         std::println(stderr,
                                      "{}# {} {}\n    in {}",
@@ -191,7 +190,7 @@ namespace stormkit { inline namespace core {
                                      YELLOW_TEXT_STYLE | formatted_symbol,
                                      object);
                         ++count;
-                    }
+                    }();
 
                     if ((count - ignore_count) == 0) std::println(stderr, "No stacktrace available!");
 
