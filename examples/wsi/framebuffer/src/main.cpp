@@ -8,12 +8,18 @@ import stormkit;
 
 #include <stormkit/main/main_macro.hpp>
 
-LOGGER("Framebuffer");
-
 using namespace stormkit;
+using namespace stormkit::literals;
 using namespace std::literals;
 
 namespace stdr = std::ranges;
+
+constexpr auto LOG_MODULE = log::module { "framebuffer" };
+
+template<class... Ts>
+inline auto ilog(std::format_string<Ts...> format, Ts&&... args) noexcept -> void {
+    LOG_MODULE.ilog(std::move(format), std::forward<Ts>(args)...);
+}
 
 auto update_pixels(stormkit::thread_pool& pool, dynarray<ucolor_rgb>& pixels, const auto& extent) noexcept {
     const auto rect_width  = extent.width / 5;

@@ -13,6 +13,7 @@ export module stormkit.wsi:monitor;
 import std;
 
 import stormkit.core;
+import stormkit.math.extent;
 
 export {
     namespace stormkit::wsi {
@@ -37,13 +38,14 @@ export {
             void* native_handle = nullptr;
         };
 
-        constexpr auto as_string(Monitor::Flags flags) noexcept -> string_view;
-        constexpr auto to_string(Monitor::Flags flags) noexcept -> string;
+        [[nodiscard]]
+        constexpr auto tag_invoke(as_fn<string_view>,
+                                  Monitor::Flags value,
+                                  source_location_arg = std::source_location::current()) noexcept -> string_view;
 
-        auto to_string(const Monitor& monitor) noexcept -> string;
-
-        template<typename FormatContext>
-        auto format_as(const Monitor& monitor, FormatContext& ctx) noexcept -> decltype(ctx.out());
+        template<typename CharT>
+        constexpr auto tag_invoke(format_as_fn<CharT>, const Monitor& monitor, meta::format_context auto& ctx) noexcept
+          -> decltype(ctx.out());
 
         [[nodiscard]]
         STORMKIT_WSI_API auto get_monitors(bool update = false) noexcept -> array_view<const Monitor>;
@@ -105,7 +107,7 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_string(Monitor::Flags flags) noexcept -> string_view {
+    constexpr auto tag_invoke(as_fn<string_view>, Monitor::Flags flags, source_location_arg) noexcept -> string_view {
         switch (flags) {
             case Monitor::Flags::NONE: return "Monitor::Flags::NONE";
             case Monitor::Flags::PRIMARY: return "Monitor::Flags::PRIMARY";
@@ -117,23 +119,10 @@ namespace stormkit::wsi {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    template<typename CharT>
     STORMKIT_FORCE_INLINE
-    constexpr auto to_string(Monitor::Flags flags) noexcept -> string {
-        return string { as_string(flags) };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto to_string(const Monitor& monitor) noexcept -> string {
-        return std::format("{}", monitor);
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<typename FormatContext>
-    STORMKIT_FORCE_INLINE
-    inline auto format_as(const Monitor& monitor, FormatContext& ctx) noexcept -> decltype(ctx.out()) {
+    constexpr auto tag_invoke(format_as_fn<CharT>, const Monitor& monitor, meta::format_context auto& ctx) noexcept
+      -> decltype(ctx.out()) {
         return std::format_to(ctx.out(),
                               "[Monitor name: {}, flags: {}, extents: {}, scale_factor: {}]",
                               monitor.name,

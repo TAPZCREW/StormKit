@@ -157,7 +157,7 @@ namespace stormkit::wsi::win32 {
             auto i   = 0_usize;
             for (const auto& [key, value] : SCANCODE_AS_KEY) out[i++] = std::make_pair(value.first, key);
 
-            return make_static_hash_map(out);
+            return make_static_hash_map(std::move(out));
         }();
     } // namespace
 

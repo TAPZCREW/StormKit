@@ -12,6 +12,8 @@ import std;
 
 import stormkit.core;
 
+using namespace stormkit::literals;
+
 export namespace stormkit::wsi {
     inline constexpr auto GLOBAL_KEYBOARD_ID = 0_u8;
 
@@ -142,8 +144,9 @@ export namespace stormkit::wsi {
 
         UNKNOWN = std::numeric_limits<u8>::max(),
     };
-    constexpr auto as_string(Key key) noexcept -> string_view;
-    constexpr auto to_string(Key key) noexcept -> string;
+
+    [[nodiscard]]
+    constexpr auto tag_invoke(as_fn<string_view>, Key key, const std::source_location&) noexcept -> string_view;
 } // namespace stormkit::wsi
 
 ////////////////////////////////////////////////////////////////////
@@ -154,7 +157,7 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_string(Key key) noexcept -> string_view {
+    constexpr auto tag_invoke(as_fn<string_view>, Key key, const std::source_location&) noexcept -> string_view {
         switch (key) {
             case Key::A: return "Key::A";
             case Key::B: return "Key::B";
@@ -283,12 +286,5 @@ namespace stormkit::wsi {
             default: break;
         }
         std::unreachable();
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    constexpr auto to_string(Key key) noexcept -> string {
-        return string { as_string(key) };
     }
 } // namespace stormkit::wsi

@@ -8,12 +8,17 @@ import stormkit;
 
 #include <stormkit/main/main_macro.hpp>
 
-LOGGER("Events");
-
 using namespace stormkit;
 using namespace std::literals;
 
 namespace stdr = std::ranges;
+
+constexpr auto LOG_MODULE = log::module { "events" };
+
+template<class... Ts>
+inline auto ilog(std::format_string<Ts...> format, Ts&&... args) noexcept -> void {
+    LOG_MODULE.ilog(std::move(format), std::forward<Ts>(args)...);
+}
 
 ////////////////////////////////////////
 ////////////////////////////////////////

@@ -13,6 +13,8 @@ export module stormkit.wsi:window;
 import std;
 
 import stormkit.core;
+import stormkit.math.extent;
+import stormkit.math.linear;
 
 import :core;
 import :monitor;
@@ -54,8 +56,11 @@ export {
             ACTIVATE,
             DEACTIVATE,
         };
-        constexpr auto as_string(EventType type) noexcept -> string_view;
-        constexpr auto to_string(EventType type) noexcept -> string;
+
+        [[nodiscard]]
+        constexpr auto tag_invoke(as_fn<string_view>,
+                                  EventType value,
+                                  source_location_arg = std::source_location::current()) noexcept -> string_view;
 
         using NativeHandle = void*;
 
@@ -108,7 +113,7 @@ export {
         };
 
         template<typename T>
-        concept EventCallbackFunc = meta::IsConvertibleToOneOf<
+        concept EventCallbackFunc = meta::convertible_to_any_of<
           T,
           ClosedEventFunc,
           MonitorChangedEventFunc,
@@ -130,8 +135,8 @@ export {
             Window(Window&&) noexcept;
             auto operator=(Window&&) noexcept -> Window&;
 
-            static auto open(string title, const math::uextent2& size, WindowFlag flags) noexcept -> Window;
-            static auto allocate_and_open(string title, const math::uextent2& size, WindowFlag flags) noexcept
+            static auto open(string title, meta::in<math::uextent2> size, WindowFlag flags) noexcept -> Window;
+            static auto allocate_and_open(string title, meta::in<math::uextent2> size, WindowFlag flags) noexcept
               -> heap_ptr<Window>;
 
             auto close() noexcept -> void;
@@ -139,7 +144,7 @@ export {
             auto is_open() const noexcept -> bool;
             auto handle_events() noexcept -> void;
 
-            auto clear(const ucolor_rgb& color = colors::BLACK<u8>) noexcept -> void;
+            auto clear(meta::in<ucolor_rgb> color = colors::BLACK<u8>) noexcept -> void;
             auto fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void;
 
             template<EventCallbackFunc T>
@@ -160,9 +165,10 @@ export {
 
             [[nodiscard]]
             auto title() const noexcept -> const string&;
-            auto set_title(string title) noexcept -> void;
+            auto set_title(const string& title) noexcept -> void;
+            auto set_title(string&& title) noexcept -> void;
 
-            auto set_extent(const math::uextent2& extent) noexcept -> void;
+            auto set_extent(meta::in<math::uextent2> extent) noexcept -> void;
 
             [[nodiscard]]
             auto extent() const noexcept -> const math::uextent2&;
@@ -207,7 +213,7 @@ export {
             [[nodiscard]]
             auto is_virtual_keyboard_visible() const noexcept -> bool;
 
-            auto set_mouse_position(const math::ivec2& position, u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
+            auto set_mouse_position(meta::in<math::ivec2> position, u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
 
             [[nodiscard]]
             auto native_handle() const noexcept -> NativeHandle;
@@ -256,33 +262,27 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_string(WindowFlag flag) noexcept -> string_view {
-        using Pair                    = std::pair<WindowFlag, string_view>;
-        static constexpr auto MAPPING = core::generate_substitutions_as_string_for<WindowFlag, 4, WindowFlag::DEFAULT, 67>(
+    constexpr auto tag_invoke(as_fn<string_view>, WindowFlag flags, source_location_arg) noexcept -> string_view {
+        using pair                    = std::pair<WindowFlag, string_view>;
+        static constexpr auto MAPPING = core::generate_substitution_strings_for<WindowFlag, 4, WindowFlag::DEFAULT, 67>(
           "WindowFlag::",
-          {
-            Pair { WindowFlag::DEFAULT,          "DEFAULT"sv          },
-            Pair { WindowFlag::BORDERLESS,       "BORDERLESS"sv       },
-            Pair { WindowFlag::RESIZEABLE,       "RESIZEABLE"sv       },
-            Pair { WindowFlag::EXTERNAL_CONTEXT, "EXTERNAL_CONTEXT"sv },
+          array {
+            pair { WindowFlag::DEFAULT,          "DEFAULT"sv          },
+            pair { WindowFlag::BORDERLESS,       "BORDERLESS"sv       },
+            pair { WindowFlag::RESIZEABLE,       "RESIZEABLE"sv       },
+            pair { WindowFlag::EXTERNAL_CONTEXT, "EXTERNAL_CONTEXT"sv },
         });
 
-        const auto it = stdr::find_if(MAPPING, [&flag](auto&& pair) { return pair.first == flag; });
+        const auto it = stdr::find_if(MAPPING, [flags](auto&& pair) { return pair.first == flags; });
         ensures(it != stdr::cend(MAPPING));
+
         return it->second;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    constexpr auto to_string(WindowFlag flag) noexcept -> string {
-        return string { as_string(flag) };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_string(EventType type) noexcept -> string_view {
+    constexpr auto tag_invoke(as_fn<string_view>, EventType type, source_location_arg) noexcept -> string_view {
         switch (type) {
             case EventType::NONE: return "EventType::NONE";
             case EventType::CLOSED: return "EventType::CLOSED";
@@ -304,38 +304,31 @@ namespace stormkit::wsi {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    constexpr auto to_string(EventType type) noexcept -> string {
-        return string { as_string(type) };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
     template<EventCallbackFunc T>
     STORMKIT_FORCE_INLINE
     inline auto Window::on(T&& callback) noexcept -> void {
-        if constexpr (meta::IsCanonical<ClosedEventFunc, T>) on_closed(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<MonitorChangedEventFunc, T>)
+        if constexpr (meta::plain::is<ClosedEventFunc, T>) on_closed(std::forward<T>(callback));
+        else if constexpr (meta::plain::is<MonitorChangedEventFunc, T>)
             on_monitor_changed(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<ResizedEventFunc, T>)
+        else if constexpr (meta::plain::is<ResizedEventFunc, T>)
             on_resized(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<RestoredEventFunc, T>)
+        else if constexpr (meta::plain::is<RestoredEventFunc, T>)
             on_restored(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<MinimizedEventFunc, T>)
+        else if constexpr (meta::plain::is<MinimizedEventFunc, T>)
             on_minimized(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<KeyDownEventFunc, T>)
+        else if constexpr (meta::plain::is<KeyDownEventFunc, T>)
             on_key_down(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<KeyUpEventFunc, T>)
+        else if constexpr (meta::plain::is<KeyUpEventFunc, T>)
             on_key_up(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<MouseButtonDownEventFunc, T>)
+        else if constexpr (meta::plain::is<MouseButtonDownEventFunc, T>)
             on_mouse_button_down(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<MouseButtonUpEventFunc, T>)
+        else if constexpr (meta::plain::is<MouseButtonUpEventFunc, T>)
             on_mouse_button_up(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<MouseMovedEventFunc, T>)
+        else if constexpr (meta::plain::is<MouseMovedEventFunc, T>)
             on_mouse_moved(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<ActivateEventFunc, T>)
+        else if constexpr (meta::plain::is<ActivateEventFunc, T>)
             on_activate(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<DeactivateEventFunc, T>)
+        else if constexpr (meta::plain::is<DeactivateEventFunc, T>)
             on_deactivate(std::forward<T>(callback));
     }
 
