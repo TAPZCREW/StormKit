@@ -152,13 +152,13 @@ namespace stormkit::wsi::win32 {
           { VK_NUMPAD9,    { Key::NUMPAD_9, '9' }        },
         });
 
-        constexpr auto KEY_AS_SCANCODE = [] static noexcept -> decltype(auto) {
-            auto out = array<std::pair<Key, WPARAM>, 111> {};
+        constexpr auto KEY_AS_SCANCODE = make_static_hash_map([] static noexcept -> decltype(auto) {
+            auto out = array<std::pair<Key, WPARAM>, SCANCODE_AS_KEY.size()> {};
             auto i   = 0_usize;
             for (const auto& [key, value] : SCANCODE_AS_KEY) out[i++] = std::make_pair(value.first, key);
 
-            return make_static_hash_map(out);
-        }();
+            return out;
+        }());
     } // namespace
 
     /////////////////////////////////////

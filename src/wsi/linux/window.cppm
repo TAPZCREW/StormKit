@@ -52,7 +52,7 @@ export namespace stormkit::wsi::linux {
         auto clear(const ucolor_rgb& color) noexcept -> void;
         auto fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void;
 
-        auto set_title(string title) noexcept -> void;
+        auto set_title(string&& title) noexcept -> void;
         [[nodiscard]]
         auto title() const noexcept -> const string&;
 
@@ -243,7 +243,7 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::set_title(string title) noexcept -> void {
+    inline auto Window::set_title(string&& title) noexcept -> void {
         switch (m_wm) {
             case WM::X11: as<x11::Window>(m_impl).set_title(std::move(title)); break;
             case WM::WAYLAND: as<wayland::Window>(m_impl).set_title(std::move(title)); break;

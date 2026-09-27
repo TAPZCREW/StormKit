@@ -11,16 +11,16 @@ module;
 
 export module stormkit.wsi:win32.mouse;
 
+import std;
+
 import stormkit.core;
+import stormkit.math.linear;
 import stormkit.wsi;
 
 export namespace stormkit::wsi::win32 {
-    constexpr auto extract_mouse_button(UINT message, WPARAM w_param, LPARAM l_param) noexcept
-      -> MouseButton;
-    constexpr auto extract_mouse_position(HWND   handle,
-                                          WPARAM w_param,
-                                          LPARAM l_param,
-                                          bool   to_client = true) noexcept -> math::ivec2;
+    constexpr auto extract_mouse_button(UINT message, WPARAM w_param, LPARAM l_param) noexcept -> MouseButton;
+    constexpr auto extract_mouse_position(HWND handle, WPARAM w_param, LPARAM l_param, bool to_client = true) noexcept
+      -> math::ivec2;
 } // namespace stormkit::wsi::win32
 
 ////////////////////////////////////////////////////////////////////
@@ -31,8 +31,7 @@ namespace stormkit::wsi::win32 {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_CONST
-    constexpr auto extract_mouse_button(UINT message, WPARAM w_param, LPARAM) noexcept
-      -> MouseButton {
+    constexpr auto extract_mouse_button(UINT message, WPARAM w_param, LPARAM) noexcept -> MouseButton {
         switch (message) {
             case WM_LBUTTONDOWN: [[fallthrough]];
             case WM_LBUTTONUP: return MouseButton::LEFT;
@@ -54,10 +53,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    constexpr auto extract_mouse_position(HWND handle,
-                                          WPARAM,
-                                          LPARAM l_param,
-                                          bool   to_client) noexcept -> math::ivec2 {
+    constexpr auto extract_mouse_position(HWND handle, WPARAM, LPARAM l_param, bool to_client) noexcept -> math::ivec2 {
         auto position = POINT { GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param) };
         if (to_client) ScreenToClient(handle, &position);
 

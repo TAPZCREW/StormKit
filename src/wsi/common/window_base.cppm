@@ -4,13 +4,20 @@
 
 module;
 
+#include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
+
+#if defined(STORMKIT_OS_WINDOWS) and not defined(STORMKIT_COMPILER_LIBCPP)
+    #include <beman/optional/optional.hpp>
+#endif
 
 export module stormkit.wsi:common.window_base;
 
 import std;
 
 import stormkit.core;
+import stormkit.math.extent;
+import stormkit.math.linear;
 import stormkit.wsi;
 
 import :common.input_base;
@@ -47,7 +54,7 @@ export namespace stormkit::wsi::common {
         auto current_monitor() const noexcept -> const Monitor&;
         auto set_current_monitor(const Monitor& extent) noexcept -> void;
 
-        auto set_title(string title) noexcept -> bool;
+        auto set_title(string&& title) noexcept -> bool;
         [[nodiscard]]
         auto title() const noexcept -> const string&;
 
@@ -93,14 +100,18 @@ export namespace stormkit::wsi::common {
 
       protected:
         struct {
-            bool                  open       = false;
-            bool                  minimized  = false;
-            bool                  active     = false;
-            bool                  fullscreen = false;
-            bool                  visible    = false;
-            math::uextent2        extent;
-            optref<const Monitor> current_monitor;
-            string                title;
+            bool           open       = false;
+            bool           minimized  = false;
+            bool           active     = false;
+            bool           fullscreen = false;
+            bool           visible    = false;
+            math::uextent2 extent;
+#if defined(STORMKIT_OS_WINDOWS) and not defined(STORMKIT_COMPILER_LIBCPP)
+            beman::optional::optional<const Monitor&> current_monitor;
+#else
+            std::optional<const Monitor&> current_monitor;
+#endif
+            string title;
 
             f32 dpi = 1.f;
 
@@ -142,20 +153,25 @@ namespace stormkit::wsi::common {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto WindowBase::current_monitor() const noexcept -> const Monitor& {
-        return m_state.current_monitor;
+#if defined(STORMKIT_OS_WINDOWS) and not defined(STORMKIT_COMPILER_LIBCPP)
+        EXPECTS(m_state.current_monitor != beman::optional::nullopt);
+#else
+        EXPECTS(m_state.current_monitor != std::nullopt);
+#endif
+        return m_state.current_monitor.value();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto WindowBase::set_current_monitor(const Monitor& monitor) noexcept -> void {
-        m_state.current_monitor = as_optref(monitor);
+        m_state.current_monitor = monitor;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto WindowBase::set_title(string title) noexcept -> bool {
+    inline auto WindowBase::set_title(string&& title) noexcept -> bool {
         if (not m_state.open) return false;
 
         m_state.title = std::move(title);

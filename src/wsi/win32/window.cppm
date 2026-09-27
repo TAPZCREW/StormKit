@@ -34,8 +34,7 @@ export namespace stormkit::wsi::win32 {
         Window(Window&&) noexcept;
         auto operator=(Window&&) noexcept -> Window&;
 
-        auto open(string title, const math::uextent2& size, WindowFlag flags) noexcept
-          -> void;
+        auto open(string title, const math::uextent2& size, WindowFlag flags) noexcept -> void;
         auto close() noexcept -> void;
 
         auto handle_events() noexcept -> void;
@@ -43,7 +42,7 @@ export namespace stormkit::wsi::win32 {
         auto clear(const ucolor_rgb& color) noexcept -> void;
         auto fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void;
 
-        auto set_title(string title) noexcept -> void;
+        auto set_title(string&& title) noexcept -> void;
         auto set_extent(const math::uextent2& extent) noexcept -> void;
         auto set_fullscreen(bool fullscreen) noexcept -> void;
 
@@ -112,9 +111,8 @@ export namespace stormkit::wsi::win32 {
 
         HWND m_window_handle = nullptr;
 
-        using Hdc = raii_capsule<HDC, CreateCompatibleDC, DeleteDC, struct HdcTag, nullptr>;
-        using HBitmap
-          = raii_capsule<HBITMAP, CreateDIBSection, DeleteObject, struct HBitmapTag, nullptr>;
+        using Hdc     = raii_capsule<HDC, CreateCompatibleDC, DeleteDC, struct HdcTag, nullptr>;
+        using HBitmap = raii_capsule<HBITMAP, CreateDIBSection, DeleteObject, struct HBitmapTag, nullptr>;
 
         struct GDIFrameData {
             GDIFrameData();
@@ -228,8 +226,10 @@ namespace stormkit::wsi::win32 {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline Window::GDIFrameData::GDIFrameData(GDIFrameData&& other) noexcept
-        : context { std::move(other.context) }, bitmap { std::move(other.bitmap) },
-          pixels_ptr { other.pixels_ptr.load() }, extent { other.extent } {
+        : context { std::move(other.context) },
+          bitmap { std::move(other.bitmap) },
+          pixels_ptr { other.pixels_ptr.load() },
+          extent { other.extent } {
     }
 
     /////////////////////////////////////

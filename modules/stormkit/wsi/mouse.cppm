@@ -12,6 +12,8 @@ import std;
 
 import stormkit.core;
 
+using namespace stormkit::literals;
+
 export namespace stormkit::wsi {
     inline constexpr auto GLOBAL_MOUSE_ID = 0_u8;
 
@@ -33,8 +35,8 @@ export namespace stormkit::wsi {
         BUTTON_12,
     };
 
-    constexpr auto as_string(MouseButton button) noexcept -> string_view;
-    constexpr auto to_string(MouseButton button) noexcept -> string;
+    [[nodiscard]]
+    constexpr auto tag_invoke(as_fn<string_view>, MouseButton button, const std::source_location&) noexcept -> string_view;
 } // namespace stormkit::wsi
 
 ////////////////////////////////////////////////////////////////////
@@ -45,7 +47,7 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_string(MouseButton button) noexcept -> string_view {
+    constexpr auto tag_invoke(as_fn<string_view>, MouseButton button, const std::source_location&) noexcept -> string_view {
         switch (button) {
             case MouseButton::LEFT: return "MouseButton::LEFT";
             case MouseButton::RIGHT: return "MouseButton::RIGHT";
@@ -66,12 +68,5 @@ namespace stormkit::wsi {
         }
 
         std::unreachable();
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    constexpr auto to_string(MouseButton button) noexcept -> string {
-        return string { as_string(button) };
     }
 } // namespace stormkit::wsi
