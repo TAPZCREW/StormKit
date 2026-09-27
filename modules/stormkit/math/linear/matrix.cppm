@@ -416,7 +416,6 @@ namespace stormkit::math {
                 for (auto row : range(col + 1, M)) {
                     for (;;) {
                         const auto del = matrix_[row, col] / matrix_[col, col];
-                        if not consteval { std::println("del: {}", del); }
                         for (auto j : range(col, M)) matrix_[row, j] -= del * matrix_[col, j];
 
                         if (is(matrix_[row, col], value_type { 0 })) break;
@@ -440,7 +439,6 @@ namespace stormkit::math {
     template<cmeta::arithmetic T, usize M, usize N>
        STORMKIT_PURE
     constexpr auto transpose(const mat<T, M, N>& matrix) noexcept -> mat<T, N, M> {
-        if not consteval { std::println(stderr, "BBBB {} {}", N, M); }
         auto out = mat<T, N, M> {};
         transpose(view_of(matrix), mutable_view_of(out));
         return out;
@@ -545,7 +543,9 @@ namespace stormkit::math {
                 stdr::copy(i1, stdr::begin(inverse_.row(1)));
                 stdr::copy(i2, stdr::begin(inverse_.row(2)));
 
+                if not consteval { std::println(stderr, "BBBB", N, M); }
                 transpose(view_of(inverse_), mutable_view_of(inverse));
+                if not consteval { std::println(stderr, "CCCC", N, M); }
             });
 
             const auto one_over_determinant = T { 1 } / determinant(matrix);
@@ -558,7 +558,9 @@ namespace stormkit::math {
                 cofactor(matrix, mutable_view_of(factor));
             });
             const auto transposed           = init_by<mat<T, N, N>>([factor = view_of(factor)](auto& transposed) noexcept {
+                if not consteval { std::println(stderr, "DDDD", N, M); }
                 transpose(factor, mutable_view_of(transposed));
+                if not consteval { std::println(stderr, "EEEE", N, M); }
             });
 
             mul(view_of(transposed), one_over_determinant, out);
