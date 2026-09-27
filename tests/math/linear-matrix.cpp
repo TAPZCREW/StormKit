@@ -2,8 +2,6 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-#include <cstdio>
-
 import std;
 
 import stormkit.core;
