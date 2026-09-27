@@ -8,8 +8,6 @@ module;
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-#include <cstdio>
-
 export module stormkit.math.linear.matrix;
 
 import std;
