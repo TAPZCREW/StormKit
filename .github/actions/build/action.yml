@@ -60,7 +60,7 @@ runs:
     - name: Build
       id: build
       run: |
-        xmake b -v
+        xmake b
       shell: bash
 
     - name: Run unit tests
