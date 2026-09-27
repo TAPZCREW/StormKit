@@ -170,7 +170,7 @@ namespace stormkit { inline namespace core {
 
                 const auto formatted_symbol = [&]() noexcept -> string {
                     auto info = Dl_info {};
-                    if (dladdr(frames[i], &info)) {
+                    if (dladdr(frames[count], &info)) {
                         auto       status    = 0;
                         const auto demangled = abi::__cxa_demangle(info.dli_sname, nullptr, 0, &status);
 
