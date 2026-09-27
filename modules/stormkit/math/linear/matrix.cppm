@@ -51,7 +51,8 @@ export namespace stormkit::math {
 
         template<typename Self>
         [[nodiscard]]
-        constexpr auto row(this Self& self, usize id) noexcept -> array_view<cmeta::forward_const_to<Self, T>, N>;
+        constexpr auto row(STORMKIT_LIFETIMEBOUND this Self& self, usize id) noexcept
+          -> array_view<cmeta::forward_const_to<Self, T>, N>;
     };
 
     template<cmeta::arithmetic T, usize M, usize N>

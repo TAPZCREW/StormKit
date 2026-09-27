@@ -48,20 +48,20 @@ export namespace stormkit::math {
 
         template<typename Self>
         [[nodiscard]]
-        constexpr auto begin(this Self& self) noexcept -> decltype(auto);
+        constexpr auto begin(STORMKIT_LIFETIMEBOUND this Self& self) noexcept -> decltype(auto);
         [[nodiscard]]
-        constexpr auto cbegin() const noexcept -> decltype(auto);
+        constexpr auto cbegin() const noexcept STORMKIT_LIFETIMEBOUND -> decltype(auto);
 
         template<typename Self>
         [[nodiscard]]
-        constexpr auto end(this Self& self) noexcept -> decltype(auto);
+        constexpr auto end(STORMKIT_LIFETIMEBOUND this Self& self) noexcept -> decltype(auto);
 
         [[nodiscard]]
-        constexpr auto cend() const noexcept -> decltype(auto);
+        constexpr auto cend() const noexcept STORMKIT_LIFETIMEBOUND -> decltype(auto);
 
         template<typename Self>
         [[nodiscard]]
-        constexpr auto data(this Self& self) noexcept -> cmeta::forward_const_to<Self, value_type>*;
+        constexpr auto data(this Self& self) noexcept STORMKIT_LIFETIMEBOUND -> cmeta::forward_const_to<Self, value_type>*;
 
         [[nodiscard]]
         constexpr auto size() const noexcept -> size_type;
