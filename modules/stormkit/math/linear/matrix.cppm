@@ -526,15 +526,16 @@ namespace stormkit::math {
             const auto b = vec4<T> { matrix[1, 0], matrix[1, 1], matrix[1, 2], T { 0 } };
             const auto c = vec4<T> { matrix[2, 0], matrix[2, 1], matrix[2, 2], T { 0 } };
 
-            if not consteval { std::println(stderr, "BBBBBBBBBBB"); }
+            if not consteval { std::println(stderr, "BBBBBBBBBBB\n    {}\n    {}\n    {}", a, b, c); }
             const auto i0 = cross(b, c);
             const auto i1 = cross(c, a);
             const auto i2 = cross(a, b);
-            if not consteval { std::println(stderr, "CCCCCCCCCCC\n   {}\n    {}\n    {}", i0, i1, i2); }
+            if not consteval { std::println(stderr, "CCCCCCCCCCC\n    {}\n    {}\n    {}", i0, i1, i2); }
 
-            // [vec4: .x = -8 .y = 10 .z = -3 .w = 0]
-            //     [vec4: .x = 8 .y = -13 .z = 6 .w = 0]
-            //     [vec4: .x = -3 .y = 6 .z = -3 .w = 0]
+            //    [vec4: .x = -8 .y = 10 .z = -3 .w = 0]
+            //    [vec4: .x = 8 .y = -13 .z = 6 .w = 0]
+            //    [vec4: .x = -3 .y = 6 .z = -3 .w = 0]
+
             // [mat3x3: | -8.00000, 10.00000, -3.00000|
             //          | 8.00000, -13.00000, 6.00000|
             //          | -3.00000, 6.00000, -3.00000|]
