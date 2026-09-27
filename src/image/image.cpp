@@ -321,11 +321,8 @@ namespace stormkit::image {
             case image_codec::PNG: out = details::save_png(*this, filepath); break;
             case image_codec::TARGA: out = details::save_tga(*this, filepath); break;
             case image_codec::PPM: out = details::save_ppm(*this, format, filepath); break;
-            case image_codec::HDR:
-                out = details::save_hdr(*this, filepath);
-            break case image_codec::KTX:
-                out = details::save_ktx(*this, filepath);
-                break;
+            case image_codec::HDR: out = details::save_hdr(*this, filepath); break;
+            case image_codec::KTX: out = details::save_ktx(*this, filepath); break;
             case image_codec::QOI: out = details::save_qoi(*this, filepath); break;
             default: break;
         }
