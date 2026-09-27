@@ -539,9 +539,11 @@ namespace stormkit::math {
             // [mat3x3: | -8.00000, 10.00000, -3.00000|
             //          | 8.00000, -13.00000, 6.00000|
             //          | -3.00000, 6.00000, -3.00000|]
+
+            if not consteval { std::println(stderr, "BEFORE {}\n{}\n{}", i0, i1, i2); }
             const auto inverse = init_by<mat<T, N, N>>([&i0, &i1, &i2](auto& inverse) noexcept {
                 auto inverse_ = mat<T, N, N> {};
-                if not consteval { std::println(stderr, "{}", inverse_); }
+                if not consteval { std::println(stderr, "BEGIN {}\n{}\n{}\n{}", inverse_, i0, i1, i2); }
 
                 auto row_0 = inverse_.row(0);
                 if not consteval { std::println(stderr, "AAAAAAAAAAAAA {}", row_0); }
