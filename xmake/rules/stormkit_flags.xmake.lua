@@ -22,7 +22,7 @@ namespace("stormkit", function()
 
             if is_plat("linux") then
                 if is_mode("debug", "releasedbg") then
-                    if get_config("toolchain" == "llvm") then
+                    if get_config("toolchain") == "llvm" then
                         target:add("ldflags", "-rdynamic", { force = true })
                         target:add("shflags", "-rdynamic", { force = true })
                     else
