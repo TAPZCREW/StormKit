@@ -365,9 +365,10 @@ namespace stormkit::image {
                 return { std::move(result) };
             }
             case image_codec::PPM: {
-                TryTo(result, (details::save_ppm(*this, format)));
-
-                return { std::move(result) };
+                auto result = details::save_ppm(*this, format);
+                if (not result.has_value()) return std::unexpected { std::move(result.error()) };
+                // TryTo(result, (details::save_ppm(*this, format)));
+                return { std::move(result.value()) };
             }
             case image_codec::HDR: {
                 TryTo(result, details::save_hdr(*this));
