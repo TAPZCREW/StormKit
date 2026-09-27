@@ -79,6 +79,19 @@ namespace {
                 EXPECTS((result[1, 2] == 0));
                 EXPECTS((result[2, 3] == 0));
                 EXPECTS((result[3, 0] == 0));
+
+                const auto b = math::mat3x4<i32> {
+                    0, 1, 0, //
+                    0, 0, 2, //
+                    0, 0, 0,
+                }; //
+
+                const auto result2 = math::transpose(b);
+                EXPECTS((result[1, 0] == 1));
+                EXPECTS((result[2, 1] == 2));
+
+                EXPECTS((result[0, 1] == 0));
+                EXPECTS((result[0, 2] == 0));
             },
           }, {
             "linear.matrix.is_inversible",
