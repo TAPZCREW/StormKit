@@ -13,7 +13,10 @@ target("main", function()
     add_files(path.join(module_dir, "main.cppm"), { public = true })
     if is_plat("linux") then add_files(path.join(src_main_dir, "linux/**.cpp")) end
     if is_plat("windows") then add_files(path.join(src_main_dir, "win32/**.cpp")) end
-    if is_plat("macosx") then add_files(path.join(src_main_dir, "macos/**.cpp")) end
+    if is_plat("macosx") then
+        add_files(path.join(src_main_dir, "macos/**.cpp"))
+        add_files(path.join(src_main_dir, "macos/**.mm"))
+    end
     if is_plat("iphoneos") then add_files(path.join(src_main_dir, "ios/**.cpp")) end
     if is_plat("tvos") then add_files(path.join(src_main_dir, "tvos/**.cpp")) end
     if is_plat("android") then add_files(path.join(src_main_dir, "android/**.cpp")) end

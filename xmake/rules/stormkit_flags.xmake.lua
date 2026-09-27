@@ -10,24 +10,26 @@ namespace("stormkit", function()
                     target:add("shflags", "-flto=thin", { force = true })
                 end
             end
-            if get_config("mold") and not is_subhost("windows") then
-                local arg = "-fuse-ld=mold"
-                if type(get_config("mold")) == "string" then arg = "-fuse-ld=" .. get_config("mold") end
-                target:add("ldflags", arg, { force = true })
-                target:add("shflags", arg, { force = true })
-            elseif get_config("toolchain") == "llvm" then
-                target:add("ldflags", "-fuse-ld=lld", { force = true })
-                target:add("shflags", "-fuse-ld=lld", { force = true })
-            end
+            if not is_plat("macosx") then
+                if get_config("mold") and not is_subhost("windows") then
+                    local arg = "-fuse-ld=mold"
+                    if type(get_config("mold")) == "string" then arg = "-fuse-ld=" .. get_config("mold") end
+                    target:add("ldflags", arg, { force = true })
+                    target:add("shflags", arg, { force = true })
+                elseif get_config("toolchain") == "llvm" then
+                    target:add("ldflags", "-fuse-ld=lld", { force = true })
+                    target:add("shflags", "-fuse-ld=lld", { force = true })
+                end
 
-            if is_plat("linux") then
-                if is_mode("debug", "releasedbg") then
-                    if get_config("toolchain") == "llvm" then
-                        target:add("ldflags", "-rdynamic", { force = true })
-                        target:add("shflags", "-rdynamic", { force = true })
-                    else
-                        target:add("ldflags", "-Wl,--export-dynamic", { force = true })
-                        target:add("shflags", "-Wl,--export-dynamic", { force = true })
+                if is_plat("linux") then
+                    if is_mode("debug", "releasedbg") then
+                        if get_config("toolchain") == "llvm" then
+                            target:add("ldflags", "-rdynamic", { force = true })
+                            target:add("shflags", "-rdynamic", { force = true })
+                        else
+                            target:add("ldflags", "-Wl,--export-dynamic", { force = true })
+                            target:add("shflags", "-Wl,--export-dynamic", { force = true })
+                        end
                     end
                 end
             end
