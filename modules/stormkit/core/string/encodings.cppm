@@ -59,7 +59,10 @@ namespace stormkit { inline namespace core {
         while ((len = std::mbrtoc16(reinterpret_cast<char16_t*>(stdr::data(output)), input_it, MB_CUR_MAX, &state)) > 0ull)
             input_it += len;
 #else
-        output = reinterpret_cast<char16_t*>(stdr::data(input));
+        output.resize(stdr::size(input));
+        auto i = 0;
+        for (const auto& c : input) [[maybe_unused]]
+            output[i] = unchecked_narrow<char16_t>(c);
 #endif
 
         return output;
@@ -76,7 +79,10 @@ namespace stormkit { inline namespace core {
         for (const auto& c : input) [[maybe_unused]]
             auto _ = std::c16rtomb(reinterpret_cast<char*>(stdr::data(output)), c, &state);
 #else
-        output = reinterpret_cast<const char*>(stdr::data(input));
+        output.resize(stdr::size(input));
+        auto i = 0;
+        for (const auto& c : input) [[maybe_unused]]
+            output[i] = unchecked_narrow<char>(c);
 #endif
 
         return output;
@@ -92,8 +98,11 @@ namespace stormkit { inline namespace core {
         output.resize(count);
 
         MultiByteToWideChar(CP_UTF8, 0, stdr::data(input), stdr::size(input), stdr::data(output), stdr::size(output));
-#elif defined(STORMKIT_COMPILER_CLANG)
-        output = reinterpret_cast<const char8_t*>(stdr::data(input));
+#elif defined(STORMKIT_OS_MACOS)
+        output.resize(stdr::size(input));
+        auto i = 0;
+        for (const auto& c : input) [[maybe_unused]]
+            output[i] = unchecked_narrow<wchar_t>(c);
 #else
         auto state = std::mbstate_t {};
         output.resize(stdr::size(input));
@@ -125,6 +134,11 @@ namespace stormkit { inline namespace core {
                             stdr::size(output),
                             nullptr,
                             nullptr);
+#elif defined(STORMKIT_OS_MACOS)
+        output.resize(stdr::size(input));
+        auto i = 0;
+        for (const auto& c : input) [[maybe_unused]]
+            output[i] = unchecked_narrow<char>(c);
 #else
         auto state = std::mbstate_t {};
         output.resize(stdr::size(input));
