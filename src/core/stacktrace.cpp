@@ -179,18 +179,18 @@ namespace stormkit { inline namespace core {
                                 std::free(demangled);
                                 return result;
                             }
-
-                            return std::string { symbol };
                         }
 
-                        std::println(stderr,
-                                     "{}# {} {}\n    in {}",
-                                     (count - ignore_count),
-                                     BLUE_TEXT_STYLE | object_address,
-                                     YELLOW_TEXT_STYLE | formatted_symbol,
-                                     object);
-                        ++count;
+                        return std::string { symbol };
                     }();
+
+                    std::println(stderr,
+                                 "{}# {} {}\n    in {}",
+                                 (count - ignore_count),
+                                 BLUE_TEXT_STYLE | object_address,
+                                 YELLOW_TEXT_STYLE | formatted_symbol,
+                                 object);
+                    ++count;
 
                     if ((count - ignore_count) == 0) std::println(stderr, "No stacktrace available!");
 
