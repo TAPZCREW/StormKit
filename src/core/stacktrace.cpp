@@ -170,7 +170,7 @@ namespace stormkit { inline namespace core {
                 auto       status    = 0;
                 const auto demangled = abi::__cxa_demangle(stdr::data(symbol), nullptr, 0, &status);
 
-                const auto formatted_symbol = (status == 0) ? pretify(string_view { demangled }) : std::move(symbol);
+                const auto formatted_symbol = (status == 0) ? prettify(string_view { demangled }) : std::move(symbol);
 
                 std::println(stderr,
                              "{}# {} {}\n    in {}",
@@ -179,6 +179,8 @@ namespace stormkit { inline namespace core {
                              YELLOW_TEXT_STYLE | formatted_symbol,
                              object);
                 ++count;
+
+                if (status == 0) std::free(demangled);
             }
 
             if ((count - ignore_count) == 0) std::println(stderr, "No stacktrace available!");
