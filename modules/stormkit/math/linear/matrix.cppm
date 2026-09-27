@@ -440,6 +440,7 @@ namespace stormkit::math {
     template<cmeta::arithmetic T, usize M, usize N>
        STORMKIT_PURE
     constexpr auto transpose(const mat<T, M, N>& matrix) noexcept -> mat<T, N, M> {
+        if not consteval { std::println(stderr, "BBBB {} {}", N, M); }
         auto out = mat<T, N, M> {};
         transpose(view_of(matrix), mutable_view_of(out));
         return out;
