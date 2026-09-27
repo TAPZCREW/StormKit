@@ -104,6 +104,10 @@ export namespace stormkit { inline namespace core { namespace monadic {
     [[nodiscard]]
     constexpr auto is() noexcept -> decltype(auto);
 
+    template<typename T>
+    [[nodiscard]]
+    constexpr auto is(const T& value) noexcept -> decltype(auto);
+
     [[nodiscard]]
     constexpr auto clone() noexcept -> decltype(auto);
 
@@ -175,15 +179,6 @@ namespace stormkit { inline namespace core { namespace monadic {
         return []<typename U>(U&& value) static noexcept -> decltype(auto) {
             return core::unchecked_narrow<T>(std::forward<U>(value));
         };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    template<typename T>
-    STORMKIT_FORCE_INLINE
-
-    constexpr auto is(T&& value) noexcept -> decltype(auto) {
-        return [value = std::forward<T>(value)]<typename U>(U&& other) { return core::is(value, std::forward<U>(other)); };
     }
 
     ////////////////////////////////////////
@@ -327,9 +322,16 @@ namespace stormkit { inline namespace core { namespace monadic {
     /////////////////////////////////////
     template<typename T>
     STORMKIT_FORCE_INLINE
-
     constexpr auto is() noexcept -> decltype(auto) {
         return []<typename U>(U&& value) static noexcept { return core::is<T>(std::forward<U>(value)); };
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    template<typename T>
+    STORMKIT_FORCE_INLINE
+    constexpr auto is(const T& value) noexcept -> decltype(auto) {
+        return [&value]<typename U>(U&& other) { return core::is(value, std::forward<U>(other)); };
     }
 
     /////////////////////////////////////
