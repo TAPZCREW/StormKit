@@ -543,9 +543,9 @@ namespace stormkit::math {
                 stdr::copy(i1, stdr::begin(inverse_.row(1)));
                 stdr::copy(i2, stdr::begin(inverse_.row(2)));
 
-                if not consteval { std::println(stderr, "BBBB", N, M); }
+                if not consteval { std::println(stderr, "BBBB"); }
                 transpose(view_of(inverse_), mutable_view_of(inverse));
-                if not consteval { std::println(stderr, "CCCC", N, M); }
+                if not consteval { std::println(stderr, "CCCC"); }
             });
 
             const auto one_over_determinant = T { 1 } / determinant(matrix);
@@ -558,9 +558,9 @@ namespace stormkit::math {
                 cofactor(matrix, mutable_view_of(factor));
             });
             const auto transposed           = init_by<mat<T, N, N>>([factor = view_of(factor)](auto& transposed) noexcept {
-                if not consteval { std::println(stderr, "DDDD", N, M); }
+                if not consteval { std::println(stderr, "DDDD"); }
                 transpose(factor, mutable_view_of(transposed));
-                if not consteval { std::println(stderr, "EEEE", N, M); }
+                if not consteval { std::println(stderr, "EEEE"); }
             });
 
             mul(view_of(transposed), one_over_determinant, out);
