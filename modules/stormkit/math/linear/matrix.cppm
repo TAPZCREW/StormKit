@@ -541,29 +541,33 @@ namespace stormkit::math {
             //          | -3.00000, 6.00000, -3.00000|]
 
             if not consteval { std::println(stderr, "BEFORE {}\n{}\n{}", i0, i1, i2); }
-            const auto inverse = init_by<mat<T, N, N>>([&i0, &i1, &i2](auto& inverse) noexcept {
-                auto inverse_ = mat<T, N, N> {};
-                if not consteval { std::println(stderr, "BEGIN {}\n{}\n{}\n{}", inverse_, i0, i1, i2); }
+            const auto inverse = init_by<mat<T, N, N>>(
+              [](auto& inverse, auto& i0, auto& i1, auto& i2) noexcept {
+                  auto inverse_ = mat<T, N, N> {};
+                  if not consteval { std::println(stderr, "BEGIN {}\n{}\n{}\n{}", inverse_, i0, i1, i2); }
 
-                auto row_0 = inverse_.row(0);
-                if not consteval { std::println(stderr, "AAAAAAAAAAAAA {}", row_0); }
-                stdr::copy(i0, stdr::begin(row_0));
-                if not consteval { std::println(stderr, "AAAAAAAAAAAAA {} {}", i0, row_0); }
+                  auto row_0 = inverse_.row(0);
+                  if not consteval { std::println(stderr, "AAAAAAAAAAAAA {}", row_0); }
+                  stdr::copy(i0, stdr::begin(row_0));
+                  if not consteval { std::println(stderr, "AAAAAAAAAAAAA {} {}", i0, row_0); }
 
-                auto row_1 = inverse_.row(1);
-                if not consteval { std::println(stderr, "BBBBBBBBBBBBB {}", row_1); }
-                stdr::copy(i1, stdr::begin(row_1));
-                if not consteval { std::println(stderr, "BBBBBBBBBBBBB {} {}", i1, row_1); }
+                  auto row_1 = inverse_.row(1);
+                  if not consteval { std::println(stderr, "BBBBBBBBBBBBB {}", row_1); }
+                  stdr::copy(i1, stdr::begin(row_1));
+                  if not consteval { std::println(stderr, "BBBBBBBBBBBBB {} {}", i1, row_1); }
 
-                auto row_2 = inverse_.row(2);
-                if not consteval { std::println(stderr, "CCCCCCCCCCCCC {}", row_2); }
-                stdr::copy(i2, stdr::begin(row_2));
-                if not consteval { std::println(stderr, "CCCCCCCCCCCCC {} {}", i2, row_2); }
+                  auto row_2 = inverse_.row(2);
+                  if not consteval { std::println(stderr, "CCCCCCCCCCCCC {}", row_2); }
+                  stdr::copy(i2, stdr::begin(row_2));
+                  if not consteval { std::println(stderr, "CCCCCCCCCCCCC {} {}", i2, row_2); }
 
-                if not consteval { std::println(stderr, "{}", inverse_); }
+                  if not consteval { std::println(stderr, "{}", inverse_); }
 
-                transpose(view_of(inverse_), mutable_view_of(inverse));
-            });
+                  transpose(view_of(inverse_), mutable_view_of(inverse));
+              },
+              i0,
+              i1,
+              i2);
 
             const auto one_over_determinant = T { 1 } / determinant(matrix);
             mul(view_of(inverse), one_over_determinant, out);
