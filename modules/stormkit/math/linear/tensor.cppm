@@ -38,11 +38,13 @@ export namespace stormkit::math {
 
         template<typename Self>
         [[nodiscard]]
-        constexpr auto operator[](this Self& self, size_type i) noexcept -> cmeta::forward_const_to<Self, value_type>&;
+        constexpr auto operator[](STORMKIT_LIFETIMEBOUND this Self& self, size_type i) noexcept
+          -> cmeta::forward_const_to<Self, value_type>&;
 
         template<typename Self>
         [[nodiscard]]
-        constexpr auto operator[](this Self& self, cmeta::convertible_to<size_type> auto... indices) noexcept
+        constexpr auto operator[](STORMKIT_LIFETIMEBOUND this Self& self,
+                                  cmeta::convertible_to<size_type> auto... indices) noexcept
           -> cmeta::forward_const_to<Self, value_type>&
             requires(sizeof...(EXTENTS_) > 1 and sizeof...(indices) == sizeof...(EXTENTS_));
 
@@ -61,7 +63,7 @@ export namespace stormkit::math {
 
         template<typename Self>
         [[nodiscard]]
-        constexpr auto data(this Self& self) noexcept STORMKIT_LIFETIMEBOUND -> cmeta::forward_const_to<Self, value_type>*;
+        constexpr auto data(STORMKIT_LIFETIMEBOUND this Self& self) noexcept -> cmeta::forward_const_to<Self, value_type>*;
 
         [[nodiscard]]
         constexpr auto size() const noexcept -> size_type;
