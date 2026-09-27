@@ -215,10 +215,10 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_title(string title) noexcept -> void {
-        SetWindowTextA(m_window_handle, std::data(title));
-
+    auto Window::set_title(string&& title) noexcept -> void {
         WindowBase::set_title(std::move(title));
+
+        SetWindowTextA(m_window_handle, std::data(m_title));
     }
 
     /////////////////////////////////////

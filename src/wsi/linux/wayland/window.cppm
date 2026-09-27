@@ -50,7 +50,7 @@ export {
             auto clear(const ucolor_rgb& color) noexcept -> void;
             auto fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void;
 
-            auto set_title(string title) noexcept -> void;
+            auto set_title(string&& title) noexcept -> void;
             auto set_extent(const math::uextent2& extent) noexcept -> void;
             auto set_fullscreen(bool fullscreen) noexcept -> void;
 

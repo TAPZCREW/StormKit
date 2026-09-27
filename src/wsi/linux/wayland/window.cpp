@@ -221,9 +221,8 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_title(string title) noexcept -> void {
-        if (!m_state.open) return;
-        m_title = std::move(title);
+    auto Window::set_title(string&& title) noexcept -> void {
+        WindowBase::set_title(std::move(title));
 
         xdg_toplevel_set_title(m_xdg_top_level, stdr::data(m_title));
     }
@@ -261,7 +260,7 @@ namespace stormkit::wsi::linux::wayland {
 
         if (confined) {
             if (not has_flag_bit(state.flags, wl::PointerState::Flag::CONFINED)) {
-                state.confined_pointer = wl::ConfinedPointer ::
+                state.confined_pointer = wl::ConfinedPointer::
                   create(globals.pointer_constraints, m_surface, pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT);
 
                 zwp_confined_pointer_v1_add_listener(state.confined_pointer, &wl::g_confined_pointer_listener, &state);
@@ -616,8 +615,12 @@ namespace stormkit::wsi::linux::wayland {
                                              unchecked_narrow<i32>(std::bit_cast<uptr>(m_shm_buffer->native_handle())),
                                              unchecked_narrow<i32>(size));
 
-            m_pixel_buffer = wl::Buffer::
-              take(wl_shm_pool_create_buffer(m_shm_pool, 0, width, height, unchecked_narrow<i32>(stride), WL_SHM_FORMAT_XRGB8888));
+            m_pixel_buffer = wl::Buffer::take(wl_shm_pool_create_buffer(m_shm_pool,
+                                                                        0,
+                                                                        width,
+                                                                        height,
+                                                                        unchecked_narrow<i32>(stride),
+                                                                        WL_SHM_FORMAT_XRGB8888));
 
             wl_buffer_add_listener(m_pixel_buffer, &wl::g_buffer_listener, &m_pixel_buffer);
         }

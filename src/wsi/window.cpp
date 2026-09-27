@@ -63,7 +63,7 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::open(string title, const math::uextent2& size, WindowFlag flags) noexcept -> Window {
+    auto Window::open(string title, meta::in<math::uextent2> size, WindowFlag flags) noexcept -> Window {
         auto window = Window {};
         window.m_impl->open(std::move(title), size, flags);
         return window;
@@ -71,7 +71,7 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::allocate_and_open(string title, const math::uextent2& size, WindowFlag flags) noexcept -> heap_ptr<Window> {
+    auto Window::allocate_and_open(string title, meta::in<math::uextent2> size, WindowFlag flags) noexcept -> heap_ptr<Window> {
         auto window = allocate_unsafe<Window>(Window {});
         window->m_impl->open(std::move(title), size, flags);
         return window;
@@ -85,7 +85,7 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::clear(const ucolor_rgb& color) noexcept -> void {
+    auto Window::clear(meta::in<ucolor_rgb> color) noexcept -> void {
         m_impl->clear(color);
     }
 
@@ -121,7 +121,13 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_title(string title) noexcept -> void {
+    auto Window::set_title(const string& title) noexcept -> void {
+        m_impl->set_title(string { title });
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    auto Window::set_title(string&& title) noexcept -> void {
         m_impl->set_title(std::move(title));
     }
 
@@ -133,7 +139,7 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_extent(const math::uextent2& extent) noexcept -> void {
+    auto Window::set_extent(meta::in<math::uextent2> extent) noexcept -> void {
         m_impl->set_extent(extent);
     }
 
