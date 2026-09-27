@@ -21,13 +21,14 @@ import :ppm;
 import :qoi;
 import :tga;
 
-namespace stdr = std::ranges;
+namespace stdr  = std::ranges;
 namespace stdfs = std::filesystem;
 
 namespace stormkit::image {
     namespace details {
         using namespace stormkit::literals;
-        inline constexpr auto KTX_HEADER = into<array>(as_bytes, { 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A });
+        inline constexpr auto
+          KTX_HEADER = into<array>(as_bytes, { 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A });
 
         inline constexpr auto PNG_HEADER = into<array>(as_bytes, { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A });
 
@@ -180,7 +181,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto image::load_from_file(const stdfs::path &filepath_, image_codec codec) noexcept -> result<void> {
+    auto image::load_from_file(const stdfs::path& filepath_, image_codec codec) noexcept -> result<void> {
         const auto filepath = stdfs::canonical(filepath_);
 
         EXPECTS(codec != image_codec::UNKNOWN);
@@ -196,40 +197,40 @@ namespace stormkit::image {
         TryTo(filedata, io::readfile(filepath));
         if (codec == image_codec::AUTODETECT) codec = details::filename_to_codec(filepath);
         switch (codec) {
-            case image_codec::JPEG: {                                                                                 
-                TryTo(result, details::load_jpg(filedata));                                                                  
-                *this = std::move(result);                                                                          
-                return {};                                                                                           
+            case image_codec::JPEG: {
+                TryTo(result, details::load_jpg(filedata));
+                *this = std::move(result);
+                return {};
             }
-            case image_codec::PNG: {                                                                                 
-                TryTo(result, details::load_png(filedata));                                                                  
-                *this = std::move(result);                                                                          
-                return {};                                                                                           
+            case image_codec::PNG: {
+                TryTo(result, details::load_png(filedata));
+                *this = std::move(result);
+                return {};
             }
-            case image_codec::TARGA: {                                                                                 
-                TryTo(result, details::load_tga(filedata));                                                                  
-                *this = std::move(result);                                                                          
-                return {};                                                                                           
+            case image_codec::TARGA: {
+                TryTo(result, details::load_tga(filedata));
+                *this = std::move(result);
+                return {};
             }
-            case image_codec::PPM: {                                                                                 
-                TryTo(result, details::load_ppm(filedata));                                                                  
-                *this = std::move(result);                                                                          
-                return {};                                                                                           
+            case image_codec::PPM: {
+                TryTo(result, details::load_ppm(filedata));
+                *this = std::move(result);
+                return {};
             }
-            case image_codec::HDR: {                                                                                 
-                TryTo(result, details::load_hdr(filedata));                                                                  
-                *this = std::move(result);                                                                          
-                return {};                                                                                           
+            case image_codec::HDR: {
+                TryTo(result, details::load_hdr(filedata));
+                *this = std::move(result);
+                return {};
             }
-            case image_codec::KTX: {                                                                                 
-                TryTo(result, details::load_ktx(filedata));                                                                  
-                *this = std::move(result);                                                                          
-                return {};                                                                                           
+            case image_codec::KTX: {
+                TryTo(result, details::load_ktx(filedata));
+                *this = std::move(result);
+                return {};
             }
-            case image_codec::QOI: {                                                                                 
-                TryTo(result, details::load_qoi(filedata));                                                                  
-                *this = std::move(result);                                                                          
-                return {};                                                                                           
+            case image_codec::QOI: {
+                TryTo(result, details::load_qoi(filedata));
+                *this = std::move(result);
+                return {};
             }
             default: break;
         }
@@ -260,40 +261,40 @@ namespace stormkit::image {
         //                                 "Failed to load image\n    > Invalid format" };
         if (codec == image_codec::AUTODETECT) codec = details::header_to_codec(data);
         switch (codec) {
-            case image_codec::JPEG: {                                                                                 
-                TryTo(result, details::load_jpg(data));                                                                  
-                *this = std::move(result);                                                                          
-                return {};                                                                                           
+            case image_codec::JPEG: {
+                TryTo(result, details::load_jpg(data));
+                *this = std::move(result);
+                return {};
             }
-            case image_codec::PNG: {                                                                                 
-                TryTo(result, details::load_png(data));                                                                  
-                *this = std::move(result);                                                                          
-                return {};                                                                                           
+            case image_codec::PNG: {
+                TryTo(result, details::load_png(data));
+                *this = std::move(result);
+                return {};
             }
-            case image_codec::TARGA: {                                                                                 
-                TryTo(result, details::load_tga(data));                                                                  
-                *this = std::move(result);                                                                          
-                return {};                                                                                           
+            case image_codec::TARGA: {
+                TryTo(result, details::load_tga(data));
+                *this = std::move(result);
+                return {};
             }
-            case image_codec::PPM: {                                                                                 
-                TryTo(result, details::load_ppm(data));                                                                  
-                *this = std::move(result);                                                                          
-                return {};                                                                                           
+            case image_codec::PPM: {
+                TryTo(result, details::load_ppm(data));
+                *this = std::move(result);
+                return {};
             }
-            case image_codec::HDR: {                                                                                 
-                TryTo(result, details::load_hdr(data));                                                                  
-                *this = std::move(result);                                                                          
-                return {};                                                                                           
+            case image_codec::HDR: {
+                TryTo(result, details::load_hdr(data));
+                *this = std::move(result);
+                return {};
             }
-            case image_codec::KTX: {                                                                                 
-                TryTo(result, details::load_ktx(data));                                                                  
-                *this = std::move(result);                                                                          
-                return {};                                                                                           
+            case image_codec::KTX: {
+                TryTo(result, details::load_ktx(data));
+                *this = std::move(result);
+                return {};
             }
-            case image_codec::QOI: {                                                                                 
-                TryTo(result, details::load_qoi(data));                                                                  
-                *this = std::move(result);                                                                          
-                return {};                                                                                           
+            case image_codec::QOI: {
+                TryTo(result, details::load_qoi(data));
+                *this = std::move(result);
+                return {};
             }
             default: break;
         }
@@ -303,7 +304,7 @@ namespace stormkit::image {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto image::save_to_file(const stdfs::path &filepath_, image_codec codec, image_codec_format format) const noexcept
+    auto image::save_to_file(const stdfs::path& filepath_, image_codec codec, image_codec_format format) const noexcept
       -> result<void> {
         auto filepath = stdfs::canonical(filepath_.parent_path()) / filepath_.filename();
 
@@ -313,32 +314,20 @@ namespace stormkit::image {
         EXPECTS(not std::empty(m_data.data));
         EXPECTS(stdfs::exists(filepath.root_directory()));
 
+        auto out = result<void> { std::unexpect, status_code(image_status_code::INVALID_FORMAT) };
+
         switch (codec) {
-            case image_codec::JPEG: {                                                                                 
-                return details::save_jpg(*this, filepath);                                                                  
-            }
-            case image_codec::PNG: {                                                                                 
-                return details::save_png(*this, filepath);                                                                  
-            }
-            case image_codec::TARGA: {                                                                                 
-                return details::save_tga(*this, filepath);                                                                  
-            }
-            case image_codec::PPM: {                                                                                 
-                return details::save_ppm(*this, format, filepath);                                                                  
-            }
-            case image_codec::HDR: {                                                                                 
-                return details::save_hdr(*this, filepath);                                                                  
-            }
-            case image_codec::KTX: {                                                                                 
-                return details::save_ktx(*this, filepath);                                                                  
-            }
-            case image_codec::QOI: {                                                                                 
-                return details::save_qoi(*this, filepath);                                                                  
-            }
+            case image_codec::JPEG: out = details::save_jpg(*this, filepath); break;
+            case image_codec::PNG: out = details::save_png(*this, filepath); break;
+            case image_codec::TARGA: out = details::save_tga(*this, filepath); break;
+            case image_codec::PPM: out = details::save_ppm(*this, format, filepath); break;
+            case image_codec::HDR: out = details::save_hdr(*this, filepath); break;
+            case image_codec::KTX: out = details::save_ktx(*this, filepath); break;
+            case image_codec::QOI: out = details::save_qoi(*this, filepath); break;
             default: break;
         }
 
-        return std::unexpected { status_code(image_status_code::INVALID_FORMAT) };
+        return out;
     }
 
     /////////////////////////////////////
@@ -348,41 +337,20 @@ namespace stormkit::image {
         EXPECTS(codec != image_codec::AUTODETECT);
         EXPECTS(not std::empty(m_data.data));
 
-        auto output = dynarray<byte> {};
+        auto out = result<dynarray<byte>> { std::unexpect, status_code(image_status_code::INVALID_FORMAT) };
 
         switch (codec) {
-            case image_codec::JPEG: {                                                                                 
-                TryTo(result, details::save_jpg(*this));                                                                  
-                return {std::move(result)};                                                                                           
-            }
-            case image_codec::PNG: {                                                                                 
-                TryTo(result, details::save_png(*this));                                                                  
-                return {std::move(result)};                                                                                           
-            }
-            case image_codec::TARGA: {                                                                                 
-                TryTo(result, details::save_tga(*this));                                                                  
-                return {std::move(result)};                                                                                           
-            }
-            case image_codec::PPM: {                                                                                 
-                TryTo(result, details::save_ppm(*this, format));                                                                  
-                return {std::move(result)};                                                                                           
-            }
-            case image_codec::HDR: {                                                                                 
-                TryTo(result, details::save_hdr(*this));                                                                  
-                return {std::move(result)};                                                                                           
-            }
-            case image_codec::KTX: {                                                                                 
-                TryTo(result, details::save_ktx(*this));                                                                  
-                return {std::move(result)};                                                                                           
-            }
-            case image_codec::QOI: {                                                                                 
-                TryTo(result, details::save_qoi(*this));                                                                  
-                return {std::move(result)};                                                                                           
-            }
+            case image_codec::JPEG: out = details::save_jpg(*this); break;
+            case image_codec::PNG: out = details::save_png(*this); break;
+            case image_codec::TARGA: out = details::save_tga(*this); break;
+            case image_codec::PPM: out = details::save_ppm(*this, format); break;
+            case image_codec::HDR: out = details::save_hdr(*this); break;
+            case image_codec::KTX: out = details::save_ktx(*this); break;
+            case image_codec::QOI: out = details::save_qoi(*this); break;
             default: break;
         }
 
-        return std::unexpected { status_code(image_status_code::INVALID_FORMAT) };
+        return out;
     }
 
     /////////////////////////////////////
@@ -439,13 +407,13 @@ namespace stormkit::image {
 
         for (auto [layer, face, level, i] : multi_range(new_image.layers(), new_image.faces(), new_image.layers(), pixel_count)) {
             const auto new_from_image = details::map(pixel(as<usize>(i), layer, face, level),
-                                                 m_data.bytes_per_channel,
-                                                 new_image.bytes_per_channel());
+                                                     m_data.bytes_per_channel,
+                                                     new_image.bytes_per_channel());
             auto       new_to_image   = new_image.pixel(as<usize>(i), layer, face, level);
 
             stdr::copy_n(stdr::begin(new_from_image),
-                                std::min(m_data.channel_count, new_image.channel_count()),
-                                stdr::begin(new_to_image));
+                         std::min(m_data.channel_count, new_image.channel_count()),
+                         stdr::begin(new_to_image));
         }
 
         return new_image;
@@ -538,7 +506,7 @@ namespace stormkit::image {
         };
         image_data.data.resize(stdr::size(m_data.data));
 
-        auto new_image = image{ std::move(image_data) };
+        auto new_image = image { std::move(image_data) };
 
         for (auto [layer, face, mip, x, y, z] :
              multi_range(m_data.layers,
