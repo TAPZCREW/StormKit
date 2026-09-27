@@ -314,32 +314,20 @@ namespace stormkit::image {
         EXPECTS(not std::empty(m_data.data));
         EXPECTS(stdfs::exists(filepath.root_directory()));
 
+        auto out = result<void> { std::unexpect, status_code(image_status_code::INVALID_FORMAT) };
+
         switch (codec) {
-            case image_codec::JPEG: {
-                return details::save_jpg(*this, filepath);
-            }
-            case image_codec::PNG: {
-                return details::save_png(*this, filepath);
-            }
-            case image_codec::TARGA: {
-                return details::save_tga(*this, filepath);
-            }
-            case image_codec::PPM: {
-                return details::save_ppm(*this, format, filepath);
-            }
-            case image_codec::HDR: {
-                return details::save_hdr(*this, filepath);
-            }
-            case image_codec::KTX: {
-                return details::save_ktx(*this, filepath);
-            }
-            case image_codec::QOI: {
-                return details::save_qoi(*this, filepath);
-            }
+            case image_codec::JPEG: out = details::save_jpg(*this, filepath);
+            case image_codec::PNG: out = details::save_png(*this, filepath);
+            case image_codec::TARGA: out = details::save_tga(*this, filepath);
+            case image_codec::PPM: out = details::save_ppm(*this, format, filepath);
+            case image_codec::HDR: out = details::save_hdr(*this, filepath);
+            case image_codec::KTX: out = details::save_ktx(*this, filepath);
+            case image_codec::QOI: out = details::save_qoi(*this, filepath);
             default: break;
         }
 
-        return std::unexpected { status_code(image_status_code::INVALID_FORMAT) };
+        return out;
     }
 
     /////////////////////////////////////
@@ -349,18 +337,20 @@ namespace stormkit::image {
         EXPECTS(codec != image_codec::AUTODETECT);
         EXPECTS(not std::empty(m_data.data));
 
+        auto out = result<dynarray<byte>> { std::unexpect, status_code(image_status_code::INVALID_FORMAT) };
+
         switch (codec) {
-            case image_codec::JPEG: return details::save_jpg(*this);
-            case image_codec::PNG: return details::save_png(*this);
-            case image_codec::TARGA: return details::save_tga(*this);
-            case image_codec::PPM: return details::save_ppm(*this, format);
-            case image_codec::HDR: return details::save_hdr(*this);
-            case image_codec::KTX: return details::save_ktx(*this);
-            case image_codec::QOI: return details::save_qoi(*this);
+            case image_codec::JPEG: out = details::save_jpg(*this);
+            case image_codec::PNG: out = details::save_png(*this);
+            case image_codec::TARGA: out = details::save_tga(*this);
+            case image_codec::PPM: out = details::save_ppm(*this, format);
+            case image_codec::HDR: out = details::save_hdr(*this);
+            case image_codec::KTX: out = details::save_ktx(*this);
+            case image_codec::QOI: out = details::save_qoi(*this);
             default: break;
         }
 
-        return std::unexpected { status_code(image_status_code::INVALID_FORMAT) };
+        return out;
     }
 
     /////////////////////////////////////
