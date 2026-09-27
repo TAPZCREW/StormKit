@@ -296,7 +296,7 @@ namespace stormkit::math {
     template<typename Self>
     constexpr auto mat_interface<T, M, N>::row(this Self& self, usize id) noexcept
       -> array_view<cmeta::forward_const_to<Self, T>, M> {
-        return array_view<cmeta::forward_const_to<Self, T>, M> { self.begin() + id * M, N };
+        return array_view<cmeta::forward_const_to<Self, T>, N> { self.data() + id * M, N };
     }
 
     ////////////////////////////////////////
@@ -526,7 +526,6 @@ namespace stormkit::math {
             const auto b = vec4<T> { matrix[1, 0], matrix[1, 1], matrix[1, 2], T { 0 } };
             const auto c = vec4<T> { matrix[2, 0], matrix[2, 1], matrix[2, 2], T { 0 } };
 
-            if not consteval { std::println(stderr, "BBBBBBBBBBB\n    {}\n    {}\n    {}", a, b, c); }
             const auto i0 = cross(b, c);
             const auto i1 = cross(c, a);
             const auto i2 = cross(a, b);
