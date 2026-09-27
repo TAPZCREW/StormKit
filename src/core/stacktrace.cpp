@@ -156,13 +156,20 @@ namespace stormkit { inline namespace core {
                     continue;
                 }
 
-                auto       splitted         = split(sym, " ");
-                const auto object_address   = splitted[1].substr(1, stdr::size(splitted[1]) - 2);
-                splitted                    = split(splitted[0], "(");
-                const auto symbol           = splitted[1].substr(1, stdr::size(splitted[1]) - 2);
+                const auto splitted       = split(sym, " ");
+                const auto object_address = splitted[1].subview(1, stdr::size(splitted[1]) - 2);
+
+                const auto splitted2        = split(splitted[0], "(");
+                const auto object           = splitted2[0].subview(1, stdr::size(splitted2[0]));
+                const auto symbol           = splitted2[1].subview(1, stdr::size(splitted2[1]) - 2);
                 const auto formatted_symbol = symbol;
 
-                std::println(stderr, "{}# {}{}", (count - ignore_count), BLUE_TEXT_STYLE | object_address, formatted_symbol);
+                std::println(stderr,
+                             "{}# {}{}\n    in {}",
+                             (count - ignore_count),
+                             BLUE_TEXT_STYLE | object_address,
+                             formatted_symbol,
+                             YELLOW_TEXT_STYLE | object);
                 ++count;
             }
 
