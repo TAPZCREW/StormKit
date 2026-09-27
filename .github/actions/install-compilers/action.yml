@@ -103,4 +103,5 @@ runs:
       with:
         tools: llvm ninja meson cmake mold nasm pkgconf
         key: ${{ matrix.os }}-homebrew-${{ matrix.arch }}
+        verbose: false
 
