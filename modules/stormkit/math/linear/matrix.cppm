@@ -530,7 +530,6 @@ namespace stormkit::math {
             const auto i0 = cross(b, c);
             const auto i1 = cross(c, a);
             const auto i2 = cross(a, b);
-            if not consteval { std::println(stderr, "CCCCCCCCCCC\n    {}\n    {}\n    {}", i0, i1, i2); }
 
             //    [vec4: .x = -8 .y = 10 .z = -3 .w = 0]
             //    [vec4: .x = 8 .y = -13 .z = 6 .w = 0]
@@ -542,11 +541,14 @@ namespace stormkit::math {
             const auto inverse = init_by<mat<T, N, N>>([&i0, &i1, &i2](auto& inverse) noexcept {
                 auto inverse_ = mat<T, N, N> {};
                 auto row_0    = inverse_.row(0);
-                stdr::copy(view_of(as_linear, i0), stdr::begin(row_0));
+                if not consteval { std::println(stderr, "AAAAAAAAAAAAA {}", row_0); }
+                stdr::copy(i0, stdr::begin(row_0));
                 auto row_1 = inverse_.row(1);
-                stdr::copy(view_of(as_linear, i1), stdr::begin(row_1));
+                if not consteval { std::println(stderr, "BBBBBBBBBBBBB {}", row_1); }
+                stdr::copy(i1, stdr::begin(row_1));
                 auto row_2 = inverse_.row(2);
-                stdr::copy(view_of(as_linear, i2), stdr::begin(row_2));
+                if not consteval { std::println(stderr, "CCCCCCCCCCCCC {}", row_2); }
+                stdr::copy(i2, stdr::begin(row_2));
 
                 if not consteval { std::println(stderr, "{}", inverse_); }
 
