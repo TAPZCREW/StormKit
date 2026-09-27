@@ -112,16 +112,19 @@ namespace {
           }, {
             "linear.matrix.inverse",
             [] static {
+                std::println("aaaaaaaaaaaaaaa");
                 const auto a        = math::fmat2 { 1.f, 2.f, 3.f, 4.f };
                 const auto result_1 = math::inverse(a);
-                std::println("\n{}\n{}", a, result_1);
+                std::println("bbbbbbbbbbbbbbb");
                 EXPECTS(is(result_1[0, 0], -2.f));
                 EXPECTS(is(result_1[0, 1], 1.f));
                 EXPECTS(is(result_1[1, 0], 3.f / 2.f));
                 EXPECTS(is(result_1[1, 1], -1.f / 2.f));
 
+                std::println("ccccccccccccccc");
                 const auto b        = math::fmat3 { 1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 8.f };
                 const auto result_2 = math::inverse(b);
+                std::println("ddddddddddddddd");
                 EXPECTS(is(result_2[0, 0], -8.f / 3.f));
                 EXPECTS(is(result_2[0, 1], 8.f / 3.f));
                 EXPECTS(is(result_2[0, 2], -1.f));
