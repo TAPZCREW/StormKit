@@ -8,6 +8,8 @@ module;
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
+#include <cstdio>
+
 export module stormkit.math.linear.matrix;
 
 import std;
@@ -528,11 +530,13 @@ namespace stormkit::math {
             const auto i1 = cross(c, a);
             const auto i2 = cross(a, b);
 
-            const auto inverse = init_by<mat<T, N, N>>([&i0, &i1, &i2](auto& inverse) {
+            const auto inverse = init_by<mat<T, N, N>>([&i0, &i1, &i2](auto& inverse) noexcept {
                 auto inverse_ = mat<T, N, N> {};
                 stdr::copy(i0, stdr::begin(inverse_.row(0)));
                 stdr::copy(i1, stdr::begin(inverse_.row(1)));
                 stdr::copy(i2, stdr::begin(inverse_.row(2)));
+
+                if not consteval { std::println(stderr, "{}", inverse_); }
 
                 transpose(view_of(inverse_), mutable_view_of(inverse));
             });
