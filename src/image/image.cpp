@@ -317,13 +317,16 @@ namespace stormkit::image {
         auto out = result<void> { std::unexpect, status_code(image_status_code::INVALID_FORMAT) };
 
         switch (codec) {
-            case image_codec::JPEG: out = details::save_jpg(*this, filepath);
-            case image_codec::PNG: out = details::save_png(*this, filepath);
-            case image_codec::TARGA: out = details::save_tga(*this, filepath);
-            case image_codec::PPM: out = details::save_ppm(*this, format, filepath);
-            case image_codec::HDR: out = details::save_hdr(*this, filepath);
-            case image_codec::KTX: out = details::save_ktx(*this, filepath);
-            case image_codec::QOI: out = details::save_qoi(*this, filepath);
+            case image_codec::JPEG: out = details::save_jpg(*this, filepath); break;
+            case image_codec::PNG: out = details::save_png(*this, filepath); break;
+            case image_codec::TARGA: out = details::save_tga(*this, filepath); break;
+            case image_codec::PPM: out = details::save_ppm(*this, format, filepath); break;
+            case image_codec::HDR:
+                out = details::save_hdr(*this, filepath);
+            break case image_codec::KTX:
+                out = details::save_ktx(*this, filepath);
+                break;
+            case image_codec::QOI: out = details::save_qoi(*this, filepath); break;
             default: break;
         }
 
@@ -340,13 +343,13 @@ namespace stormkit::image {
         auto out = result<dynarray<byte>> { std::unexpect, status_code(image_status_code::INVALID_FORMAT) };
 
         switch (codec) {
-            case image_codec::JPEG: out = details::save_jpg(*this);
-            case image_codec::PNG: out = details::save_png(*this);
-            case image_codec::TARGA: out = details::save_tga(*this);
-            case image_codec::PPM: out = details::save_ppm(*this, format);
-            case image_codec::HDR: out = details::save_hdr(*this);
-            case image_codec::KTX: out = details::save_ktx(*this);
-            case image_codec::QOI: out = details::save_qoi(*this);
+            case image_codec::JPEG: out = details::save_jpg(*this); break;
+            case image_codec::PNG: out = details::save_png(*this); break;
+            case image_codec::TARGA: out = details::save_tga(*this); break;
+            case image_codec::PPM: out = details::save_ppm(*this, format); break;
+            case image_codec::HDR: out = details::save_hdr(*this); break;
+            case image_codec::KTX: out = details::save_ktx(*this); break;
+            case image_codec::QOI: out = details::save_qoi(*this); break;
             default: break;
         }
 
