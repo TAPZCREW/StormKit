@@ -170,7 +170,11 @@ namespace stormkit { inline namespace core {
                 auto       status    = 0;
                 const auto demangled = abi::__cxa_demangle(stdr::data(symbol), nullptr, 0, &status);
 
-                const auto formatted_symbol = (status == 0) ? prettify(string_view { demangled }) : std::move(symbol);
+                const auto formatted_symbol = [&]() mutable noexcept -> string {
+                    if (status == 0) return prettify(string_view { demangled });
+
+                    return std::move(symbol);
+                }();
 
                 std::println(stderr,
                              "{}# {} {}\n    in {}",
