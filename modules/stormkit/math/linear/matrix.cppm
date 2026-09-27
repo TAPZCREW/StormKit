@@ -51,7 +51,7 @@ export namespace stormkit::math {
 
         template<typename Self>
         [[nodiscard]]
-        constexpr auto row(this Self& self, usize id) noexcept -> array_view<cmeta::forward_const_to<Self, T>, M>;
+        constexpr auto row(this Self& self, usize id) noexcept -> array_view<cmeta::forward_const_to<Self, T>, N>;
     };
 
     template<cmeta::arithmetic T, usize M, usize N>
@@ -295,7 +295,8 @@ namespace stormkit::math {
     template<cmeta::arithmetic T, usize M, usize N>
     template<typename Self>
     constexpr auto mat_interface<T, M, N>::row(this Self& self, usize id) noexcept
-      -> array_view<cmeta::forward_const_to<Self, T>, M> {
+      -> array_view<cmeta::forward_const_to<Self, T>, N> {
+        expects(id < M);
         return array_view<cmeta::forward_const_to<Self, T>, N> { self.data() + id * M, N };
     }
 
@@ -540,9 +541,12 @@ namespace stormkit::math {
             //          | -3.00000, 6.00000, -3.00000|]
             const auto inverse = init_by<mat<T, N, N>>([&i0, &i1, &i2](auto& inverse) noexcept {
                 auto inverse_ = mat<T, N, N> {};
-                stdr::copy(view_of(as_linear, i0), stdr::begin(inverse_.row(0)));
-                stdr::copy(view_of(as_linear, i1), stdr::begin(inverse_.row(1)));
-                stdr::copy(view_of(as_linear, i2), stdr::begin(inverse_.row(2)));
+                auto row_0    = inverse_.row(0);
+                stdr::copy(view_of(as_linear, i0), stdr::begin(row_0));
+                auto row_1 = inverse_.row(1);
+                stdr::copy(view_of(as_linear, i1), stdr::begin(row_1));
+                auto row_2 = inverse_.row(2);
+                stdr::copy(view_of(as_linear, i2), stdr::begin(row_2));
 
                 if not consteval { std::println(stderr, "{}", inverse_); }
 
