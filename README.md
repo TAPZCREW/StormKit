@@ -9,9 +9,9 @@ StormKit is my personal C++ toolkit.
 
 | OS      | Status                                                                                                                                                                                                                     |
 | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Linux   (LLVM libc++) | [![Linux](https://github.com/TapzCrew/StormKit/actions/workflows/linux.yml/badge.svg)](https://github.com/TapzCrew/StormKit/actions/workflows/linux.yml)                                                       |
-| Windows (LLVM libc++) | [![Windows](https://github.com/TapzCrew/StormKit/actions/workflows/windows.yml/badge.svg)](https://github.com/TapzCrew/StormKit/actions/workflows/windows.yml)
-| macOS                 | [![macOS](https://github.com/TapzCrew/StormKit/actions/workflows/macos.yml/badge.svg)](https://github.com/TapzCrew/StormKit/actions/workflows/macos.yml)                                                                   |
+| Linux   | [![Linux](https://github.com/TapzCrew/StormKit/actions/workflows/linux.yml/badge.svg)](https://github.com/TapzCrew/StormKit/actions/workflows/linux.yml)                                                       |
+| Windows | [![Windows](https://github.com/TapzCrew/StormKit/actions/workflows/windows.yml/badge.svg)](https://github.com/TapzCrew/StormKit/actions/workflows/windows.yml)
+| macOS   | [![macOS](https://github.com/TapzCrew/StormKit/actions/workflows/macos.yml/badge.svg)](https://github.com/TapzCrew/StormKit/actions/workflows/macos.yml)                                                                   |
 
 ## Getting Started
 
