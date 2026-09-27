@@ -349,39 +349,14 @@ namespace stormkit::image {
         EXPECTS(codec != image_codec::AUTODETECT);
         EXPECTS(not std::empty(m_data.data));
 
-        auto output = dynarray<byte> {};
-
         switch (codec) {
-            case image_codec::JPEG: {
-                TryTo(result, details::save_jpg(*this));
-                return { std::move(result) };
-            }
-            case image_codec::PNG: {
-                TryTo(result, details::save_png(*this));
-                return { std::move(result) };
-            }
-            case image_codec::TARGA: {
-                TryTo(result, details::save_tga(*this));
-                return { std::move(result) };
-            }
-            case image_codec::PPM: {
-                auto result = details::save_ppm(*this, format);
-                if (not result.has_value()) return std::unexpected { std::move(result.error()) };
-                // TryTo(result, (details::save_ppm(*this, format)));
-                return { std::move(result.value()) };
-            }
-            case image_codec::HDR: {
-                TryTo(result, details::save_hdr(*this));
-                return { std::move(result) };
-            }
-            case image_codec::KTX: {
-                TryTo(result, details::save_ktx(*this));
-                return { std::move(result) };
-            }
-            case image_codec::QOI: {
-                TryTo(result, details::save_qoi(*this));
-                return { std::move(result) };
-            }
+            case image_codec::JPEG: return details::save_jpg(*this);
+            case image_codec::PNG: return details::save_png(*this);
+            case image_codec::TARGA: return details::save_tga(*this);
+            case image_codec::PPM: return details::save_ppm(*this, format);
+            case image_codec::HDR: return details::save_hdr(*this);
+            case image_codec::KTX: return details::save_ktx(*this);
+            case image_codec::QOI: return details::save_qoi(*this);
             default: break;
         }
 
