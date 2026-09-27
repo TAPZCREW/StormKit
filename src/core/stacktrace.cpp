@@ -137,6 +137,9 @@ namespace stormkit { inline namespace core {
         auto frames = array<void*, 100> {};
         // const auto count  = backtrace(stdr::data(frames), stdr::size(frames));
         // void*      frames[100];
+        // /home/runner/work/StormKit/StormKit/build/linux/x86_64/debug/stormkit/tests/math-linear-matrix-debug
+        // (_ZZN8stormkit4mathW8stormkitW4mathW6linearW6matrix7inverseITkNS_4core4metaS1_W4coreW4metaW8concepts10arithmeticEfLm3EEEvNSt3__16mdspanIKT_NSB_7extentsImJXT0_EXT0_EEEENSB_12layout_rightENSB_16default_accessorISE_EEEENSC_ISD_SG_SH_NSI_ISD_EEEEENKUlRSD_E_clINS0_S3_W6tensor6tensorIfNS0_S4_13mat_interfaceIfLm3ELm3EEEJLm3ELm3EEEEEEDaSN_+0x176)
+        // [0x5e8efee1d986]
         const auto frame_count = backtrace(stdr::data(frames), stdr::size(frames));
         if (frame_count > 0) {
             const auto syms_ = backtrace_symbols(stdr::data(frames), frame_count);
@@ -153,7 +156,13 @@ namespace stormkit { inline namespace core {
                     continue;
                 }
 
-                std::println(stderr, "{}# {}", (count - ignore_count), sym);
+                auto       splitted         = split(sym, " ");
+                const auto object_address   = splitted[1].substr(1, stdr::size(splitted[1]) - 2);
+                splitted                    = split(splitted[0], "(");
+                const auto symbol           = splitted[1].substr(1, stdr::size(splitted[1]) - 2);
+                const auto formatted_symbol = symbol;
+
+                std::println(stderr, "{}# {}{}", (count - ignore_count), BLUE_TEXT_STYLE | object_address, formatted_symbol);
                 ++count;
             }
 
