@@ -165,11 +165,11 @@ namespace stormkit { inline namespace core {
                 const auto formatted_symbol = symbol;
 
                 std::println(stderr,
-                             "{}# {}{}\n    in {}",
+                             "{}# {} {}\n    in {}",
                              (count - ignore_count),
                              BLUE_TEXT_STYLE | object_address,
-                             formatted_symbol,
-                             YELLOW_TEXT_STYLE | object);
+                             YELLOW_TEXT_STYLE | formatted_symbol,
+                             object);
                 ++count;
             }
 
