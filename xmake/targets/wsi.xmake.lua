@@ -1,3 +1,8 @@
+local is_libcpp = false
+if is_plat("linux") then
+    if has_config("runtimes") then is_libcpp = get_config("runtimes"):startswith("c++") end
+end
+
 if is_plat("linux") then
     add_requires("libxcb")
     add_requires("xcb-util-keysyms")
@@ -15,6 +20,8 @@ if is_plat("linux") then
         },
     })
 end
+
+if is_plat("windows") and not is_libcpp then add_requires("beman_optional") end
 
 local src_wsi_dir = path.join(src_dir, "wsi")
 local module_wsi_dir = path.join(module_dir, "wsi")
@@ -37,7 +44,7 @@ target("wsi", function()
 
         add_rules("wayland.protocols")
 
-        on_load(function(target)
+        on_load("linux", function(target)
             assert(target:pkg("wayland-protocols"))
             local wayland_protocols_dir =
                 path.join(target:pkg("wayland-protocols"):installdir() or "/usr", "share", "wayland-protocols")
@@ -75,6 +82,7 @@ target("wsi", function()
     elseif is_plat("windows") then
         add_files(path.join(src_wsi_dir, "win32/**.cpp"), path.join(src_wsi_dir, "win32/**.cppm"))
         add_syslinks("User32", "Shell32", "Gdi32", "Shcore", "Gdiplus")
+        if not is_libcpp then add_packages("beman_optional") end
     elseif is_plat("macosx") then
         add_files(
             path.join(src_wsi_dir, "macos/**.cpp"),
