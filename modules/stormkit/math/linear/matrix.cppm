@@ -8,8 +8,6 @@ module;
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-#include <cstdio>
-
 export module stormkit.math.linear.matrix;
 
 import std;
@@ -581,8 +579,6 @@ namespace stormkit::math {
                                                            transposed = view_of(transposed)](auto& result) noexcept {
                 mul(matrix, transposed, mutable_view_of(result));
             });
-
-            if not consteval { std::println("{}", result); }
 
             return std::memcmp(stdr::data(result), stdr::data(IDENTITY), M * N * sizeof(T)) == 0;
         }
