@@ -173,7 +173,7 @@ namespace stormkit { inline namespace core {
                 const auto formatted_symbol = [&]() mutable noexcept -> string {
                     if (status == 0) return prettify(string_view { demangled });
 
-                    return std::move(symbol);
+                    return std::string { symbol };
                 }();
 
                 std::println(stderr,
