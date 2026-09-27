@@ -546,17 +546,17 @@ namespace stormkit::math {
                 auto row_0 = inverse_.row(0);
                 if not consteval { std::println(stderr, "AAAAAAAAAAAAA {}", row_0); }
                 stdr::copy(i0, stdr::begin(row_0));
-                if not consteval { std::println(stderr, "AAAAAAAAAAAAA {}", row_0); }
+                if not consteval { std::println(stderr, "AAAAAAAAAAAAA {} {}", i0, row_0); }
 
                 auto row_1 = inverse_.row(1);
                 if not consteval { std::println(stderr, "BBBBBBBBBBBBB {}", row_1); }
                 stdr::copy(i1, stdr::begin(row_1));
-                if not consteval { std::println(stderr, "BBBBBBBBBBBBB {}", row_1); }
+                if not consteval { std::println(stderr, "BBBBBBBBBBBBB {} {}", i1, row_1); }
 
                 auto row_2 = inverse_.row(2);
                 if not consteval { std::println(stderr, "CCCCCCCCCCCCC {}", row_2); }
                 stdr::copy(i2, stdr::begin(row_2));
-                if not consteval { std::println(stderr, "CCCCCCCCCCCCC {}", row_2); }
+                if not consteval { std::println(stderr, "CCCCCCCCCCCCC {} {}", i2, row_2); }
 
                 if not consteval { std::println(stderr, "{}", inverse_); }
 
