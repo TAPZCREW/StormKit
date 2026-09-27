@@ -17,6 +17,7 @@ module;
 
     #if defined(STORMKIT_COMPILER_CLANG)
         #include <cxxabi.h>
+        #include <dlfcn.h>
     #endif
 #endif
 
@@ -167,11 +168,14 @@ namespace stormkit { inline namespace core {
                 const auto object    = splitted2[0].subview(1, stdr::size(splitted2[0]));
                 auto       symbol    = splitted2[1].subview(1, stdr::size(splitted2[1]) - 2);
 
-                auto       status    = 0;
-                const auto demangled = abi::__cxa_demangle(stdr::data(symbol), nullptr, 0, &status);
+                const auto formatted_symbol = [&]() noexcept -> string {
+                    auto info = Dl_info {};
+                    if (dladdr(frames[i], &info)) {
+                        auto       status    = 0;
+                        const auto demangled = abi::__cxa_demangle(info.dli_sname, nullptr, 0, &status);
 
-                const auto formatted_symbol = [&]() mutable noexcept -> string {
-                    if (status == 0) return prettify(string_view { demangled });
+                        if (status == 0) return prettify(string_view { demangled });
+                    }
 
                     return std::string { symbol };
                 }();
