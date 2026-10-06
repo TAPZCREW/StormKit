@@ -71,7 +71,7 @@
                    return std::invoke(or_closure, std::forward<T_>(error));                                                 \
                }))
 
-#define LoggedTryTo(name, try_expression, msg)               CustomLoggerTryTo(name, try_expression, elog, msg)
+#define LoggedTryTo(name, try_expression, msg)               CustomLoggedTryTo(name, try_expression, elog, msg)
 #define LoggedTryToOr(name, try_expression, or_closure, msg) CustomLoggedTryToOr(name, try_expression, or_closure, elog, msg)
 
 #define CustomLoggedTry(try_expression, logger, msg)                                                                  \
