@@ -1,7 +1,8 @@
 # StormKit
 
 StormKit is my personal C++ toolkit.
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
+[![License](https://img.shields.io/badge/License-LGPLv3-blue.svg)](https://opensource.org/licenses/lgpl-3-0)
 
 ## Project Health
 
