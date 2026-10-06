@@ -36,8 +36,10 @@ namespace stormkit::wsi::win32 {
             monitor.extents.emplace_back(as<u32>(dm.dmPelsWidth), as<u32>(dm.dmPelsHeight));
         }
 
-        monitor.extents.erase(std::unique(std::begin(monitor.extents), std::end(monitor.extents)), std::end(monitor.extents));
-        stdr::sort(monitor.extents);
+        // std::equal_to<math::uextent2> {}(monitor.extents[0], monitor.extents[1]);
+        monadic::is()(monitor.extents[0], monitor.extents[1]);
+        // monitor.extents.erase(std::unique(std::begin(monitor.extents), std::end(monitor.extents)), std::end(monitor.extents));
+        // stdr::sort(monitor.extents);
 
         return monitor;
     }
