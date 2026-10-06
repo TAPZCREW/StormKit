@@ -146,7 +146,7 @@ namespace stormkit { inline namespace core {
             template<typename Self>
             auto unsafe(this Self& self) noexcept -> conditional_reference<Self>;
 
-            auto mutex() const noexcept -> const mutex_type&;
+            auto mutex() const noexcept -> mutex_type&;
 
           private:
             template<template<class> typename Lock, lock_access_mode MODE>
@@ -379,7 +379,8 @@ namespace stormkit { inline namespace core {
                                          LockTs&&... lock_args) noexcept(meta::noexcept_copy_assignable<value_type>) -> void
         requires(meta::copy_assignable<value_type>)
     {
-        *write(std::forward<LockTs>(lock_args)...) = value;
+        auto value_ = write(std::forward<LockTs>(lock_args)...);
+        *value_     = value;
     }
 
     ////////////////////////////////////////
@@ -392,7 +393,8 @@ namespace stormkit { inline namespace core {
                                          LockTs&&... lock_args) noexcept(meta::noexcept_move_assignable<value_type>) -> void
         requires(meta::move_assignable<value_type>)
     {
-        *write(std::forward<LockTs>(lock_args)...) = std::move(value);
+        auto value_ = write(std::forward<LockTs>(lock_args)...);
+        *value_     = value;
     }
 
     ////////////////////////////////////////
@@ -410,7 +412,7 @@ namespace stormkit { inline namespace core {
     template<meta::is_decayed T, class Mutex>
         requires(meta::destructible<T>)
     STORMKIT_FORCE_INLINE
-    inline auto locked<T, Mutex>::mutex() const noexcept -> const mutex_type& {
+    inline auto locked<T, Mutex>::mutex() const noexcept -> mutex_type& {
         return m_mutex;
     }
 
