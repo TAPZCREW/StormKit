@@ -15,10 +15,49 @@ static_assert(meta::has_hasher<ref_ptr<int>>);
 static_assert(meta::trivially_relocatable<ref_ptr<int>>);
 
 namespace {
+    struct foo {
+        int a;
+
+        auto bar() -> int { return a; }
+    };
+
     constexpr auto VAL = 2;
     auto           _   = test::test_suite {
         "core.typesafe",
         {
+          { "ref.from_reference",
+            [] static noexcept {
+                auto a = 0;
+
+                auto ref  = ref_ptr { a };
+                auto ref2 = view_of(a);
+                auto ref3 = ref_of(a);
+
+                EXPECTS(*ref == *ref2);
+                EXPECTS(*ref2 == *ref3);
+            } },
+          { "ref.view_pointers",
+            [] static noexcept {
+                auto a = 0;
+
+                auto ref  = ref_ptr { &a };
+                auto ref2 = ref_ptr { ref };
+                EXPECTS(*ref == *ref2);
+            } },
+          { "ref.owning_pointer",
+            [] static noexcept {
+                auto a = allocate_unsafe<int>(2);
+
+                auto ref = ref_ptr { a };
+                EXPECTS(*ref == *a);
+            } },
+          { "ref.operator->",
+            [] static noexcept {
+                auto a = allocate_unsafe<foo>(2);
+
+                auto ref = ref_ptr { a };
+                EXPECTS(a->bar() == 2);
+            } },
           { "ref.refs_of_dynarray.all_ref",
             [] static noexcept {
                 auto a = 0;
@@ -111,22 +150,6 @@ namespace {
 
                 delete d;
                 delete e;
-            } },
-          { "ref.as_dynarray.from_range",
-            [] static noexcept {
-                // auto vec  = array { 1, 3, 5, 6, 9 };
-                // auto refs = as<dynarray>(vec);
-
-                // auto i = 0u;
-                // for (const auto& ref : refs) EXPECTS(*ref == vec[i++]);
-            } },
-          { "ref.as_hash_set.from_range",
-            [] static noexcept {
-                // auto vec  = array { 1, 3, 5, 6, 9 };
-                // auto refs = as<hash_set>(vec);
-
-                // auto i = 0u;
-                // for (const auto& ref : refs) EXPECTS(*ref == vec[i++]);
             } },
           }
     };

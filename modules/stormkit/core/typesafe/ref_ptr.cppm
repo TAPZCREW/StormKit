@@ -23,6 +23,12 @@ import stormkit.core.contract;
 namespace stdr = std::ranges;
 namespace stdv = std::views;
 
+namespace stormkit { inline namespace core { namespace meta::details {
+    template<typename U, typename T>
+    concept compatible_pointer = meta::is<meta::to_plain_type<meta::pointed_type<U>>, meta::remove_const_of<T>>
+                                 and not(not meta::const_type<T> and meta::const_type<meta::pointed_type<U>>);
+}}} // namespace stormkit::core::meta::details
+
 export namespace stormkit { inline namespace core {
     template<typename T>
     using owned_raw_ptr = T*;
@@ -38,17 +44,13 @@ export namespace stormkit { inline namespace core {
 
         constexpr ref_ptr(T& pointed STORMKIT_LIFETIMEBOUND) noexcept;
 
-        template<typename U>
-        constexpr ref_ptr(U&& pointed) noexcept
-            requires(meta::view_pointer_to<meta::to_plain_type<U>, mut_element_type>
-                     or (meta::const_type<element_type> and meta::view_pointer_to<meta::to_plain_type<U>, const_element_type>));
+        template<meta::view_pointer U>
+        constexpr ref_ptr(U pointed) noexcept
+            requires(meta::details::compatible_pointer<U, T>);
 
-        template<typename U>
+        template<meta::owning_pointer U>
         constexpr ref_ptr(U& pointed) noexcept
-            requires(meta::owning_pointer_to<U, mut_element_type>
-                     or (meta::const_type<element_type> and meta::owning_pointer_to<U, const_element_type>));
-
-        // constexpr ~ref_ptr() noexcept;
+            requires(meta::details::compatible_pointer<U, T>);
 
         template<meta::is<element_type> U>
         constexpr ref_ptr(const ref_ptr<U>&) noexcept;
@@ -123,6 +125,12 @@ export namespace stormkit { inline namespace core {
       private:
         pointer m_pointed;
     };
+
+    template<meta::view_pointer U>
+    ref_ptr(U) -> ref_ptr<meta::pointed_type<U>>;
+
+    template<meta::owning_pointer U>
+    ref_ptr(U&) -> ref_ptr<meta::pointed_type<U>>;
 }} // namespace stormkit::core
 
 namespace stormkit { inline namespace core { namespace meta {
@@ -206,22 +214,20 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::negate<meta::reference> T>
-    template<typename U>
+    template<meta::view_pointer U>
     STORMKIT_FORCE_INLINE
-    constexpr ref_ptr<T>::ref_ptr(U&& pointed) noexcept
-        requires(meta::view_pointer_to<meta::to_plain_type<U>, mut_element_type>
-                 or (meta::const_type<element_type> and meta::view_pointer_to<meta::to_plain_type<U>, const_element_type>))
-        : m_pointed { std::addressof(*std::forward<U>(pointed)) } {
+    constexpr ref_ptr<T>::ref_ptr(U pointed) noexcept
+        requires(meta::details::compatible_pointer<U, T>)
+        : m_pointed { std::addressof(*pointed) } {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::negate<meta::reference> T>
-    template<typename U>
+    template<meta::owning_pointer U>
     STORMKIT_FORCE_INLINE
     constexpr ref_ptr<T>::ref_ptr(U& pointed STORMKIT_LIFETIMEBOUND) noexcept
-        requires(meta::owning_pointer_to<U, mut_element_type>
-                 or (meta::const_type<element_type> and meta::owning_pointer_to<U, const_element_type>))
+        requires(meta::details::compatible_pointer<U, T>)
         : m_pointed { std::addressof(*pointed) } {
     }
 
@@ -258,7 +264,7 @@ namespace stormkit { inline namespace core {
         if (&other == this) [[unlikely]]
             return *this;
 
-        m_pointed = as<pointer>(other.pointed);
+        m_pointed = static_cast<pointer>(other.pointed);
 
         return *this;
     }
@@ -269,7 +275,7 @@ namespace stormkit { inline namespace core {
     template<typename Self>
     STORMKIT_FORCE_INLINE
     constexpr auto ref_ptr<T>::operator->(this Self& self) noexcept -> meta::forward_const_to<Self, element_type>* {
-        return as<meta::forward_const_to<Self, element_type>*>(self.m_pointed);
+        return static_cast<meta::forward_const_to<Self, element_type>*>(self.m_pointed);
     }
 
     /////////////////////////////////////
