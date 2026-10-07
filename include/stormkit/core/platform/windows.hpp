@@ -6,7 +6,4 @@
 
 #include <windows.h>
 
-#undef __nullnullterminated
-#undef DELETE
-
 #endif

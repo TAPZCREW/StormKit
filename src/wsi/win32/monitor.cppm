@@ -6,7 +6,7 @@ module;
 
 #include <stormkit/core/platform/windows.hpp>
 
-module stormkit.wsi:win32.monitor;
+export module stormkit.wsi:win32.monitor;
 
 import std;
 
@@ -15,18 +15,18 @@ import :monitor;
 
 namespace stdr = std::ranges;
 
-namespace stormkit::wsi::win32 {
+export namespace stormkit::wsi::win32 {
     /////////////////////////////////////
     /////////////////////////////////////
-    auto load_monitor(HMONITOR native) noexcept -> Monitor {
+    auto load_monitor(HMONITOR native) noexcept -> monitor {
         auto monitor_info   = MONITORINFOEX {};
         monitor_info.cbSize = sizeof(MONITORINFOEX);
 
         GetMonitorInfo(native, &monitor_info);
 
-        auto monitor          = Monitor {};
+        auto monitor          = wsi::monitor {};
         monitor.native_handle = native;
-        if ((monitor_info.dwFlags & MONITORINFOF_PRIMARY) == MONITORINFOF_PRIMARY) monitor.flags = Monitor::Flags::PRIMARY;
+        if ((monitor_info.dwFlags & MONITORINFOF_PRIMARY) == MONITORINFOF_PRIMARY) monitor.flags = wsi::monitor::flag::primary;
 
         monitor.name = string { monitor_info.szDevice };
 
@@ -36,9 +36,10 @@ namespace stormkit::wsi::win32 {
             monitor.extents.emplace_back(as<u32>(dm.dmPelsWidth), as<u32>(dm.dmPelsHeight));
         }
 
-        // std::equal_to<math::uextent2> {}(monitor.extents[0], monitor.extents[1]);
-        monadic::is()(monitor.extents[0], monitor.extents[1]);
-        // monitor.extents.erase(std::unique(std::begin(monitor.extents), std::end(monitor.extents)), std::end(monitor.extents));
+        // currently do ICE on clang
+        // monitor.extents.erase(std::unique(std::begin(monitor.extents),
+        //                                   std::end(monitor.extents)),
+        //                       std::end(monitor.extents));
         // stdr::sort(monitor.extents);
 
         return monitor;
@@ -49,7 +50,7 @@ namespace stormkit::wsi::win32 {
     auto load_monitors(HMONITOR native, HDC, LPRECT, LPARAM data) noexcept -> BOOL {
         if (native == nullptr) return TRUE;
 
-        auto& monitors = *reinterpret_cast<dynarray<Monitor>*>(data);
+        auto& monitors = *reinterpret_cast<dynarray<monitor>*>(data);
         monitors.emplace_back(load_monitor(native));
 
         return TRUE;
@@ -57,8 +58,8 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_monitors(WM, bool update = false) noexcept -> array_view<const Monitor> {
-        thread_local auto monitors = dynarray<Monitor> {};
+    auto get_monitors(WM, bool update = false) noexcept -> array_view<const monitor> {
+        thread_local auto monitors = dynarray<monitor> {};
 
         if (update or stdr::empty(monitors))
             EnumDisplayMonitors(nullptr, nullptr, load_monitors, reinterpret_cast<LPARAM>(&monitors));
@@ -68,10 +69,10 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_primary_monitor(WM wm) noexcept -> const Monitor& {
+    auto get_primary_monitor(WM wm) noexcept -> const monitor& {
         const auto monitors = get_monitors(wm);
         auto       it       = stdr::find_if(monitors, [](const auto& monitor) static noexcept {
-            return has_flag_bit(monitor.flags, Monitor::Flags::PRIMARY);
+            return has_flag_bit(monitor.flags, monitor::flag::primary);
         });
         return *it;
     }

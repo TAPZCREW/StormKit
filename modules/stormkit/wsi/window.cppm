@@ -68,9 +68,13 @@ export {
             using std::function<bool()>::function;
         };
 
-        struct MonitorChangedEventFunc: std::function<void(const Monitor&)> {
-            using std::function<void(const Monitor&)>::function;
-        };
+        using monitorChangedEventFunc = strong_type<std::function<void(const monitor&)>,
+                                                    struct monitor_changed_event_tag,
+                                                    "monitor_changed",
+                                                    capabilities::callable>;
+        // struct monitorChangedEventFunc: std::function<void(const monitor&)> {
+        //     using std::function<void(const monitor&)>::function;
+        // };
 
         struct ResizedEventFunc: std::function<void(const math::uextent2&)> {
             using std::function<void(const math::uextent2&)>::function;
@@ -116,7 +120,7 @@ export {
         concept EventCallbackFunc = meta::convertible_to_any_of<
           T,
           ClosedEventFunc,
-          MonitorChangedEventFunc,
+          monitorChangedEventFunc,
           ResizedEventFunc,
           RestoredEventFunc,
           MinimizedEventFunc,
@@ -135,7 +139,8 @@ export {
             Window(Window&&) noexcept;
             auto operator=(Window&&) noexcept -> Window&;
 
-            static auto open(string title, meta::in<math::uextent2> size, WindowFlag flags) noexcept -> Window;
+            static auto open(const string& title, meta::in<math::uextent2> size, WindowFlag flags) noexcept -> Window;
+            static auto open(string&& title, meta::in<math::uextent2> size, WindowFlag flags) noexcept -> Window;
             static auto allocate_and_open(string title, meta::in<math::uextent2> size, WindowFlag flags) noexcept
               -> heap_ptr<Window>;
 
@@ -161,7 +166,7 @@ export {
             auto visible() const noexcept -> bool;
 
             [[nodiscard]]
-            auto current_monitor() const noexcept -> const Monitor&;
+            auto current_monitor() const noexcept -> const monitor&;
 
             [[nodiscard]]
             auto title() const noexcept -> const string&;
@@ -228,7 +233,7 @@ export {
             Window() noexcept;
 
             auto on_closed(ClosedEventFunc&&) noexcept -> void;
-            auto on_monitor_changed(MonitorChangedEventFunc&&) noexcept -> void;
+            auto on_monitor_changed(monitorChangedEventFunc&&) noexcept -> void;
             auto on_resized(ResizedEventFunc&&) noexcept -> void;
             auto on_restored(RestoredEventFunc&&) noexcept -> void;
             auto on_minimized(MinimizedEventFunc&&) noexcept -> void;
@@ -304,11 +309,17 @@ namespace stormkit::wsi {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    inline auto Window::open(const string& title, meta::in<math::uextent2> size, WindowFlag flags) noexcept -> Window {
+        return open(string { title }, size, flags);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     template<EventCallbackFunc T>
     STORMKIT_FORCE_INLINE
     inline auto Window::on(T&& callback) noexcept -> void {
         if constexpr (meta::plain::is<ClosedEventFunc, T>) on_closed(std::forward<T>(callback));
-        else if constexpr (meta::plain::is<MonitorChangedEventFunc, T>)
+        else if constexpr (meta::plain::is<monitorChangedEventFunc, T>)
             on_monitor_changed(std::forward<T>(callback));
         else if constexpr (meta::plain::is<ResizedEventFunc, T>)
             on_resized(std::forward<T>(callback));
@@ -369,6 +380,12 @@ namespace stormkit::wsi {
             on_activate(std::forward<T>(callback));
         else if constexpr (TYPE == EventType::DEACTIVATE)
             on_deactivate(std::forward<T>(callback));
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    inline auto Window::set_title(const string& title) noexcept -> void {
+        set_title(string { title });
     }
 
     ////////////////////////////////////////

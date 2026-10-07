@@ -63,7 +63,7 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::open(string title, meta::in<math::uextent2> size, WindowFlag flags) noexcept -> Window {
+    auto Window::open(string&& title, meta::in<math::uextent2> size, WindowFlag flags) noexcept -> Window {
         auto window = Window {};
         window.m_impl->open(std::move(title), size, flags);
         return window;
@@ -115,14 +115,8 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::current_monitor() const noexcept -> const Monitor& {
+    auto Window::current_monitor() const noexcept -> const monitor& {
         return m_impl->current_monitor();
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    auto Window::set_title(const string& title) noexcept -> void {
-        m_impl->set_title(string { title });
     }
 
     /////////////////////////////////////
@@ -235,7 +229,7 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_mouse_position(const math::ivec2& position, u8 mouse_id) noexcept -> void {
+    auto Window::set_mouse_position(math::ivec2 position, u8 mouse_id) noexcept -> void {
         m_impl->set_mouse_position(position, mouse_id);
     }
 
@@ -253,7 +247,7 @@ namespace stormkit::wsi {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::on_monitor_changed(MonitorChangedEventFunc&& callback) noexcept -> void {
+    auto Window::on_monitor_changed(monitorChangedEventFunc&& callback) noexcept -> void {
         m_impl->set_monitor_changed_event(std::move(callback));
     }
 

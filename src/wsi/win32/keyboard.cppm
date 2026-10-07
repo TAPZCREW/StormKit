@@ -6,6 +6,8 @@ module;
 
 #include <stormkit/core/platform/windows.hpp>
 
+#undef DELETE
+
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 

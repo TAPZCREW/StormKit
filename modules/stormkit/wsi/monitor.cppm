@@ -17,45 +17,45 @@ import stormkit.math.extent;
 
 export {
     namespace stormkit::wsi {
-        struct Monitor {
-            enum class Flags {
-                NONE = 0,
-                PRIMARY,
+        struct monitor {
+            enum class flag {
+                none = 0,
+                primary,
             };
 
-            Flags  flags = Flags::NONE;
+            flag   flags = flag::none;
             string name;
 
             dynarray<math::uextent2> extents;
             u32                      scale_factor = 1;
 
             [[nodiscard]]
-            constexpr auto operator<=>(const Monitor& other) const noexcept -> std::strong_ordering;
+            constexpr auto operator<=>(const monitor& other) const noexcept -> std::strong_ordering;
 
             [[nodiscard]]
-            constexpr auto operator==(const Monitor& other) const noexcept -> bool;
+            constexpr auto operator==(const monitor& other) const noexcept -> bool;
 
             void* native_handle = nullptr;
         };
 
         [[nodiscard]]
         constexpr auto tag_invoke(as_fn<string_view>,
-                                  Monitor::Flags value,
+                                  monitor::flag flags,
                                   source_location_arg = std::source_location::current()) noexcept -> string_view;
 
         template<typename CharT>
-        constexpr auto tag_invoke(format_as_fn<CharT>, const Monitor& monitor, meta::format_context auto& ctx) noexcept
+        constexpr auto tag_invoke(format_as_fn<CharT>, const monitor& monitor, meta::format_context auto& ctx) noexcept
           -> decltype(ctx.out());
 
         [[nodiscard]]
-        STORMKIT_WSI_API auto get_monitors(bool update = false) noexcept -> array_view<const Monitor>;
+        STORMKIT_WSI_API auto get_monitors(bool update = false) noexcept -> array_view<const monitor>;
 
         [[nodiscard]]
-        STORMKIT_WSI_API auto get_primary_monitor() noexcept -> const Monitor&;
+        STORMKIT_WSI_API auto get_primary_monitor() noexcept -> const monitor&;
     } // namespace stormkit::wsi
 
     template<>
-    inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::wsi::Monitor::Flags> = true;
+    inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::wsi::monitor::flag> = true;
 } // namespace stormkit::wsi
 
 ////////////////////////////////////////////////////////////////////
@@ -66,7 +66,7 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_PURE
-    constexpr auto Monitor::operator<=>(const Monitor& other) const noexcept -> std::strong_ordering {
+    constexpr auto monitor::operator<=>(const monitor& other) const noexcept -> std::strong_ordering {
         if (auto ret = flags <=> other.flags; ret != 0) return ret;
 
 #ifdef STORMKIT_COMPILER_CLANG
@@ -92,7 +92,7 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_PURE
-    constexpr auto Monitor::operator==(const Monitor& other) const noexcept -> bool {
+    constexpr auto monitor::operator==(const monitor& other) const noexcept -> bool {
         if (flags != other.flags) return false;
         if (name != other.name) return false;
         if (std::size(extents) != std::size(other.extents)) return false;
@@ -107,10 +107,10 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto tag_invoke(as_fn<string_view>, Monitor::Flags flags, source_location_arg) noexcept -> string_view {
+    constexpr auto tag_invoke(as_fn<string_view>, monitor::flag flags, source_location_arg) noexcept -> string_view {
         switch (flags) {
-            case Monitor::Flags::NONE: return "Monitor::Flags::NONE";
-            case Monitor::Flags::PRIMARY: return "Monitor::Flags::PRIMARY";
+            case monitor::flag::none: return "monitor::flag::none";
+            case monitor::flag::primary: return "monitor::flag::primary";
             default: break;
         }
 
@@ -121,10 +121,10 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     template<typename CharT>
     STORMKIT_FORCE_INLINE
-    constexpr auto tag_invoke(format_as_fn<CharT>, const Monitor& monitor, meta::format_context auto& ctx) noexcept
+    constexpr auto tag_invoke(format_as_fn<CharT>, const monitor& monitor, meta::format_context auto& ctx) noexcept
       -> decltype(ctx.out()) {
         return std::format_to(ctx.out(),
-                              "[Monitor name: {}, flags: {}, extents: {}, scale_factor: {}]",
+                              "[monitor name: {}, flags: {}, extents: {}, scale_factor: {}]",
                               monitor.name,
                               monitor.flags,
                               monitor.extents,

@@ -94,7 +94,7 @@ export namespace stormkit::wsi::linux {
         auto native_handle() const noexcept -> NativeHandle;
 
         auto set_closed_event(ClosedEventFunc&& func) noexcept -> void;
-        auto set_monitor_changed_event(MonitorChangedEventFunc&& func) noexcept -> void;
+        auto set_monitor_changed_event(monitorChangedEventFunc&& func) noexcept -> void;
         auto set_resized_event(ResizedEventFunc&& func) noexcept -> void;
         auto set_restored_event(RestoredEventFunc&& func) noexcept -> void;
         auto set_minimized_event(MinimizedEventFunc&& func) noexcept -> void;
@@ -515,7 +515,7 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::set_monitor_changed_event(MonitorChangedEventFunc&& func) noexcept -> void {
+    inline auto Window::set_monitor_changed_event(monitorChangedEventFunc&& func) noexcept -> void {
         switch (m_wm) {
             case WM::X11: as<x11::Window>(m_impl).monitor_changed_event = std::move(func); break;
             case WM::WAYLAND: as<wayland::Window>(m_impl).monitor_changed_event = std::move(func); break;

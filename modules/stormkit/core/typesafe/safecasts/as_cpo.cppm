@@ -17,9 +17,11 @@ import stormkit.core.meta.concepts;
 import stormkit.core.meta.type_manipulation;
 
 export namespace stormkit { inline namespace core {
-    struct underlying;
-    struct empty;
-    struct error;
+    struct underlying {};
+
+    struct empty {};
+
+    struct error {};
 
     template<typename To>
     struct as_fn final {

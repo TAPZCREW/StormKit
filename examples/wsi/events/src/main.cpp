@@ -44,7 +44,7 @@ auto main(array_view<const string_view> args) -> int {
 
     auto foo = 0;
     window.on(wsi::ResizedEventFunc { [](const math::uextent2& extent) static noexcept { ilog("Resize event: {}", extent); } },
-              wsi::MonitorChangedEventFunc { [](const wsi::Monitor& monitor) noexcept {
+              wsi::monitorChangedEventFunc { [](const wsi::monitor& monitor) noexcept {
                   ilog("Monitor changed event: {}", monitor);
               } },
               wsi::MouseMovedEventFunc { [](u8 /*id*/, const math::ivec2& position) noexcept {

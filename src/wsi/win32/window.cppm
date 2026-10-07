@@ -34,7 +34,7 @@ export namespace stormkit::wsi::win32 {
         Window(Window&&) noexcept;
         auto operator=(Window&&) noexcept -> Window&;
 
-        auto open(string title, const math::uextent2& size, WindowFlag flags) noexcept -> void;
+        auto open(string&& title, const math::uextent2& size, WindowFlag flags) noexcept -> void;
         auto close() noexcept -> void;
 
         auto handle_events() noexcept -> void;
@@ -141,7 +141,7 @@ export namespace stormkit::wsi::win32 {
 namespace stormkit::wsi::win32 {
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_PURE
+    STORMKIT_FORCE_INLINE
     inline auto Window::is_mouse_inside() const noexcept -> bool {
         return m_win32_state.mouse_inside;
     }
@@ -155,7 +155,7 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_PURE
+    STORMKIT_FORCE_INLINE
     inline auto Window::native_handle() const noexcept -> NativeHandle {
         return std::bit_cast<NativeHandle>(m_window_handle);
     }

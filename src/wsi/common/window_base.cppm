@@ -51,8 +51,9 @@ export namespace stormkit::wsi::common {
         auto visible() const noexcept -> bool;
 
         [[nodiscard]]
-        auto current_monitor() const noexcept -> const Monitor&;
-        auto set_current_monitor(const Monitor& extent) noexcept -> void;
+        auto current_monitor() const noexcept -> const monitor&;
+        auto set_current_monitor(const monitor& extent) noexcept -> void;
+        auto set_current_monitor(monitor&& extent) noexcept -> void;
 
         auto set_title(string&& title) noexcept -> bool;
         [[nodiscard]]
@@ -66,8 +67,8 @@ export namespace stormkit::wsi::common {
         [[nodiscard]]
         auto fullscreen() const noexcept -> bool;
 
-        ClosedEventFunc          closed_event            = [] static noexcept { return true; };
-        MonitorChangedEventFunc  monitor_changed_event   = monadic::noop();
+        ClosedEventFunc          closed_event = [] static noexcept { return true; };
+        monitorChangedEventFunc  monitor_changed_event { std::in_place, monadic::noop() };
         ResizedEventFunc         resized_event           = monadic::noop();
         RestoredEventFunc        restored_event          = monadic::noop();
         MinimizedEventFunc       minimized_event         = monadic::noop();
@@ -80,7 +81,7 @@ export namespace stormkit::wsi::common {
         ActivateEventFunc        activate_event          = monadic::noop();
 
         auto set_closed_event(ClosedEventFunc&& func) noexcept -> void;
-        auto set_monitor_changed_event(MonitorChangedEventFunc&& func) noexcept -> void;
+        auto set_monitor_changed_event(monitorChangedEventFunc&& func) noexcept -> void;
         auto set_resized_event(ResizedEventFunc&& func) noexcept -> void;
         auto set_restored_event(RestoredEventFunc&& func) noexcept -> void;
         auto set_minimized_event(MinimizedEventFunc&& func) noexcept -> void;
@@ -107,9 +108,9 @@ export namespace stormkit::wsi::common {
             bool           visible    = false;
             math::uextent2 extent;
 #if defined(STORMKIT_OS_WINDOWS) and not defined(STORMKIT_COMPILER_LIBCPP)
-            beman::optional::optional<const Monitor&> current_monitor;
+            beman::optional::optional<const monitor&> current_monitor;
 #else
-            std::optional<const Monitor&> current_monitor;
+            std::optional<const monitor&> current_monitor;
 #endif
             string title;
 
@@ -152,7 +153,7 @@ namespace stormkit::wsi::common {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto WindowBase::current_monitor() const noexcept -> const Monitor& {
+    inline auto WindowBase::current_monitor() const noexcept -> const monitor& {
 #if defined(STORMKIT_OS_WINDOWS) and not defined(STORMKIT_COMPILER_LIBCPP)
         EXPECTS(m_state.current_monitor != beman::optional::nullopt);
 #else
@@ -164,7 +165,14 @@ namespace stormkit::wsi::common {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto WindowBase::set_current_monitor(const Monitor& monitor) noexcept -> void {
+    inline auto WindowBase::set_current_monitor(const monitor& monitor) noexcept -> void {
+        m_state.current_monitor = monitor;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto WindowBase::set_current_monitor(monitor&& monitor) noexcept -> void {
         m_state.current_monitor = monitor;
     }
 
@@ -229,7 +237,7 @@ namespace stormkit::wsi::common {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto WindowBase::set_monitor_changed_event(MonitorChangedEventFunc&& func) noexcept -> void {
+    inline auto WindowBase::set_monitor_changed_event(monitorChangedEventFunc&& func) noexcept -> void {
         monitor_changed_event = std::move(func);
     }
 

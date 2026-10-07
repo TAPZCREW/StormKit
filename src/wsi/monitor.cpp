@@ -38,13 +38,13 @@ using namespace std::literals;
 namespace stormkit::wsi {
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_monitors(bool update) noexcept -> array_view<const Monitor> {
+    auto get_monitors(bool update) noexcept -> array_view<const monitor> {
         return impl::get_monitors(wm(), update);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_primary_monitor() noexcept -> const Monitor& {
+    auto get_primary_monitor() noexcept -> const monitor& {
         return impl::get_primary_monitor(wm());
     }
 } // namespace stormkit::wsi
