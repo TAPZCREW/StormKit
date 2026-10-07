@@ -446,8 +446,10 @@ namespace stormkit::wsi::win32 {
     auto Window::gdiinit() noexcept -> void {
         const auto hdesktop = ::win32::GetDC(nullptr);
 
-        m_gdi_frame_data        = GDIFrameData {};
-        m_gdi_frame_data.extent = as<math::extent2<::win32::LONG>>(extent());
+        m_gdi_frame_data               = GDIFrameData {};
+        m_gdi_frame_data.extent.width  = as<::win32::LONG>(extent().width);
+        m_gdi_frame_data.extent.height = as<::win32::LONG>(extent().height);
+        // as<math::extent2<::win32::LONG>>(extent());
 
         const auto [width, height] = m_gdi_frame_data.extent;
 
