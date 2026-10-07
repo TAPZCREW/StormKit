@@ -35,11 +35,19 @@ export namespace stormkit { inline namespace core {
 
     template<meta::integral T>
     [[nodiscard]]
-    constexpr auto low_order(T value) noexcept -> T;
+    constexpr auto low_byte(T value, std::endian endianess) noexcept -> T;
+
+    template<std::endian Endianess = std::endian::native, meta::integral T>
+    [[nodiscard]]
+    constexpr auto low_byte(T value) noexcept -> T;
 
     template<meta::integral T>
     [[nodiscard]]
-    constexpr auto high_order(T value) noexcept -> T;
+    constexpr auto high_byte(T value, std::endian endianess) noexcept -> T;
+
+    template<std::endian Endianess = std::endian::native, meta::integral T>
+    [[nodiscard]]
+    constexpr auto high_byte(T value) noexcept -> T;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -85,27 +93,65 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<meta::integral T>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto low_order(T value) noexcept -> T {
+    constexpr auto low_byte(T value, std::endian endianess) noexcept -> T {
         if constexpr (sizeof(value) == 1) return value;
-        else if constexpr (sizeof(value) == 2)
-            return value & 0xFF;
-        else if constexpr (sizeof(value) == 4)
-            return value & 0xFFFF;
-        else if constexpr (sizeof(value) == 8)
-            return value & 0xFFFFFFFF;
+        else {
+            if (endianess == std::endian::little) return value & 0xFF;
+            else if (endianess == std::endian::big)
+                return value & (0xFF << (sizeof(T) / 2));
+            else {
+                ensures(false);
+                std::unreachable();
+            }
+        }
+    }
+
+    template<std::endian Endianess = std::endian::native, meta::integral T>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto low_byte(T value) noexcept -> T {
+        if constexpr (sizeof(value) == 1) return value;
+        else {
+            if constexpr (Endianess == std::endian::little) return value & 0xFF;
+            else if constexpr (Endianess == std::endian::big)
+                return value & (0xFF << (sizeof(T) / 2));
+            else {
+                static_assert(false);
+                std::unreachable();
+            }
+        }
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::integral T>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto high_order(T value) noexcept -> T {
+    constexpr auto high_byte(T value, std::endian endianess) noexcept -> T {
         if constexpr (sizeof(value) == 1) return value;
-        else if constexpr (sizeof(value) == 2)
-            return (value >> 8) & 0xFF;
-        else if constexpr (sizeof(value) == 4)
-            return (value >> 16) & 0xFFFF;
-        else if constexpr (sizeof(value) == 8)
-            return (value >> 32) & 0xFFFFFFFF;
+        else {
+            if (endianess == std::endian::little) return (value >> (sizeof(T) / 2)) & 0xFF;
+            else if (endianess == std::endian::big)
+                return value & 0xFF;
+            else {
+                ensures(false);
+                std::unreachable();
+            }
+        }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<std::endian Endianess = std::endian::native, meta::integral T>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto high_byte(T value) noexcept -> T {
+        if constexpr (sizeof(value) == 1) return value;
+        else {
+            if constexpr (Endianess == std::endian::little) return (value >> (sizeof(T) / 2)) & 0xFF;
+            else if constexpr (Endianess == std::endian::big)
+                return value & 0xFF;
+            else {
+                static_assert(false);
+                std::unreachable();
+            }
+        }
     }
 }} // namespace stormkit::core

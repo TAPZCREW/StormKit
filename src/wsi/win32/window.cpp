@@ -555,7 +555,7 @@ namespace stormkit::wsi::win32 {
                     return ::win32::MA_ACTIVATEANDEAT;
                 }
                 case ::win32::WM_ACTIVATE: {
-                    if (low_order(w_param) == ::win32::WA_INACTIVE) {
+                    if (low_byte(w_param) == ::win32::WA_INACTIVE) {
                         window.state().active = false;
                         window.deactivate_event();
                     } else {
@@ -603,7 +603,7 @@ namespace stormkit::wsi::win32 {
                     return 0;
                 }
                 case ::win32::WM_SIZE: {
-                    window.update_geometry({ as<u32>(low_order(l_param)), as<u32>(high_order(l_param)) });
+                    window.update_geometry({ as<u32>(low_byte(l_param)), as<u32>(high_byte(l_param)) });
 
                     if (not window.win32_state().external_context) {
                         auto& gdi_frame_data = window.gdi_frame_data();
