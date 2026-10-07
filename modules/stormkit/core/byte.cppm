@@ -32,6 +32,14 @@ export namespace stormkit { inline namespace core {
     template<typename T>
     [[nodiscard]]
     constexpr auto byte_swap(const T& value) noexcept -> T;
+
+    template<meta::integral T>
+    [[nodiscard]]
+    constexpr auto low_order(T value) noexcept -> T;
+
+    template<meta::integral T>
+    [[nodiscard]]
+    constexpr auto high_order(T value) noexcept -> T;
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -71,5 +79,33 @@ namespace stormkit { inline namespace core {
 
             return std::bit_cast<T>(repr);
         }
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::integral T>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto low_order(T value) noexcept -> T {
+        if constexpr (sizeof(value) == 1) return value;
+        else if constexpr (sizeof(value) == 2)
+            return value & 0xFF;
+        else if constexpr (sizeof(value) == 4)
+            return value & 0xFFFF;
+        else if constexpr (sizeof(value) == 8)
+            return value & 0xFFFFFFFF;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::integral T>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto high_order(T value) noexcept -> T {
+        if constexpr (sizeof(value) == 1) return value;
+        else if constexpr (sizeof(value) == 2)
+            return (value >> 8) & 0xFF;
+        else if constexpr (sizeof(value) == 4)
+            return (value >> 16) & 0xFFFF;
+        else if constexpr (sizeof(value) == 8)
+            return (value >> 32) & 0xFFFFFFFF;
     }
 }} // namespace stormkit::core

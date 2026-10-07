@@ -89,6 +89,10 @@ export namespace win32 {
     using ::BCryptGetProperty;
     using ::BCryptOpenAlgorithmProvider;
     using ::BCryptSetProperty;
+    using ::BeginPaint;
+    using ::BitBlt;
+    using ::BITMAPINFO;
+    using ::BITMAPINFOHEADER;
     using ::BOOL;
     using ::BOOLEAN;
     using ::BYTE;
@@ -131,6 +135,8 @@ export namespace win32 {
     using ::CertVerifyTimeValidity;
     using ::ChangeTimerQueueTimer;
     using ::CheckTokenMembership;
+    using ::ClientToScreen;
+    using ::ClipCursor;
     using ::CloseClipboard;
     using ::CloseCompressor;
     using ::CloseDecompressor;
@@ -190,6 +196,7 @@ export namespace win32 {
     using ::CreateSemaphoreA;
     using ::CreateSemaphoreW;
     using ::CreateSolidBrush;
+    using ::CREATESTRUCT;
     using ::CreateThreadpool;
     using ::CreateThreadpoolWork;
     using ::CreateTimerQueue;
@@ -228,12 +235,15 @@ export namespace win32 {
     using ::DestroyThreadpoolEnvironment;
     using ::DestroyWindow;
     using ::DisconnectNamedPipe;
+    using ::DispatchMessageA;
+    using ::DispatchMessageW;
     using ::DuplicateHandle;
     using ::DuplicateTokenEx;
     using ::DWORD;
     using ::DWORD_PTR;
     using ::EmptyClipboard;
     using ::EncodePointer;
+    using ::EndPaint;
     using ::EnterCriticalSection;
     using ::EnterSynchronizationBarrier;
     using ::EOLE_AUTHENTICATION_CAPABILITIES;
@@ -248,6 +258,7 @@ export namespace win32 {
     using ::FreeSid;
     using ::GetClassInfoA;
     using ::GetClassInfoW;
+    using ::GetClientRect;
     using ::GetClipboardData;
     using ::GetComputerNameExA;
     using ::GetComputerNameExW;
@@ -255,7 +266,9 @@ export namespace win32 {
     using ::GetCurrentProcessToken;
     using ::GetCurrentThread;
     using ::GetCurrentThreadId;
+    using ::GetCursorPos;
     using ::GetDateFormatEx;
+    using ::GetDC;
     using ::GetExitCodeProcess;
     using ::GetExitCodeThread;
     using ::GetFileSize;
@@ -299,6 +312,8 @@ export namespace win32 {
     using ::GetTimeZoneInformation;
     using ::GetTokenInformation;
     using ::GetWindowLongA;
+    using ::GetWindowLongPtrA;
+    using ::GetWindowLongPtrW;
     using ::GetWindowLongW;
     using ::GetWindowTextA;
     using ::GetWindowTextLengthA;
@@ -367,6 +382,7 @@ export namespace win32 {
     using ::LockFileEx;
     using ::LOGICAL_PROCESSOR_RELATIONSHIP;
     using ::LONG;
+    using ::LONG_PTR;
     using ::LookupAccountSidA;
     using ::LookupAccountSidW;
     using ::LookupPrivilegeNameA;
@@ -399,6 +415,7 @@ export namespace win32 {
     using ::MonitorFromWindow;
     using ::MoveFileExA;
     using ::MoveFileExW;
+    using ::MSG;
     using ::MsiCloseHandle;
     using ::MsiDatabaseOpenViewA;
     using ::MsiDatabaseOpenViewW;
@@ -443,6 +460,7 @@ export namespace win32 {
     using ::OpenWaitableTimerA;
     using ::OpenWaitableTimerW;
     using ::OVERLAPPED;
+    using ::PAINTSTRUCT;
     using ::PAPCFUNC;
     using ::PathCchRemoveFileSpec;
     using ::PBYTE;
@@ -451,11 +469,15 @@ export namespace win32 {
     using ::PCSTR;
     using ::PCWSTR;
     using ::PDWORD;
+    using ::PeekMessageA;
+    using ::PeekMessageW;
     using ::PeekNamedPipe;
     using ::PHANDLE;
     using ::PLARGE_INTEGER;
     using ::PMSIHANDLE;
     using ::POINT;
+    using ::PostMessage;
+    using ::PostQuitMessage;
     using ::PRIVILEGE_SET;
     using ::PrivilegeCheck;
     using ::Process32First;
@@ -492,6 +514,7 @@ export namespace win32 {
     using ::RECT;
     using ::RegisterClassA;
     using ::RegisterClassW;
+    using ::ReleaseDC;
     using ::ReleaseMutex;
     using ::ReleaseSemaphore;
     using ::ReleaseSRWLockExclusive;
@@ -510,9 +533,11 @@ export namespace win32 {
     using ::SECURITY_DESCRIPTOR;
     using ::SECURITY_DESCRIPTOR_CONTROL;
     using ::SECURITY_IMPERSONATION_LEVEL;
+    using ::SelectObject;
     using ::SendMessageA;
     using ::SendMessageW;
     using ::SetClipboardData;
+    using ::SetCursorPos;
     using ::SetEndOfFile;
     using ::SetEvent;
     using ::SetFilePointer;
@@ -530,11 +555,17 @@ export namespace win32 {
     using ::SetThreadpoolThreadMinimum;
     using ::SetTokenInformation;
     using ::SetWaitableTimer;
+    using ::SetWindowLongA;
+    using ::SetWindowLongPtrA;
+    using ::SetWindowLongPtrW;
+    using ::SetWindowLongW;
+    using ::SetWindowPos;
     using ::SetWindowSubclass;
     using ::SetWindowTextA;
     using ::SetWindowTextW;
     using ::SHDeleteKeyA;
     using ::SHDeleteKeyW;
+    using ::ShowCursor;
     using ::ShowWindow;
     using ::SID;
     using ::SID_AND_ATTRIBUTES;
@@ -567,6 +598,9 @@ export namespace win32 {
     using ::TOKEN_TYPE;
     using ::TP_CALLBACK_ENVIRON;
     using ::TP_POOL;
+    using ::TrackMouseEvent;
+    using ::TRACKMOUSEEVENT;
+    using ::TranslateMessage;
     using ::TryAcquireSRWLockExclusive;
     using ::TryAcquireSRWLockShared;
     using ::UCHAR;
@@ -1273,8 +1307,8 @@ export namespace win32 {
     inline constexpr auto GWL_STYLE
 #pragma pop_macro("GWL_STYLE")
       = GWL_STYLE;
-#pragma push_macro("GWL_HINSTANCE")
 #ifndef _WIN64
+    #pragma push_macro("GWL_HINSTANCE")
     #undef GWL_HINSTANCE
     inline constexpr auto GWL_HINSTANCE
     #pragma pop_macro("GWL_HINSTANCE")
@@ -1306,6 +1340,27 @@ export namespace win32 {
 #pragma pop_macro("GWL_EXSTYLE")
       = GWL_EXSTYLE;
 
+#pragma push_macro("GWLP_HINSTANCE")
+#undef GWLP_HINSTANCE
+    inline constexpr auto GWLP_HINSTANCE
+#pragma pop_macro("GWLP_HINSTANCE")
+      = GWLP_HINSTANCE;
+#pragma push_macro("GWLP_HWNDPARENT")
+#undef GWLP_HWNDPARENT
+    inline constexpr auto GWLP_HWNDPARENT
+#pragma pop_macro("GWLP_HWNDPARENT")
+      = GWLP_HWNDPARENT;
+#pragma push_macro("GWLP_USERDATA")
+#undef GWLP_USERDATA
+    inline constexpr auto GWLP_USERDATA
+#pragma pop_macro("GWLP_USERDATA")
+      = GWLP_USERDATA;
+#pragma push_macro("GWLP_WNDPROC")
+#undef GWLP_WNDPROC
+    inline constexpr auto GWLP_WNDPROC
+#pragma pop_macro("GWLP_WNDPROC")
+      = GWLP_WNDPROC;
+
 #ifndef _WIN64
     #pragma push_macro("DWL_DLGPROC")
     #undef DWL_DLGPROC
@@ -1323,6 +1378,22 @@ export namespace win32 {
     #pragma pop_macro("DWL_USER")
       = DWL_USER;
 #endif
+
+#pragma push_macro("DWLP_DLGPROC")
+#undef DWLP_DLGPROC
+    inline constexpr auto DWLP_DLGPROC
+#pragma pop_macro("DWLP_DLGPROC")
+      = DWLP_DLGPROC;
+#pragma push_macro("DWLP_MSGRESULT")
+#undef DWLP_MSGRESULT
+    inline constexpr auto DWLP_MSGRESULT
+#pragma pop_macro("DWLP_MSGRESULT")
+      = DWLP_MSGRESULT;
+#pragma push_macro("DWLP_USER")
+#undef DWLP_USER
+    inline constexpr auto DWLP_USER
+#pragma pop_macro("DWLP_USER")
+      = DWLP_USER;
 
 #pragma push_macro("PM_NOREMOVE")
 #undef PM_NOREMOVE
@@ -1431,6 +1502,82 @@ export namespace win32 {
     inline constexpr auto SW_FORCEMINIMIZE
 #pragma pop_macro("SW_FORCEMINIMIZE")
       = SW_FORCEMINIMIZE;
+
+#pragma push_macro("SWP_ASYNCWINDOWPOS")
+#undef SWP_ASYNCWINDOWPOS
+    inline constexpr auto SWP_ASYNCWINDOWPOS
+#pragma pop_macro("SWP_ASYNCWINDOWPOS")
+      = SWP_ASYNCWINDOWPOS;
+#pragma push_macro("SWP_DEFERERASE")
+#undef SWP_DEFERERASE
+    inline constexpr auto SWP_DEFERERASE
+#pragma pop_macro("SWP_DEFERERASE")
+      = SWP_DEFERERASE;
+#pragma push_macro("SWP_DRAWFRAME")
+#undef SWP_DRAWFRAME
+    inline constexpr auto SWP_DRAWFRAME
+#pragma pop_macro("SWP_DRAWFRAME")
+      = SWP_DRAWFRAME;
+#pragma push_macro("SWP_FRAMECHANGED")
+#undef SWP_FRAMECHANGED
+    inline constexpr auto SWP_FRAMECHANGED
+#pragma pop_macro("SWP_FRAMECHANGED")
+      = SWP_FRAMECHANGED;
+#pragma push_macro("SWP_HIDEWINDOW")
+#undef SWP_HIDEWINDOW
+    inline constexpr auto SWP_HIDEWINDOW
+#pragma pop_macro("SWP_HIDEWINDOW")
+      = SWP_HIDEWINDOW;
+#pragma push_macro("SWP_NOACTIVATE")
+#undef SWP_NOACTIVATE
+    inline constexpr auto SWP_NOACTIVATE
+#pragma pop_macro("SWP_NOACTIVATE")
+      = SWP_NOACTIVATE;
+#pragma push_macro("SWP_NOCOPYBITS")
+#undef SWP_NOCOPYBITS
+    inline constexpr auto SWP_NOCOPYBITS
+#pragma pop_macro("SWP_NOCOPYBITS")
+      = SWP_NOCOPYBITS;
+#pragma push_macro("SWP_NOMOVE")
+#undef SWP_NOMOVE
+    inline constexpr auto SWP_NOMOVE
+#pragma pop_macro("SWP_NOMOVE")
+      = SWP_NOMOVE;
+#pragma push_macro("SWP_NOOWNERZORDER")
+#undef SWP_NOOWNERZORDER
+    inline constexpr auto SWP_NOOWNERZORDER
+#pragma pop_macro("SWP_NOOWNERZORDER")
+      = SWP_NOOWNERZORDER;
+#pragma push_macro("SWP_NOREDRAW")
+#undef SWP_NOREDRAW
+    inline constexpr auto SWP_NOREDRAW
+#pragma pop_macro("SWP_NOREDRAW")
+      = SWP_NOREDRAW;
+#pragma push_macro("SWP_NOREPOSITION")
+#undef SWP_NOREPOSITION
+    inline constexpr auto SWP_NOREPOSITION
+#pragma pop_macro("SWP_NOREPOSITION")
+      = SWP_NOREPOSITION;
+#pragma push_macro("SWP_NOSENDCHANGING")
+#undef SWP_NOSENDCHANGING
+    inline constexpr auto SWP_NOSENDCHANGING
+#pragma pop_macro("SWP_NOSENDCHANGING")
+      = SWP_NOSENDCHANGING;
+#pragma push_macro("SWP_NOSIZE")
+#undef SWP_NOSIZE
+    inline constexpr auto SWP_NOSIZE
+#pragma pop_macro("SWP_NOSIZE")
+      = SWP_NOSIZE;
+#pragma push_macro("SWP_NOZORDER")
+#undef SWP_NOZORDER
+    inline constexpr auto SWP_NOZORDER
+#pragma pop_macro("SWP_NOZORDER")
+      = SWP_NOZORDER;
+#pragma push_macro("SWP_SHOWWINDOW")
+#undef SWP_SHOWWINDOW
+    inline constexpr auto SWP_SHOWWINDOW
+#pragma pop_macro("SWP_SHOWWINDOW")
+      = SWP_SHOWWINDOW;
 
 #pragma push_macro("WM_CAPTURECHANGED")
 #undef WM_CAPTURECHANGED
@@ -1654,6 +1801,625 @@ export namespace win32 {
     inline constexpr auto XBUTTON2
 #pragma pop_macro("XBUTTON2")
       = XBUTTON2;
+
+#pragma push_macro("HWND_BOTTOM")
+#undef HWND_BOTTOM
+    inline const /*constexpr*/ auto HWND_BOTTOM
+#pragma pop_macro("HWND_BOTTOM")
+      = HWND_BOTTOM;
+#pragma push_macro("HWND_NOTOPMOST")
+#undef HWND_NOTOPMOST
+    inline const /*constexpr*/ auto HWND_NOTOPMOST
+#pragma pop_macro("HWND_NOTOPMOST")
+      = HWND_NOTOPMOST;
+#pragma push_macro("HWND_TOP")
+#undef HWND_TOP
+    inline const /*constexpr*/ auto HWND_TOP
+#pragma pop_macro("HWND_TOP")
+      = HWND_TOP;
+#pragma push_macro("HWND_TOPMOST")
+#undef HWND_TOPMOST
+    inline const /*constexpr*/ auto HWND_TOPMOST
+#pragma pop_macro("HWND_TOPMOST")
+      = HWND_TOPMOST;
+
+#pragma push_macro("TME_CANCEL")
+#undef TME_CANCEL
+    inline constexpr auto TME_CANCEL
+#pragma pop_macro("TME_CANCEL")
+      = TME_CANCEL;
+#pragma push_macro("TME_HOVER")
+#undef TME_HOVER
+    inline constexpr auto TME_HOVER
+#pragma pop_macro("TME_HOVER")
+      = TME_HOVER;
+#pragma push_macro("TME_LEAVE")
+#undef TME_LEAVE
+    inline constexpr auto TME_LEAVE
+#pragma pop_macro("TME_LEAVE")
+      = TME_LEAVE;
+#pragma push_macro("TME_NONCLIENT")
+#undef TME_NONCLIENT
+    inline constexpr auto TME_NONCLIENT
+#pragma pop_macro("TME_NONCLIENT")
+      = TME_NONCLIENT;
+#pragma push_macro("TME_QUERY")
+#undef TME_QUERY
+    inline constexpr auto TME_QUERY
+#pragma pop_macro("TME_QUERY")
+      = TME_QUERY;
+
+#pragma push_macro("HOVER_DEFAULT")
+#undef HOVER_DEFAULT
+    inline constexpr auto HOVER_DEFAULT
+#pragma pop_macro("HOVER_DEFAULT")
+      = HOVER_DEFAULT;
+
+#pragma push_macro("BI_RGB")
+#undef BI_RGB
+    inline constexpr auto BI_RGB
+#pragma pop_macro("BI_RGB")
+      = BI_RGB;
+#pragma push_macro("BI_BITFIELDS")
+#undef BI_BITFIELDS
+    inline constexpr auto BI_BITFIELDS
+#pragma pop_macro("BI_BITFIELDS")
+      = BI_BITFIELDS;
+
+#pragma push_macro("DIB_PAL_COLORS")
+#undef DIB_PAL_COLORS
+    inline constexpr auto DIB_PAL_COLORS
+#pragma pop_macro("DIB_PAL_COLORS")
+      = DIB_PAL_COLORS;
+#pragma push_macro("DIB_RGB_COLORS")
+#undef DIB_RGB_COLORS
+    inline constexpr auto DIB_RGB_COLORS
+#pragma pop_macro("DIB_RGB_COLORS")
+      = DIB_RGB_COLORS;
+
+#pragma push_macro("ERROR_INVALID_PARAMETER")
+#undef ERROR_INVALID_PARAMETER
+    inline constexpr auto ERROR_INVALID_PARAMETER
+#pragma pop_macro("ERROR_INVALID_PARAMETER")
+      = ERROR_INVALID_PARAMETER;
+
+#pragma push_macro("WM_ACTIVATEAPP")
+#undef WM_ACTIVATEAPP
+    inline constexpr auto WM_ACTIVATEAPP
+#pragma pop_macro("WM_ACTIVATEAPP")
+      = WM_ACTIVATEAPP;
+#pragma push_macro("WM_CANCELMODE")
+#undef WM_CANCELMODE
+    inline constexpr auto WM_CANCELMODE
+#pragma pop_macro("WM_CANCELMODE")
+      = WM_CANCELMODE;
+#pragma push_macro("WM_CHILDACTIVATE")
+#undef WM_CHILDACTIVATE
+    inline constexpr auto WM_CHILDACTIVATE
+#pragma pop_macro("WM_CHILDACTIVATE")
+      = WM_CHILDACTIVATE;
+#pragma push_macro("WM_CLOSE")
+#undef WM_CLOSE
+    inline constexpr auto WM_CLOSE
+#pragma pop_macro("WM_CLOSE")
+      = WM_CLOSE;
+#pragma push_macro("WM_COMPACTING")
+#undef WM_COMPACTING
+    inline constexpr auto WM_COMPACTING
+#pragma pop_macro("WM_COMPACTING")
+      = WM_COMPACTING;
+#pragma push_macro("WM_CREATE")
+#undef WM_CREATE
+    inline constexpr auto WM_CREATE
+#pragma pop_macro("WM_CREATE")
+      = WM_CREATE;
+#pragma push_macro("WM_DESTROY")
+#undef WM_DESTROY
+    inline constexpr auto WM_DESTROY
+#pragma pop_macro("WM_DESTROY")
+      = WM_DESTROY;
+#pragma push_macro("WM_ENABLE")
+#undef WM_ENABLE
+    inline constexpr auto WM_ENABLE
+#pragma pop_macro("WM_ENABLE")
+      = WM_ENABLE;
+#pragma push_macro("WM_ENTERSIZEMOVE")
+#undef WM_ENTERSIZEMOVE
+    inline constexpr auto WM_ENTERSIZEMOVE
+#pragma pop_macro("WM_ENTERSIZEMOVE")
+      = WM_ENTERSIZEMOVE;
+#pragma push_macro("WM_EXITSIZEMOVE")
+#undef WM_EXITSIZEMOVE
+    inline constexpr auto WM_EXITSIZEMOVE
+#pragma pop_macro("WM_EXITSIZEMOVE")
+      = WM_EXITSIZEMOVE;
+#pragma push_macro("WM_GETICON")
+#undef WM_GETICON
+    inline constexpr auto WM_GETICON
+#pragma pop_macro("WM_GETICON")
+      = WM_GETICON;
+#pragma push_macro("WM_GETMINMAXINFO")
+#undef WM_GETMINMAXINFO
+    inline constexpr auto WM_GETMINMAXINFO
+#pragma pop_macro("WM_GETMINMAXINFO")
+      = WM_GETMINMAXINFO;
+#pragma push_macro("WM_INPUTLANGCHANGE")
+#undef WM_INPUTLANGCHANGE
+    inline constexpr auto WM_INPUTLANGCHANGE
+#pragma pop_macro("WM_INPUTLANGCHANGE")
+      = WM_INPUTLANGCHANGE;
+#pragma push_macro("WM_INPUTLANGCHANGEREQUEST")
+#undef WM_INPUTLANGCHANGEREQUEST
+    inline constexpr auto WM_INPUTLANGCHANGEREQUEST
+#pragma pop_macro("WM_INPUTLANGCHANGEREQUEST")
+      = WM_INPUTLANGCHANGEREQUEST;
+#pragma push_macro("WM_MOVE")
+#undef WM_MOVE
+    inline constexpr auto WM_MOVE
+#pragma pop_macro("WM_MOVE")
+      = WM_MOVE;
+#pragma push_macro("WM_MOVING")
+#undef WM_MOVING
+    inline constexpr auto WM_MOVING
+#pragma pop_macro("WM_MOVING")
+      = WM_MOVING;
+#pragma push_macro("WM_NCACTIVATE")
+#undef WM_NCACTIVATE
+    inline constexpr auto WM_NCACTIVATE
+#pragma pop_macro("WM_NCACTIVATE")
+      = WM_NCACTIVATE;
+#pragma push_macro("WM_NCCALCSIZE")
+#undef WM_NCCALCSIZE
+    inline constexpr auto WM_NCCALCSIZE
+#pragma pop_macro("WM_NCCALCSIZE")
+      = WM_NCCALCSIZE;
+#pragma push_macro("WM_NCCREATE")
+#undef WM_NCCREATE
+    inline constexpr auto WM_NCCREATE
+#pragma pop_macro("WM_NCCREATE")
+      = WM_NCCREATE;
+#pragma push_macro("WM_NCDESTROY")
+#undef WM_NCDESTROY
+    inline constexpr auto WM_NCDESTROY
+#pragma pop_macro("WM_NCDESTROY")
+      = WM_NCDESTROY;
+#pragma push_macro("WM_NULL")
+#undef WM_NULL
+    inline constexpr auto WM_NULL
+#pragma pop_macro("WM_NULL")
+      = WM_NULL;
+#pragma push_macro("WM_QUERYDRAGICON")
+#undef WM_QUERYDRAGICON
+    inline constexpr auto WM_QUERYDRAGICON
+#pragma pop_macro("WM_QUERYDRAGICON")
+      = WM_QUERYDRAGICON;
+#pragma push_macro("WM_QUERYOPEN")
+#undef WM_QUERYOPEN
+    inline constexpr auto WM_QUERYOPEN
+#pragma pop_macro("WM_QUERYOPEN")
+      = WM_QUERYOPEN;
+#pragma push_macro("WM_QUIT")
+#undef WM_QUIT
+    inline constexpr auto WM_QUIT
+#pragma pop_macro("WM_QUIT")
+      = WM_QUIT;
+#pragma push_macro("WM_SHOWWINDOW")
+#undef WM_SHOWWINDOW
+    inline constexpr auto WM_SHOWWINDOW
+#pragma pop_macro("WM_SHOWWINDOW")
+      = WM_SHOWWINDOW;
+#pragma push_macro("WM_SIZE")
+#undef WM_SIZE
+    inline constexpr auto WM_SIZE
+#pragma pop_macro("WM_SIZE")
+      = WM_SIZE;
+#pragma push_macro("WM_SIZING")
+#undef WM_SIZING
+    inline constexpr auto WM_SIZING
+#pragma pop_macro("WM_SIZING")
+      = WM_SIZING;
+#pragma push_macro("WM_STYLECHANGED")
+#undef WM_STYLECHANGED
+    inline constexpr auto WM_STYLECHANGED
+#pragma pop_macro("WM_STYLECHANGED")
+      = WM_STYLECHANGED;
+#pragma push_macro("WM_STYLECHANGING")
+#undef WM_STYLECHANGING
+    inline constexpr auto WM_STYLECHANGING
+#pragma pop_macro("WM_STYLECHANGING")
+      = WM_STYLECHANGING;
+#pragma push_macro("WM_THEMECHANGED")
+#undef WM_THEMECHANGED
+    inline constexpr auto WM_THEMECHANGED
+#pragma pop_macro("WM_THEMECHANGED")
+      = WM_THEMECHANGED;
+#pragma push_macro("WM_USERCHANGED")
+#undef WM_USERCHANGED
+    inline constexpr auto WM_USERCHANGED
+#pragma pop_macro("WM_USERCHANGED")
+      = WM_USERCHANGED;
+#pragma push_macro("WM_WINDOWPOSCHANGED")
+#undef WM_WINDOWPOSCHANGED
+    inline constexpr auto WM_WINDOWPOSCHANGED
+#pragma pop_macro("WM_WINDOWPOSCHANGED")
+      = WM_WINDOWPOSCHANGED;
+#pragma push_macro("WM_WINDOWPOSCHANGING")
+#undef WM_WINDOWPOSCHANGING
+    inline constexpr auto WM_WINDOWPOSCHANGING
+#pragma pop_macro("WM_WINDOWPOSCHANGING")
+      = WM_WINDOWPOSCHANGING;
+
+#pragma push_macro("WM_ACTIVATE")
+#undef WM_ACTIVATE
+    inline constexpr auto WM_ACTIVATE
+#pragma pop_macro("WM_ACTIVATE")
+      = WM_ACTIVATE;
+#pragma push_macro("WM_APPCOMMAND")
+#undef WM_APPCOMMAND
+    inline constexpr auto WM_APPCOMMAND
+#pragma pop_macro("WM_APPCOMMAND")
+      = WM_APPCOMMAND;
+#pragma push_macro("WM_CHAR")
+#undef WM_CHAR
+    inline constexpr auto WM_CHAR
+#pragma pop_macro("WM_CHAR")
+      = WM_CHAR;
+#pragma push_macro("WM_DEADCHAR")
+#undef WM_DEADCHAR
+    inline constexpr auto WM_DEADCHAR
+#pragma pop_macro("WM_DEADCHAR")
+      = WM_DEADCHAR;
+#pragma push_macro("WM_HOTKEY")
+#undef WM_HOTKEY
+    inline constexpr auto WM_HOTKEY
+#pragma pop_macro("WM_HOTKEY")
+      = WM_HOTKEY;
+#pragma push_macro("WM_KEYDOWN")
+#undef WM_KEYDOWN
+    inline constexpr auto WM_KEYDOWN
+#pragma pop_macro("WM_KEYDOWN")
+      = WM_KEYDOWN;
+#pragma push_macro("WM_KEYUP")
+#undef WM_KEYUP
+    inline constexpr auto WM_KEYUP
+#pragma pop_macro("WM_KEYUP")
+      = WM_KEYUP;
+#pragma push_macro("WM_KILLFOCUS")
+#undef WM_KILLFOCUS
+    inline constexpr auto WM_KILLFOCUS
+#pragma pop_macro("WM_KILLFOCUS")
+      = WM_KILLFOCUS;
+#pragma push_macro("WM_SETFOCUS")
+#undef WM_SETFOCUS
+    inline constexpr auto WM_SETFOCUS
+#pragma pop_macro("WM_SETFOCUS")
+      = WM_SETFOCUS;
+#pragma push_macro("WM_SYSDEADCHAR")
+#undef WM_SYSDEADCHAR
+    inline constexpr auto WM_SYSDEADCHAR
+#pragma pop_macro("WM_SYSDEADCHAR")
+      = WM_SYSDEADCHAR;
+#pragma push_macro("WM_SYSKEYDOWN")
+#undef WM_SYSKEYDOWN
+    inline constexpr auto WM_SYSKEYDOWN
+#pragma pop_macro("WM_SYSKEYDOWN")
+      = WM_SYSKEYDOWN;
+#pragma push_macro("WM_SYSKEYUP")
+#undef WM_SYSKEYUP
+    inline constexpr auto WM_SYSKEYUP
+#pragma pop_macro("WM_SYSKEYUP")
+      = WM_SYSKEYUP;
+#pragma push_macro("WM_UNICHAR")
+#undef WM_UNICHAR
+    inline constexpr auto WM_UNICHAR
+#pragma pop_macro("WM_UNICHAR")
+      = WM_UNICHAR;
+
+#pragma push_macro("WM_DISPLAYCHANGE")
+#undef WM_DISPLAYCHANGE
+    inline constexpr auto WM_DISPLAYCHANGE
+#pragma pop_macro("WM_DISPLAYCHANGE")
+      = WM_DISPLAYCHANGE;
+#pragma push_macro("WM_NCPAINT")
+#undef WM_NCPAINT
+    inline constexpr auto WM_NCPAINT
+#pragma pop_macro("WM_NCPAINT")
+      = WM_NCPAINT;
+#pragma push_macro("WM_PAINT")
+#undef WM_PAINT
+    inline constexpr auto WM_PAINT
+#pragma pop_macro("WM_PAINT")
+      = WM_PAINT;
+#pragma push_macro("WM_PRINT")
+#undef WM_PRINT
+    inline constexpr auto WM_PRINT
+#pragma pop_macro("WM_PRINT")
+      = WM_PRINT;
+#pragma push_macro("WM_PRINTCLIENT")
+#undef WM_PRINTCLIENT
+    inline constexpr auto WM_PRINTCLIENT
+#pragma pop_macro("WM_PRINTCLIENT")
+      = WM_PRINTCLIENT;
+#pragma push_macro("WM_SETREDRAW")
+#undef WM_SETREDRAW
+    inline constexpr auto WM_SETREDRAW
+#pragma pop_macro("WM_SETREDRAW")
+      = WM_SETREDRAW;
+#pragma push_macro("WM_SYNCPAINT")
+#undef WM_SYNCPAINT
+    inline constexpr auto WM_SYNCPAINT
+#pragma pop_macro("WM_SYNCPAINT")
+      = WM_SYNCPAINT;
+
+#pragma push_macro("HTBORDER")
+#undef HTBORDER
+    inline constexpr auto HTBORDER
+#pragma pop_macro("HTBORDER")
+      = HTBORDER;
+#pragma push_macro("HTBOTTOM")
+#undef HTBOTTOM
+    inline constexpr auto HTBOTTOM
+#pragma pop_macro("HTBOTTOM")
+      = HTBOTTOM;
+#pragma push_macro("HTBOTTOMLEFT")
+#undef HTBOTTOMLEFT
+    inline constexpr auto HTBOTTOMLEFT
+#pragma pop_macro("HTBOTTOMLEFT")
+      = HTBOTTOMLEFT;
+#pragma push_macro("HTBOTTOMRIGHT")
+#undef HTBOTTOMRIGHT
+    inline constexpr auto HTBOTTOMRIGHT
+#pragma pop_macro("HTBOTTOMRIGHT")
+      = HTBOTTOMRIGHT;
+#pragma push_macro("HTCAPTION")
+#undef HTCAPTION
+    inline constexpr auto HTCAPTION
+#pragma pop_macro("HTCAPTION")
+      = HTCAPTION;
+#pragma push_macro("HTCLIENT")
+#undef HTCLIENT
+    inline constexpr auto HTCLIENT
+#pragma pop_macro("HTCLIENT")
+      = HTCLIENT;
+#pragma push_macro("HTCLOSE")
+#undef HTCLOSE
+    inline constexpr auto HTCLOSE
+#pragma pop_macro("HTCLOSE")
+      = HTCLOSE;
+#pragma push_macro("HTERROR")
+#undef HTERROR
+    inline constexpr auto HTERROR
+#pragma pop_macro("HTERROR")
+      = HTERROR;
+#pragma push_macro("HTGROWBOX")
+#undef HTGROWBOX
+    inline constexpr auto HTGROWBOX
+#pragma pop_macro("HTGROWBOX")
+      = HTGROWBOX;
+#pragma push_macro("HTHELP")
+#undef HTHELP
+    inline constexpr auto HTHELP
+#pragma pop_macro("HTHELP")
+      = HTHELP;
+#pragma push_macro("HTHSCROLL")
+#undef HTHSCROLL
+    inline constexpr auto HTHSCROLL
+#pragma pop_macro("HTHSCROLL")
+      = HTHSCROLL;
+#pragma push_macro("HTLEFT")
+#undef HTLEFT
+    inline constexpr auto HTLEFT
+#pragma pop_macro("HTLEFT")
+      = HTLEFT;
+#pragma push_macro("HTMENU")
+#undef HTMENU
+    inline constexpr auto HTMENU
+#pragma pop_macro("HTMENU")
+      = HTMENU;
+#pragma push_macro("HTMAXBUTTON")
+#undef HTMAXBUTTON
+    inline constexpr auto HTMAXBUTTON
+#pragma pop_macro("HTMAXBUTTON")
+      = HTMAXBUTTON;
+#pragma push_macro("HTMINBUTTON")
+#undef HTMINBUTTON
+    inline constexpr auto HTMINBUTTON
+#pragma pop_macro("HTMINBUTTON")
+      = HTMINBUTTON;
+#pragma push_macro("HTNOWHERE")
+#undef HTNOWHERE
+    inline constexpr auto HTNOWHERE
+#pragma pop_macro("HTNOWHERE")
+      = HTNOWHERE;
+#pragma push_macro("HTREDUCE")
+#undef HTREDUCE
+    inline constexpr auto HTREDUCE
+#pragma pop_macro("HTREDUCE")
+      = HTREDUCE;
+#pragma push_macro("HTRIGHT")
+#undef HTRIGHT
+    inline constexpr auto HTRIGHT
+#pragma pop_macro("HTRIGHT")
+      = HTRIGHT;
+#pragma push_macro("HTSIZE")
+#undef HTSIZE
+    inline constexpr auto HTSIZE
+#pragma pop_macro("HTSIZE")
+      = HTSIZE;
+#pragma push_macro("HTSYSMENU")
+#undef HTSYSMENU
+    inline constexpr auto HTSYSMENU
+#pragma pop_macro("HTSYSMENU")
+      = HTSYSMENU;
+#pragma push_macro("HTTOP")
+#undef HTTOP
+    inline constexpr auto HTTOP
+#pragma pop_macro("HTTOP")
+      = HTTOP;
+#pragma push_macro("HTTOPLEFT")
+#undef HTTOPLEFT
+    inline constexpr auto HTTOPLEFT
+#pragma pop_macro("HTTOPLEFT")
+      = HTTOPLEFT;
+#pragma push_macro("HTTOPRIGHT")
+#undef HTTOPRIGHT
+    inline constexpr auto HTTOPRIGHT
+#pragma pop_macro("HTTOPRIGHT")
+      = HTTOPRIGHT;
+#pragma push_macro("HTTRANSPARENT")
+#undef HTTRANSPARENT
+    inline constexpr auto HTTRANSPARENT
+#pragma pop_macro("HTTRANSPARENT")
+      = HTTRANSPARENT;
+#pragma push_macro("HTVSCROLL")
+#undef HTVSCROLL
+    inline constexpr auto HTVSCROLL
+#pragma pop_macro("HTVSCROLL")
+      = HTVSCROLL;
+#pragma push_macro("HTZOOM")
+#undef HTZOOM
+    inline constexpr auto HTZOOM
+#pragma pop_macro("HTZOOM")
+      = HTZOOM;
+
+#pragma push_macro("MA_ACTIVATE")
+#undef MA_ACTIVATE
+    inline constexpr auto MA_ACTIVATE
+#pragma pop_macro("MA_ACTIVATE")
+      = MA_ACTIVATE;
+#pragma push_macro("MA_ACTIVATEANDEAT")
+#undef MA_ACTIVATEANDEAT
+    inline constexpr auto MA_ACTIVATEANDEAT
+#pragma pop_macro("MA_ACTIVATEANDEAT")
+      = MA_ACTIVATEANDEAT;
+#pragma push_macro("MA_NOACTIVATE")
+#undef MA_NOACTIVATE
+    inline constexpr auto MA_NOACTIVATE
+#pragma pop_macro("MA_NOACTIVATE")
+      = MA_NOACTIVATE;
+#pragma push_macro("MA_NOACTIVATEANDEAT")
+#undef MA_NOACTIVATEANDEAT
+    inline constexpr auto MA_NOACTIVATEANDEAT
+#pragma pop_macro("MA_NOACTIVATEANDEAT")
+      = MA_NOACTIVATEANDEAT;
+
+#pragma push_macro("WA_ACTIVE")
+#undef WA_ACTIVE
+    inline constexpr auto WA_ACTIVE
+#pragma pop_macro("WA_ACTIVE")
+      = WA_ACTIVE;
+#pragma push_macro("WA_CLICKACTIVE")
+#undef WA_CLICKACTIVE
+    inline constexpr auto WA_CLICKACTIVE
+#pragma pop_macro("WA_CLICKACTIVE")
+      = WA_CLICKACTIVE;
+#pragma push_macro("WA_INACTIVE")
+#undef WA_INACTIVE
+    inline constexpr auto WA_INACTIVE
+#pragma pop_macro("WA_INACTIVE")
+      = WA_INACTIVE;
+
+#pragma push_macro("SIZE_MAXHIDE")
+#undef SIZE_MAXHIDE
+    inline constexpr auto SIZE_MAXHIDE
+#pragma pop_macro("SIZE_MAXHIDE")
+      = SIZE_MAXHIDE;
+#pragma push_macro("SIZE_MAXIMIZED")
+#undef SIZE_MAXIMIZED
+    inline constexpr auto SIZE_MAXIMIZED
+#pragma pop_macro("SIZE_MAXIMIZED")
+      = SIZE_MAXIMIZED;
+#pragma push_macro("SIZE_MAXSHOW")
+#undef SIZE_MAXSHOW
+    inline constexpr auto SIZE_MAXSHOW
+#pragma pop_macro("SIZE_MAXSHOW")
+      = SIZE_MAXSHOW;
+#pragma push_macro("SIZE_MINIMIZED")
+#undef SIZE_MINIMIZED
+    inline constexpr auto SIZE_MINIMIZED
+#pragma pop_macro("SIZE_MINIMIZED")
+      = SIZE_MINIMIZED;
+#pragma push_macro("SIZE_RESTORED")
+#undef SIZE_RESTORED
+    inline constexpr auto SIZE_RESTORED
+#pragma pop_macro("SIZE_RESTORED")
+      = SIZE_RESTORED;
+
+#pragma push_macro("BLACKNESS")
+#undef BLACKNESS
+    inline constexpr auto BLACKNESS
+#pragma pop_macro("BLACKNESS")
+      = BLACKNESS;
+#pragma push_macro("CAPTUREBLT")
+#undef CAPTUREBLT
+    inline constexpr auto CAPTUREBLT
+#pragma pop_macro("CAPTUREBLT")
+      = CAPTUREBLT;
+#pragma push_macro("DSTINVERT")
+#undef DSTINVERT
+    inline constexpr auto DSTINVERT
+#pragma pop_macro("DSTINVERT")
+      = DSTINVERT;
+#pragma push_macro("MERGECOPY")
+#undef MERGECOPY
+    inline constexpr auto MERGECOPY
+#pragma pop_macro("MERGECOPY")
+      = MERGECOPY;
+#pragma push_macro("MERGEPAINT")
+#undef MERGEPAINT
+    inline constexpr auto MERGEPAINT
+#pragma pop_macro("MERGEPAINT")
+      = MERGEPAINT;
+#pragma push_macro("NOMIRRORBITMAP")
+#undef NOMIRRORBITMAP
+    inline constexpr auto NOMIRRORBITMAP
+#pragma pop_macro("NOMIRRORBITMAP")
+      = NOMIRRORBITMAP;
+#pragma push_macro("NOTSRCCOPY")
+#undef NOTSRCCOPY
+    inline constexpr auto NOTSRCCOPY
+#pragma pop_macro("NOTSRCCOPY")
+      = NOTSRCCOPY;
+#pragma push_macro("NOTSRCERASE")
+#undef NOTSRCERASE
+    inline constexpr auto NOTSRCERASE
+#pragma pop_macro("NOTSRCERASE")
+      = NOTSRCERASE;
+#pragma push_macro("PATCOPY")
+#undef PATCOPY
+    inline constexpr auto PATCOPY
+#pragma pop_macro("PATCOPY")
+      = PATCOPY;
+#pragma push_macro("PATPAINT")
+#undef PATPAINT
+    inline constexpr auto PATPAINT
+#pragma pop_macro("PATPAINT")
+      = PATPAINT;
+#pragma push_macro("SRCAND")
+#undef SRCAND
+    inline constexpr auto SRCAND
+#pragma pop_macro("SRCAND")
+      = SRCAND;
+#pragma push_macro("SRCERASE")
+#undef SRCERASE
+    inline constexpr auto SRCERASE
+#pragma pop_macro("SRCERASE")
+      = SRCERASE;
+#pragma push_macro("SRCINVERT")
+#undef SRCINVERT
+    inline constexpr auto SRCINVERT
+#pragma pop_macro("SRCINVERT")
+      = SRCINVERT;
+#pragma push_macro("SRCCOPY")
+#undef SRCCOPY
+    inline constexpr auto SRCCOPY
+#pragma pop_macro("SRCCOPY")
+      = SRCCOPY;
+#pragma push_macro("WHITENESS")
+#undef WHITENESS
+    inline constexpr auto WHITENESS
+#pragma pop_macro("WHITENESS")
+      = WHITENESS;
 } // namespace win32
 
 ////////////////////////////////////////////////////////////////////
