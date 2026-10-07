@@ -4,23 +4,24 @@
 
 module;
 
-#include <stormkit/core/platform/windows.hpp>
 #include <stormkit/core/platform_macro.hpp>
-
-#include <windowsx.h>
 
 export module stormkit.wsi:win32.mouse;
 
 import std;
 
 import stormkit.core;
+import stormkit.core.win32;
 import stormkit.math.linear;
 import stormkit.wsi;
 
 export namespace stormkit::wsi::win32 {
-    constexpr auto extract_mouse_button(UINT message, WPARAM w_param, LPARAM l_param) noexcept -> MouseButton;
-    constexpr auto extract_mouse_position(HWND handle, WPARAM w_param, LPARAM l_param, bool to_client = true) noexcept
-      -> math::ivec2;
+    constexpr auto extract_mouse_button(::win32::UINT message, ::win32::WPARAM w_param, ::win32::LPARAM l_param) noexcept
+      -> MouseButton;
+    constexpr auto extract_mouse_position(::win32::HWND   handle,
+                                          ::win32::WPARAM w_param,
+                                          ::win32::LPARAM l_param,
+                                          bool            to_client = true) noexcept -> math::ivec2;
 } // namespace stormkit::wsi::win32
 
 ////////////////////////////////////////////////////////////////////
@@ -31,19 +32,19 @@ namespace stormkit::wsi::win32 {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_CONST
-    constexpr auto extract_mouse_button(UINT message, WPARAM w_param, LPARAM) noexcept -> MouseButton {
+    constexpr auto extract_mouse_button(::win32::UINT message, ::win32::WPARAM w_param, ::win32::LPARAM) noexcept -> MouseButton {
         switch (message) {
-            case WM_LBUTTONDOWN: [[fallthrough]];
-            case WM_LBUTTONUP: return MouseButton::LEFT;
-            case WM_RBUTTONDOWN: [[fallthrough]];
-            case WM_RBUTTONUP: return MouseButton::RIGHT;
-            case WM_MBUTTONDOWN: [[fallthrough]];
-            case WM_MBUTTONUP: return MouseButton::MIDDLE;
-            case WM_XBUTTONDOWN: [[fallthrough]];
-            case WM_XBUTTONUP: {
-                const auto button = GET_XBUTTON_WPARAM(w_param);
-                if (button == XBUTTON1) return MouseButton::BUTTON_1;
-                else if (button == XBUTTON2)
+            case ::win32::WM_LBUTTONDOWN: [[fallthrough]];
+            case ::win32::WM_LBUTTONUP: return MouseButton::LEFT;
+            case ::win32::WM_RBUTTONDOWN: [[fallthrough]];
+            case ::win32::WM_RBUTTONUP: return MouseButton::RIGHT;
+            case ::win32::WM_MBUTTONDOWN: [[fallthrough]];
+            case ::win32::WM_MBUTTONUP: return MouseButton::MIDDLE;
+            case ::win32::WM_XBUTTONDOWN: [[fallthrough]];
+            case ::win32::WM_XBUTTONUP: {
+                const auto button = ::win32::GetXButtonWPARAM(w_param);
+                if (button == ::win32::XBUTTON1) return MouseButton::BUTTON_1;
+                else if (button == ::win32::XBUTTON2)
                     return MouseButton::BUTTON_2;
             } break;
         }
@@ -53,9 +54,10 @@ namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    constexpr auto extract_mouse_position(HWND handle, WPARAM, LPARAM l_param, bool to_client) noexcept -> math::ivec2 {
-        auto position = POINT { GET_X_LPARAM(l_param), GET_Y_LPARAM(l_param) };
-        if (to_client) ScreenToClient(handle, &position);
+    constexpr auto extract_mouse_position(::win32::HWND handle, ::win32::WPARAM, ::win32::LPARAM l_param, bool to_client) noexcept
+      -> math::ivec2 {
+        auto position = ::win32::POINT { ::win32::GetXLPARAM(l_param), ::win32::GetYLPARAM(l_param) };
+        if (to_client) ::win32::ScreenToClient(handle, &position);
 
         return { as<i32>(position.x), as<i32>(position.y) };
     }

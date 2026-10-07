@@ -44,7 +44,7 @@ namespace stormkit { inline namespace core {
 
             auto out = string {};
 
-            if (hr >= 0) {
+            if (win32::Succeeded(hr)) {
                 out = wide_to_ascii(data);
                 win32::LocalFree(data);
             }
