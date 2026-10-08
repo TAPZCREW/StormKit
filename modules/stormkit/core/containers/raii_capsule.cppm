@@ -89,7 +89,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, auto CONSTRUCTOR, auto DELETER, typename Tag, auto RELEASE_VALUE>
-    STORMKIT_FORCE_INLINE
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto raii_capsule<T, CONSTRUCTOR, DELETER, Tag, RELEASE_VALUE>::empty() noexcept -> raii_capsule {
         return raii_capsule { RELEASE_VALUE };
     }

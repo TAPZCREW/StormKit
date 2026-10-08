@@ -20,10 +20,10 @@ import stormkit.wsi;
 export namespace stormkit::wsi::linux::common {
     namespace xkb {
         using keymap  = raii_capsule<xkb_keymap*, xkb_keymap_new_from_string, xkb_keymap_unref, struct keymap_tag, nullptr>;
-        using State   = raii_capsule<xkb_state*, xkb_state_new, xkb_state_unref, struct StateTag, nullptr>;
+        using state   = raii_capsule<xkb_state*, xkb_state_new, xkb_state_unref, struct state_tag, nullptr>;
         using Context = raii_capsule<xkb_context*, xkb_context_new, xkb_context_unref, struct ContextTag, nullptr>;
 
-        struct Mods {
+        struct mods {
             xkb_mod_index_t shift;
             xkb_mod_index_t lock;
             xkb_mod_index_t control;
