@@ -39,24 +39,24 @@ namespace stdr = std::ranges;
 export namespace stormkit::wsi::linux::x11 {
     namespace xcb {
         template<auto Destructor>
-        inline constexpr auto XCB_DELETER = [](auto val) {
+        inline constexpr auto xcb_deleter = [](auto val) {
             auto& globals = get_globals();
 
             Destructor(globals.connection, val);
         };
         using window
-          = raii_capsule<xcb_window_t, xcb_generate_id, XCB_DELETER<xcb_destroy_window>, struct WindowTag, XCB_WINDOW_NONE>;
-        using ColorMap
-          = raii_capsule<xcb_colormap_t, xcb_generate_id, XCB_DELETER<xcb_free_colormap>, struct ColorMapTag, XCB_NONE>;
+          = raii_capsule<xcb_window_t, xcb_generate_id, xcb_deleter<xcb_destroy_window>, struct window_tag, XCB_WINDOW_NONE>;
+        using color_map
+          = raii_capsule<xcb_colormap_t, xcb_generate_id, xcb_deleter<xcb_free_colormap>, struct color_map_tag, XCB_NONE>;
         using graphics_context
-          = raii_capsule<xcb_gcontext_t, xcb_generate_id, XCB_DELETER<xcb_free_gc>, struct graphics_context_tag, XCB_NONE>;
-        using Image  = raii_capsule<xcb_image_t*, xcb_image_create_native, xcb_image_destroy, struct ImageTag, nullptr>;
-        using Pixmap = raii_capsule<xcb_pixmap_t, xcb_generate_id, XCB_DELETER<xcb_free_pixmap>, struct PixmapTag, XCB_NONE>;
+          = raii_capsule<xcb_gcontext_t, xcb_generate_id, xcb_deleter<xcb_free_gc>, struct graphics_context_tag, XCB_NONE>;
+        using image  = raii_capsule<xcb_image_t*, xcb_image_create_native, xcb_image_destroy, struct image_tag, nullptr>;
+        using pixmap = raii_capsule<xcb_pixmap_t, xcb_generate_id, xcb_deleter<xcb_free_pixmap>, struct pixmap_tag, XCB_NONE>;
     } // namespace xcb
 
     class window: public stormkit::wsi::common::window_base {
       public:
-        struct Handles {
+        struct handles {
             xcb_connection_t*  connection;
             xcb_window_t       window;
             xcb_key_symbols_t* key_symbols;
@@ -123,19 +123,19 @@ export namespace stormkit::wsi::linux::x11 {
 
         int m_xi_opcode = 0;
 
-        Handles handles_;
+        handles handles_;
 
-        xcb::window          m_window           = xcb::window::empty();
-        xcb::ColorMap        m_color_map        = xcb::ColorMap::empty();
-        xcb::graphics_context m_graphics_context = xcb::graphics_context::empty();
-        xcb::Image           m_image            = xcb::Image::empty();
-        array_view<u32>      m_framebuffer;
-        xcb::Pixmap          m_pixmap      = xcb::Pixmap::empty();
-        xcb::key_symbols      m_key_symbols = xcb::key_symbols::empty();
-        common::xkb::keymap  m_keymap      = common::xkb::keymap::empty();
-        common::xkb::state   m_xkb_state   = common::xkb::state::empty();
-        common::xkb::mods    m_mods;
-        f32                  m_dpi = 1.f;
+        xcb::window           window_           = xcb::window::empty();
+        xcb::color_map        color_map_        = xcb::color_map::empty();
+        xcb::graphics_context graphics_ctx_ = xcb::graphics_context::empty();
+        xcb::image            image_            = xcb::image::empty();
+        array_view<u32>       framebuffer_;
+        xcb::pixmap           pixmap_      = xcb::pixmap::empty();
+        xcb::key_symbols      key_symbols_ = xcb::key_symbols::empty();
+        common::xkb::keymap   keymap_      = common::xkb::keymap::empty();
+        common::xkb::state    xkb_state_   = common::xkb::state::empty();
+        common::xkb::mods     mods_;
+        f32                   dpi_ = 1.f;
     };
 } // namespace stormkit::wsi::linux::x11
 

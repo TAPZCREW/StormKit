@@ -21,12 +21,13 @@ import stormkit.core;
 import :linux.x11.log;
 
 export namespace stormkit::wsi::linux::x11 {
-    struct Error {
+    struct error {
         string message;
     };
 
     namespace xcb {
-        using Connection   = raii_capsule<xcb_connection_t*, xcb_connect, xcb_disconnect, struct ConnectionTag, nullptr>;
+        using connection = raii_capsule<xcb_connection_t*, xcb_connect, xcb_disconnect, struct connection_tag, nullptr>;
+
         using error_context = raii_capsule<
           xcb_errors_context_t*,
           monadic::init_by<xcb_errors_context_t*,
@@ -36,16 +37,21 @@ export namespace stormkit::wsi::linux::x11 {
           xcb_errors_context_free,
           struct error_context_tag,
           nullptr>;
-        using GenericError = raii_capsule<xcb_generic_error_t*, monadic::noop(), std::free, struct GenericErrorTag, nullptr>;
-        using InternAtomReply
-          = raii_capsule<xcb_intern_atom_reply_t*, xcb_intern_atom_reply, std::free, struct InternAtomReplyTag, nullptr>;
-        using AtomNameReply
-          = raii_capsule<xcb_get_atom_name_reply_t*, xcb_get_atom_name_reply, std::free, struct AtomNameReplyTag, nullptr>;
-        using InputXIQueryDeviceReply = raii_capsule<xcb_input_xi_query_device_reply_t*,
-                                                    xcb_input_xi_query_device_reply,
-                                                    std::free,
-                                                    struct InputXIQueryDeviceReplyTag,
-                                                    nullptr>;
+
+        using generic_error = raii_capsule<xcb_generic_error_t*, monadic::noop(), std::free, struct generic_error_tag, nullptr>;
+
+        using intern_atom_reply
+          = raii_capsule<xcb_intern_atom_reply_t*, xcb_intern_atom_reply, std::free, struct intern_atom_reply_tag, nullptr>;
+
+        using atom_name_reply
+          = raii_capsule<xcb_get_atom_name_reply_t*, xcb_get_atom_name_reply, std::free, struct atom_name_reply_tag, nullptr>;
+
+        using input_xi_query_device_reply = raii_capsule<xcb_input_xi_query_device_reply_t*,
+                                                     xcb_input_xi_query_device_reply,
+                                                     std::free,
+                                                     struct input_xi_query_device_reply_tag,
+                                                     nullptr>;
+
         using key_symbols
           = raii_capsule<xcb_key_symbols_t*, xcb_key_symbols_alloc, xcb_key_symbols_free, struct key_symbols_tag, nullptr>;
 
@@ -56,7 +62,7 @@ export namespace stormkit::wsi::linux::x11 {
 export namespace stormkit::wsi::linux::x11::xcb {
     STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto atom_error(string_view atom_name) -> decltype(auto) {
-        return [atom_name]<typename Error>(Error&& error) noexcept -> Error {
+        return [atom_name]<typename Error>(Error&& error) noexcept -> error {
             elog("Failed to get atom "
                  "{}\n        > reason: {}",
                  atom_name,

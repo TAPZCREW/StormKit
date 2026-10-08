@@ -42,16 +42,16 @@ export namespace stormkit::wsi::macos {
         window(const window&) noexcept                    = delete;
         auto operator=(const window&) noexcept -> window& = delete;
 
-        window(window&& other) noexcept : m_window { std::move(other.m_window) } {
-            m_window->updateID(std::bit_cast<u64>(std::bit_cast<uptr>(this)));
+        window(window&& other) noexcept : window_ { std::move(other.window_) } {
+            window_->updateID(std::bit_cast<u64>(std::bit_cast<uptr>(this)));
         }
 
         auto operator=(window&& other) noexcept -> window& {
             if (&other == this) [[unlikely]]
                 return *this;
 
-            m_window = std::move(other.m_window);
-            m_window->updateID(std::bit_cast<u64>(std::bit_cast<uptr>(this)));
+            window_ = std::move(other.window_);
+            window_->updateID(std::bit_cast<u64>(std::bit_cast<uptr>(this)));
 
             return *this;
         }
@@ -60,7 +60,7 @@ export namespace stormkit::wsi::macos {
             const auto resizeable  = has_flag_bit(flags, window_flag::resizeable);
             const auto borderless  = has_flag_bit(flags, window_flag::borderless);
             const auto metal_layer = has_flag_bit(flags, window_flag::external_context);
-            m_window               = macOS::window::init(swift::String { title },
+            window_               = macOS::window::init(swift::String { title },
                                                          as<f64>(size.width),
                                                          as<f64>(size.height),
                                                          resizeable,
@@ -75,7 +75,7 @@ export namespace stormkit::wsi::macos {
         }
 
         auto close() noexcept -> void {
-            m_window = {};
+            window_ = {};
             state_   = {};
         }
 
@@ -84,7 +84,7 @@ export namespace stormkit::wsi::macos {
         auto clear([[maybe_unused]] const ucolor_rgb& color) noexcept -> void {
             const auto value = as<u32>(color.r) << 16 | as<u32>(color.g) << 8 | color.b;
             stdr::fill(m_pixels, value);
-            m_window->drawBitmap(reinterpret_cast<uchar*>(stdr::data(m_pixels)));
+            window_->drawBitmap(reinterpret_cast<uchar*>(stdr::data(m_pixels)));
         }
 
         auto fill_framebuffer(array_view<const ucolor_rgb> pixels) noexcept -> void {
@@ -95,11 +95,11 @@ export namespace stormkit::wsi::macos {
                            return as<u32>(col.r) << 16 | as<u32>(col.g) << 8 | col.b;
                        }),
                        stdr::begin(m_pixels));
-            m_window->drawBitmap(reinterpret_cast<uchar*>(stdr::data(m_pixels)));
+            window_->drawBitmap(reinterpret_cast<uchar*>(stdr::data(m_pixels)));
         }
 
         auto set_title(string title) noexcept -> void {
-            if (window_base::set_title(std::move(title))) { m_window->setTitle(swift::String { state_.title }); }
+            if (window_base::set_title(std::move(title))) { window_->setTitle(swift::String { state_.title }); }
         }
 
         auto set_extent([[maybe_unused]] const math::uextent2& extent) noexcept -> void {}
@@ -180,15 +180,15 @@ export namespace stormkit::wsi::macos {
         [[nodiscard]]
         STORMKIT_FORCE_INLINE
         inline auto native_handle() const noexcept -> native_handle_type {
-            auto f  = m_window->nativeHandle();
-            auto f2 = m_window->nativeHandle2();
+            auto f  = window_->nativeHandle();
+            auto f2 = window_->nativeHandle2();
 
             std::println("{} {}", f, f2);
             return f;
         }
 
       private:
-        defer_init<macOS::window> m_window;
+        defer_init<macOS::window> window_;
 
         dynarray<u32> m_pixels;
     };
