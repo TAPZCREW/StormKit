@@ -16,28 +16,28 @@ import stormkit.core;
 import stormkit.wsi;
 
 namespace stormkit::lua::wsi {
-    using stormkit::wsi::Monitor;
+    using stormkit::wsi::monitor;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     auto bind_monitor(sol::state& global_state, sol::table& metatable) noexcept -> void {
         metatable["monitor_flag"] = global_state.create_table_with(
           sol::meta_function::as<string>,
-          +[](Monitor::Flags flags) { return as<string>(flags); },
+          +[](monitor::Flags flags) { return as<string>(flags); },
           "none",
-          Monitor::Flags::none,
+          monitor::Flags::none,
           "PRIMARY",
-          Monitor::Flags::PRIMARY);
+          monitor::Flags::PRIMARY);
 
-        auto monitor                           = metatable.new_usertype<Monitor>("monitor");
-        monitor[sol::meta_function::as<string>] = +[](Monitor::Flags flags) { return as<string>(flags); },
-        monitor[sol::meta_function::is]  = &Monitor::operator==;
-        monitor[sol::meta_function::less_than] = +[](const Monitor& first, const Monitor& second) static noexcept {
+        auto monitor                           = metatable.new_usertype<monitor>("monitor");
+        monitor[sol::meta_function::as<string>] = +[](monitor::Flags flags) { return as<string>(flags); },
+        monitor[sol::meta_function::is]  = &monitor::operator==;
+        monitor[sol::meta_function::less_than] = +[](const monitor& first, const monitor& second) static noexcept {
             return first < second;
         };
-        monitor["flags"]        = &Monitor::flags;
-        monitor["name"]         = &Monitor::name;
-        monitor["extents"]      = &Monitor::extents;
-        monitor["scale_factor"] = &Monitor::scale_factor;
+        monitor["flags"]        = &monitor::flags;
+        monitor["name"]         = &monitor::name;
+        monitor["extents"]      = &monitor::extents;
+        monitor["scale_factor"] = &monitor::scale_factor;
     }
 } // namespace stormkit::lua::wsi

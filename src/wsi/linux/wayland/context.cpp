@@ -46,7 +46,7 @@ namespace stormkit::wsi::linux::wayland::wl {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_monitor(wl::globals& globals, void* output) noexcept -> Monitor& {
+    auto get_monitor(wl::globals& globals, void* output) noexcept -> monitor& {
         const auto output_id = std::bit_cast<uptr>(output);
         const auto is_output = [&output_id](const auto& pair) noexcept { return pair.id == output_id; };
 
@@ -270,7 +270,7 @@ namespace stormkit::wsi::linux::wayland::wl {
         auto& globals = *reinterpret_cast<wl::globals*>(data);
         auto& monitor = get_monitor(globals, output);
 
-        if (&monitor == &globals.monitors.front().monitor) monitor.flags = Monitor::Flags::PRIMARY;
+        if (&monitor == &globals.monitors.front().monitor) monitor.flags = monitor::Flags::PRIMARY;
     }
 
     /////////////////////////////////////

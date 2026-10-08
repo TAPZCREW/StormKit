@@ -22,7 +22,7 @@ namespace stormkit::wsi::macos {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_primary_monitor(window_manager wm) noexcept -> const Monitor& {
+    auto get_primary_monitor(window_manager wm) noexcept -> const monitor& {
         const auto monitors = get_monitors(wm);
         auto       it       = stdr::find_if(monitors, [](const auto& monitor) static noexcept {
             return has_flag_bit(monitor.flags, monitor::flags::primary);

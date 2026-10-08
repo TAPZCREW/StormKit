@@ -68,7 +68,7 @@ export namespace stormkit::wsi::linux::wayland {
 
         auto init() noexcept -> bool;
         auto get_globals() noexcept -> globals&;
-        auto get_monitor(globals& _globals, void* output) noexcept -> Monitor&;
+        auto get_monitor(wl::globals& globals, void* output) noexcept -> monitor&;
     } // namespace wl
 } // namespace stormkit::wsi::linux::wayland
 
