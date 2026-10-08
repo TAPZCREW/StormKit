@@ -316,9 +316,9 @@ namespace stormkit::wsi::linux::x11 {
                    })
                    .transform_error(xcb::atom_error(WM_HINTS_STR));
 
-        m_handles.connection  = connection;
-        m_handles.window      = m_window;
-        m_handles.key_symbols = m_key_symbols;
+        handles_.connection  = connection;
+        handles_.window      = m_window;
+        handles_.key_symbols = m_key_symbols;
 
         auto close_atom    = xcb::get_atom(WM_DELETE_WINDOW, false);
         auto protocol_atom = xcb::get_atom(WM_PROTOCOLS, true);
@@ -378,7 +378,7 @@ namespace stormkit::wsi::linux::x11 {
 
         m_window.reset();
         m_color_map.reset();
-        m_handles = {};
+        handles_ = {};
 
         m_key_symbols.reset();
         m_keymap.reset();
@@ -795,22 +795,22 @@ namespace stormkit::wsi::linux::x11 {
 
         const auto device_id = xkb_x11_get_core_keyboard_device_id(globals.connection);
 
-        m_keymap = common::xkb::Keymap::
+        m_keymap = common::xkb::keymap::
           take(xkb_x11_keymap_new_from_device(globals.xkb_context, globals.connection, device_id, XKB_KEYMAP_COMPILE_NO_FLAGS));
         if (not m_keymap) {
             elog("Failed to compile a keymap");
             return;
         }
 
-        m_xkb_state = common::xkb::State::take(xkb_x11_state_new_from_device(m_keymap, globals.connection, device_id));
+        m_xkb_state = common::xkb::state::take(xkb_x11_state_new_from_device(m_keymap, globals.connection, device_id));
         if (not m_xkb_state) {
             elog("Failed to create XKB state");
             return;
         }
 
-        m_handles.state = m_xkb_state;
+        handles_.state = m_xkb_state;
 
-        m_mods = common::xkb::Mods {
+        m_mods = common::xkb::mods {
             .shift   = xkb_keymap_mod_get_index(m_keymap, XKB_MOD_NAME_SHIFT),
             .lock    = xkb_keymap_mod_get_index(m_keymap, XKB_MOD_NAME_CAPS),
             .control = xkb_keymap_mod_get_index(m_keymap, XKB_MOD_NAME_CTRL),

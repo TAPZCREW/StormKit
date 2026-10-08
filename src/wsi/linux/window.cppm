@@ -45,7 +45,7 @@ export namespace stormkit::wsi::linux {
         auto visible() const noexcept -> bool;
 
         [[nodiscard]]
-        auto current_monitor() const noexcept -> const Monitor&;
+        auto current_monitor() const noexcept -> const monitor&;
 
         auto handle_events() noexcept -> void;
 
@@ -193,7 +193,7 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    inline auto window::current_monitor() const noexcept -> const Monitor& {
+    inline auto window::current_monitor() const noexcept -> const monitor& {
         switch (m_wm) {
             case window_manager::x11: return as<x11::window>(m_impl).current_monitor();
             case window_manager::wayland: return as<wayland::window>(m_impl).current_monitor();

@@ -9,7 +9,6 @@ module;
 
 #include <xdg-decoration-unstable-v1.h>
 
-#include <stormkit/core/memory_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
 export module stormkit.wsi:linux.wayland.window;
@@ -28,7 +27,7 @@ export {
     namespace stormkit::wsi::linux::wayland {
         class window: public stormkit::wsi::common::window_base {
           public:
-            struct Handles {
+            struct handles {
                 wl_display* display;
                 wl_surface* surface;
             };
@@ -91,7 +90,7 @@ export {
 
             auto handle_keyboard_key(Key, char, bool) noexcept -> void;
 
-            auto handle_pointer_enter(wl_pointer*, wl::PointerState&) noexcept -> void;
+            auto handle_pointer_enter(wl_pointer*, wl::pointer_state&) noexcept -> void;
             auto handle_pointer_leave() noexcept -> void;
             auto handle_pointer_motion(wl_fixed_t, wl_fixed_t) noexcept -> void;
             auto handle_pointer_button(u32, u32, wl_fixed_t, wl_fixed_t) noexcept -> void;
@@ -99,32 +98,32 @@ export {
           private:
             auto reallocate_pixel_buffer() noexcept -> void;
 
-            auto hide_mouse(bool hidden, wl_pointer*, wl::PointerState&) noexcept -> void;
-            auto set_cursor(string_view, wl_pointer*, wl::PointerState&) noexcept -> void;
+            auto hide_mouse(bool hidden, wl_pointer*, wl::pointer_state&) noexcept -> void;
+            auto set_cursor(string_view, wl_pointer*, wl::pointer_state&) noexcept -> void;
 
             auto handle_key_repeat() noexcept -> void;
 
             u8 m_scale = 2u;
 
-            bool       m_configured    = false;
-            bool       m_scale_content = false;
-            window_flag m_flags;
-            wl_output* m_current_output = nullptr;
+            bool        configured_    = false;
+            bool        scale_content_ = false;
+            window_flag flags_;
+            wl_output*  current_output_ = nullptr;
 
-            string m_title;
+            string title_;
 
-            Handles m_handles;
+            handles handles_;
 
-            wl::Surface               m_surface                  = wl::Surface::empty();
-            wl::XDGSurface            m_xdg_surface              = wl::XDGSurface::empty();
-            wl::XDGTopLevel           m_xdg_top_level            = wl::XDGTopLevel::empty();
-            wl::XDGTopLevelDecoration m_xdg_top_level_decoration = wl::XDGTopLevelDecoration::empty();
-            wl::ContentType           m_content_type             = wl::ContentType::empty();
-            wl::Viewport              m_viewport                 = wl::Viewport::empty();
+            wl::surface                  surface_                  = wl::surface::empty();
+            wl::xdg_surface              xdg_surface_              = wl::xdg_surface::empty();
+            wl::xdg_top_level            xdg_top_level_            = wl::xdg_top_level::empty();
+            wl::xdg_top_level_decoration xdg_top_level_decoration_ = wl::xdg_top_level_decoration::empty();
+            wl::content_type             content_type_             = wl::content_type::empty();
+            wl::viewport                 viewport_                 = wl::viewport::empty();
 
-            defer_init<shm_buffer> m_shm_buffer;
-            wl::ShmPool            m_shm_pool     = wl::ShmPool::empty();
-            wl::Buffer             m_pixel_buffer = wl::Buffer::empty();
+            defer_init<shm_buffer> shm_buffer_;
+            wl::shm_pool           shm_pool_     = wl::shm_pool::empty();
+            wl::Buffer             pixel_buffer_ = wl::Buffer::empty();
 
             struct {
                 bool restored   = false;
@@ -133,7 +132,7 @@ export {
                 bool fullscreen = false;
 
                 std::optional<math::uextent2> resizing;
-            } m_pending_state;
+            } pending_state_;
         };
     } // namespace stormkit::wsi::linux::wayland
 }

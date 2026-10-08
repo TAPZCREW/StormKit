@@ -27,11 +27,11 @@ Renderer::Renderer(Renderer&&) noexcept = default;
 auto Renderer::operator=(Renderer&&) noexcept -> Renderer& = default;
 
 auto Renderer::renderFrame() -> void {
-    const auto& surface_extent  = m_surface->extent();
+    const auto& surface_extent  = surface_->extent();
     const auto  surface_extentf = math::fextent2 { surface_extent };
 
-    if (m_surface->needRecreate()) {
-        m_surface->recreate();
+    if (surface_->needRecreate()) {
+        surface_->recreate();
         do_initPerFrameObjects();
     }
 
@@ -54,7 +54,7 @@ auto Renderer::renderFrame() -> void {
 
     auto sets = makeConstObserverStaticArray(m_board.descriptor_set);
 
-    auto  frame         = std::move(m_surface->acquireNextFrame().value());
+    auto  frame         = std::move(surface_->acquireNextFrame().value());
     auto& framebuffer   = m_framebuffers[frame.image_index];
     auto& commandbuffer = m_command_buffers[frame.image_index];
 
@@ -77,7 +77,7 @@ auto Renderer::renderFrame() -> void {
     commandbuffer.end();
     commandbuffer.submit(wait, signal, frame.in_flight);
 
-    m_surface->present(frame);
+    surface_->present(frame);
 }
 
 auto Renderer::updateBoard(const stormkit::image::image& board) -> void {
@@ -116,7 +116,7 @@ auto Renderer::do_initBaseRenderObjects() -> void {
 
     const auto& physical_device = m_instance->pickPhysicalDevice(*surface);
 
-    m_surface = std::move(surface);
+    surface_ = std::move(surface);
 
     const auto& physical_device_info = physical_device.info();
 
@@ -124,21 +124,21 @@ auto Renderer::do_initBaseRenderObjects() -> void {
 
     m_device = physical_device.allocateLogicalDevice();
 
-    m_surface->initialize(*m_device);
+    surface_->initialize(*m_device);
 
     m_queue           = makeConstObserver(m_device->graphicsQueue());
-    m_command_buffers = m_queue->create_command_buffers(m_surface->bufferingCount());
+    m_command_buffers = m_queue->create_command_buffers(surface_->bufferingCount());
 }
 
 auto Renderer::do_initMeshRenderObjects() -> void {
-    const auto& surface_extent  = m_surface->extent();
+    const auto& surface_extent  = surface_->extent();
     const auto  surface_extentf = math::fextent2 { surface_extent };
 
     m_board.vertex_shader   = m_device->allocateShader(SHADER_DATA, gpu::ShaderStageFlag::Vertex);
     m_board.fragment_shader = m_device->allocateShader(SHADER_DATA, gpu::ShaderStageFlag::Fragment);
 
     const auto description = gpu::RenderPassDescription {
-        .attachments = { { .format = m_surface->pixelFormat() } },
+        .attachments = { { .format = surface_->pixelFormat() } },
         .subpasses   = { { .bind_point = gpu::PipelineBindPoint::Graphics, .attachment_refs = { { .attachment_id = 0u } } } }
     };
 
@@ -204,19 +204,19 @@ auto Renderer::do_initMeshRenderObjects() -> void {
 }
 
 auto Renderer::do_initPerFrameObjects() -> void {
-    const auto& surface_extent  = m_surface->extent();
+    const auto& surface_extent  = surface_->extent();
     const auto  surface_extentf = math::fextent2 { surface_extent };
-    const auto  buffering_count = m_surface->bufferingCount();
+    const auto  buffering_count = surface_->bufferingCount();
 
-    m_surface_views.clear();
-    m_surface_views.reserve(std::size(m_surface->images()));
-    for (const auto& image : m_surface->images()) m_surface_views.emplace_back(image.createView());
+    surface__views.clear();
+    surface__views.reserve(std::size(surface_->images()));
+    for (const auto& image : surface_->images()) surface__views.emplace_back(image.createView());
 
     m_framebuffers.clear();
     m_framebuffers.reserve(buffering_count);
 
     for (auto i : range(buffering_count)) {
-        const auto& image_view  = m_surface_views[i];
+        const auto& image_view  = surface__views[i];
         auto        attachments = makeConstRefArray(image_view);
 
         m_framebuffers.emplace_back(*m_render_pass, surface_extent, std::move(attachments));

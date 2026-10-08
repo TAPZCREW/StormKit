@@ -123,7 +123,7 @@ export namespace stormkit::wsi::linux::x11 {
 
         int m_xi_opcode = 0;
 
-        Handles m_handles;
+        Handles handles_;
 
         xcb::window          m_window           = xcb::window::empty();
         xcb::ColorMap        m_color_map        = xcb::ColorMap::empty();
@@ -132,9 +132,9 @@ export namespace stormkit::wsi::linux::x11 {
         array_view<u32>      m_framebuffer;
         xcb::Pixmap          m_pixmap      = xcb::Pixmap::empty();
         xcb::KeySymbols      m_key_symbols = xcb::KeySymbols::empty();
-        common::xkb::Keymap  m_keymap      = common::xkb::Keymap::empty();
-        common::xkb::State   m_xkb_state   = common::xkb::State::empty();
-        common::xkb::Mods    m_mods;
+        common::xkb::keymap  m_keymap      = common::xkb::keymap::empty();
+        common::xkb::state   m_xkb_state   = common::xkb::state::empty();
+        common::xkb::mods    m_mods;
         f32                  m_dpi = 1.f;
     };
 } // namespace stormkit::wsi::linux::x11
@@ -207,6 +207,6 @@ namespace stormkit::wsi::linux::x11 {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_PURE
     inline auto window::native_handle() const noexcept -> native_handle_type {
-        return std::bit_cast<native_handle_type>(&m_handles);
+        return std::bit_cast<native_handle_type>(&handles_);
     }
 } // namespace stormkit::wsi::linux::x11

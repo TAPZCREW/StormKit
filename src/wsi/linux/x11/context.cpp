@@ -29,7 +29,7 @@ namespace stdr = std::ranges;
 namespace stormkit::wsi::linux::x11::xcb {
     namespace {
         thread_local constinit auto initialized = false;
-        thread_local constinit auto globals     = Globals {};
+        thread_local constinit auto globals     = globals {};
         thread_local auto           atoms       = stormkit::string_hash_map<xcb_atom_t> {};
     } // namespace
 
@@ -47,7 +47,7 @@ namespace stormkit::wsi::linux::x11::xcb {
         globals.error_context = xcb::ErrorContext::create(globals.connection);
         if (not globals.error_context) elog("Failed to setup X11 error context");
 
-        globals.xkb_context = common::xkb::Context::create(XKB_CONTEXT_NO_FLAGS);
+        globals.xkb_context = common::xkb::context::create(XKB_CONTEXT_NO_FLAGS);
 
         initialized = true;
         dlog("Successfully connected to X11");
@@ -56,7 +56,7 @@ namespace stormkit::wsi::linux::x11::xcb {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_globals() noexcept -> Globals& {
+    auto get_globals() noexcept -> globals& {
         if (not initialized) initialized = init();
 
         EXPECTS(initialized);

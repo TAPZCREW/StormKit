@@ -25,33 +25,33 @@ export namespace stormkit::wsi::linux::wayland {
     class window;
 
     namespace wl {
-        struct PointerState {
+        struct pointer_state {
             struct pointer_button_state {
                 u32  button;
                 bool down;
             };
 
-            enum class Flag : u8 {
+            enum class flag : u8 {
                 none     = 0,
-                HIDDEN   = 1,
-                LOCKED   = 2,
-                CONFINED = 4,
-                RELATIVE = 4,
+                hidden   = 1,
+                locked   = 2,
+                confined = 4,
+                relative = 4,
             } flags;
 
             std::optional<u32> serial = std::nullopt;
 
             array<pointer_button_state, 5> button_state;
 
-            wl::ConfinedPointer confined_pointer = wl::ConfinedPointer::empty();
-            wl::LockedPointer   locked_pointer   = wl::LockedPointer::empty();
-            wl::RelativePointer relative_pointer = wl::RelativePointer::empty();
+            wl::confined_pointer confined_pointer = wl::confined_pointer::empty();
+            wl::locked_pointer   locked_pointer   = wl::locked_pointer::empty();
+            wl::relative_pointer relative_pointer = wl::relative_pointer::empty();
 
-            struct Cursor {
+            struct {
                 string name;
 
-                wl::Surface           surface      = wl::Surface::empty();
-                wl::CursorShapeDevice shape_device = wl::CursorShapeDevice::empty();
+                wl::surface             surface      = wl::surface::empty();
+                wl::cursor_shape_device shape_device = wl::cursor_shape_device::empty();
             } cursor;
 
             window* focused_window = nullptr;
@@ -68,10 +68,10 @@ export namespace stormkit::wsi::linux::wayland {
 
             std::optional<u32> serial = std::nullopt;
 
-            struct repeat {
+            struct {
                 i32        rate;
                 i32        delay;
-                common::FD timer_fd = common::FD::empty();
+                common::fd timer_fd = common::fd::empty();
 
                 char c;
                 Key  key;
@@ -79,9 +79,9 @@ export namespace stormkit::wsi::linux::wayland {
                 bool enabled = false;
             } repeat;
 
-            common::xkb::Keymap xkb_keymap = common::xkb::Keymap::empty();
-            common::xkb::State  xkb_state  = common::xkb::State::empty();
-            common::xkb::Mods   xkb_mods;
+            common::xkb::keymap xkb_keymap = common::xkb::keymap::empty();
+            common::xkb::state  xkb_state  = common::xkb::state::empty();
+            common::xkb::mods   xkb_mods;
 
             window* focused_window = nullptr;
 
@@ -191,7 +191,7 @@ export namespace stormkit::wsi::linux::wayland {
             };
         };
 
-        struct TouchState {};
+        struct touch_state {};
 
         auto seat_capabilities_handler(void*, wl_seat*, u32) noexcept -> void;
         auto seat_name_handler(void*, wl_seat*, const char*) noexcept -> void;

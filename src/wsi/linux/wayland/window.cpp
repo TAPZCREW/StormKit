@@ -117,51 +117,51 @@ namespace stormkit::wsi::linux::wayland {
     auto window::open(string title, const math::uextent2& extent, window_flag flags) noexcept -> void {
         auto& globals = wl::get_globals();
 
-        m_surface = wl::Surface::create(globals.compositor);
-        wl_surface_add_listener(m_surface, &wl::g_surface_listener, this);
+        surface_ = wl::surface::create(globals.compositor);
+        wl_surface_add_listener(surface_, &wl::g_surface_listener, this);
 
-        m_xdg_surface = wl::XDGSurface::create(globals.xdg_wm_base, m_surface);
-        xdg_surface_add_listener(m_xdg_surface, &wl::g_xdg_surface_listener, this);
+        xdg_surface_ = wl::xdg_surface::create(globals.xdg_wm_base, surface_);
+        xdg_surface_add_listener(xdg_surface_, &wl::g_xdg_surface_listener, this);
 
-        m_xdg_top_level = wl::XDGTopLevel::create(m_xdg_surface);
-        xdg_toplevel_add_listener(m_xdg_top_level, &wl::g_xdg_top_level_listener, this);
+        xdg_top_level_ = wl::xdg_top_level::create(xdg_surface_);
+        xdg_toplevel_add_listener(xdg_top_level_, &wl::g_xdg_top_level_listener, this);
 
         const auto app_id = std::format("StormKit/{}", title);
-        xdg_toplevel_set_app_id(m_xdg_top_level, stdr::data(app_id));
+        xdg_toplevel_set_app_id(xdg_top_level_, stdr::data(app_id));
 
         if (globals.decoration_manager) {
-            m_xdg_top_level_decoration = wl::XDGTopLevelDecoration::create(globals.decoration_manager, m_xdg_top_level);
-            zxdg_toplevel_decoration_v1_set_mode(m_xdg_top_level_decoration, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
-            zxdg_toplevel_decoration_v1_add_listener(m_xdg_top_level_decoration,
+            xdg_top_level_decoration_ = wl::xdg_top_level_decoration::create(globals.decoration_manager, xdg_top_level_);
+            zxdg_toplevel_decoration_v1_set_mode(xdg_top_level_decoration_, ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
+            zxdg_toplevel_decoration_v1_add_listener(xdg_top_level_decoration_,
                                                      &wl::g_xdg_top_level_decoration_listener,
                                                      nullptr);
         }
 
         if (globals.content_type_manager) {
-            m_content_type = wl::ContentType::create(globals.content_type_manager, m_surface);
+            content_type_ = wl::content_type::create(globals.content_type_manager, surface_);
             // game
-            wp_content_type_v1_set_content_type(m_content_type, 3);
+            wp_content_type_v1_set_content_type(content_type_, 3);
         }
 
-        globals.windows.emplace_back(m_surface, this);
+        globals.windows.emplace_back(surface_, this);
 
-        m_title           = std::move(title);
+        title_           = std::move(title);
         state_.extent    = extent;
         state_.visible   = true;
-        m_flags           = flags;
+        flags_           = flags;
         state_.open      = true;
-        m_handles.display = globals.display;
-        m_handles.surface = m_surface;
+        handles_.display = globals.display;
+        handles_.surface = surface_;
 
         if (globals.viewporter) {
-            m_viewport         = wl::Viewport::create(globals.viewporter, m_surface);
+            viewport_          = wl::viewport::create(globals.viewporter, surface_);
             const auto _extent = state_.extent.to<i32>();
-            wp_viewport_set_destination(m_viewport, _extent.width, _extent.height);
+            wp_viewport_set_destination(viewport_, _extent.width, _extent.height);
         }
 
-        if (not has_flag_bit(m_flags, window_flag::external_context)) reallocate_pixel_buffer();
+        if (not has_flag_bit(flags_, window_flag::external_context)) reallocate_pixel_buffer();
 
-        wl_surface_commit(m_surface);
+        wl_surface_commit(surface_);
         wl_display_roundtrip(globals.display);
     }
 
@@ -172,10 +172,10 @@ namespace stormkit::wsi::linux::wayland {
         wl_display_flush(globals.display);
 
         state_ = {};
-        m_title.clear();
-        m_flags      = {};
+        title_.clear();
+        flags_      = {};
         state_.open = false;
-        m_configured = false;
+        configured_ = false;
     }
 
     /////////////////////////////////////
@@ -197,18 +197,18 @@ namespace stormkit::wsi::linux::wayland {
     auto window::clear(const ucolor_rgb& color) noexcept -> void {
         const auto value = (255 << 24) + (color.r << 16) + (color.g << 8) + (color.b);
 
-        auto view = array_view<i32> { std::bit_cast<i32*>(m_shm_buffer.value().begin()), m_shm_buffer->size() / sizeof(i32) };
+        auto view = array_view<i32> { std::bit_cast<i32*>(shm_buffer_.value().begin()), shm_buffer_->size() / sizeof(i32) };
         stdr::fill(view, value);
 
         const auto [width, height] = extent().to<i32>();
 
-        wl_surface_damage(m_surface, 0, 0, width, height);
+        wl_surface_damage(surface_, 0, 0, width, height);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto window::fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void {
-        auto view = array_view<i32> { std::bit_cast<i32*>(m_shm_buffer.value().begin()), m_shm_buffer->size() / sizeof(i32) };
+        auto view = array_view<i32> { std::bit_cast<i32*>(shm_buffer_.value().begin()), shm_buffer_->size() / sizeof(i32) };
         stdr::copy(colors | stdv::transform([](const auto& color) static noexcept {
                        return (255 << 24) + (color.r << 16) + (color.g << 8) + (color.b);
                    }),
@@ -216,7 +216,7 @@ namespace stormkit::wsi::linux::wayland {
 
         const auto [width, height] = extent().to<i32>();
 
-        wl_surface_damage(m_surface, 0, 0, width, height);
+        wl_surface_damage(surface_, 0, 0, width, height);
     }
 
     /////////////////////////////////////
@@ -224,7 +224,7 @@ namespace stormkit::wsi::linux::wayland {
     auto window::set_title(string&& title) noexcept -> void {
         window_base::set_title(std::move(title));
 
-        xdg_toplevel_set_title(m_xdg_top_level, stdr::data(m_title));
+        xdg_toplevel_set_title(xdg_top_level_, stdr::data(title_));
     }
 
     /////////////////////////////////////
@@ -235,11 +235,11 @@ namespace stormkit::wsi::linux::wayland {
     /////////////////////////////////////
     /////////////////////////////////////
     auto window::set_fullscreen(bool enabled) noexcept -> void {
-        if (not state_.open or not m_current_output) return;
+        if (not state_.open or not current_output_) return;
 
-        if (enabled) xdg_toplevel_set_fullscreen(m_xdg_top_level, m_current_output);
+        if (enabled) xdg_toplevel_set_fullscreen(xdg_top_level_, current_output_);
         else
-            xdg_toplevel_unset_fullscreen(m_xdg_top_level);
+            xdg_toplevel_unset_fullscreen(xdg_top_level_);
     }
 
     /////////////////////////////////////
@@ -256,20 +256,20 @@ namespace stormkit::wsi::linux::wayland {
         EXPECTS(mouse_id < globals.pointers.size());
         auto& [pointer, state] = globals.pointers[mouse_id];
 
-        if (not state.serial or has_flag_bit(state.flags, wl::PointerState::Flag::LOCKED)) return;
+        if (not state.serial or has_flag_bit(state.flags, wl::pointer_state::flag::locked)) return;
 
         if (confined) {
-            if (not has_flag_bit(state.flags, wl::PointerState::Flag::CONFINED)) {
-                state.confined_pointer = wl::ConfinedPointer::
-                  create(globals.pointer_constraints, m_surface, pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT);
+            if (not has_flag_bit(state.flags, wl::pointer_state::flag::confined)) {
+                state.confined_pointer = wl::confined_pointer::
+                  create(globals.pointer_constraints, surface_, pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_ONESHOT);
 
                 zwp_confined_pointer_v1_add_listener(state.confined_pointer, &wl::g_confined_pointer_listener, &state);
-                state.flags |= wl::PointerState::Flag::CONFINED;
+                state.flags |= wl::pointer_state::flag::confined;
             }
         } else {
             state.confined_pointer.reset();
 
-            state.flags &= ~wl::PointerState::Flag::CONFINED;
+            state.flags &= ~wl::pointer_state::flag::confined;
         }
     }
 
@@ -282,7 +282,7 @@ namespace stormkit::wsi::linux::wayland {
         EXPECTS(mouse_id < globals.pointers.size());
         const auto& [_, state] = globals.pointers[mouse_id];
 
-        return has_flag_bit(state.flags, wl::PointerState::Flag::CONFINED);
+        return has_flag_bit(state.flags, wl::pointer_state::flag::confined);
     }
 
     /////////////////////////////////////
@@ -299,24 +299,21 @@ namespace stormkit::wsi::linux::wayland {
         EXPECTS(mouse_id < globals.pointers.size());
         auto& [pointer, state] = globals.pointers[mouse_id];
 
-        if (not state.serial or has_flag_bit(state.flags, wl::PointerState::Flag::CONFINED)) return;
+        if (not state.serial or has_flag_bit(state.flags, wl::pointer_state::flag::confined)) return;
 
         if (locked) {
-            if (not has_flag_bit(state.flags, wl::PointerState::Flag::LOCKED)) {
-                state.locked_pointer = wl::LockedPointer::create(globals.pointer_constraints,
-                                                                 m_surface,
-                                                                 pointer,
-                                                                 nullptr,
-                                                                 ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+            if (not has_flag_bit(state.flags, wl::pointer_state::flag::locked)) {
+                state.locked_pointer = wl::locked_pointer::
+                  create(globals.pointer_constraints, surface_, pointer, nullptr, ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
 
                 zwp_locked_pointer_v1_add_listener(state.locked_pointer, &wl::g_locked_pointer_listener, &state);
 
-                state.flags |= wl::PointerState::Flag::LOCKED;
+                state.flags |= wl::pointer_state::flag::locked;
             }
         } else {
             state.locked_pointer.reset();
 
-            state.flags &= ~wl::PointerState::Flag::LOCKED;
+            state.flags &= ~wl::pointer_state::flag::locked;
         }
     }
 
@@ -329,7 +326,7 @@ namespace stormkit::wsi::linux::wayland {
         EXPECTS(mouse_id < globals.pointers.size());
         const auto& [_, state] = globals.pointers[mouse_id];
 
-        return has_flag_bit(state.flags, wl::PointerState::Flag::LOCKED);
+        return has_flag_bit(state.flags, wl::pointer_state::flag::locked);
     }
 
     /////////////////////////////////////
@@ -352,7 +349,7 @@ namespace stormkit::wsi::linux::wayland {
         EXPECTS(mouse_id < globals.pointers.size());
         auto& [_, state] = globals.pointers[mouse_id];
 
-        return has_flag_bit(state.flags, wl::PointerState::Flag::HIDDEN);
+        return has_flag_bit(state.flags, wl::pointer_state::flag::hidden);
     }
 
     /////////////////////////////////////
@@ -371,15 +368,15 @@ namespace stormkit::wsi::linux::wayland {
         auto& [pointer, state] = globals.pointers[mouse_id];
 
         if (enabled) {
-            if (not has_flag_bit(state.flags, wl::PointerState::Flag::RELATIVE)) {
-                state.relative_pointer = wl::RelativePointer::create(globals.relative_pointer_manager, pointer);
+            if (not has_flag_bit(state.flags, wl::pointer_state::flag::relative)) {
+                state.relative_pointer = wl::relative_pointer::create(globals.relative_pointer_manager, pointer);
                 zwp_relative_pointer_v1_add_listener(state.relative_pointer, &wl::g_relative_pointer_listener, &state);
 
-                state.flags |= wl::PointerState::Flag::RELATIVE;
+                state.flags |= wl::pointer_state::flag::relative;
             }
         } else {
             state.relative_pointer.reset();
-            state.flags &= ~wl::PointerState::Flag::RELATIVE;
+            state.flags &= ~wl::pointer_state::flag::relative;
         }
     }
 
@@ -392,7 +389,7 @@ namespace stormkit::wsi::linux::wayland {
         EXPECTS(mouse_id < globals.pointers.size());
         auto& [_, state] = globals.pointers[mouse_id];
 
-        return has_flag_bit(state.flags, wl::PointerState::Flag::RELATIVE);
+        return has_flag_bit(state.flags, wl::pointer_state::flag::relative);
     }
 
     /////////////////////////////////////
@@ -436,13 +433,13 @@ namespace stormkit::wsi::linux::wayland {
 
         if (not state.serial) return;
 
-        if (has_flag_bit(state.flags, wl::PointerState::Flag::LOCKED))
+        if (has_flag_bit(state.flags, wl::pointer_state::flag::locked))
             zwp_locked_pointer_v1_set_cursor_position_hint(state.locked_pointer,
                                                            wl_fixed_to_int(position.x),
                                                            wl_fixed_to_int(position.y));
         else if (globals.pointer_warp)
             wp_pointer_warp_v1_warp_pointer(globals.pointer_warp,
-                                            m_surface,
+                                            surface_,
                                             pointer,
                                             wl_fixed_from_int(position.x),
                                             wl_fixed_from_int(position.y),
@@ -454,7 +451,7 @@ namespace stormkit::wsi::linux::wayland {
     /////////////////////////////////////
     /////////////////////////////////////
     auto window::native_handle() const noexcept -> native_handle_type {
-        return std::bit_cast<native_handle_type>(&m_handles);
+        return std::bit_cast<native_handle_type>(&handles_);
     }
 
     /////////////////////////////////////
@@ -462,31 +459,31 @@ namespace stormkit::wsi::linux::wayland {
     auto window::handle_xdg_surface_configure(u32 serial) noexcept -> void {
         auto& globals = wl::get_globals();
 
-        if (m_pending_state.resizing) {
-            state_.extent = m_pending_state.resizing.value();
+        if (pending_state_.resizing) {
+            state_.extent = pending_state_.resizing.value();
 
-            if (not has_flag_bit(m_flags, window_flag::external_context)) reallocate_pixel_buffer();
+            if (not has_flag_bit(flags_, window_flag::external_context)) reallocate_pixel_buffer();
 
-            if (m_viewport) {
+            if (viewport_) {
                 const auto _extent = state_.extent.to<i32>();
-                wp_viewport_set_destination(m_viewport, _extent.width, _extent.height);
+                wp_viewport_set_destination(viewport_, _extent.width, _extent.height);
             }
 
             resized_event(state_.extent);
-        } else if (m_pending_state.restored)
+        } else if (pending_state_.restored)
             restored_event();
-        else if (m_pending_state.activated)
+        else if (pending_state_.activated)
             activate_event();
-        else if (m_pending_state.suspended)
+        else if (pending_state_.suspended)
             deactivate_event();
-        else if (m_pending_state.fullscreen)
+        else if (pending_state_.fullscreen)
             state_.fullscreen = true;
 
-        m_pending_state = {};
+        pending_state_ = {};
 
-        xdg_surface_ack_configure(m_xdg_surface, serial);
+        xdg_surface_ack_configure(xdg_surface_, serial);
 
-        wl_surface_commit(m_surface);
+        wl_surface_commit(surface_);
         wl_display_flush(globals.display);
     }
 
@@ -502,21 +499,21 @@ namespace stormkit::wsi::linux::wayland {
       -> void {
         state_.open = true;
 
-        if (not has_flag_bit(m_flags, wsi::window_flag::resizeable)) {
-            xdg_toplevel_set_min_size(m_xdg_top_level, as<i32>(width), as<i32>(height));
-            xdg_toplevel_set_max_size(m_xdg_top_level, as<i32>(width), as<i32>(height));
+        if (not has_flag_bit(flags_, wsi::window_flag::resizeable)) {
+            xdg_toplevel_set_min_size(xdg_top_level_, as<i32>(width), as<i32>(height));
+            xdg_toplevel_set_max_size(xdg_top_level_, as<i32>(width), as<i32>(height));
         }
 
         for (const auto& state : states) {
             switch (state) {
                 case XDG_TOPLEVEL_STATE_ACTIVATED:
-                    if (state_.minimized) m_pending_state.restored = true;
+                    if (state_.minimized) pending_state_.restored = true;
                     else
-                        m_pending_state.activated = true;
+                        pending_state_.activated = true;
                     break;
-                case XDG_TOPLEVEL_STATE_SUSPENDED: m_pending_state.suspended = true; break;
-                case XDG_TOPLEVEL_STATE_FULLSCREEN: m_pending_state.fullscreen = true; break;
-                case XDG_TOPLEVEL_STATE_RESIZING: m_pending_state.resizing = { width, height }; break;
+                case XDG_TOPLEVEL_STATE_SUSPENDED: pending_state_.suspended = true; break;
+                case XDG_TOPLEVEL_STATE_FULLSCREEN: pending_state_.fullscreen = true; break;
+                case XDG_TOPLEVEL_STATE_RESIZING: pending_state_.resizing = { width, height }; break;
                 default: break;
             }
         }
@@ -525,12 +522,12 @@ namespace stormkit::wsi::linux::wayland {
     /////////////////////////////////////
     /////////////////////////////////////
     auto window::handle_surface_enter(wl_surface*, wl_output* output) noexcept -> void {
-        m_current_output = output;
+        current_output_ = output;
 
         const auto& monitor = wl::get_monitor(wl::get_globals(), output);
         if (as<f32>(monitor.scale_factor) != state_.dpi) {
             state_.dpi = as<f32>(monitor.scale_factor);
-            if (not has_flag_bit(m_flags, window_flag::external_context)) reallocate_pixel_buffer();
+            if (not has_flag_bit(flags_, window_flag::external_context)) reallocate_pixel_buffer();
         }
     }
 
@@ -544,8 +541,8 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto window::handle_pointer_enter(wl_pointer* pointer, wl::PointerState& state) noexcept -> void {
-        if (has_flag_bit(state.flags, wl::PointerState::Flag::HIDDEN)) hide_mouse(true, pointer, state);
+    auto window::handle_pointer_enter(wl_pointer* pointer, wl::pointer_state& state) noexcept -> void {
+        if (has_flag_bit(state.flags, wl::pointer_state::flag::hidden)) hide_mouse(true, pointer, state);
 
         // mouse_entered_event(global_mouse_id);
     }
@@ -598,55 +595,51 @@ namespace stormkit::wsi::linux::wayland {
         const auto  size   = as<usize>(stride * extent.height);
 
         auto old_shm_buffer   = defer_init<shm_buffer> {};
-        auto old_shm_pool     = defer_init<wl::ShmPool> {};
+        auto old_shm_pool     = defer_init<wl::shm_pool> {};
         auto old_pixel_buffer = defer_init<wl::Buffer> {};
 
         const auto [width, height] = extent.to<i32>();
-        if (not m_shm_buffer or stdr::size(m_shm_buffer.value()) < size) {
-            old_shm_buffer   = std::move(m_shm_buffer);
-            old_shm_pool     = std::move(m_shm_pool);
-            old_pixel_buffer = std::move(m_pixel_buffer);
+        if (not shm_buffer_ or stdr::size(shm_buffer_.value()) < size) {
+            old_shm_buffer   = std::move(shm_buffer_);
+            old_shm_pool     = std::move(shm_pool_);
+            old_pixel_buffer = std::move(pixel_buffer_);
 
-            auto _ = shm_buffer::create(size, std::format("StormKit::{}::PixelBuffer", m_title))
-                       .transform(bind_front(&defer_init<shm_buffer>::construct<shm_buffer&&>, &m_shm_buffer))
+            auto _ = shm_buffer::create(size, std::format("StormKit::{}::PixelBuffer", title_))
+                       .transform(bind_front(&defer_init<shm_buffer>::construct<shm_buffer&&>, &shm_buffer_))
                        .transform_error(monadic::assert());
 
-            m_shm_pool = wl::ShmPool::create(globals.shm,
-                                             unchecked_narrow<i32>(std::bit_cast<uptr>(m_shm_buffer->native_handle())),
+            shm_pool_ = wl::shm_pool::create(globals.shm,
+                                             unchecked_narrow<i32>(std::bit_cast<uptr>(shm_buffer_->native_handle())),
                                              unchecked_narrow<i32>(size));
 
-            m_pixel_buffer = wl::Buffer::take(wl_shm_pool_create_buffer(m_shm_pool,
-                                                                        0,
-                                                                        width,
-                                                                        height,
-                                                                        unchecked_narrow<i32>(stride),
-                                                                        WL_SHM_FORMAT_XRGB8888));
+            pixel_buffer_ = wl::Buffer::
+              take(wl_shm_pool_create_buffer(shm_pool_, 0, width, height, unchecked_narrow<i32>(stride), WL_SHM_FORMAT_XRGB8888));
 
-            wl_buffer_add_listener(m_pixel_buffer, &wl::g_buffer_listener, &m_pixel_buffer);
+            wl_buffer_add_listener(pixel_buffer_, &wl::g_buffer_listener, &pixel_buffer_);
         }
 
-        if (m_viewport) {
-            wp_viewport_set_source(m_viewport,
+        if (viewport_) {
+            wp_viewport_set_source(viewport_,
                                    wl_fixed_from_int(0),
                                    wl_fixed_from_int(0),
                                    wl_fixed_from_int(width),
                                    wl_fixed_from_int(height));
         }
 
-        wl_surface_commit(m_surface);
-        wl_surface_attach(m_surface, m_pixel_buffer, 0, 0);
+        wl_surface_commit(surface_);
+        wl_surface_attach(surface_, pixel_buffer_, 0, 0);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto window::hide_mouse(bool hidden, wl_pointer* pointer, wl::PointerState& state) noexcept -> void {
+    auto window::hide_mouse(bool hidden, wl_pointer* pointer, wl::pointer_state& state) noexcept -> void {
         if (not state_.open or not state.serial) return;
 
         if (hidden) {
             state.cursor.name = "";
             wl_pointer_set_cursor(pointer, state.serial.value(), state.cursor.surface, 0, 0);
 
-            state.flags |= wl::PointerState::Flag::HIDDEN;
+            state.flags |= wl::pointer_state::flag::hidden;
         } else {
             state.cursor.name = "left_ptr";
             if (state.cursor.shape_device) {
@@ -654,7 +647,7 @@ namespace stormkit::wsi::linux::wayland {
             } else
                 set_cursor(state.cursor.name, pointer, state);
 
-            state.flags &= ~wl::PointerState::Flag::HIDDEN;
+            state.flags &= ~wl::pointer_state::flag::hidden;
         }
 
         auto& globals = wl::get_globals();
@@ -663,7 +656,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto window::set_cursor(string_view name, wl_pointer* pointer, wl::PointerState& state) noexcept -> void {
+    auto window::set_cursor(string_view name, wl_pointer* pointer, wl::pointer_state& state) noexcept -> void {
         auto& globals = wl::get_globals();
 
         auto cursor_theme = globals.cursor_theme.handle();
@@ -683,7 +676,7 @@ namespace stormkit::wsi::linux::wayland {
 
         wl_surface_set_buffer_scale(state.cursor.surface, m_scale);
         wl_surface_attach(state.cursor.surface, cursor_buffer, 0, 0);
-        wl_surface_damage(m_surface, 0, 0, as<i32>(cursor_image->width), as<i32>(cursor_image->height));
+        wl_surface_damage(surface_, 0, 0, as<i32>(cursor_image->width), as<i32>(cursor_image->height));
         wl_surface_commit(state.cursor.surface);
     }
 

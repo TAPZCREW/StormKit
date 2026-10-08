@@ -117,7 +117,7 @@ namespace stormkit::gpu {
                 .flags = 0,
                 .pView = window->native_handle()
             };
-            CHECK_VK_ERROR(vkCreateIOSSurfaceMVK(m_instance, &create_info, &m_surface));
+            CHECK_VK_ERROR(vkCreateIOSSurfaceMVK(m_instance, &create_info, &surface_));
         };
 #else
         const auto create_surface = [] static noexcept {};

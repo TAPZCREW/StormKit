@@ -94,15 +94,15 @@ namespace stormkit::gpu {
         m_faces      = 1;
         m_mip_levels = _create_info.mip_levels;
         m_type       = _create_info.type;
-        m_flags      = _create_info.flags;
+        flags_      = _create_info.flags;
         m_samples    = _create_info.samples;
         m_usages     = _create_info.usages;
 
-        if (core::has_flag_bit(m_flags, gpu::ImageCreateFlag::CUBE_COMPATIBLE)) m_faces = 6u;
+        if (core::has_flag_bit(flags_, gpu::ImageCreateFlag::CUBE_COMPATIBLE)) m_faces = 6u;
         const auto create_info = VkImageCreateInfo {
             .sType                 = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
             .pNext                 = nullptr,
-            .flags                 = vk::to_vk<VkImageCreateFlags>(m_flags),
+            .flags                 = vk::to_vk<VkImageCreateFlags>(flags_),
             .imageType             = vk::to_vk<VkImageType>(m_type),
             .format                = vk::to_vk<VkFormat>(m_format),
             .extent                = { m_extent.width, m_extent.height, m_extent.depth },

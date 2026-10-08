@@ -71,7 +71,7 @@ export namespace base {
         defer_init<wsi::window>               m_window;
         defer_init<gpu::Instance>             m_instance;
         defer_init<gpu::DebugCallback>        m_debug_callback;
-        defer_init<gpu::Surface>              m_surface;
+        defer_init<gpu::Surface>              surface_;
         defer_init<gpu::view::PhysicalDevice> m_physical_device;
         defer_init<gpu::Device>               m_device;
         defer_init<gpu::SwapChain>            m_swapchain;
@@ -102,7 +102,7 @@ export namespace base {
                                               "Failed to initialize gpu instance");
             }
 
-            m_surface = TryXAssert(gpu::Surface::create_from_window(m_instance, m_window),
+            surface_ = TryXAssert(gpu::Surface::create_from_window(m_instance, m_window),
                                    "Failed to initialize window gpu surface");
 
             // pick the best physical device
@@ -131,7 +131,7 @@ export namespace base {
 
             // create swapchain
             const auto window_extent = m_window->extent();
-            m_swapchain              = TryXAssert(gpu::SwapChain::create(m_device, { gpu::as_view(m_surface), window_extent }),
+            m_swapchain              = TryXAssert(gpu::SwapChain::create(m_device, { gpu::as_view(surface_), window_extent }),
                                                   "Failed to create swapchain");
 
             const auto queue_entries = m_device->queue_entries();

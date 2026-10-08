@@ -35,7 +35,7 @@ export namespace stormkit::wsi::linux::common {
         };
     } // namespace xkb
 
-    auto stormkit_key_to_xkb(Key key) noexcept -> xkb_keysym_t;
+    auto stormkit_key_to_xkb(key k) noexcept -> xkb_keysym_t;
     auto xkb_key_to_stormkit(xkb_keysym_t key) noexcept -> Key;
 } // namespace stormkit::wsi::linux::common
 
@@ -48,7 +48,7 @@ namespace stdv = std::views;
 
 namespace stormkit::wsi::linux::common {
     namespace {
-        constexpr auto SCANCODE_AS_KEY = make_static_hash_map<xkb_keysym_t, Key>({
+        constexpr auto scancode_as_key = make_static_hash_map<xkb_keysym_t, Key>({
           { XKB_KEY_a,            key::a               },
           { XKB_KEY_b,            key::b               },
           { XKB_KEY_c,            key::c               },
@@ -148,7 +148,7 @@ namespace stormkit::wsi::linux::common {
           { XKB_KEY_Print,        key::print_screen    },
 
           { XKB_KEY_Insert,       key::insert          },
-          { XKB_KEY_Delete,       key::del          },
+          { XKB_KEY_Delete,       key::del             },
           { XKB_KEY_Home,         key::home            },
           { XKB_KEY_End,          key::end             },
           { XKB_KEY_Page_Down,    key::page_down       },
@@ -174,10 +174,10 @@ namespace stormkit::wsi::linux::common {
           { XKB_KEY_KP_9,         key::numpad_9        },
         });
 
-        constexpr auto KEY_AS_SCANCODE = [] static noexcept -> decltype(auto) {
+        constexpr auto key_as_scancode = [] static noexcept -> decltype(auto) {
             auto out = array<std::pair<Key, xkb_keysym_t>, 111> {};
             auto i   = 0_usize;
-            for (const auto& [key, value] : SCANCODE_AS_KEY) out[i++] = std::make_pair(value, key);
+            for (const auto& [key, value] : scancode_as_key) out[i++] = std::make_pair(value, key);
 
             return make_static_hash_map(out);
         }();
@@ -187,17 +187,17 @@ namespace stormkit::wsi::linux::common {
     /////////////////////////////////////
     STORMKIT_CONST
     inline auto xkb_key_to_stormkit(xkb_keysym_t scancode) noexcept -> Key {
-        const auto it = SCANCODE_AS_KEY.find(scancode);
-        if (it == stdr::cend(SCANCODE_AS_KEY)) return key::unknown;
+        const auto it = scancode_as_key.find(scancode);
+        if (it == stdr::cend(scancode_as_key)) return key::unknown;
         return it->second;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_CONST
-    inline auto stormkit_key_to_xkb(Key key) noexcept -> xkb_keysym_t {
-        ENSURES(key != key::unknown);
-        const auto it = KEY_AS_SCANCODE.find(key);
+    inline auto stormkit_key_to_xkb(key k) noexcept -> xkb_keysym_t {
+        ENSURES(k != key::unknown);
+        const auto it = key_as_scancode.find(k);
         return it->second;
     }
 } // namespace stormkit::wsi::linux::common

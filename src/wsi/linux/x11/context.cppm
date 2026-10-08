@@ -21,15 +21,15 @@ import :linux.common.xkb;
 import :linux.x11.xcb;
 
 export namespace stormkit::wsi::linux::x11::xcb {
-    struct Globals {
+    struct globals {
         Connection   connection    = Connection::empty();
         ErrorContext error_context = ErrorContext::empty();
 
-        common::xkb::Context xkb_context = common::xkb::Context::empty();
+        common::xkb::context xkb_context = common::xkb::context::empty();
     };
 
     auto init() noexcept -> bool;
-    auto get_globals() noexcept -> Globals&;
+    auto get_globals() noexcept -> globals&;
 
     auto get_atom(string_view name, bool only_if_exists) noexcept -> std::expected<xcb_atom_t, Error>;
     auto get_atom_name(xcb_atom_t atom) -> std::expected<string, Error>;

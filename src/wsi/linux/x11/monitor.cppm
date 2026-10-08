@@ -31,10 +31,10 @@ namespace stormkit::wsi::linux::x11 {
                                          xcb_randr_get_monitors_reply,
                                          std::free,
                                          struct MonitorTag>;
-            using Output   = raii_capsule<xcb_randr_get_output_info_reply_t*,
+            using output   = raii_capsule<xcb_randr_get_output_info_reply_t*,
                                          xcb_randr_get_output_info_reply,
                                          std::free,
-                                         struct OutputTag>;
+                                         struct output_tag>;
             using CRTC = raii_capsule<xcb_randr_get_crtc_info_reply_t*, xcb_randr_get_crtc_info_reply, std::free, struct CRTCTag>;
 
             const auto root = xcb_setup_roots_iterator(xcb_get_setup(globals.connection)).data;
@@ -63,7 +63,7 @@ namespace stormkit::wsi::linux::x11 {
                 for (auto j : range(len)) {
                     auto
                       output_cookie = xcb_randr_get_output_info(globals.connection, outputs[j], xcb_monitors.handle()->timestamp);
-                    auto output     = Output::create(globals.connection, output_cookie, nullptr);
+                    auto output     = output::create(globals.connection, output_cookie, nullptr);
 
                     if (!output) continue;
                     if (output.handle()->connection != XCB_RANDR_CONNECTION_CONNECTED) continue;
