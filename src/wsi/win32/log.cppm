@@ -35,14 +35,14 @@ export namespace stormkit::wsi::win32 {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit::wsi::win32 {
-    constexpr auto LOG_MODULE = log::module { "stormkit.wsi.win32" };
+    constexpr auto log_module = log::module { "stormkit.wsi.win32" };
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<class... Ts>                                                   
     STORMKIT_FORCE_INLINE
     inline auto dlog(std::format_string<Ts...> format, Ts&&... args) noexcept -> void {
-        LOG_MODULE.dlog(std::move(format), std::forward<Ts>(args)...);
+        log_module.dlog(std::move(format), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -50,7 +50,7 @@ namespace stormkit::wsi::win32 {
     template<class... Ts>                                                   
     STORMKIT_FORCE_INLINE
     inline auto ilog(std::format_string<Ts...> format, Ts&&... args) noexcept -> void {
-        LOG_MODULE.ilog(std::move(format), std::forward<Ts>(args)...);
+        log_module.ilog(std::move(format), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -58,7 +58,7 @@ namespace stormkit::wsi::win32 {
     template<class... Ts>                                                   
     STORMKIT_FORCE_INLINE
     inline auto wlog(std::format_string<Ts...> format, Ts&&... args) noexcept -> void {
-        LOG_MODULE.wlog(std::move(format), std::forward<Ts>(args)...);
+        log_module.wlog(std::move(format), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -66,7 +66,7 @@ namespace stormkit::wsi::win32 {
     template<class... Ts>                                                   
     STORMKIT_FORCE_INLINE
     inline auto elog(std::format_string<Ts...> format, Ts&&... args) noexcept -> void {
-        LOG_MODULE.elog(std::move(format), std::forward<Ts>(args)...);
+        log_module.elog(std::move(format), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -74,6 +74,6 @@ namespace stormkit::wsi::win32 {
     template<class... Ts>                                                   
     STORMKIT_FORCE_INLINE
     inline auto flog(std::format_string<Ts...> format, Ts&&... args) noexcept -> void {
-        LOG_MODULE.flog(std::move(format), std::forward<Ts>(args)...);
+        log_module.flog(std::move(format), std::forward<Ts>(args)...);
     }
 } // namespace stormkit::wsi::win32

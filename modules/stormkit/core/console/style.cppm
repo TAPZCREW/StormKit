@@ -46,7 +46,7 @@ export {
         };
 
         enum class style_modifier {
-            NONE      = 0x0,
+            none      = 0x0,
             BOLD      = 0x1,
             FAINT     = 0x2,
             ITALIC    = 0x4,
@@ -62,7 +62,7 @@ export {
             T                            value;
             std::optional<console_color> fg;
             std::optional<console_color> bg;
-            style_modifier               modifiers = style_modifier::NONE;
+            style_modifier               modifiers = style_modifier::none;
         };
 
         struct console_style {
@@ -71,7 +71,7 @@ export {
             constexpr auto               operator|(T&& value) const noexcept -> stylized<T>;
             std::optional<console_color> fg        = std::nullopt;
             std::optional<console_color> bg        = std::nullopt;
-            style_modifier               modifiers = style_modifier::NONE;
+            style_modifier               modifiers = style_modifier::none;
         };
 
         inline constexpr auto RED_TEXT_STYLE     = console_style { .fg = console_color::RED };

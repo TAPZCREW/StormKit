@@ -39,275 +39,275 @@ namespace impl = stormkit::wsi::ios;
 using namespace std::literals;
 
 namespace stormkit::wsi {
-    class WindowImpl: public impl::Window {
+    class window_impl: public impl::window {
       public:
-        using impl::Window::Window;
+        using impl::window::window;
     };
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Window::Window() noexcept : m_wm { wsi::wm() }, m_impl { m_wm } {
+    window::window() noexcept : m_wm { wsi::wm() }, m_impl { m_wm } {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Window::~Window() noexcept = default;
+    window::~window() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Window::Window(Window&&) noexcept = default;
+    window::window(window&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::operator=(Window&&) noexcept -> Window& = default;
+    auto window::operator=(window&&) noexcept -> window& = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::open(string&& title, meta::in<math::uextent2> size, WindowFlag flags) noexcept -> Window {
-        auto window = Window {};
+    auto window::open(string&& title, meta::in<math::uextent2> size, window_flag flags) noexcept -> window {
+        auto window = wsi::window {};
         window.m_impl->open(std::move(title), size, flags);
         return window;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::allocate_and_open(string title, meta::in<math::uextent2> size, WindowFlag flags) noexcept -> heap_ptr<Window> {
-        auto window = allocate_unsafe<Window>(Window {});
+    auto window::allocate_and_open(string title, meta::in<math::uextent2> size, window_flag flags) noexcept -> heap_ptr<window> {
+        auto window = allocate_unsafe<wsi::window>(wsi::window {});
         window->m_impl->open(std::move(title), size, flags);
         return window;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::close() noexcept -> void {
+    auto window::close() noexcept -> void {
         m_impl->close();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::clear(meta::in<ucolor_rgb> color) noexcept -> void {
+    auto window::clear(meta::in<ucolor_rgb> color) noexcept -> void {
         m_impl->clear(color);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void {
+    auto window::fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void {
         m_impl->fill_framebuffer(colors);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::is_open() const noexcept -> bool {
+    auto window::is_open() const noexcept -> bool {
         return m_impl->is_open();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::handle_events() noexcept -> void {
+    auto window::handle_events() noexcept -> void {
         m_impl->handle_events();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::visible() const noexcept -> bool {
+    auto window::visible() const noexcept -> bool {
         return m_impl->visible();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::current_monitor() const noexcept -> const monitor& {
+    auto window::current_monitor() const noexcept -> const monitor& {
         return m_impl->current_monitor();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_title(string&& title) noexcept -> void {
+    auto window::set_title(string&& title) noexcept -> void {
         m_impl->set_title(std::move(title));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::title() const noexcept -> const string& {
+    auto window::title() const noexcept -> const string& {
         return m_impl->title();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_extent(meta::in<math::uextent2> extent) noexcept -> void {
+    auto window::set_extent(meta::in<math::uextent2> extent) noexcept -> void {
         m_impl->set_extent(extent);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::extent() const noexcept -> const math::uextent2& {
+    auto window::extent() const noexcept -> const math::uextent2& {
         return m_impl->extent();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_fullscreen(bool fullscreen) noexcept -> void {
+    auto window::set_fullscreen(bool fullscreen) noexcept -> void {
         m_impl->set_fullscreen(fullscreen);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::fullscreen() const noexcept -> bool {
+    auto window::fullscreen() const noexcept -> bool {
         return m_impl->fullscreen();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::confine_mouse(bool confine, u8 mouse_id) noexcept -> void {
+    auto window::confine_mouse(bool confine, u8 mouse_id) noexcept -> void {
         m_impl->confine_mouse(confine, mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::is_mouse_confined(u8 mouse_id) const noexcept -> bool {
+    auto window::is_mouse_confined(u8 mouse_id) const noexcept -> bool {
         return m_impl->is_mouse_confined(mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::lock_mouse(bool locked, u8 mouse_id) noexcept -> void {
+    auto window::lock_mouse(bool locked, u8 mouse_id) noexcept -> void {
         m_impl->lock_mouse(locked, mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::is_mouse_locked(u8 mouse_id) const noexcept -> bool {
+    auto window::is_mouse_locked(u8 mouse_id) const noexcept -> bool {
         return m_impl->is_mouse_locked(mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::hide_mouse(bool hidden, u8 mouse_id) noexcept -> void {
+    auto window::hide_mouse(bool hidden, u8 mouse_id) noexcept -> void {
         m_impl->hide_mouse(hidden, mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::is_mouse_hidden(u8 mouse_id) const noexcept -> bool {
+    auto window::is_mouse_hidden(u8 mouse_id) const noexcept -> bool {
         return m_impl->is_mouse_hidden(mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_relative_mouse(bool enabled, u8 mouse_id) noexcept -> void {
+    auto window::set_relative_mouse(bool enabled, u8 mouse_id) noexcept -> void {
         m_impl->set_relative_mouse(enabled, mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::is_mouse_relative(u8 mouse_id) const noexcept -> bool {
+    auto window::is_mouse_relative(u8 mouse_id) const noexcept -> bool {
         return m_impl->is_mouse_relative(mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_key_repeat(bool enabled, u8 keyboard_id) noexcept -> void {
+    auto window::set_key_repeat(bool enabled, u8 keyboard_id) noexcept -> void {
         return m_impl->set_key_repeat(enabled, keyboard_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::is_key_repeat_enabled(u8 keyboard_id) const noexcept -> bool {
+    auto window::is_key_repeat_enabled(u8 keyboard_id) const noexcept -> bool {
         return m_impl->is_key_repeat_enabled(keyboard_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::show_virtual_keyboard(bool visible) noexcept -> void {
+    auto window::show_virtual_keyboard(bool visible) noexcept -> void {
         m_impl->show_virtual_keyboard(visible);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::is_virtual_keyboard_visible() const noexcept -> bool {
+    auto window::is_virtual_keyboard_visible() const noexcept -> bool {
         return m_impl->is_virtual_keyboard_visible();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_mouse_position(math::ivec2 position, u8 mouse_id) noexcept -> void {
+    auto window::set_mouse_position(math::ivec2 position, u8 mouse_id) noexcept -> void {
         m_impl->set_mouse_position(position, mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::native_handle() const noexcept -> NativeHandle {
+    auto window::native_handle() const noexcept -> native_handle_type {
         return m_impl->native_handle();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::on_closed(ClosedEventFunc&& callback) noexcept -> void {
+    auto window::on_closed(closed_event_cb_type&& callback) noexcept -> void {
         m_impl->set_closed_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::on_monitor_changed(monitorChangedEventFunc&& callback) noexcept -> void {
+    auto window::on_monitor_changed(monitor_changed_event_cb_type&& callback) noexcept -> void {
         m_impl->set_monitor_changed_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::on_resized(ResizedEventFunc&& callback) noexcept -> void {
+    auto window::on_resized(resized_event_cb_type&& callback) noexcept -> void {
         m_impl->set_resized_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::on_restored(RestoredEventFunc&& callback) noexcept -> void {
+    auto window::on_restored(restored_event_cb_type&& callback) noexcept -> void {
         m_impl->set_restored_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::on_minimized(MinimizedEventFunc&& callback) noexcept -> void {
+    auto window::on_minimized(minimized_event_cb_type&& callback) noexcept -> void {
         m_impl->set_minimized_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::on_key_down(KeyDownEventFunc&& callback) noexcept -> void {
+    auto window::on_key_down(key_down_event_cb_type&& callback) noexcept -> void {
         m_impl->set_key_down_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::on_key_up(KeyUpEventFunc&& callback) noexcept -> void {
+    auto window::on_key_up(key_up_event_cb_type&& callback) noexcept -> void {
         m_impl->set_key_up_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::on_mouse_button_down(MouseButtonDownEventFunc&& callback) noexcept -> void {
+    auto window::on_mouse_button_down(mouse_button_down_event_cb_type&& callback) noexcept -> void {
         m_impl->set_mouse_button_down_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::on_mouse_button_up(MouseButtonUpEventFunc&& callback) noexcept -> void {
+    auto window::on_mouse_button_up(mouse_button_up_event_cb_type&& callback) noexcept -> void {
         m_impl->set_mouse_button_up_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::on_mouse_moved(MouseMovedEventFunc&& callback) noexcept -> void {
+    auto window::on_mouse_moved(mouse_moved_event_cb_type&& callback) noexcept -> void {
         m_impl->set_mouse_moved_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::on_activate(ActivateEventFunc&& callback) noexcept -> void {
+    auto window::on_activate(activate_event_cb_type&& callback) noexcept -> void {
         m_impl->set_activate_event(std::move(callback));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::on_deactivate(DeactivateEventFunc&& callback) noexcept -> void {
+    auto window::on_deactivate(deactivate_event_cb_type&& callback) noexcept -> void {
         m_impl->set_deactivate_event(std::move(callback));
     }
 } // namespace stormkit::wsi

@@ -38,15 +38,15 @@ auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] czstring argv[])
     };
 
     auto event_handler = wsi::EventHandler { *m_window };
-    event_handler.addCallback(wsi::EventType::CLOSED,
+    event_handler.addCallback(wsi::event_type::closed,
                               [this]([[maybe_unused]]
                                      const wsi::Event& event) { m_window->close(); });
-    event_handler.addCallback(wsi::EventType::KEY_RELEASED, [this](const wsi::Event& event) {
+    event_handler.addCallback(wsi::event_type::KEY_RELEASED, [this](const wsi::Event& event) {
         const auto& event_data = as<wsi::KeyReleasedEventData>(event.data);
 
         handleKeyboard(event_data);
     });
-    event_handler.addCallback(wsi::EventType::MOUSE_BUTTON_PUSHED, [this](const wsi::Event& event) {
+    event_handler.addCallback(wsi::event_type::MOUSE_BUTTON_PUSHED, [this](const wsi::Event& event) {
         const auto& event_data = as<wsi::MouseButtonPushedEventData>(event.data);
 
         handleMouse(event_data);
@@ -91,15 +91,15 @@ auto App::do_initWindow() -> void {
 auto App::handleKeyboard(const stormkit::wsi::KeyReleasedEventData& event) -> void {
     using namespace stormkit::literals;
 
-    const auto size = wsi::Window::get_primary_monitor_settings().sizes.back();
+    const auto size = wsi::window::get_primary_monitor_settings().sizes.back();
 
     switch (event.key) {
         [[unlikely]]
-        case wsi::Key::ESCAPE:
+        case wsi::key::escape:
             m_window->close();
             break;
         [[unlikely]]
-        case wsi::Key::F11:
+        case wsi::key::f11:
             if (m_fullscreen_enabled) {
                 m_fullscreen_enabled = false;
                 m_window->toggle_fullscreen(false);
@@ -109,7 +109,7 @@ auto App::handleKeyboard(const stormkit::wsi::KeyReleasedEventData& event) -> vo
                 m_window->toggle_fullscreen(true);
             }
             break;
-        case wsi::Key::R:
+        case wsi::key::r:
             for (auto i : range(m_board.extent().width * m_board.extent().height)) {
                 auto pixel = m_board.pixel(i);
                 pixel[0]   = 0_b;
@@ -120,12 +120,12 @@ auto App::handleKeyboard(const stormkit::wsi::KeyReleasedEventData& event) -> vo
 
             m_entities.destroy_all_entities();
             break;
-        case wsi::Key::SPACE:
+        case wsi::key::space:
             m_is_on_edit_mode = !m_is_on_edit_mode;
             m_update_system->setEditModeEnabled(m_is_on_edit_mode);
             break;
-        case wsi::Key::ADD: m_update_system->incrementDelta(fsecond { 0.01f }); break;
-        case wsi::Key::SUBSTRACT: m_update_system->incrementDelta(fsecond { -0.01f }); break;
+        case wsi::key::aDD: m_update_system->incrementDelta(fsecond { 0.01f }); break;
+        case wsi::key::sUBSTRACT: m_update_system->incrementDelta(fsecond { -0.01f }); break;
         default: break;
     }
 }

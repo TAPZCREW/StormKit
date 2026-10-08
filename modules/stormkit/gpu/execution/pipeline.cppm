@@ -221,7 +221,7 @@ namespace stormkit::gpu {
 
       protected:
         Type               m_type;
-        heap_ptr<StateVariant> m_state;
+        heap_ptr<StateVariant> state_;
 
         friend class view::PipelineImplementation;
     };
@@ -246,7 +246,7 @@ namespace stormkit::gpu {
 
           protected:
             Type                    m_type;
-            ref<const StateVariant> m_state;
+            ref<const StateVariant> state_;
         };
     } // namespace view
 } // namespace stormkit::gpu
@@ -279,9 +279,9 @@ namespace stormkit::gpu {
     STORMKIT_FORCE_INLINE
     inline auto PipelineInterface<Base>::raster_state() const noexcept -> const RasterPipelineState& {
         EXPECTS(Base::m_type == Type::RASTER);
-        EXPECTS(Base::m_state != nullptr);
-        EXPECTS(is<RasterPipelineState>(*Base::m_state));
-        return as<RasterPipelineState>(*Base::m_state);
+        EXPECTS(Base::state_ != nullptr);
+        EXPECTS(is<RasterPipelineState>(*Base::state_));
+        return as<RasterPipelineState>(*Base::state_);
     }
 
     /////////////////////////////////////
@@ -419,7 +419,7 @@ namespace stormkit::gpu {
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
         inline PipelineImplementation::PipelineImplementation(const gpu::Pipeline& of) noexcept
-            : GpuObjectViewImplementation { of }, m_type { of.type() }, m_state { as_ref(of.m_state) } {
+            : GpuObjectViewImplementation { of }, m_type { of.type() }, state_ { as_ref(of.state_) } {
         }
 
         /////////////////////////////////////
@@ -450,7 +450,7 @@ namespace stormkit::gpu {
             GpuObjectViewImplementation::operator=(other);
 
             m_type  = other.m_type;
-            m_state = as_ref(other.m_state);
+            state_ = as_ref(other.state_);
 
             return *this;
         }

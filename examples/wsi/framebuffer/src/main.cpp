@@ -65,21 +65,21 @@ auto main(array_view<const string_view> args) -> int {
     ilog("--- Monitors ---");
     ilog("{}", monitors);
 
-    auto window = wsi::Window::open("Hello world", { .width = 800_u32, .height = 600_u32 }, wsi::WindowFlag::RESIZEABLE);
+    auto window = wsi::window::open("Hello world", { .width = 800_u32, .height = 600_u32 }, wsi::window_flag::resizeable);
     ilog("wm: {}", window.wm());
 
     auto pool   = core::thread_pool {};
     auto pixels = dynarray<ucolor_rgb> {};
     update_pixels(pool, pixels, window.extent());
     auto active = true;
-    window.on(wsi::ResizedEventFunc { [&](const math::uextent2& extent) mutable noexcept {
+    window.on(wsi::resized_event_cb_type { [&](const math::uextent2& extent) mutable noexcept {
                   update_pixels(pool, pixels, extent);
                   window.fill_framebuffer(pixels);
               } },
-              wsi::RestoredEventFunc { [&active] mutable noexcept { active = true; } },
-              wsi::MinimizedEventFunc { [&active] mutable noexcept { active = false; } },
-              wsi::KeyDownEventFunc { [&window](u8 /*id*/, wsi::Key key, char /*c*/) mutable noexcept {
-                  if (key == wsi::Key::ESCAPE) window.close();
+              wsi::restored_event_cb_type { [&active] mutable noexcept { active = true; } },
+              wsi::minimized_event_cb_type { [&active] mutable noexcept { active = false; } },
+              wsi::key_down_event_cb_type { [&window](u8 /*id*/, wsi::key k, char /*c*/) mutable noexcept {
+                  if (k == wsi::key::escape) window.close();
               } });
 
     window.event_loop([&] noexcept {

@@ -93,28 +93,28 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Window::Window() noexcept {
+    window::window() noexcept {
         wl::init();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Window::~Window() noexcept {
+    window::~window() noexcept {
         auto& globals = wl::get_globals();
         if (globals.display) wl_display_flush(globals.display);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    Window::Window(Window&&) noexcept = default;
+    window::window(window&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::operator=(Window&&) noexcept -> Window& = default;
+    auto window::operator=(window&&) noexcept -> window& = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::open(string title, const math::uextent2& extent, WindowFlag flags) noexcept -> void {
+    auto window::open(string title, const math::uextent2& extent, window_flag flags) noexcept -> void {
         auto& globals = wl::get_globals();
 
         m_surface = wl::Surface::create(globals.compositor);
@@ -146,20 +146,20 @@ namespace stormkit::wsi::linux::wayland {
         globals.windows.emplace_back(m_surface, this);
 
         m_title           = std::move(title);
-        m_state.extent    = extent;
-        m_state.visible   = true;
+        state_.extent    = extent;
+        state_.visible   = true;
         m_flags           = flags;
-        m_state.open      = true;
+        state_.open      = true;
         m_handles.display = globals.display;
         m_handles.surface = m_surface;
 
         if (globals.viewporter) {
             m_viewport         = wl::Viewport::create(globals.viewporter, m_surface);
-            const auto _extent = m_state.extent.to<i32>();
+            const auto _extent = state_.extent.to<i32>();
             wp_viewport_set_destination(m_viewport, _extent.width, _extent.height);
         }
 
-        if (not has_flag_bit(m_flags, WindowFlag::EXTERNAL_CONTEXT)) reallocate_pixel_buffer();
+        if (not has_flag_bit(m_flags, window_flag::external_context)) reallocate_pixel_buffer();
 
         wl_surface_commit(m_surface);
         wl_display_roundtrip(globals.display);
@@ -167,20 +167,20 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::close() noexcept -> void {
+    auto window::close() noexcept -> void {
         auto& globals = wl::get_globals();
         wl_display_flush(globals.display);
 
-        m_state = {};
+        state_ = {};
         m_title.clear();
         m_flags      = {};
-        m_state.open = false;
+        state_.open = false;
         m_configured = false;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::handle_events() noexcept -> void {
+    auto window::handle_events() noexcept -> void {
         auto& globals = wl::get_globals();
 
         while (wl_display_prepare_read(globals.display) != 0) wl_display_dispatch_pending(globals.display);
@@ -194,7 +194,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::clear(const ucolor_rgb& color) noexcept -> void {
+    auto window::clear(const ucolor_rgb& color) noexcept -> void {
         const auto value = (255 << 24) + (color.r << 16) + (color.g << 8) + (color.b);
 
         auto view = array_view<i32> { std::bit_cast<i32*>(m_shm_buffer.value().begin()), m_shm_buffer->size() / sizeof(i32) };
@@ -207,7 +207,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void {
+    auto window::fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void {
         auto view = array_view<i32> { std::bit_cast<i32*>(m_shm_buffer.value().begin()), m_shm_buffer->size() / sizeof(i32) };
         stdr::copy(colors | stdv::transform([](const auto& color) static noexcept {
                        return (255 << 24) + (color.r << 16) + (color.g << 8) + (color.b);
@@ -221,21 +221,21 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_title(string&& title) noexcept -> void {
-        WindowBase::set_title(std::move(title));
+    auto window::set_title(string&& title) noexcept -> void {
+        window_base::set_title(std::move(title));
 
         xdg_toplevel_set_title(m_xdg_top_level, stdr::data(m_title));
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_extent(const math::uextent2&) noexcept -> void {
+    auto window::set_extent(const math::uextent2&) noexcept -> void {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_fullscreen(bool enabled) noexcept -> void {
-        if (not m_state.open or not m_current_output) return;
+    auto window::set_fullscreen(bool enabled) noexcept -> void {
+        if (not state_.open or not m_current_output) return;
 
         if (enabled) xdg_toplevel_set_fullscreen(m_xdg_top_level, m_current_output);
         else
@@ -244,8 +244,8 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::confine_mouse(bool confined, u8 mouse_id) noexcept -> void {
-        if (not m_state.open) return;
+    auto window::confine_mouse(bool confined, u8 mouse_id) noexcept -> void {
+        if (not state_.open) return;
 
         auto& globals = wl::get_globals();
         if (not globals.pointer_constraints) {
@@ -276,7 +276,7 @@ namespace stormkit::wsi::linux::wayland {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_PURE
-    auto Window::is_mouse_confined(u8 mouse_id) const noexcept -> bool {
+    auto window::is_mouse_confined(u8 mouse_id) const noexcept -> bool {
         auto& globals = wl::get_globals();
 
         EXPECTS(mouse_id < globals.pointers.size());
@@ -287,8 +287,8 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::lock_mouse(bool locked, u8 mouse_id) noexcept -> void {
-        if (not m_state.open) return;
+    auto window::lock_mouse(bool locked, u8 mouse_id) noexcept -> void {
+        if (not state_.open) return;
 
         auto& globals = wl::get_globals();
         if (not globals.pointer_constraints) {
@@ -323,7 +323,7 @@ namespace stormkit::wsi::linux::wayland {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_PURE
-    auto Window::is_mouse_locked(u8 mouse_id) const noexcept -> bool {
+    auto window::is_mouse_locked(u8 mouse_id) const noexcept -> bool {
         auto& globals = wl::get_globals();
 
         EXPECTS(mouse_id < globals.pointers.size());
@@ -334,7 +334,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::hide_mouse(bool hidden, u8 mouse_id) noexcept -> void {
+    auto window::hide_mouse(bool hidden, u8 mouse_id) noexcept -> void {
         auto& globals = wl::get_globals();
 
         EXPECTS(mouse_id < globals.pointers.size());
@@ -346,7 +346,7 @@ namespace stormkit::wsi::linux::wayland {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_PURE
-    auto Window::is_mouse_hidden(u8 mouse_id) const noexcept -> bool {
+    auto window::is_mouse_hidden(u8 mouse_id) const noexcept -> bool {
         auto& globals = wl::get_globals();
 
         EXPECTS(mouse_id < globals.pointers.size());
@@ -357,8 +357,8 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_relative_mouse(bool enabled, u8 mouse_id) noexcept -> void {
-        if (not m_state.open) return;
+    auto window::set_relative_mouse(bool enabled, u8 mouse_id) noexcept -> void {
+        if (not state_.open) return;
 
         auto& globals = wl::get_globals();
         if (not globals.relative_pointer_manager) {
@@ -386,7 +386,7 @@ namespace stormkit::wsi::linux::wayland {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_PURE
-    auto Window::is_mouse_relative(u8 mouse_id) const noexcept -> bool {
+    auto window::is_mouse_relative(u8 mouse_id) const noexcept -> bool {
         auto& globals = wl::get_globals();
 
         EXPECTS(mouse_id < globals.pointers.size());
@@ -397,7 +397,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_key_repeat(bool enabled, u8 keyboard_id) noexcept -> void {
+    auto window::set_key_repeat(bool enabled, u8 keyboard_id) noexcept -> void {
         auto& globals = wl::get_globals();
 
         EXPECTS(keyboard_id < globals.pointers.size());
@@ -409,7 +409,7 @@ namespace stormkit::wsi::linux::wayland {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_PURE
-    auto Window::is_key_repeat_enabled(u8 keyboard_id) const noexcept -> bool {
+    auto window::is_key_repeat_enabled(u8 keyboard_id) const noexcept -> bool {
         auto& globals = wl::get_globals();
 
         EXPECTS(keyboard_id < globals.pointers.size());
@@ -420,14 +420,14 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::show_virtual_keyboard(bool) noexcept -> void {
-        elog("wayland::Window::show_virtual_keyboard isn't yet implemented");
+    auto window::show_virtual_keyboard(bool) noexcept -> void {
+        elog("wayland::window::show_virtual_keyboard isn't yet implemented");
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_mouse_position(const math::ivec2& position, u8 mouse_id) noexcept -> void {
-        if (not m_state.open) return;
+    auto window::set_mouse_position(const math::ivec2& position, u8 mouse_id) noexcept -> void {
+        if (not state_.open) return;
 
         auto& globals = wl::get_globals();
 
@@ -453,26 +453,26 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::native_handle() const noexcept -> NativeHandle {
-        return std::bit_cast<NativeHandle>(&m_handles);
+    auto window::native_handle() const noexcept -> native_handle_type {
+        return std::bit_cast<native_handle_type>(&m_handles);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::handle_xdg_surface_configure(u32 serial) noexcept -> void {
+    auto window::handle_xdg_surface_configure(u32 serial) noexcept -> void {
         auto& globals = wl::get_globals();
 
         if (m_pending_state.resizing) {
-            m_state.extent = m_pending_state.resizing.value();
+            state_.extent = m_pending_state.resizing.value();
 
-            if (not has_flag_bit(m_flags, WindowFlag::EXTERNAL_CONTEXT)) reallocate_pixel_buffer();
+            if (not has_flag_bit(m_flags, window_flag::external_context)) reallocate_pixel_buffer();
 
             if (m_viewport) {
-                const auto _extent = m_state.extent.to<i32>();
+                const auto _extent = state_.extent.to<i32>();
                 wp_viewport_set_destination(m_viewport, _extent.width, _extent.height);
             }
 
-            resized_event(m_state.extent);
+            resized_event(state_.extent);
         } else if (m_pending_state.restored)
             restored_event();
         else if (m_pending_state.activated)
@@ -480,7 +480,7 @@ namespace stormkit::wsi::linux::wayland {
         else if (m_pending_state.suspended)
             deactivate_event();
         else if (m_pending_state.fullscreen)
-            m_state.fullscreen = true;
+            state_.fullscreen = true;
 
         m_pending_state = {};
 
@@ -492,17 +492,17 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::handle_xdg_surface_close() noexcept -> void {
-        WindowBase::closed_event();
+    auto window::handle_xdg_surface_close() noexcept -> void {
+        window_base::closed_event();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::handle_xdg_top_level_configure(u32 width, u32 height, array_view<const xdg_toplevel_state> states) noexcept
+    auto window::handle_xdg_top_level_configure(u32 width, u32 height, array_view<const xdg_toplevel_state> states) noexcept
       -> void {
-        m_state.open = true;
+        state_.open = true;
 
-        if (not has_flag_bit(m_flags, wsi::WindowFlag::RESIZEABLE)) {
+        if (not has_flag_bit(m_flags, wsi::window_flag::resizeable)) {
             xdg_toplevel_set_min_size(m_xdg_top_level, as<i32>(width), as<i32>(height));
             xdg_toplevel_set_max_size(m_xdg_top_level, as<i32>(width), as<i32>(height));
         }
@@ -510,7 +510,7 @@ namespace stormkit::wsi::linux::wayland {
         for (const auto& state : states) {
             switch (state) {
                 case XDG_TOPLEVEL_STATE_ACTIVATED:
-                    if (m_state.minimized) m_pending_state.restored = true;
+                    if (state_.minimized) m_pending_state.restored = true;
                     else
                         m_pending_state.activated = true;
                     break;
@@ -524,47 +524,47 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::handle_surface_enter(wl_surface*, wl_output* output) noexcept -> void {
+    auto window::handle_surface_enter(wl_surface*, wl_output* output) noexcept -> void {
         m_current_output = output;
 
         const auto& monitor = wl::get_monitor(wl::get_globals(), output);
-        if (as<f32>(monitor.scale_factor) != m_state.dpi) {
-            m_state.dpi = as<f32>(monitor.scale_factor);
-            if (not has_flag_bit(m_flags, WindowFlag::EXTERNAL_CONTEXT)) reallocate_pixel_buffer();
+        if (as<f32>(monitor.scale_factor) != state_.dpi) {
+            state_.dpi = as<f32>(monitor.scale_factor);
+            if (not has_flag_bit(m_flags, window_flag::external_context)) reallocate_pixel_buffer();
         }
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::handle_keyboard_key(Key key, char character, bool down) noexcept -> void {
-        if (down) key_down_event(GLOBAL_KEYBOARD_ID, key, character);
+    auto window::handle_keyboard_key(Key key, char character, bool down) noexcept -> void {
+        if (down) key_down_event(global_keyboard_id, key, character);
         else
-            key_up_event(GLOBAL_KEYBOARD_ID, key, character);
+            key_up_event(global_keyboard_id, key, character);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::handle_pointer_enter(wl_pointer* pointer, wl::PointerState& state) noexcept -> void {
+    auto window::handle_pointer_enter(wl_pointer* pointer, wl::PointerState& state) noexcept -> void {
         if (has_flag_bit(state.flags, wl::PointerState::Flag::HIDDEN)) hide_mouse(true, pointer, state);
 
-        // mouse_entered_event(GLOBAL_MOUSE_ID);
+        // mouse_entered_event(global_mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::handle_pointer_leave() noexcept -> void {
-        // mouse_exited_event(GLOBAL_MOUSE_ID);
+    auto window::handle_pointer_leave() noexcept -> void {
+        // mouse_exited_event(global_mouse_id);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::handle_pointer_motion(wl_fixed_t surface_x, wl_fixed_t surface_y) noexcept -> void {
-        mouse_moved_event(GLOBAL_MOUSE_ID, math::vec2 { wl_fixed_to_int(surface_x), wl_fixed_to_int(surface_y) });
+    auto window::handle_pointer_motion(wl_fixed_t surface_x, wl_fixed_t surface_y) noexcept -> void {
+        mouse_moved_event(global_mouse_id, math::vec2 { wl_fixed_to_int(surface_x), wl_fixed_to_int(surface_y) });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::handle_pointer_button(u32 button, u32 bstate, wl_fixed_t x, wl_fixed_t y) noexcept -> void {
+    auto window::handle_pointer_button(u32 button, u32 bstate, wl_fixed_t x, wl_fixed_t y) noexcept -> void {
         const auto down = !!bstate;
 
         const auto _x = wl_fixed_to_int(x);
@@ -572,28 +572,28 @@ namespace stormkit::wsi::linux::wayland {
 
         const auto _button = [](auto button) static noexcept {
             switch (button) {
-                case BTN_LEFT: return MouseButton::LEFT;
-                case BTN_RIGHT: return MouseButton::RIGHT;
-                case BTN_MIDDLE: return MouseButton::MIDDLE;
-                case BTN_FORWARD: return MouseButton::BUTTON_1;
-                case BTN_BACK: return MouseButton::BUTTON_2;
+                case BTN_LEFT: return mouse_button::left;
+                case BTN_RIGHT: return mouse_button::right;
+                case BTN_MIDDLE: return mouse_button::middle;
+                case BTN_FORWARD: return mouse_button::button_1;
+                case BTN_BACK: return mouse_button::button_2;
                 default: break;
             }
 
             std::unreachable();
         }(button);
 
-        if (down) mouse_button_down_event(GLOBAL_MOUSE_ID, _button, math::vec2 { _x, _y });
+        if (down) mouse_button_down_event(global_mouse_id, _button, math::vec2 { _x, _y });
         else
-            mouse_button_up_event(GLOBAL_MOUSE_ID, _button, math::vec2 { _x, _y });
+            mouse_button_up_event(global_mouse_id, _button, math::vec2 { _x, _y });
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::reallocate_pixel_buffer() noexcept -> void {
+    auto window::reallocate_pixel_buffer() noexcept -> void {
         auto& globals = wl::get_globals();
 
-        const auto& extent = m_state.extent;
+        const auto& extent = state_.extent;
         const auto  stride = as<usize>(extent.width * sizeof(u32));
         const auto  size   = as<usize>(stride * extent.height);
 
@@ -639,8 +639,8 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::hide_mouse(bool hidden, wl_pointer* pointer, wl::PointerState& state) noexcept -> void {
-        if (not m_state.open or not state.serial) return;
+    auto window::hide_mouse(bool hidden, wl_pointer* pointer, wl::PointerState& state) noexcept -> void {
+        if (not state_.open or not state.serial) return;
 
         if (hidden) {
             state.cursor.name = "";
@@ -663,7 +663,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::set_cursor(string_view name, wl_pointer* pointer, wl::PointerState& state) noexcept -> void {
+    auto window::set_cursor(string_view name, wl_pointer* pointer, wl::PointerState& state) noexcept -> void {
         auto& globals = wl::get_globals();
 
         auto cursor_theme = globals.cursor_theme.handle();
@@ -689,7 +689,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto Window::handle_key_repeat() noexcept -> void {
+    auto window::handle_key_repeat() noexcept -> void {
         auto& globals = wl::get_globals();
 
         for (auto& [keyboard, state] : globals.keyboards) {
@@ -697,7 +697,7 @@ namespace stormkit::wsi::linux::wayland {
 
             auto repeats = u64 { 0u };
             if (read(state.repeat.timer_fd, &repeats, sizeof(repeats)) == sizeof(repeats))
-                for (auto _ : range(repeats)) key_down_event(GLOBAL_KEYBOARD_ID, state.repeat.key, state.repeat.c);
+                for (auto _ : range(repeats)) key_down_event(global_keyboard_id, state.repeat.key, state.repeat.c);
         }
     }
 
@@ -705,14 +705,14 @@ namespace stormkit::wsi::linux::wayland {
         /////////////////////////////////////
         /////////////////////////////////////
         auto xdg_surface_close_handler(void* data, xdg_surface*, u32) noexcept -> void {
-            auto& window = *std::bit_cast<Window*>(data);
+            auto& window = *std::bit_cast<window*>(data);
             window.handle_xdg_surface_close();
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         auto xdg_surface_configure_handler(void* data, xdg_surface*, u32 serial) noexcept -> void {
-            auto& window = *std::bit_cast<Window*>(data);
+            auto& window = *std::bit_cast<window*>(data);
             window.handle_xdg_surface_configure(serial);
         }
 
@@ -725,7 +725,7 @@ namespace stormkit::wsi::linux::wayland {
         /////////////////////////////////////
         /////////////////////////////////////
         auto xdg_top_level_configure_handler(void* data, xdg_toplevel*, i32 width, i32 height, wl_array* state) noexcept -> void {
-            auto& window = *std::bit_cast<Window*>(data);
+            auto& window = *std::bit_cast<window*>(data);
             window.handle_xdg_top_level_configure(as<u32>(width),
                                                   as<u32>(height),
                                                   { std::bit_cast<const xdg_toplevel_state*>(state->data), state->size });
@@ -753,7 +753,7 @@ namespace stormkit::wsi::linux::wayland {
         /////////////////////////////////////
         /////////////////////////////////////
         auto surface_enter_handler(void* data, wl_surface* surface, wl_output* output) noexcept -> void {
-            auto* window = std::bit_cast<Window*>(data);
+            auto* window = std::bit_cast<window*>(data);
             window->handle_surface_enter(surface, output);
         }
 

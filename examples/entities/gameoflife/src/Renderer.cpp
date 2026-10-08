@@ -13,7 +13,7 @@ import Constants;
 
 using namespace stormkit;
 
-Renderer::Renderer(const wsi::Window& window) : m_window { &window } {
+Renderer::Renderer(const wsi::window& window) : m_window { &window } {
     do_initBaseRenderObjects();
     do_initMeshRenderObjects();
 }

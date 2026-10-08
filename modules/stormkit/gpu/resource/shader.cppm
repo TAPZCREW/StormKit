@@ -82,7 +82,7 @@ namespace stormkit::gpu {
         using NamedConstructor::allocate;
         using NamedConstructor::create;
 
-        ShaderStageFlag    m_type   = ShaderStageFlag::NONE;
+        ShaderStageFlag    m_type   = ShaderStageFlag::none;
         dynarray<SpirvID> m_source = {};
     };
 

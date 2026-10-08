@@ -33,20 +33,20 @@ namespace stdr = std::ranges;
 namespace stdv = std::views;
 
 export namespace stormkit::wsi::macos {
-    class Window: public ::stormkit::wsi::common::WindowBase {
+    class window: public ::stormkit::wsi::common::window_base {
       public:
-        explicit Window(WM) noexcept { macOS::initCocoaProcess(); };
+        explicit window(window_manager) noexcept { macOS::initCocoaProcess(); };
 
-        ~Window() noexcept = default;
+        ~window() noexcept = default;
 
-        Window(const Window&) noexcept                    = delete;
-        auto operator=(const Window&) noexcept -> Window& = delete;
+        window(const window&) noexcept                    = delete;
+        auto operator=(const window&) noexcept -> window& = delete;
 
-        Window(Window&& other) noexcept : m_window { std::move(other.m_window) } {
+        window(window&& other) noexcept : m_window { std::move(other.m_window) } {
             m_window->updateID(std::bit_cast<u64>(std::bit_cast<uptr>(this)));
         }
 
-        auto operator=(Window&& other) noexcept -> Window& {
+        auto operator=(window&& other) noexcept -> window& {
             if (&other == this) [[unlikely]]
                 return *this;
 
@@ -56,28 +56,27 @@ export namespace stormkit::wsi::macos {
             return *this;
         }
 
-        auto open(string title, const math::uextent2& size, WindowFlag flags) noexcept
-          -> void {
-            const auto resizeable  = has_flag_bit(flags, WindowFlag::RESIZEABLE);
-            const auto borderless  = has_flag_bit(flags, WindowFlag::BORDERLESS);
-            const auto metal_layer = has_flag_bit(flags, WindowFlag::EXTERNAL_CONTEXT);
-            m_window               = macOS::Window::init(swift::String { title },
-                                           as<f64>(size.width),
-                                           as<f64>(size.height),
-                                           resizeable,
-                                           borderless,
-                                           metal_layer,
-                                           std::bit_cast<u64>(std::bit_cast<uptr>(this)));
+        auto open(string title, const math::uextent2& size, window_flag flags) noexcept -> void {
+            const auto resizeable  = has_flag_bit(flags, window_flag::resizeable);
+            const auto borderless  = has_flag_bit(flags, window_flag::borderless);
+            const auto metal_layer = has_flag_bit(flags, window_flag::external_context);
+            m_window               = macOS::window::init(swift::String { title },
+                                                         as<f64>(size.width),
+                                                         as<f64>(size.height),
+                                                         resizeable,
+                                                         borderless,
+                                                         metal_layer,
+                                                         std::bit_cast<u64>(std::bit_cast<uptr>(this)));
 
-            m_state.title  = std::move(title);
-            m_state.active = true;
-            m_state.open   = true;
-            m_state.extent = size;
+            state_.title  = std::move(title);
+            state_.active = true;
+            state_.open   = true;
+            state_.extent = size;
         }
 
         auto close() noexcept -> void {
             m_window = {};
-            m_state  = {};
+            state_   = {};
         }
 
         auto handle_events() noexcept -> void { macOS::processEvents(); }
@@ -85,33 +84,28 @@ export namespace stormkit::wsi::macos {
         auto clear([[maybe_unused]] const ucolor_rgb& color) noexcept -> void {
             const auto value = as<u32>(color.r) << 16 | as<u32>(color.g) << 8 | color.b;
             stdr::fill(m_pixels, value);
-            m_window->drawBitmap(std::bit_cast<unsigned char*>(stdr::data(m_pixels)));
+            m_window->drawBitmap(reinterpret_cast<uchar*>(stdr::data(m_pixels)));
         }
 
         auto fill_framebuffer(array_view<const ucolor_rgb> pixels) noexcept -> void {
             const auto [width, height] = extent();
             const auto count           = std::min(as<u32>(stdr::size(pixels)), height * width);
             if (stdr::size(pixels) > stdr::size(m_pixels)) m_pixels.resize(stdr::size(pixels));
-            stdr::copy(pixels
-                         | stdv::reverse
-                         | stdv::take(count)
-                         | stdv::transform([](const auto& col) static noexcept {
-                               return as<u32>(col.r) << 16 | as<u32>(col.g) << 8 | col.b;
-                           }),
+            stdr::copy(pixels | stdv::reverse | stdv::take(count) | stdv::transform([](const auto& col) static noexcept {
+                           return as<u32>(col.r) << 16 | as<u32>(col.g) << 8 | col.b;
+                       }),
                        stdr::begin(m_pixels));
-            m_window->drawBitmap(std::bit_cast<unsigned char*>(stdr::data(m_pixels)));
+            m_window->drawBitmap(reinterpret_cast<uchar*>(stdr::data(m_pixels)));
         }
 
         auto set_title(string title) noexcept -> void {
-            if (WindowBase::set_title(std::move(title))) {
-                m_window->setTitle(swift::String { m_state.title });
-            }
+            if (window_base::set_title(std::move(title))) { m_window->setTitle(swift::String { state_.title }); }
         }
 
         auto set_extent([[maybe_unused]] const math::uextent2& extent) noexcept -> void {}
 
         auto set_fullscreen(bool fullscreen) noexcept -> void {
-            if (WindowBase::set_fullscreen(fullscreen)) {}
+            if (window_base::set_fullscreen(fullscreen)) {}
         }
 
         auto confine_mouse([[maybe_unused]] bool confined, u8) noexcept -> void {}
@@ -119,9 +113,8 @@ export namespace stormkit::wsi::macos {
         [[nodiscard]]
         STORMKIT_FORCE_INLINE
         auto is_mouse_confined(u8 mouse_id) const noexcept -> bool {
-            expects(mouse_id == GLOBAL_MOUSE_ID,
-                    "StormKit WSI UIKit backend only support one mouse");
-            auto& state = m_mouse_states[mouse_id];
+            expects(mouse_id == global_mouse_id, "StormKit WSI UIKit backend only support one mouse");
+            auto& state = mouse_states_[mouse_id];
             return state.confined;
         }
 
@@ -130,45 +123,38 @@ export namespace stormkit::wsi::macos {
         [[nodiscard]]
         STORMKIT_FORCE_INLINE
         auto is_mouse_locked(u8 mouse_id) const noexcept -> bool {
-            expects(mouse_id == GLOBAL_MOUSE_ID,
-                    "StormKit WSI UIKit backend only support one mouse");
-            auto& state = m_mouse_states[mouse_id];
+            expects(mouse_id == global_mouse_id, "StormKit WSI UIKit backend only support one mouse");
+            auto& state = mouse_states_[mouse_id];
             return state.locked;
         }
 
-        auto hide_mouse([[maybe_unused]] bool hidden, [[maybe_unused]] u8 mouse_id) noexcept
-          -> void {}
+        auto hide_mouse([[maybe_unused]] bool hidden, [[maybe_unused]] u8 mouse_id) noexcept -> void {}
 
         [[nodiscard]]
         STORMKIT_FORCE_INLINE
         auto is_mouse_hidden(u8 mouse_id) const noexcept -> bool {
-            expects(mouse_id == GLOBAL_MOUSE_ID,
-                    "StormKit WSI UIKit backend only support one mouse");
-            auto& state = m_mouse_states[mouse_id];
+            expects(mouse_id == global_mouse_id, "StormKit WSI UIKit backend only support one mouse");
+            auto& state = mouse_states_[mouse_id];
             return state.hidden;
         }
 
-        auto set_relative_mouse([[maybe_unused]] bool enabled,
-                                [[maybe_unused]] u8   mouse_id) noexcept -> void {}
+        auto set_relative_mouse([[maybe_unused]] bool enabled, [[maybe_unused]] u8 mouse_id) noexcept -> void {}
 
         [[nodiscard]]
         STORMKIT_FORCE_INLINE
         auto is_mouse_relative(u8 mouse_id) const noexcept -> bool {
-            expects(mouse_id == GLOBAL_MOUSE_ID,
-                    "StormKit WSI UIKit backend only support one mouse");
-            auto& state = m_mouse_states[mouse_id];
+            expects(mouse_id == global_mouse_id, "StormKit WSI UIKit backend only support one mouse");
+            auto& state = mouse_states_[mouse_id];
             return state.relative;
         }
 
-        auto set_key_repeat([[maybe_unused]] bool enabled, [[maybe_unused]] u8 keyboard_id) noexcept
-          -> void {}
+        auto set_key_repeat([[maybe_unused]] bool enabled, [[maybe_unused]] u8 keyboard_id) noexcept -> void {}
 
         [[nodiscard]]
         STORMKIT_FORCE_INLINE
         auto is_key_repeat_enabled(u8 keyboard_id) const noexcept -> bool {
-            expects(keyboard_id == GLOBAL_KEYBOARD_ID,
-                    "StormKit WSI UIKit backend only support one keyboard");
-            auto& state = m_keyboard_states[keyboard_id];
+            expects(keyboard_id == global_keyboard_id, "StormKit WSI UIKit backend only support one keyboard");
+            auto& state = keyboard_states_[keyboard_id];
             return state.key_repeat;
         }
 
@@ -180,8 +166,7 @@ export namespace stormkit::wsi::macos {
             return false;
         }
 
-        auto set_mouse_position([[maybe_unused]] const math::ivec2& position,
-                                [[maybe_unused]] u8                 mouse_id) noexcept -> void {}
+        auto set_mouse_position([[maybe_unused]] const math::ivec2& position, [[maybe_unused]] u8 mouse_id) noexcept -> void {}
 
         [[nodiscard]]
         STORMKIT_FORCE_INLINE
@@ -194,7 +179,7 @@ export namespace stormkit::wsi::macos {
 
         [[nodiscard]]
         STORMKIT_FORCE_INLINE
-        inline auto native_handle() const noexcept -> NativeHandle {
+        inline auto native_handle() const noexcept -> native_handle_type {
             auto f  = m_window->nativeHandle();
             auto f2 = m_window->nativeHandle2();
 
@@ -203,7 +188,7 @@ export namespace stormkit::wsi::macos {
         }
 
       private:
-        defer_init<macOS::Window> m_window;
+        defer_init<macOS::window> m_window;
 
         dynarray<u32> m_pixels;
     };

@@ -26,23 +26,23 @@ import :linux.wayland.context;
 
 export {
     namespace stormkit::wsi::linux::wayland {
-        class Window: public stormkit::wsi::common::WindowBase {
+        class window: public stormkit::wsi::common::window_base {
           public:
             struct Handles {
                 wl_display* display;
                 wl_surface* surface;
             };
 
-            Window() noexcept;
-            ~Window() noexcept;
+            window() noexcept;
+            ~window() noexcept;
 
-            Window(const Window&) noexcept                    = delete;
-            auto operator=(const Window&) noexcept -> Window& = delete;
+            window(const window&) noexcept                    = delete;
+            auto operator=(const window&) noexcept -> window& = delete;
 
-            Window(Window&&) noexcept;
-            auto operator=(Window&&) noexcept -> Window&;
+            window(window&&) noexcept;
+            auto operator=(window&&) noexcept -> window&;
 
-            auto open(string title, const math::uextent2& size, WindowFlag flags) noexcept -> void;
+            auto open(string title, const math::uextent2& size, window_flag flags) noexcept -> void;
             auto close() noexcept -> void;
 
             auto handle_events() noexcept -> void;
@@ -81,7 +81,7 @@ export {
             auto set_mouse_position(const math::ivec2& position, u8 id) noexcept -> void;
 
             [[nodiscard]]
-            auto native_handle() const noexcept -> NativeHandle;
+            auto native_handle() const noexcept -> native_handle_type;
 
             auto handle_xdg_surface_configure(u32) noexcept -> void;
             auto handle_xdg_surface_close() noexcept -> void;
@@ -108,7 +108,7 @@ export {
 
             bool       m_configured    = false;
             bool       m_scale_content = false;
-            WindowFlag m_flags;
+            window_flag m_flags;
             wl_output* m_current_output = nullptr;
 
             string m_title;
@@ -146,7 +146,7 @@ namespace stormkit::wsi::linux::wayland {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    inline auto Window::is_virtual_keyboard_visible() const noexcept -> bool {
+    inline auto window::is_virtual_keyboard_visible() const noexcept -> bool {
         return false;
     }
 } // namespace stormkit::wsi::linux::wayland

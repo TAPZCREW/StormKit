@@ -32,7 +32,7 @@ namespace stormkit::gpu {
             struct OffscreenCreateInfo {};
 
             struct CreateInfo {
-                ref<const wsi::Window> window;
+                ref<const wsi::window> window;
             };
         };
 
@@ -78,9 +78,9 @@ namespace stormkit::gpu {
 #endif
 
         [[nodiscard]]
-        static auto create_from_window(view::Instance instance, const wsi::Window& window) noexcept -> expected<Surface>;
+        static auto create_from_window(view::Instance instance, const wsi::window& window) noexcept -> expected<Surface>;
         [[nodiscard]]
-        static auto allocate_from_window(view::Instance instance, const wsi::Window& window) noexcept -> expected<heap_ptr<Surface>>;
+        static auto allocate_from_window(view::Instance instance, const wsi::window& window) noexcept -> expected<heap_ptr<Surface>>;
 
         auto do_init(PrivateTag, const CreateInfo&) noexcept -> expected<void>;
         auto do_init(PrivateTag, const OffscreenCreateInfo&) noexcept -> expected<void>;
@@ -141,7 +141,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto SurfaceImplementation::create_from_window(view::Instance instance, const wsi::Window& window) noexcept
+    inline auto SurfaceImplementation::create_from_window(view::Instance instance, const wsi::window& window) noexcept
       -> expected<Surface> {
         return GpuObjectImplementation::create(std::move(instance), CreateInfo { as_ref(window) });
     }
@@ -149,7 +149,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto SurfaceImplementation::allocate_from_window(view::Instance instance, const wsi::Window& window) noexcept
+    inline auto SurfaceImplementation::allocate_from_window(view::Instance instance, const wsi::window& window) noexcept
       -> expected<heap_ptr<Surface>> {
         return GpuObjectImplementation::allocate(std::move(instance), CreateInfo { as_ref(window) });
     }

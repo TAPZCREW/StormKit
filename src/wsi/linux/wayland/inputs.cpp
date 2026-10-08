@@ -36,7 +36,7 @@ namespace stormkit::wsi::linux::wayland::wl {
     auto keyboard_key_handler(void*, wl_keyboard*, u32, u32, u32, u32) noexcept -> void;
     auto keyboard_modifiers_handler(void*, wl_keyboard*, u32, u32, u32, u32, u32) noexcept -> void;
     auto keyboard_repeat_info_handler(void*, wl_keyboard*, i32, i32) noexcept -> void;
-    auto update_keymap(KeyboardState&, string_view) noexcept -> void;
+    auto update_keymap(keyboard_state&, string_view) noexcept -> void;
 
     auto pointer_enter_handler(void*, wl_pointer*, u32, wl_surface*, wl_fixed_t, wl_fixed_t) noexcept -> void;
     auto pointer_leave_handler(void*, wl_pointer*, u32, wl_surface*) noexcept -> void;
@@ -79,7 +79,7 @@ namespace stormkit::wsi::linux::wayland::wl {
         auto& globals       = *std::bit_cast<Globals*>(data);
         auto  _capabilities = unchecked_narrow<wl_seat_capability>(capabilities);
         if (has_flag_bit(_capabilities, WL_SEAT_CAPABILITY_KEYBOARD)) {
-            auto& [keyboard, state] = globals.keyboards.emplace_back(wl::Keyboard::create(seat), KeyboardState {});
+            auto& [keyboard, state] = globals.keyboards.emplace_back(wl::Keyboard::create(seat), keyboard_state {});
             wl_keyboard_add_listener(keyboard, &g_keyboard_listener, &state);
 
             state.repeat.timer_fd = common::FD::take(timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK));
@@ -109,7 +109,7 @@ namespace stormkit::wsi::linux::wayland::wl {
         if (data == nullptr) return;
         auto& globals = get_globals();
 
-        auto& state = *std::bit_cast<KeyboardState*>(data);
+        auto& state = *std::bit_cast<keyboard_state*>(data);
         for (const auto& [_surface, window] : globals.windows) {
             if (_surface == surface) {
                 state.focused_window = window;
@@ -122,7 +122,7 @@ namespace stormkit::wsi::linux::wayland::wl {
     /////////////////////////////////////
     auto keyboard_leave_handler(void* data, wl_keyboard*, u32, wl_surface*) noexcept -> void {
         if (data == nullptr) return;
-        auto& state          = *std::bit_cast<KeyboardState*>(data);
+        auto& state          = *std::bit_cast<keyboard_state*>(data);
         state.focused_window = nullptr;
 
         const auto timer = itimerspec {};
@@ -136,7 +136,7 @@ namespace stormkit::wsi::linux::wayland::wl {
         auto& globals = get_globals();
         if (not globals.xkb_context) globals.xkb_context = common::xkb::Context::create(XKB_CONTEXT_NO_FLAGS);
 
-        auto& state = *std::bit_cast<KeyboardState*>(data);
+        auto& state = *std::bit_cast<keyboard_state*>(data);
         if (format == WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
             auto map_shm = std::bit_cast<char*>(mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fd, 0));
 
@@ -151,7 +151,7 @@ namespace stormkit::wsi::linux::wayland::wl {
     /////////////////////////////////////
     auto keyboard_key_handler(void* data, wl_keyboard*, u32, u32, u32 key, u32 kstate) noexcept -> void {
         if (data == nullptr) return;
-        auto& state = *std::bit_cast<KeyboardState*>(data);
+        auto& state = *std::bit_cast<keyboard_state*>(data);
         if (not state.focused_window or not state.xkb_state) return;
 
         auto characters = array<char, 10> {};
@@ -199,7 +199,7 @@ namespace stormkit::wsi::linux::wayland::wl {
                                     u32 group) noexcept -> void {
         if (data == nullptr) return;
 
-        auto& state = *std::bit_cast<KeyboardState*>(data);
+        auto& state = *std::bit_cast<keyboard_state*>(data);
         if (not state.xkb_state) return;
 
         xkb_state_update_mask(state.xkb_state, mods_depressed, mods_latched, mods_locked, 0, 0, group);
@@ -210,7 +210,7 @@ namespace stormkit::wsi::linux::wayland::wl {
     auto keyboard_repeat_info_handler(void* data, wl_keyboard*, i32 rate, i32 delay) noexcept -> void {
         if (data == nullptr) return;
 
-        auto& state = *std::bit_cast<KeyboardState*>(data);
+        auto& state = *std::bit_cast<keyboard_state*>(data);
 
         state.repeat.delay = delay;
         state.repeat.rate  = rate;
@@ -218,7 +218,7 @@ namespace stormkit::wsi::linux::wayland::wl {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto update_keymap(KeyboardState& state, string_view keymap) noexcept -> void {
+    auto update_keymap(keyboard_state& state, string_view keymap) noexcept -> void {
         auto& globals    = get_globals();
         state.xkb_keymap = common::xkb::Keymap::create(globals.xkb_context,
                                                        std::data(keymap),

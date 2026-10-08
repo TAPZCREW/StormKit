@@ -21,7 +21,7 @@ namespace stdr = std::ranges;
 namespace stormkit::wsi::linux::x11 {
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_monitors(WM, bool update) noexcept -> array_view<const Monitor> {
+    auto get_monitors(window_manager, bool update) noexcept -> array_view<const Monitor> {
         thread_local auto monitors = dynarray<Monitor> {};
 
         if (stdr::empty(monitors) or update) {

@@ -68,7 +68,7 @@ export namespace base {
         }
 
       protected:
-        defer_init<wsi::Window>               m_window;
+        defer_init<wsi::window>               m_window;
         defer_init<gpu::Instance>             m_instance;
         defer_init<gpu::DebugCallback>        m_debug_callback;
         defer_init<gpu::Surface>              m_surface;
@@ -80,11 +80,11 @@ export namespace base {
 
       private:
         auto init_window(string_view example_name) noexcept -> void {
-            m_window = wsi::Window::open(std::format("Stormkit GPU {} example", example_name),
+            m_window = wsi::window::open(std::format("Stormkit GPU {} example", example_name),
                                          { 800_u32, 600_u32 },
-                                         wsi::WindowFlag::DEFAULT | wsi::WindowFlag::EXTERNAL_CONTEXT);
-            m_window->on<wsi::EventType::KEY_DOWN>([this](u8 /*id*/, wsi::Key key, char /*c*/) mutable noexcept {
-                if (key == wsi::Key::ESCAPE) m_window->close();
+                                         wsi::window_flag::default | wsi::window_flag::external_context);
+            m_window->on<wsi::event_type::key_down>([this](u8 /*id*/, wsi::Key key, char /*c*/) mutable noexcept {
+                if (key == wsi::key::escape) m_window->close();
             });
         }
 

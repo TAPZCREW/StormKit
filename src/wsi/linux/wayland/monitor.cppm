@@ -17,7 +17,7 @@ namespace stdv = std::views;
 namespace stormkit::wsi::linux::wayland {
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_monitors(WM, bool update) noexcept -> array_view<const Monitor> {
+    auto get_monitors(window_manager, bool update) noexcept -> array_view<const Monitor> {
         thread_local auto monitors = dynarray<Monitor> {};
         if (update or stdr::empty(monitors)) {
             auto& globals = wl::get_globals();

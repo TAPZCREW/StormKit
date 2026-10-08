@@ -24,8 +24,8 @@ namespace stormkit::lua::wsi {
         metatable["monitor_flag"] = global_state.create_table_with(
           sol::meta_function::as<string>,
           +[](Monitor::Flags flags) { return as<string>(flags); },
-          "NONE",
-          Monitor::Flags::NONE,
+          "none",
+          Monitor::Flags::none,
           "PRIMARY",
           Monitor::Flags::PRIMARY);
 

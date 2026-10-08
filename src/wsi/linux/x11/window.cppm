@@ -44,7 +44,7 @@ export namespace stormkit::wsi::linux::x11 {
 
             Destructor(globals.connection, val);
         };
-        using Window
+        using window
           = raii_capsule<xcb_window_t, xcb_generate_id, XCB_DELETER<xcb_destroy_window>, struct WindowTag, XCB_WINDOW_NONE>;
         using ColorMap
           = raii_capsule<xcb_colormap_t, xcb_generate_id, XCB_DELETER<xcb_free_colormap>, struct ColorMapTag, XCB_NONE>;
@@ -54,7 +54,7 @@ export namespace stormkit::wsi::linux::x11 {
         using Pixmap = raii_capsule<xcb_pixmap_t, xcb_generate_id, XCB_DELETER<xcb_free_pixmap>, struct PixmapTag, XCB_NONE>;
     } // namespace xcb
 
-    class Window: public stormkit::wsi::common::WindowBase {
+    class window: public stormkit::wsi::common::window_base {
       public:
         struct Handles {
             xcb_connection_t*  connection;
@@ -63,16 +63,16 @@ export namespace stormkit::wsi::linux::x11 {
             xkb_state*         state;
         };
 
-        Window() noexcept;
-        ~Window() noexcept;
+        window() noexcept;
+        ~window() noexcept;
 
-        Window(const Window&) noexcept                    = delete;
-        auto operator=(const Window&) noexcept -> Window& = delete;
+        window(const window&) noexcept                    = delete;
+        auto operator=(const window&) noexcept -> window& = delete;
 
-        Window(Window&&) noexcept;
-        auto operator=(Window&&) noexcept -> Window&;
+        window(window&&) noexcept;
+        auto operator=(window&&) noexcept -> window&;
 
-        auto open(string title, const math::uextent2& size, WindowFlag flags) noexcept -> void;
+        auto open(string title, const math::uextent2& size, window_flag flags) noexcept -> void;
         auto close() noexcept -> void;
 
         auto handle_events() noexcept -> void;
@@ -111,7 +111,7 @@ export namespace stormkit::wsi::linux::x11 {
         auto set_mouse_position(const math::ivec2& position, u8 mouse_id) noexcept -> void;
 
         [[nodiscard]]
-        auto native_handle() const noexcept -> NativeHandle;
+        auto native_handle() const noexcept -> native_handle_type;
 
       private:
         auto process_events(xcb_generic_event_t* xevent) -> void;
@@ -125,7 +125,7 @@ export namespace stormkit::wsi::linux::x11 {
 
         Handles m_handles;
 
-        xcb::Window          m_window           = xcb::Window::empty();
+        xcb::window          m_window           = xcb::window::empty();
         xcb::ColorMap        m_color_map        = xcb::ColorMap::empty();
         xcb::GraphicsContext m_graphics_context = xcb::GraphicsContext::empty();
         xcb::Image           m_image            = xcb::Image::empty();
@@ -147,66 +147,66 @@ namespace stormkit::wsi::linux::x11 {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Window::Window() noexcept {
+    inline window::window() noexcept {
         xcb::init();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Window::Window(Window&&) noexcept = default;
+    inline window::window(window&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::operator=(Window&&) noexcept -> Window& = default;
+    inline auto window::operator=(window&&) noexcept -> window& = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::is_mouse_confined(u8) const noexcept -> bool {
-        return m_mouse_states[GLOBAL_MOUSE_ID].confined;
+    inline auto window::is_mouse_confined(u8) const noexcept -> bool {
+        return mouse_states_[global_mouse_id].confined;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::is_mouse_locked(u8) const noexcept -> bool {
-        return m_mouse_states[GLOBAL_MOUSE_ID].locked;
+    inline auto window::is_mouse_locked(u8) const noexcept -> bool {
+        return mouse_states_[global_mouse_id].locked;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    inline auto Window::is_mouse_hidden(u8) const noexcept -> bool {
-        return m_mouse_states[GLOBAL_MOUSE_ID].hidden;
+    inline auto window::is_mouse_hidden(u8) const noexcept -> bool {
+        return mouse_states_[global_mouse_id].hidden;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    inline auto Window::is_mouse_relative(u8) const noexcept -> bool {
-        return m_mouse_states[GLOBAL_MOUSE_ID].relative;
+    inline auto window::is_mouse_relative(u8) const noexcept -> bool {
+        return mouse_states_[global_mouse_id].relative;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    inline auto Window::is_key_repeat_enabled(u8) const noexcept -> bool {
-        return m_keyboard_states[GLOBAL_KEYBOARD_ID].key_repeat;
+    inline auto window::is_key_repeat_enabled(u8) const noexcept -> bool {
+        return keyboard_states_[global_keyboard_id].key_repeat;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    inline auto Window::is_virtual_keyboard_visible() const noexcept -> bool {
+    inline auto window::is_virtual_keyboard_visible() const noexcept -> bool {
         return false;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    inline auto Window::native_handle() const noexcept -> NativeHandle {
-        return std::bit_cast<NativeHandle>(&m_handles);
+    inline auto window::native_handle() const noexcept -> native_handle_type {
+        return std::bit_cast<native_handle_type>(&m_handles);
     }
 } // namespace stormkit::wsi::linux::x11

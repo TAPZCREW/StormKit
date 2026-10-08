@@ -15,138 +15,138 @@ import stormkit.core;
 using namespace stormkit::literals;
 
 export namespace stormkit::wsi {
-    inline constexpr auto GLOBAL_KEYBOARD_ID = 0_u8;
+    inline constexpr auto global_keyboard_id = 0_u8;
 
-    enum class Key : u8 {
-        A = 0,
-        B,
-        C,
-        D,
-        E,
-        F,
-        G,
-        H,
-        I,
-        J,
-        K,
-        L,
-        M,
-        N,
-        O,
-        P,
-        Q,
-        R,
-        S,
-        T,
-        U,
-        V,
-        W,
-        X,
-        Y,
-        Z,
-        NUM_0,
-        NUM_1,
-        NUM_2,
-        NUM_3,
-        NUM_4,
-        NUM_5,
-        NUM_6,
-        NUM_7,
-        NUM_8,
-        NUM_9,
+    enum class key : u8 {
+        a = 0,
+        b,
+        c,
+        d,
+        e,
+        f,
+        g,
+        h,
+        i,
+        j,
+        k,
+        l,
+        m,
+        n,
+        o,
+        p,
+        q,
+        r,
+        s,
+        t,
+        u,
+        v,
+        w,
+        x,
+        y,
+        z,
+        num_0,
+        num_1,
+        num_2,
+        num_3,
+        num_4,
+        num_5,
+        num_6,
+        num_7,
+        num_8,
+        num_9,
 
-        LEFT,
-        RIGHT,
-        UP,
-        DOWN,
+        left,
+        right,
+        up,
+        down,
 
-        L_CONTROL,
-        L_SHIFT,
-        L_ALT,
-        L_META,
-        R_CONTROL,
-        R_SHIFT,
-        R_ALT,
-        R_META,
+        l_control,
+        l_shift,
+        l_alt,
+        l_meta,
+        r_control,
+        r_shift,
+        r_alt,
+        r_meta,
 
-        ESCAPE,
-        TAB,
-        MENU,
+        escape,
+        tab,
+        menu,
 
-        QUOTE,
-        BACK_SLASH,
-        COMMA,
-        EQUAL,
+        quote,
+        back_slash,
+        comma,
+        equal,
 
-        GRAVE_ACCENT,
-        L_BRACKET,
-        MINUS,
-        PERIOD,
-        R_BRACKET,
-        SEMI_COLON,
-        SLASH,
+        grave_accent,
+        l_bracket,
+        minus,
+        period,
+        r_bracket,
+        semi_colon,
+        slash,
 
-        ISO,
+        iso,
 
-        BACK_SPACE,
-        CAPS_LOCK,
-        ENTER,
-        SPACE,
+        back_space,
+        caps_lock,
+        enter,
+        space,
 
-        F1,
-        F2,
-        F3,
-        F4,
-        F5,
-        F6,
-        F7,
-        F8,
-        F9,
-        F10,
-        F11,
-        F12,
-        F13,
-        F14,
-        F15,
-        F16,
-        F17,
-        F18,
-        F19,
-        F20,
+        f1,
+        f2,
+        f3,
+        f4,
+        f5,
+        f6,
+        f7,
+        f8,
+        f9,
+        f10,
+        f11,
+        f12,
+        f13,
+        f14,
+        f15,
+        f16,
+        f17,
+        f18,
+        f19,
+        f20,
 
-        PRINT_SCREEN,
+        print_screen,
 
-        INSERT,
-        DELETE,
-        HOME,
-        END,
-        PAGE_UP,
-        PAGE_DOWN,
+        insert,
+        del,
+        home,
+        end,
+        page_up,
+        page_down,
 
-        NUMPAD_LOCK,
-        NUMPAD_ADD,
-        NUMPAD_DECIMAL,
-        NUMPAD_DIVIDE,
-        NUMPAD_ENTER,
-        NUMPAD_EQUAL,
-        NUMPAD_MULTIPLY,
-        NUMPAD_SUBTRACT,
-        NUMPAD_0,
-        NUMPAD_1,
-        NUMPAD_2,
-        NUMPAD_3,
-        NUMPAD_4,
-        NUMPAD_5,
-        NUMPAD_6,
-        NUMPAD_7,
-        NUMPAD_8,
-        NUMPAD_9,
+        numpad_lock,
+        numpad_add,
+        numpad_decimal,
+        numpad_divide,
+        numpad_enter,
+        numpad_equal,
+        numpad_multiply,
+        numpad_subtract,
+        numpad_0,
+        numpad_1,
+        numpad_2,
+        numpad_3,
+        numpad_4,
+        numpad_5,
+        numpad_6,
+        numpad_7,
+        numpad_8,
+        numpad_9,
 
-        UNKNOWN = std::numeric_limits<u8>::max(),
+        unknown = std::numeric_limits<u8>::max(),
     };
 
     [[nodiscard]]
-    constexpr auto tag_invoke(as_fn<string_view>, Key key, const std::source_location&) noexcept -> string_view;
+    constexpr auto tag_invoke(as_fn<string_view>, key key, const std::source_location&) noexcept -> string_view;
 } // namespace stormkit::wsi
 
 ////////////////////////////////////////////////////////////////////
@@ -157,132 +157,132 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto tag_invoke(as_fn<string_view>, Key key, const std::source_location&) noexcept -> string_view {
+    constexpr auto tag_invoke(as_fn<string_view>, key key, const std::source_location&) noexcept -> string_view {
         switch (key) {
-            case Key::A: return "Key::A";
-            case Key::B: return "Key::B";
-            case Key::C: return "Key::C";
-            case Key::D: return "Key::D";
-            case Key::E: return "Key::E";
-            case Key::F: return "Key::F";
-            case Key::G: return "Key::G";
-            case Key::H: return "Key::H";
-            case Key::I: return "Key::I";
-            case Key::J: return "Key::J";
-            case Key::K: return "Key::K";
-            case Key::L: return "Key::L";
-            case Key::M: return "Key::M";
-            case Key::N: return "Key::N";
-            case Key::O: return "Key::O";
-            case Key::P: return "Key::P";
-            case Key::Q: return "Key::Q";
-            case Key::R: return "Key::R";
-            case Key::S: return "Key::S";
-            case Key::T: return "Key::T";
-            case Key::U: return "Key::U";
-            case Key::V: return "Key::V";
-            case Key::W: return "Key::W";
-            case Key::X: return "Key::X";
-            case Key::Y: return "Key::Y";
-            case Key::Z: return "Key::Z";
-            case Key::NUM_0: return "Key::NUM_0";
-            case Key::NUM_1: return "Key::NUM_1";
-            case Key::NUM_2: return "Key::NUM_2";
-            case Key::NUM_3: return "Key::NUM_3";
-            case Key::NUM_4: return "Key::NUM_4";
-            case Key::NUM_5: return "Key::NUM_5";
-            case Key::NUM_6: return "Key::NUM_6";
-            case Key::NUM_7: return "Key::NUM_7";
-            case Key::NUM_8: return "Key::NUM_8";
-            case Key::NUM_9: return "Key::NUM_9";
+            case key::a: return "key::a";
+            case key::b: return "key::b";
+            case key::c: return "key::c";
+            case key::d: return "key::d";
+            case key::e: return "key::e";
+            case key::f: return "key::f";
+            case key::g: return "key::g";
+            case key::h: return "key::h";
+            case key::i: return "key::i";
+            case key::j: return "key::j";
+            case key::k: return "key::k";
+            case key::l: return "key::l";
+            case key::m: return "key::m";
+            case key::n: return "key::n";
+            case key::o: return "key::o";
+            case key::p: return "key::p";
+            case key::q: return "key::q";
+            case key::r: return "key::r";
+            case key::s: return "key::s";
+            case key::t: return "key::t";
+            case key::u: return "key::u";
+            case key::v: return "key::v";
+            case key::w: return "key::w";
+            case key::x: return "key::x";
+            case key::y: return "key::y";
+            case key::z: return "key::z";
+            case key::num_0: return "key::num_0";
+            case key::num_1: return "key::num_1";
+            case key::num_2: return "key::num_2";
+            case key::num_3: return "key::num_3";
+            case key::num_4: return "key::num_4";
+            case key::num_5: return "key::num_5";
+            case key::num_6: return "key::num_6";
+            case key::num_7: return "key::num_7";
+            case key::num_8: return "key::num_8";
+            case key::num_9: return "key::num_9";
 
-            case Key::LEFT: return "Key::LEFT";
-            case Key::RIGHT: return "Key::RIGHT";
-            case Key::UP: return "Key::UP";
-            case Key::DOWN: return "Key::DOWN";
+            case key::left: return "key::left";
+            case key::right: return "key::right";
+            case key::up: return "key::up";
+            case key::down: return "key::down";
 
-            case Key::L_CONTROL: return "Key::L_CONTROL";
-            case Key::L_SHIFT: return "Key::L_SHIFT";
-            case Key::L_ALT: return "Key::L_ALT";
-            case Key::L_META: return "Key::L_META";
-            case Key::R_CONTROL: return "Key::R_CONTROL";
-            case Key::R_SHIFT: return "Key::R_SHIFT";
-            case Key::R_ALT: return "Key::R_ALT";
-            case Key::R_META: return "Key::R_META";
+            case key::l_control: return "key::l_control";
+            case key::l_shift: return "key::l_shift";
+            case key::l_alt: return "key::l_alt";
+            case key::l_meta: return "key::l_meta";
+            case key::r_control: return "key::r_control";
+            case key::r_shift: return "key::r_shift";
+            case key::r_alt: return "key::r_alt";
+            case key::r_meta: return "key::r_meta";
 
-            case Key::ESCAPE: return "Key::ESCAPE";
-            case Key::TAB: return "Key::TAB";
-            case Key::MENU: return "Key::MENU";
+            case key::escape: return "key::escape";
+            case key::tab: return "key::tab";
+            case key::menu: return "key::menu";
 
-            case Key::QUOTE: return "Key::QUOTE";
-            case Key::BACK_SLASH: return "Key::BACK_SLASH";
-            case Key::COMMA: return "Key::COMMA";
-            case Key::EQUAL: return "Key::EQUAL";
+            case key::quote: return "key::quote";
+            case key::back_slash: return "key::back_slash";
+            case key::comma: return "key::comma";
+            case key::equal: return "key::equal";
 
-            case Key::GRAVE_ACCENT: return "Key::GRAVE_ACCENT";
-            case Key::L_BRACKET: return "Key::L_BRACKET";
-            case Key::MINUS: return "Key::MINUS";
-            case Key::PERIOD: return "Key::PERIOD";
-            case Key::R_BRACKET: return "Key::R_BRACKET";
-            case Key::SEMI_COLON: return "Key::SEMI_COLON";
-            case Key::SLASH: return "Key::SLASH";
+            case key::grave_accent: return "key::grave_accent";
+            case key::l_bracket: return "key::l_bracket";
+            case key::minus: return "key::minus";
+            case key::period: return "key::period";
+            case key::r_bracket: return "key::r_bracket";
+            case key::semi_colon: return "key::semi_colon";
+            case key::slash: return "key::slash";
 
-            case Key::ISO: return "Key::ISO";
+            case key::iso: return "key::iso";
 
-            case Key::BACK_SPACE: return "Key::BACK_SPACE";
-            case Key::CAPS_LOCK: return "Key::CAPS_LOCK";
-            case Key::ENTER: return "Key::ENTER";
-            case Key::SPACE: return "Key::SPACE";
+            case key::back_space: return "key::back_space";
+            case key::caps_lock: return "key::caps_lock";
+            case key::enter: return "key::enter";
+            case key::space: return "key::space";
 
-            case Key::F1: return "Key::F1";
-            case Key::F2: return "Key::F2";
-            case Key::F3: return "Key::F3";
-            case Key::F4: return "Key::F4";
-            case Key::F5: return "Key::F5";
-            case Key::F6: return "Key::F6";
-            case Key::F7: return "Key::F7";
-            case Key::F8: return "Key::F8";
-            case Key::F9: return "Key::F9";
-            case Key::F10: return "Key::F10";
-            case Key::F11: return "Key::F11";
-            case Key::F12: return "Key::F12";
-            case Key::F13: return "Key::F13";
-            case Key::F14: return "Key::F14";
-            case Key::F15: return "Key::F15";
-            case Key::F16: return "Key::F16";
-            case Key::F17: return "Key::F17";
-            case Key::F18: return "Key::F18";
-            case Key::F19: return "Key::F19";
-            case Key::F20: return "Key::F20";
+            case key::f1: return "key::f1";
+            case key::f2: return "key::f2";
+            case key::f3: return "key::f3";
+            case key::f4: return "key::f4";
+            case key::f5: return "key::f5";
+            case key::f6: return "key::f6";
+            case key::f7: return "key::f7";
+            case key::f8: return "key::f8";
+            case key::f9: return "key::f9";
+            case key::f10: return "key::f10";
+            case key::f11: return "key::f11";
+            case key::f12: return "key::f12";
+            case key::f13: return "key::f13";
+            case key::f14: return "key::f14";
+            case key::f15: return "key::f15";
+            case key::f16: return "key::f16";
+            case key::f17: return "key::f17";
+            case key::f18: return "key::f18";
+            case key::f19: return "key::f19";
+            case key::f20: return "key::f20";
 
-            case Key::PRINT_SCREEN: return "Key::PRINT_SCREEN";
+            case key::print_screen: return "key::print_screen";
 
-            case Key::INSERT: return "Key::INSERT";
-            case Key::DELETE: return "Key::DELETE";
-            case Key::HOME: return "Key::HOME";
-            case Key::END: return "Key::END";
-            case Key::PAGE_UP: return "Key::PAGE_UP";
-            case Key::PAGE_DOWN: return "Key::PAGE_DOWN";
+            case key::insert: return "key::insert";
+            case key::del: return "key::del";
+            case key::home: return "key::home";
+            case key::end: return "key::end";
+            case key::page_up: return "key::page_up";
+            case key::page_down: return "key::page_down";
 
-            case Key::NUMPAD_LOCK: return "Key::NUMPAD_LOCK";
-            case Key::NUMPAD_ADD: return "Key::NUMPAD_ADD";
-            case Key::NUMPAD_DECIMAL: return "Key::NUMPAD_DECIMAL";
-            case Key::NUMPAD_DIVIDE: return "Key::NUMPAD_DIVIDE";
-            case Key::NUMPAD_ENTER: return "Key::NUMPAD_ENTER";
-            case Key::NUMPAD_EQUAL: return "Key::NUMPAD_EQUAL";
-            case Key::NUMPAD_MULTIPLY: return "Key::NUMPAD_MULTIPLY";
-            case Key::NUMPAD_SUBTRACT: return "Key::NUMPAD_SUBTRACT";
-            case Key::NUMPAD_0: return "Key::NUMPAD_0";
-            case Key::NUMPAD_1: return "Key::NUMPAD_1";
-            case Key::NUMPAD_2: return "Key::NUMPAD_2";
-            case Key::NUMPAD_3: return "Key::NUMPAD_3";
-            case Key::NUMPAD_4: return "Key::NUMPAD_4";
-            case Key::NUMPAD_5: return "Key::NUMPAD_5";
-            case Key::NUMPAD_6: return "Key::NUMPAD_6";
-            case Key::NUMPAD_7: return "Key::NUMPAD_7";
-            case Key::NUMPAD_8: return "Key::NUMPAD_8";
-            case Key::NUMPAD_9: return "Key::NUMPAD_9";
-            case Key::UNKNOWN: return "Key::UNKNOWN";
+            case key::numpad_lock: return "key::numpad_lock";
+            case key::numpad_add: return "key::numpad_add";
+            case key::numpad_decimal: return "key::numpad_decimal";
+            case key::numpad_divide: return "key::numpad_divide";
+            case key::numpad_enter: return "key::numpad_enter";
+            case key::numpad_equal: return "key::numpad_equal";
+            case key::numpad_multiply: return "key::numpad_multiply";
+            case key::numpad_subtract: return "key::numpad_subtract";
+            case key::numpad_0: return "key::numpad_0";
+            case key::numpad_1: return "key::numpad_1";
+            case key::numpad_2: return "key::numpad_2";
+            case key::numpad_3: return "key::numpad_3";
+            case key::numpad_4: return "key::numpad_4";
+            case key::numpad_5: return "key::numpad_5";
+            case key::numpad_6: return "key::numpad_6";
+            case key::numpad_7: return "key::numpad_7";
+            case key::numpad_8: return "key::numpad_8";
+            case key::numpad_9: return "key::numpad_9";
+            case key::unknown: return "key::unknown";
             default: break;
         }
         std::unreachable();

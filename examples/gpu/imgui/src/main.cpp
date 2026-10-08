@@ -161,39 +161,39 @@ class Application: public base::Application {
         ImGui_ImplVulkan_LoadFunctions(VK_API_VERSION_1_1, gpu::vk::imgui_vk_loader, &*m_device);
         ImGui_ImplVulkan_Init(&init_info);
 
-        m_window->on(wsi::KeyDownEventFunc { [this, &io](u8 /*id*/, wsi::Key key, char c) mutable noexcept {
-                         if (key == wsi::Key::ESCAPE) m_window->close();
+        m_window->on(wsi::key_down_event_cb_type { [this, &io](u8 /*id*/, wsi::Key key, char c) mutable noexcept {
+                         if (key == wsi::key::escape) m_window->close();
                          io.AddInputCharactersUTF8(&c);
                      } },
-                     wsi::MouseMovedEventFunc { [&io](u8 /*id*/, const math::ivec2& position) mutable noexcept {
+                     wsi::mouse_moved_event_cb_type { [&io](u8 /*id*/, const math::ivec2& position) mutable noexcept {
                          const auto _position = position.to<f32>();
 
                          io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
                          io.AddMousePosEvent(_position.x, _position.y);
                      } },
-                     wsi::MouseButtonDownEventFunc {
-                       [&io](u8 /*id*/, wsi::MouseButton button, const math::ivec2&) mutable noexcept {
+                     wsi::mouse_button_down_event_cb_type {
+                       [&io](u8 /*id*/, wsi::mouse_button button, const math::ivec2&) mutable noexcept {
                            auto mouse_button = -1;
-                           if (button == wsi::MouseButton::LEFT) mouse_button = 0;
-                           if (button == wsi::MouseButton::RIGHT) mouse_button = 1;
-                           if (button == wsi::MouseButton::MIDDLE) mouse_button = 2;
-                           if (button == wsi::MouseButton::BUTTON_1) mouse_button = 3;
-                           if (button == wsi::MouseButton::BUTTON_2) mouse_button = 4;
+                           if (button == wsi::mouse_button::left) mouse_button = 0;
+                           if (button == wsi::mouse_button::right) mouse_button = 1;
+                           if (button == wsi::mouse_button::middle) mouse_button = 2;
+                           if (button == wsi::mouse_button::button_1) mouse_button = 3;
+                           if (button == wsi::mouse_button::button_2) mouse_button = 4;
                            if (mouse_button == -1) return;
                            io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
-                           io.AddMouseButtonEvent(mouse_button, true);
+                           io.Addmouse_buttonEvent(mouse_button, true);
                        } },
-                     wsi::MouseButtonUpEventFunc {
-                       [&io](u8 /*id*/, wsi::MouseButton button, const math::ivec2&) mutable noexcept {
+                     wsi::mouse_button_up_event_cb_type {
+                       [&io](u8 /*id*/, wsi::mouse_button button, const math::ivec2&) mutable noexcept {
                            auto mouse_button = -1;
-                           if (button == wsi::MouseButton::LEFT) mouse_button = 0;
-                           if (button == wsi::MouseButton::RIGHT) mouse_button = 1;
-                           if (button == wsi::MouseButton::MIDDLE) mouse_button = 2;
-                           if (button == wsi::MouseButton::BUTTON_1) mouse_button = 3;
-                           if (button == wsi::MouseButton::BUTTON_2) mouse_button = 4;
+                           if (button == wsi::mouse_button::left) mouse_button = 0;
+                           if (button == wsi::mouse_button::right) mouse_button = 1;
+                           if (button == wsi::mouse_button::middle) mouse_button = 2;
+                           if (button == wsi::mouse_button::button_1) mouse_button = 3;
+                           if (button == wsi::mouse_button::button_2) mouse_button = 4;
                            if (mouse_button == -1) return;
                            io.AddMouseSourceEvent(ImGuiMouseSource_Mouse);
-                           io.AddMouseButtonEvent(mouse_button, false);
+                           io.Addmouse_buttonEvent(mouse_button, false);
                        } });
     }
 

@@ -15,25 +15,25 @@ import std;
 import stormkit.core;
 
 export namespace stormkit::wsi {
-    enum class WM : u8 {
-        WIN32 = 0,
-        WAYLAND,
-        X11,
-        ANDROID,
-        MACOS,
-        IOS,
-        TVOS,
-        SWITCH,
+    enum class window_manager : u8 {
+        win32 = 0,
+        wayland,
+        x11,
+        android,
+        macos,
+        ios,
+        tvos,
+        nintendo_switch,
     };
 
     [[nodiscard]]
-    constexpr auto tag_invoke(as_fn<string_view>, WM value, const std::source_location&) noexcept -> string_view;
+    constexpr auto tag_invoke(as_fn<string_view>, window_manager value, const std::source_location&) noexcept -> string_view;
 
     STORMKIT_WSI_API
     auto parse_args(array_view<const string_view> args) noexcept -> void;
 
     [[nodiscard]]
-    STORMKIT_WSI_API auto wm() noexcept -> WM;
+    STORMKIT_WSI_API auto wm() noexcept -> window_manager;
 } // namespace stormkit::wsi
 
 ////////////////////////////////////////////////////////////////////
@@ -44,16 +44,16 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto tag_invoke(as_fn<string_view>, WM wm, const std::source_location&) noexcept -> string_view {
+    constexpr auto tag_invoke(as_fn<string_view>, window_manager wm, const std::source_location&) noexcept -> string_view {
         switch (wm) {
-            case WM::WIN32: return "WM::WIN32";
-            case WM::WAYLAND: return "WM::WAYLAND";
-            case WM::X11: return "WM::X11";
-            case WM::ANDROID: return "WM::ANDROID";
-            case WM::MACOS: return "WM::MACOS";
-            case WM::IOS: return "WM::IOS";
-            case WM::TVOS: return "WM::TVOS";
-            case WM::SWITCH: return "WM::SWITCH";
+            case window_manager::win32: return "window_manager::win32";
+            case window_manager::wayland: return "window_manager::wayland";
+            case window_manager::x11: return "window_manager::x11";
+            case window_manager::android: return "window_manager::android";
+            case window_manager::macos: return "window_manager::macos";
+            case window_manager::ios: return "window_manager::ios";
+            case window_manager::tvos: return "window_manager::tvos";
+            case window_manager::nintendo_switch: return "window_manager::nintendo_switch";
             default: break;
         }
 

@@ -24,7 +24,7 @@ import :linux.wayland;
 import :linux.wayland.input;
 
 export namespace stormkit::wsi::linux::wayland {
-    class Window;
+    class window;
 
     namespace wl {
         struct WaylandMonitor {
@@ -53,7 +53,7 @@ export namespace stormkit::wsi::linux::wayland {
             wl::CursorTheme cursor_theme          = wl::CursorTheme::empty();
             wl::CursorTheme cursor_theme_high_dpi = wl::CursorTheme::empty();
 
-            dynarray<std::pair<Keyboard, KeyboardState>> keyboards;
+            dynarray<std::pair<Keyboard, keyboard_state>> keyboards;
             dynarray<std::pair<Pointer, PointerState>>   pointers;
             dynarray<std::pair<Touch, TouchState>>       touchs;
 
@@ -61,7 +61,7 @@ export namespace stormkit::wsi::linux::wayland {
 
             dynarray<WaylandMonitor> monitors;
 
-            dynarray<std::pair<wl_surface*, Window*>> windows;
+            dynarray<std::pair<wl_surface*, window*>> windows;
 
             common::xkb::Context xkb_context = common::xkb::Context::empty();
         };

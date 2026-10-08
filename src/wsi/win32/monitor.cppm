@@ -58,7 +58,7 @@ export namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_monitors(WM, bool update = false) noexcept -> array_view<const monitor> {
+    auto get_monitors(window_manager, bool update = false) noexcept -> array_view<const monitor> {
         thread_local auto monitors = dynarray<monitor> {};
 
         if (update or stdr::empty(monitors))
@@ -69,7 +69,7 @@ export namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_primary_monitor(WM wm) noexcept -> const monitor& {
+    auto get_primary_monitor(window_manager wm) noexcept -> const monitor& {
         const auto monitors = get_monitors(wm);
         auto       it       = stdr::find_if(monitors, [](const auto& monitor) static noexcept {
             return has_flag_bit(monitor.flags, monitor::flag::primary);

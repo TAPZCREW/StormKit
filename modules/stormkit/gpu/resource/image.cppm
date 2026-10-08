@@ -58,7 +58,7 @@ namespace stormkit::gpu {
             u32                layers     = 1u;
             u32                mip_levels = 1u;
             ImageType          type       = ImageType::T2D;
-            ImageCreateFlag    flags      = ImageCreateFlag::NONE;
+            ImageCreateFlag    flags      = ImageCreateFlag::none;
             SampleCountFlag    samples    = SampleCountFlag::C1;
             ImageUsageFlag     usages     = ImageUsageFlag::SAMPLED | ImageUsageFlag::TRANSFER_DST | ImageUsageFlag::TRANSFER_SRC;
             ImageTiling        tiling     = ImageTiling::OPTIMAL;
