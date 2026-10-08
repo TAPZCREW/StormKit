@@ -44,7 +44,7 @@ namespace stormkit::wsi::linux::x11::xcb {
             return false;
         }
 
-        globals.error_context = xcb::ErrorContext::create(globals.connection);
+        globals.error_context = xcb::error_context::create(globals.connection);
         if (not globals.error_context) elog("Failed to setup X11 error context");
 
         globals.xkb_context = common::xkb::context::create(XKB_CONTEXT_NO_FLAGS);

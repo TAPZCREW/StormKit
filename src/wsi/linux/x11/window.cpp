@@ -349,7 +349,7 @@ namespace stormkit::wsi::linux::x11 {
         xcb_flush(connection);
 
         if (not has_flag_bit(flags, window_flag::external_context)) {
-            m_graphics_context = xcb::GraphicsContext::create(connection);
+            m_graphics_context = xcb::graphics_context::create(connection);
             const auto values  = array<u32, 3> { screen->white_pixel, screen->black_pixel, 0_u32 };
             xcb_create_gc(connection,
                           m_graphics_context,
@@ -374,7 +374,7 @@ namespace stormkit::wsi::linux::x11 {
 
         m_image            = xcb::Image::empty();
         m_framebuffer      = {};
-        m_graphics_context = xcb::GraphicsContext::empty();
+        m_graphics_context = xcb::graphics_context::empty();
 
         m_window.reset();
         m_color_map.reset();

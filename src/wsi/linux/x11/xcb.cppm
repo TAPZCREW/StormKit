@@ -27,14 +27,14 @@ export namespace stormkit::wsi::linux::x11 {
 
     namespace xcb {
         using Connection   = raii_capsule<xcb_connection_t*, xcb_connect, xcb_disconnect, struct ConnectionTag, nullptr>;
-        using ErrorContext = raii_capsule<
+        using error_context = raii_capsule<
           xcb_errors_context_t*,
           monadic::init_by<xcb_errors_context_t*,
                            [](xcb_errors_context_t*& val, xcb_connection_t* connection) static noexcept {
                                xcb_errors_context_new(connection, &val);
                            }>(),
           xcb_errors_context_free,
-          struct ErrorContextTag,
+          struct error_context_tag,
           nullptr>;
         using GenericError = raii_capsule<xcb_generic_error_t*, monadic::noop(), std::free, struct GenericErrorTag, nullptr>;
         using InternAtomReply

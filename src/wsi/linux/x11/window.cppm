@@ -48,8 +48,8 @@ export namespace stormkit::wsi::linux::x11 {
           = raii_capsule<xcb_window_t, xcb_generate_id, XCB_DELETER<xcb_destroy_window>, struct WindowTag, XCB_WINDOW_NONE>;
         using ColorMap
           = raii_capsule<xcb_colormap_t, xcb_generate_id, XCB_DELETER<xcb_free_colormap>, struct ColorMapTag, XCB_NONE>;
-        using GraphicsContext
-          = raii_capsule<xcb_gcontext_t, xcb_generate_id, XCB_DELETER<xcb_free_gc>, struct GraphicsContextTag, XCB_NONE>;
+        using graphics_context
+          = raii_capsule<xcb_gcontext_t, xcb_generate_id, XCB_DELETER<xcb_free_gc>, struct graphics_context_tag, XCB_NONE>;
         using Image  = raii_capsule<xcb_image_t*, xcb_image_create_native, xcb_image_destroy, struct ImageTag, nullptr>;
         using Pixmap = raii_capsule<xcb_pixmap_t, xcb_generate_id, XCB_DELETER<xcb_free_pixmap>, struct PixmapTag, XCB_NONE>;
     } // namespace xcb
@@ -127,7 +127,7 @@ export namespace stormkit::wsi::linux::x11 {
 
         xcb::window          m_window           = xcb::window::empty();
         xcb::ColorMap        m_color_map        = xcb::ColorMap::empty();
-        xcb::GraphicsContext m_graphics_context = xcb::GraphicsContext::empty();
+        xcb::graphics_context m_graphics_context = xcb::graphics_context::empty();
         xcb::Image           m_image            = xcb::Image::empty();
         array_view<u32>      m_framebuffer;
         xcb::Pixmap          m_pixmap      = xcb::Pixmap::empty();

@@ -23,7 +23,7 @@ import :linux.x11.xcb;
 export namespace stormkit::wsi::linux::x11::xcb {
     struct globals {
         Connection   connection    = Connection::empty();
-        ErrorContext error_context = ErrorContext::empty();
+        error_context error_context = error_context::empty();
 
         common::xkb::context xkb_context = common::xkb::context::empty();
     };
