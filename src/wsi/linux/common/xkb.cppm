@@ -48,7 +48,7 @@ namespace stdv = std::views;
 
 namespace stormkit::wsi::linux::common {
     namespace {
-        constexpr auto scancode_as_key = make_static_hash_map<xkb_keysym_t, Key>({
+        constexpr auto scancode_as_key = make_static_hash_map<xkb_keysym_t, key>({
           { XKB_KEY_a,            key::a               },
           { XKB_KEY_b,            key::b               },
           { XKB_KEY_c,            key::c               },
@@ -175,7 +175,7 @@ namespace stormkit::wsi::linux::common {
         });
 
         constexpr auto key_as_scancode = [] static noexcept -> decltype(auto) {
-            auto out = array<std::pair<Key, xkb_keysym_t>, 111> {};
+            auto out = array<std::pair<wsi::key, xkb_keysym_t>, 111> {};
             auto i   = 0_usize;
             for (const auto& [key, value] : scancode_as_key) out[i++] = std::make_pair(value, key);
 
