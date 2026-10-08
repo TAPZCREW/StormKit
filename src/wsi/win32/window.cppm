@@ -4,8 +4,6 @@
 
 module;
 
-#include <stormkit/core/platform/windows.hpp>
-
 #include <stormkit/core/platform_macro.hpp>
 
 #include <stormkit/core/contract_macro.hpp>
@@ -15,6 +13,7 @@ export module stormkit.wsi:win32.window;
 import std;
 
 import stormkit.core;
+import stormkit.core.win32;
 import stormkit.wsi;
 
 import :common.window_base;
@@ -91,8 +90,8 @@ export namespace stormkit::wsi::win32 {
 
       private:
         struct {
-            DWORD style;
-            DWORD style_ex;
+            ::win32::DWORD style;
+            ::win32::DWORD style_ex;
 
             bool external_context = false;
             bool mouse_inside     = false;
@@ -101,15 +100,16 @@ export namespace stormkit::wsi::win32 {
             math::uextent2 extent;
             math::uextent2 last_extent;
 
-            DWORD tls_index = 0;
+            ::win32::DWORD tls_index = 0;
 
             bool mouse_tracked = false;
         } win32_state_;
 
-        HWND window_handle_ = nullptr;
+        ::win32::HWND window_handle_ = nullptr;
 
-        using hdc     = raii_capsule<HDC, CreateCompatibleDC, DeleteDC, struct hdc_tag, nullptr>;
-        using hbitmap = raii_capsule<HBITMAP, CreateDIBSection, DeleteObject, struct hbitmap_tag, nullptr>;
+        using hdc = raii_capsule<::win32::HDC, ::win32::CreateCompatibleDC, ::win32::DeleteDC, struct hdc_tag, nullptr>;
+        using hbitmap
+          = raii_capsule<::win32::HBITMAP, ::win32::CreateDIBSection, ::win32::DeleteObject, struct hbitmap_tag, nullptr>;
 
         struct GDIFrameData {
             GDIFrameData();
@@ -126,7 +126,7 @@ export namespace stormkit::wsi::win32 {
             hbitmap            bitmap     = hbitmap::empty();
             std::atomic<void*> pixels_ptr = nullptr;
 
-            math::extent2<LONG> extent;
+            math::extent2<::win32::LONG> extent;
         } gdi_frame_data_;
     };
 } // namespace stormkit::wsi::win32
@@ -161,7 +161,7 @@ namespace stormkit::wsi::win32 {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto window::update_geometry(const math::uextent2& extent) noexcept -> void {
-        state_.extent      = extent;
+        state_.extent       = extent;
         win32_state_.extent = extent;
     }
 

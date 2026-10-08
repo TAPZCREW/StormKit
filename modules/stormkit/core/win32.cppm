@@ -78,7 +78,9 @@ export namespace win32 {
     using ::AdjustWindowRect;
     using ::AdjustWindowRectEx;
     using ::AllocateAndInitializeSid;
+    using ::AllocConsole;
     using ::AssignProcessToJobObject;
+    using ::AttachConsole;
     using ::BCRYPT_ALG_HANDLE;
     using ::BCRYPT_KEY_HANDLE;
     using ::BCryptCloseAlgorithmProvider;
@@ -157,6 +159,7 @@ export namespace win32 {
     using ::COMPRESSOR_HANDLE;
     using ::COMPUTER_NAME_FORMAT;
     using ::ConnectNamedPipe;
+    using ::CONSOLE_SCREEN_BUFFER_INFO;
     using ::ControlServiceExA;
     using ::ControlServiceExW;
     using ::ConvertSidToStringSidA;
@@ -169,8 +172,10 @@ export namespace win32 {
     using ::CoUninitialize;
     using ::CreateBoundaryDescriptorA;
     using ::CreateBoundaryDescriptorW;
+    using ::CreateCompatibleDC;
     using ::CreateCompressor;
     using ::CreateDecompressor;
+    using ::CreateDIBSection;
     using ::CreateDirectoryA;
     using ::CreateDirectoryW;
     using ::CreateEventA;
@@ -227,6 +232,7 @@ export namespace win32 {
     using ::DefWindowProcW;
     using ::DeleteBoundaryDescriptor;
     using ::DeleteCriticalSection;
+    using ::DeleteDC;
     using ::DeleteObject;
     using ::DeleteService;
     using ::DeleteSynchronizationBarrier;
@@ -234,6 +240,7 @@ export namespace win32 {
     using ::DeleteTimerQueueTimer;
     using ::DestroyThreadpoolEnvironment;
     using ::DestroyWindow;
+    using ::DEVMODE;
     using ::DisconnectNamedPipe;
     using ::DispatchMessageA;
     using ::DispatchMessageW;
@@ -246,6 +253,9 @@ export namespace win32 {
     using ::EndPaint;
     using ::EnterCriticalSection;
     using ::EnterSynchronizationBarrier;
+    using ::EnumDisplayMonitors;
+    using ::EnumDisplaySettingsA;
+    using ::EnumDisplaySettingsW;
     using ::EOLE_AUTHENTICATION_CAPABILITIES;
     using ::EqualSid;
     using ::FILETIME;
@@ -254,6 +264,7 @@ export namespace win32 {
     using ::FlushFileBuffers;
     using ::FormatMessageA;
     using ::FormatMessageW;
+    using ::FreeConsole;
     using ::FreeLibrary;
     using ::FreeSid;
     using ::GetClassInfoA;
@@ -262,6 +273,7 @@ export namespace win32 {
     using ::GetClipboardData;
     using ::GetComputerNameExA;
     using ::GetComputerNameExW;
+    using ::GetConsoleScreenBufferInfo;
     using ::GetCurrentProcess;
     using ::GetCurrentProcessToken;
     using ::GetCurrentThread;
@@ -288,6 +300,8 @@ export namespace win32 {
     using ::GetModuleFileNameW;
     using ::GetModuleHandleA;
     using ::GetModuleHandleW;
+    using ::GetMonitorInfoA;
+    using ::GetMonitorInfoW;
     using ::GetPhysicallyInstalledSystemMemory;
     using ::GetProcAddress;
     using ::GetProcessHandleCount;
@@ -326,8 +340,10 @@ export namespace win32 {
     using ::GlobalUnlock;
     using ::GUID;
     using ::HANDLE;
+    using ::HBITMAP;
     using ::HBRUSH;
     using ::HCERTSTORE;
+    using ::HDC;
     using ::HeapAlloc;
     using ::HeapCompact;
     using ::HeapCreate;
@@ -338,9 +354,11 @@ export namespace win32 {
     using ::HeapValidate;
     using ::HFONT;
     using ::HGLOBAL;
+    using ::HINSTANCE;
     using ::HINSTANCE__;
     using ::HMENU;
     using ::HMODULE;
+    using ::HMONITOR;
     using ::HRESULT;
     using ::HWND;
     using ::IID_INetworkListManager;
@@ -395,6 +413,7 @@ export namespace win32 {
     using ::LPCWSTR;
     using ::LPDWORD;
     using ::LPOVERLAPPED;
+    using ::LPRECT;
     using ::LPSTR;
     using ::LPVOID;
     using ::LPWSTR;
@@ -413,6 +432,8 @@ export namespace win32 {
     using ::MapViewOfFile;
     using ::MEMORYSTATUSEX;
     using ::MonitorFromWindow;
+    using ::MONITORINFO;
+    using ::MONITORINFOEX;
     using ::MoveFileExA;
     using ::MoveFileExW;
     using ::MSG;
@@ -537,6 +558,9 @@ export namespace win32 {
     using ::SendMessageA;
     using ::SendMessageW;
     using ::SetClipboardData;
+    using ::SetConsoleCP;
+    using ::SetConsoleOutputCP;
+    using ::SetConsoleScreenBufferSize;
     using ::SetCursorPos;
     using ::SetEndOfFile;
     using ::SetEvent;
@@ -636,6 +660,7 @@ export namespace win32 {
     using ::WICDecodeOptions;
     using ::WideCharToMultiByte;
     using ::WNDCLASSA;
+    using ::WORD;
     using ::WPARAM;
     using ::WriteFile;
 
@@ -672,12 +697,106 @@ export namespace win32 {
     inline constexpr auto FALSE
 #pragma pop_macro("FALSE")
       = FALSE;
-
 #pragma push_macro("TRUE")
 #undef TRUE
     inline constexpr auto TRUE =
 #pragma pop_macro("TRUE")
       TRUE;
+
+#pragma push_macro("STD_INPUT_HANDLE")
+#undef STD_INPUT_HANDLE
+    inline constexpr auto STD_INPUT_HANDLE
+#pragma pop_macro("STD_INPUT_HANDLE")
+      = STD_INPUT_HANDLE;
+#pragma push_macro("STD_OUTPUT_HANDLE")
+#undef STD_OUTPUT_HANDLE
+    inline constexpr auto STD_OUTPUT_HANDLE
+#pragma pop_macro("STD_OUTPUT_HANDLE")
+      = STD_OUTPUT_HANDLE;
+#pragma push_macro("STD_ERROR_HANDLE")
+#undef STD_ERROR_HANDLE
+    inline constexpr auto STD_ERROR_HANDLE
+#pragma pop_macro("STD_ERROR_HANDLE")
+      = STD_ERROR_HANDLE;
+
+#pragma push_macro("ATTACH_PARENT_PROCESS")
+#undef ATTACH_PARENT_PROCESS
+    inline constexpr auto ATTACH_PARENT_PROCESS
+#pragma pop_macro("ATTACH_PARENT_PROCESS")
+      = ATTACH_PARENT_PROCESS;
+
+#pragma push_macro("CP_ACP")
+#undef CP_ACP
+    inline constexpr auto CP_ACP
+#pragma pop_macro("CP_ACP")
+      = CP_ACP;
+#pragma push_macro("CP_MACCP")
+#undef CP_MACCP
+    inline constexpr auto CP_MACCP
+#pragma pop_macro("CP_MACCP")
+      = CP_MACCP;
+#pragma push_macro("CP_OEMCP")
+#undef CP_OEMCP
+    inline constexpr auto CP_OEMCP
+#pragma pop_macro("CP_OEMCP")
+      = CP_OEMCP;
+#pragma push_macro("CP_SYMBOL")
+#undef CP_SYMBOL
+    inline constexpr auto CP_SYMBOL
+#pragma pop_macro("CP_SYMBOL")
+      = CP_SYMBOL;
+#pragma push_macro("CP_THREAD_ACP")
+#undef CP_THREAD_ACP
+    inline constexpr auto CP_THREAD_ACP
+#pragma pop_macro("CP_THREAD_ACP")
+      = CP_THREAD_ACP;
+#pragma push_macro("CP_UTF7")
+#undef CP_UTF7
+    inline constexpr auto CP_UTF7
+#pragma pop_macro("CP_UTF7")
+      = CP_UTF7;
+#pragma push_macro("CP_UTF8")
+#undef CP_UTF8
+    inline constexpr auto CP_UTF8
+#pragma pop_macro("CP_UTF8")
+      = CP_UTF8;
+
+#pragma push_macro("MB_COMPOSITE")
+#undef MB_COMPOSITE
+    inline constexpr auto MB_COMPOSITE
+#pragma pop_macro("MB_COMPOSITE")
+      = MB_COMPOSITE;
+#pragma push_macro("MB_ERR_INVALID_CHARS")
+#undef MB_ERR_INVALID_CHARS
+    inline constexpr auto MB_ERR_INVALID_CHARS
+#pragma pop_macro("MB_ERR_INVALID_CHARS")
+      = MB_ERR_INVALID_CHARS;
+#pragma push_macro("MB_PRECOMPOSED")
+#undef MB_PRECOMPOSED
+    inline constexpr auto MB_PRECOMPOSED
+#pragma pop_macro("MB_PRECOMPOSED")
+      = MB_PRECOMPOSED;
+#pragma push_macro("MB_USEGLYPHCHARS")
+#undef MB_USEGLYPHCHARS
+    inline constexpr auto MB_USEGLYPHCHARS
+#pragma pop_macro("MB_USEGLYPHCHARS")
+      = MB_USEGLYPHCHARS;
+
+#pragma push_macro("WC_COMPOSITECHECK")
+#undef WC_COMPOSITECHECK
+    inline constexpr auto WC_COMPOSITECHECK
+#pragma pop_macro("WC_COMPOSITECHECK")
+      = WC_COMPOSITECHECK;
+#pragma push_macro("WC_ERR_INVALID_CHARS")
+#undef WC_ERR_INVALID_CHARS
+    inline constexpr auto WC_ERR_INVALID_CHARS
+#pragma pop_macro("WC_ERR_INVALID_CHARS")
+      = WC_ERR_INVALID_CHARS;
+#pragma push_macro("WC_NO_BEST_FIT_CHARS")
+#undef WC_NO_BEST_FIT_CHARS
+    inline constexpr auto WC_NO_BEST_FIT_CHARS
+#pragma pop_macro("WC_NO_BEST_FIT_CHARS")
+      = WC_NO_BEST_FIT_CHARS;
 
 #pragma push_macro("PAGE_EXECUTE")
 #undef PAGE_EXECUTE
@@ -2420,6 +2539,823 @@ export namespace win32 {
     inline constexpr auto WHITENESS
 #pragma pop_macro("WHITENESS")
       = WHITENESS;
+
+#pragma push_macro("VK_LBUTTON")
+#undef VK_LBUTTON
+    inline constexpr auto VK_LBUTTON
+#pragma pop_macro("VK_LBUTTON")
+      = VK_LBUTTON;
+#pragma push_macro("VK_RBUTTON")
+#undef VK_RBUTTON
+    inline constexpr auto VK_RBUTTON
+#pragma pop_macro("VK_RBUTTON")
+      = VK_RBUTTON;
+#pragma push_macro("VK_CANCEL")
+#undef VK_CANCEL
+    inline constexpr auto VK_CANCEL
+#pragma pop_macro("VK_CANCEL")
+      = VK_CANCEL;
+#pragma push_macro("VK_MBUTTON")
+#undef VK_MBUTTON
+    inline constexpr auto VK_MBUTTON
+#pragma pop_macro("VK_MBUTTON")
+      = VK_MBUTTON;
+#pragma push_macro("VK_XBUTTON1")
+#undef VK_XBUTTON1
+    inline constexpr auto VK_XBUTTON1
+#pragma pop_macro("VK_XBUTTON1")
+      = VK_XBUTTON1;
+#pragma push_macro("VK_XBUTTON2")
+#undef VK_XBUTTON2
+    inline constexpr auto VK_XBUTTON2
+#pragma pop_macro("VK_XBUTTON2")
+      = VK_XBUTTON2;
+#pragma push_macro("VK_BACK")
+#undef VK_BACK
+    inline constexpr auto VK_BACK
+#pragma pop_macro("VK_BACK")
+      = VK_BACK;
+#pragma push_macro("VK_TAB")
+#undef VK_TAB
+    inline constexpr auto VK_TAB
+#pragma pop_macro("VK_TAB")
+      = VK_TAB;
+#pragma push_macro("VK_CLEAR")
+#undef VK_CLEAR
+    inline constexpr auto VK_CLEAR
+#pragma pop_macro("VK_CLEAR")
+      = VK_CLEAR;
+#pragma push_macro("VK_RETURN")
+#undef VK_RETURN
+    inline constexpr auto VK_RETURN
+#pragma pop_macro("VK_RETURN")
+      = VK_RETURN;
+#pragma push_macro("VK_SHIFT")
+#undef VK_SHIFT
+    inline constexpr auto VK_SHIFT
+#pragma pop_macro("VK_SHIFT")
+      = VK_SHIFT;
+#pragma push_macro("VK_CONTROL")
+#undef VK_CONTROL
+    inline constexpr auto VK_CONTROL
+#pragma pop_macro("VK_CONTROL")
+      = VK_CONTROL;
+#pragma push_macro("VK_MENU")
+#undef VK_MENU
+    inline constexpr auto VK_MENU
+#pragma pop_macro("VK_MENU")
+      = VK_MENU;
+#pragma push_macro("VK_PAUSE")
+#undef VK_PAUSE
+    inline constexpr auto VK_PAUSE
+#pragma pop_macro("VK_PAUSE")
+      = VK_PAUSE;
+#pragma push_macro("VK_CAPITAL")
+#undef VK_CAPITAL
+    inline constexpr auto VK_CAPITAL
+#pragma pop_macro("VK_CAPITAL")
+      = VK_CAPITAL;
+#pragma push_macro("VK_KANA")
+#undef VK_KANA
+    inline constexpr auto VK_KANA
+#pragma pop_macro("VK_KANA")
+      = VK_KANA;
+#pragma push_macro("VK_HANGUL")
+#undef VK_HANGUL
+    inline constexpr auto VK_HANGUL
+#pragma pop_macro("VK_HANGUL")
+      = VK_HANGUL;
+#pragma push_macro("VK_IME_ON")
+#undef VK_IME_ON
+    inline constexpr auto VK_IME_ON
+#pragma pop_macro("VK_IME_ON")
+      = VK_IME_ON;
+#pragma push_macro("VK_JUNJA")
+#undef VK_JUNJA
+    inline constexpr auto VK_JUNJA
+#pragma pop_macro("VK_JUNJA")
+      = VK_JUNJA;
+#pragma push_macro("VK_FINAL")
+#undef VK_FINAL
+    inline constexpr auto VK_FINAL
+#pragma pop_macro("VK_FINAL")
+      = VK_FINAL;
+#pragma push_macro("VK_HANJA")
+#undef VK_HANJA
+    inline constexpr auto VK_HANJA
+#pragma pop_macro("VK_HANJA")
+      = VK_HANJA;
+#pragma push_macro("VK_KANJI")
+#undef VK_KANJI
+    inline constexpr auto VK_KANJI
+#pragma pop_macro("VK_KANJI")
+      = VK_KANJI;
+#pragma push_macro("VK_IME_OFF")
+#undef VK_IME_OFF
+    inline constexpr auto VK_IME_OFF
+#pragma pop_macro("VK_IME_OFF")
+      = VK_IME_OFF;
+#pragma push_macro("VK_ESCAPE")
+#undef VK_ESCAPE
+    inline constexpr auto VK_ESCAPE
+#pragma pop_macro("VK_ESCAPE")
+      = VK_ESCAPE;
+#pragma push_macro("VK_CONVERT")
+#undef VK_CONVERT
+    inline constexpr auto VK_CONVERT
+#pragma pop_macro("VK_CONVERT")
+      = VK_CONVERT;
+#pragma push_macro("VK_NONCONVERT")
+#undef VK_NONCONVERT
+    inline constexpr auto VK_NONCONVERT
+#pragma pop_macro("VK_NONCONVERT")
+      = VK_NONCONVERT;
+#pragma push_macro("VK_ACCEPT")
+#undef VK_ACCEPT
+    inline constexpr auto VK_ACCEPT
+#pragma pop_macro("VK_ACCEPT")
+      = VK_ACCEPT;
+#pragma push_macro("VK_MODECHANGE")
+#undef VK_MODECHANGE
+    inline constexpr auto VK_MODECHANGE
+#pragma pop_macro("VK_MODECHANGE")
+      = VK_MODECHANGE;
+#pragma push_macro("VK_SPACE")
+#undef VK_SPACE
+    inline constexpr auto VK_SPACE
+#pragma pop_macro("VK_SPACE")
+      = VK_SPACE;
+#pragma push_macro("VK_PRIOR")
+#undef VK_PRIOR
+    inline constexpr auto VK_PRIOR
+#pragma pop_macro("VK_PRIOR")
+      = VK_PRIOR;
+#pragma push_macro("VK_NEXT")
+#undef VK_NEXT
+    inline constexpr auto VK_NEXT
+#pragma pop_macro("VK_NEXT")
+      = VK_NEXT;
+#pragma push_macro("VK_END")
+#undef VK_END
+    inline constexpr auto VK_END
+#pragma pop_macro("VK_END")
+      = VK_END;
+#pragma push_macro("VK_HOME")
+#undef VK_HOME
+    inline constexpr auto VK_HOME
+#pragma pop_macro("VK_HOME")
+      = VK_HOME;
+#pragma push_macro("VK_LEFT")
+#undef VK_LEFT
+    inline constexpr auto VK_LEFT
+#pragma pop_macro("VK_LEFT")
+      = VK_LEFT;
+#pragma push_macro("VK_UP")
+#undef VK_UP
+    inline constexpr auto VK_UP
+#pragma pop_macro("VK_UP")
+      = VK_UP;
+#pragma push_macro("VK_RIGHT")
+#undef VK_RIGHT
+    inline constexpr auto VK_RIGHT
+#pragma pop_macro("VK_RIGHT")
+      = VK_RIGHT;
+#pragma push_macro("VK_DOWN")
+#undef VK_DOWN
+    inline constexpr auto VK_DOWN
+#pragma pop_macro("VK_DOWN")
+      = VK_DOWN;
+#pragma push_macro("VK_SELECT")
+#undef VK_SELECT
+    inline constexpr auto VK_SELECT
+#pragma pop_macro("VK_SELECT")
+      = VK_SELECT;
+#pragma push_macro("VK_PRINT")
+#undef VK_PRINT
+    inline constexpr auto VK_PRINT
+#pragma pop_macro("VK_PRINT")
+      = VK_PRINT;
+#pragma push_macro("VK_EXECUTE")
+#undef VK_EXECUTE
+    inline constexpr auto VK_EXECUTE
+#pragma pop_macro("VK_EXECUTE")
+      = VK_EXECUTE;
+#pragma push_macro("VK_SNAPSHOT")
+#undef VK_SNAPSHOT
+    inline constexpr auto VK_SNAPSHOT
+#pragma pop_macro("VK_SNAPSHOT")
+      = VK_SNAPSHOT;
+#pragma push_macro("VK_INSERT")
+#undef VK_INSERT
+    inline constexpr auto VK_INSERT
+#pragma pop_macro("VK_INSERT")
+      = VK_INSERT;
+#pragma push_macro("VK_DELETE")
+#undef VK_DELETE
+    inline constexpr auto VK_DELETE
+#pragma pop_macro("VK_DELETE")
+      = VK_DELETE;
+#pragma push_macro("VK_HELP")
+#undef VK_HELP
+    inline constexpr auto VK_HELP
+#pragma pop_macro("VK_HELP")
+      = VK_HELP;
+#pragma push_macro("VK_LWIN")
+#undef VK_LWIN
+    inline constexpr auto VK_LWIN
+#pragma pop_macro("VK_LWIN")
+      = VK_LWIN;
+#pragma push_macro("VK_RWIN")
+#undef VK_RWIN
+    inline constexpr auto VK_RWIN
+#pragma pop_macro("VK_RWIN")
+      = VK_RWIN;
+#pragma push_macro("VK_APPS")
+#undef VK_APPS
+    inline constexpr auto VK_APPS
+#pragma pop_macro("VK_APPS")
+      = VK_APPS;
+#pragma push_macro("VK_SLEEP")
+#undef VK_SLEEP
+    inline constexpr auto VK_SLEEP
+#pragma pop_macro("VK_SLEEP")
+      = VK_SLEEP;
+#pragma push_macro("VK_NUMPAD0")
+#undef VK_NUMPAD0
+    inline constexpr auto VK_NUMPAD0
+#pragma pop_macro("VK_NUMPAD0")
+      = VK_NUMPAD0;
+#pragma push_macro("VK_NUMPAD1")
+#undef VK_NUMPAD1
+    inline constexpr auto VK_NUMPAD1
+#pragma pop_macro("VK_NUMPAD1")
+      = VK_NUMPAD1;
+#pragma push_macro("VK_NUMPAD2")
+#undef VK_NUMPAD2
+    inline constexpr auto VK_NUMPAD2
+#pragma pop_macro("VK_NUMPAD2")
+      = VK_NUMPAD2;
+#pragma push_macro("VK_NUMPAD3")
+#undef VK_NUMPAD3
+    inline constexpr auto VK_NUMPAD3
+#pragma pop_macro("VK_NUMPAD3")
+      = VK_NUMPAD3;
+#pragma push_macro("VK_NUMPAD4")
+#undef VK_NUMPAD4
+    inline constexpr auto VK_NUMPAD4
+#pragma pop_macro("VK_NUMPAD4")
+      = VK_NUMPAD4;
+#pragma push_macro("VK_NUMPAD5")
+#undef VK_NUMPAD5
+    inline constexpr auto VK_NUMPAD5
+#pragma pop_macro("VK_NUMPAD5")
+      = VK_NUMPAD5;
+#pragma push_macro("VK_NUMPAD6")
+#undef VK_NUMPAD6
+    inline constexpr auto VK_NUMPAD6
+#pragma pop_macro("VK_NUMPAD6")
+      = VK_NUMPAD6;
+#pragma push_macro("VK_NUMPAD7")
+#undef VK_NUMPAD7
+    inline constexpr auto VK_NUMPAD7
+#pragma pop_macro("VK_NUMPAD7")
+      = VK_NUMPAD7;
+#pragma push_macro("VK_NUMPAD8")
+#undef VK_NUMPAD8
+    inline constexpr auto VK_NUMPAD8
+#pragma pop_macro("VK_NUMPAD8")
+      = VK_NUMPAD8;
+#pragma push_macro("VK_NUMPAD9")
+#undef VK_NUMPAD9
+    inline constexpr auto VK_NUMPAD9
+#pragma pop_macro("VK_NUMPAD9")
+      = VK_NUMPAD9;
+#pragma push_macro("VK_MULTIPLY")
+#undef VK_MULTIPLY
+    inline constexpr auto VK_MULTIPLY
+#pragma pop_macro("VK_MULTIPLY")
+      = VK_MULTIPLY;
+#pragma push_macro("VK_ADD")
+#undef VK_ADD
+    inline constexpr auto VK_ADD
+#pragma pop_macro("VK_ADD")
+      = VK_ADD;
+#pragma push_macro("VK_SEPARATOR")
+#undef VK_SEPARATOR
+    inline constexpr auto VK_SEPARATOR
+#pragma pop_macro("VK_SEPARATOR")
+      = VK_SEPARATOR;
+#pragma push_macro("VK_SUBTRACT")
+#undef VK_SUBTRACT
+    inline constexpr auto VK_SUBTRACT
+#pragma pop_macro("VK_SUBTRACT")
+      = VK_SUBTRACT;
+#pragma push_macro("VK_DECIMAL")
+#undef VK_DECIMAL
+    inline constexpr auto VK_DECIMAL
+#pragma pop_macro("VK_DECIMAL")
+      = VK_DECIMAL;
+#pragma push_macro("VK_DIVIDE")
+#undef VK_DIVIDE
+    inline constexpr auto VK_DIVIDE
+#pragma pop_macro("VK_DIVIDE")
+      = VK_DIVIDE;
+#pragma push_macro("VK_F1")
+#undef VK_F1
+    inline constexpr auto VK_F1
+#pragma pop_macro("VK_F1")
+      = VK_F1;
+#pragma push_macro("VK_F2")
+#undef VK_F2
+    inline constexpr auto VK_F2
+#pragma pop_macro("VK_F2")
+      = VK_F2;
+#pragma push_macro("VK_F3")
+#undef VK_F3
+    inline constexpr auto VK_F3
+#pragma pop_macro("VK_F3")
+      = VK_F3;
+#pragma push_macro("VK_F4")
+#undef VK_F4
+    inline constexpr auto VK_F4
+#pragma pop_macro("VK_F4")
+      = VK_F4;
+#pragma push_macro("VK_F5")
+#undef VK_F5
+    inline constexpr auto VK_F5
+#pragma pop_macro("VK_F5")
+      = VK_F5;
+#pragma push_macro("VK_F6")
+#undef VK_F6
+    inline constexpr auto VK_F6
+#pragma pop_macro("VK_F6")
+      = VK_F6;
+#pragma push_macro("VK_F7")
+#undef VK_F7
+    inline constexpr auto VK_F7
+#pragma pop_macro("VK_F7")
+      = VK_F7;
+#pragma push_macro("VK_F8")
+#undef VK_F8
+    inline constexpr auto VK_F8
+#pragma pop_macro("VK_F8")
+      = VK_F8;
+#pragma push_macro("VK_F9")
+#undef VK_F9
+    inline constexpr auto VK_F9
+#pragma pop_macro("VK_F9")
+      = VK_F9;
+#pragma push_macro("VK_F10")
+#undef VK_F10
+    inline constexpr auto VK_F10
+#pragma pop_macro("VK_F10")
+      = VK_F10;
+#pragma push_macro("VK_F11")
+#undef VK_F11
+    inline constexpr auto VK_F11
+#pragma pop_macro("VK_F11")
+      = VK_F11;
+#pragma push_macro("VK_F12")
+#undef VK_F12
+    inline constexpr auto VK_F12
+#pragma pop_macro("VK_F12")
+      = VK_F12;
+#pragma push_macro("VK_F13")
+#undef VK_F13
+    inline constexpr auto VK_F13
+#pragma pop_macro("VK_F13")
+      = VK_F13;
+#pragma push_macro("VK_F14")
+#undef VK_F14
+    inline constexpr auto VK_F14
+#pragma pop_macro("VK_F14")
+      = VK_F14;
+#pragma push_macro("VK_F15")
+#undef VK_F15
+    inline constexpr auto VK_F15
+#pragma pop_macro("VK_F15")
+      = VK_F15;
+#pragma push_macro("VK_F16")
+#undef VK_F16
+    inline constexpr auto VK_F16
+#pragma pop_macro("VK_F16")
+      = VK_F16;
+#pragma push_macro("VK_F17")
+#undef VK_F17
+    inline constexpr auto VK_F17
+#pragma pop_macro("VK_F17")
+      = VK_F17;
+#pragma push_macro("VK_F18")
+#undef VK_F18
+    inline constexpr auto VK_F18
+#pragma pop_macro("VK_F18")
+      = VK_F18;
+#pragma push_macro("VK_F19")
+#undef VK_F19
+    inline constexpr auto VK_F19
+#pragma pop_macro("VK_F19")
+      = VK_F19;
+#pragma push_macro("VK_F20")
+#undef VK_F20
+    inline constexpr auto VK_F20
+#pragma pop_macro("VK_F20")
+      = VK_F20;
+#pragma push_macro("VK_F21")
+#undef VK_F21
+    inline constexpr auto VK_F21
+#pragma pop_macro("VK_F21")
+      = VK_F21;
+#pragma push_macro("VK_F22")
+#undef VK_F22
+    inline constexpr auto VK_F22
+#pragma pop_macro("VK_F22")
+      = VK_F22;
+#pragma push_macro("VK_F23")
+#undef VK_F23
+    inline constexpr auto VK_F23
+#pragma pop_macro("VK_F23")
+      = VK_F23;
+#pragma push_macro("VK_F24")
+#undef VK_F24
+    inline constexpr auto VK_F24
+#pragma pop_macro("VK_F24")
+      = VK_F24;
+#pragma push_macro("VK_NUMLOCK")
+#undef VK_NUMLOCK
+    inline constexpr auto VK_NUMLOCK
+#pragma pop_macro("VK_NUMLOCK")
+      = VK_NUMLOCK;
+#pragma push_macro("VK_SCROLL")
+#undef VK_SCROLL
+    inline constexpr auto VK_SCROLL
+#pragma pop_macro("VK_SCROLL")
+      = VK_SCROLL;
+#pragma push_macro("VK_LSHIFT")
+#undef VK_LSHIFT
+    inline constexpr auto VK_LSHIFT
+#pragma pop_macro("VK_LSHIFT")
+      = VK_LSHIFT;
+#pragma push_macro("VK_RSHIFT")
+#undef VK_RSHIFT
+    inline constexpr auto VK_RSHIFT
+#pragma pop_macro("VK_RSHIFT")
+      = VK_RSHIFT;
+#pragma push_macro("VK_LCONTROL")
+#undef VK_LCONTROL
+    inline constexpr auto VK_LCONTROL
+#pragma pop_macro("VK_LCONTROL")
+      = VK_LCONTROL;
+#pragma push_macro("VK_RCONTROL")
+#undef VK_RCONTROL
+    inline constexpr auto VK_RCONTROL
+#pragma pop_macro("VK_RCONTROL")
+      = VK_RCONTROL;
+#pragma push_macro("VK_LMENU")
+#undef VK_LMENU
+    inline constexpr auto VK_LMENU
+#pragma pop_macro("VK_LMENU")
+      = VK_LMENU;
+#pragma push_macro("VK_RMENU")
+#undef VK_RMENU
+    inline constexpr auto VK_RMENU
+#pragma pop_macro("VK_RMENU")
+      = VK_RMENU;
+#pragma push_macro("VK_BROWSER_BACK")
+#undef VK_BROWSER_BACK
+    inline constexpr auto VK_BROWSER_BACK
+#pragma pop_macro("VK_BROWSER_BACK")
+      = VK_BROWSER_BACK;
+#pragma push_macro("VK_BROWSER_FORWARD")
+#undef VK_BROWSER_FORWARD
+    inline constexpr auto VK_BROWSER_FORWARD
+#pragma pop_macro("VK_BROWSER_FORWARD")
+      = VK_BROWSER_FORWARD;
+#pragma push_macro("VK_BROWSER_REFRESH")
+#undef VK_BROWSER_REFRESH
+    inline constexpr auto VK_BROWSER_REFRESH
+#pragma pop_macro("VK_BROWSER_REFRESH")
+      = VK_BROWSER_REFRESH;
+#pragma push_macro("VK_BROWSER_STOP")
+#undef VK_BROWSER_STOP
+    inline constexpr auto VK_BROWSER_STOP
+#pragma pop_macro("VK_BROWSER_STOP")
+      = VK_BROWSER_STOP;
+#pragma push_macro("VK_BROWSER_SEARCH")
+#undef VK_BROWSER_SEARCH
+    inline constexpr auto VK_BROWSER_SEARCH
+#pragma pop_macro("VK_BROWSER_SEARCH")
+      = VK_BROWSER_SEARCH;
+#pragma push_macro("VK_BROWSER_FAVORITES")
+#undef VK_BROWSER_FAVORITES
+    inline constexpr auto VK_BROWSER_FAVORITES
+#pragma pop_macro("VK_BROWSER_FAVORITES")
+      = VK_BROWSER_FAVORITES;
+#pragma push_macro("VK_BROWSER_HOME")
+#undef VK_BROWSER_HOME
+    inline constexpr auto VK_BROWSER_HOME
+#pragma pop_macro("VK_BROWSER_HOME")
+      = VK_BROWSER_HOME;
+#pragma push_macro("VK_VOLUME_MUTE")
+#undef VK_VOLUME_MUTE
+    inline constexpr auto VK_VOLUME_MUTE
+#pragma pop_macro("VK_VOLUME_MUTE")
+      = VK_VOLUME_MUTE;
+#pragma push_macro("VK_VOLUME_DOWN")
+#undef VK_VOLUME_DOWN
+    inline constexpr auto VK_VOLUME_DOWN
+#pragma pop_macro("VK_VOLUME_DOWN")
+      = VK_VOLUME_DOWN;
+#pragma push_macro("VK_VOLUME_UP")
+#undef VK_VOLUME_UP
+    inline constexpr auto VK_VOLUME_UP
+#pragma pop_macro("VK_VOLUME_UP")
+      = VK_VOLUME_UP;
+#pragma push_macro("VK_MEDIA_NEXT_TRACK")
+#undef VK_MEDIA_NEXT_TRACK
+    inline constexpr auto VK_MEDIA_NEXT_TRACK
+#pragma pop_macro("VK_MEDIA_NEXT_TRACK")
+      = VK_MEDIA_NEXT_TRACK;
+#pragma push_macro("VK_MEDIA_PREV_TRACK")
+#undef VK_MEDIA_PREV_TRACK
+    inline constexpr auto VK_MEDIA_PREV_TRACK
+#pragma pop_macro("VK_MEDIA_PREV_TRACK")
+      = VK_MEDIA_PREV_TRACK;
+#pragma push_macro("VK_MEDIA_STOP")
+#undef VK_MEDIA_STOP
+    inline constexpr auto VK_MEDIA_STOP
+#pragma pop_macro("VK_MEDIA_STOP")
+      = VK_MEDIA_STOP;
+#pragma push_macro("VK_MEDIA_PLAY_PAUSE")
+#undef VK_MEDIA_PLAY_PAUSE
+    inline constexpr auto VK_MEDIA_PLAY_PAUSE
+#pragma pop_macro("VK_MEDIA_PLAY_PAUSE")
+      = VK_MEDIA_PLAY_PAUSE;
+#pragma push_macro("VK_LAUNCH_MAIL")
+#undef VK_LAUNCH_MAIL
+    inline constexpr auto VK_LAUNCH_MAIL
+#pragma pop_macro("VK_LAUNCH_MAIL")
+      = VK_LAUNCH_MAIL;
+#pragma push_macro("VK_LAUNCH_MEDIA_SELECT")
+#undef VK_LAUNCH_MEDIA_SELECT
+    inline constexpr auto VK_LAUNCH_MEDIA_SELECT
+#pragma pop_macro("VK_LAUNCH_MEDIA_SELECT")
+      = VK_LAUNCH_MEDIA_SELECT;
+#pragma push_macro("VK_LAUNCH_APP1")
+#undef VK_LAUNCH_APP1
+    inline constexpr auto VK_LAUNCH_APP1
+#pragma pop_macro("VK_LAUNCH_APP1")
+      = VK_LAUNCH_APP1;
+#pragma push_macro("VK_LAUNCH_APP2")
+#undef VK_LAUNCH_APP2
+    inline constexpr auto VK_LAUNCH_APP2
+#pragma pop_macro("VK_LAUNCH_APP2")
+      = VK_LAUNCH_APP2;
+#pragma push_macro("VK_OEM_1")
+#undef VK_OEM_1
+    inline constexpr auto VK_OEM_1
+#pragma pop_macro("VK_OEM_1")
+      = VK_OEM_1;
+#pragma push_macro("VK_OEM_PLUS")
+#undef VK_OEM_PLUS
+    inline constexpr auto VK_OEM_PLUS
+#pragma pop_macro("VK_OEM_PLUS")
+      = VK_OEM_PLUS;
+#pragma push_macro("VK_OEM_COMMA")
+#undef VK_OEM_COMMA
+    inline constexpr auto VK_OEM_COMMA
+#pragma pop_macro("VK_OEM_COMMA")
+      = VK_OEM_COMMA;
+#pragma push_macro("VK_OEM_MINUS")
+#undef VK_OEM_MINUS
+    inline constexpr auto VK_OEM_MINUS
+#pragma pop_macro("VK_OEM_MINUS")
+      = VK_OEM_MINUS;
+#pragma push_macro("VK_OEM_PERIOD")
+#undef VK_OEM_PERIOD
+    inline constexpr auto VK_OEM_PERIOD
+#pragma pop_macro("VK_OEM_PERIOD")
+      = VK_OEM_PERIOD;
+#pragma push_macro("VK_OEM_2")
+#undef VK_OEM_2
+    inline constexpr auto VK_OEM_2
+#pragma pop_macro("VK_OEM_2")
+      = VK_OEM_2;
+#pragma push_macro("VK_OEM_3")
+#undef VK_OEM_3
+    inline constexpr auto VK_OEM_3
+#pragma pop_macro("VK_OEM_3")
+      = VK_OEM_3;
+#pragma push_macro("VK_GAMEPAD_A")
+#undef VK_GAMEPAD_A
+    inline constexpr auto VK_GAMEPAD_A
+#pragma pop_macro("VK_GAMEPAD_A")
+      = VK_GAMEPAD_A;
+#pragma push_macro("VK_GAMEPAD_B")
+#undef VK_GAMEPAD_B
+    inline constexpr auto VK_GAMEPAD_B
+#pragma pop_macro("VK_GAMEPAD_B")
+      = VK_GAMEPAD_B;
+#pragma push_macro("VK_GAMEPAD_X")
+#undef VK_GAMEPAD_X
+    inline constexpr auto VK_GAMEPAD_X
+#pragma pop_macro("VK_GAMEPAD_X")
+      = VK_GAMEPAD_X;
+#pragma push_macro("VK_GAMEPAD_Y")
+#undef VK_GAMEPAD_Y
+    inline constexpr auto VK_GAMEPAD_Y
+#pragma pop_macro("VK_GAMEPAD_Y")
+      = VK_GAMEPAD_Y;
+#pragma push_macro("VK_GAMEPAD_RIGHT_SHOULDER")
+#undef VK_GAMEPAD_RIGHT_SHOULDER
+    inline constexpr auto VK_GAMEPAD_RIGHT_SHOULDER
+#pragma pop_macro("VK_GAMEPAD_RIGHT_SHOULDER")
+      = VK_GAMEPAD_RIGHT_SHOULDER;
+#pragma push_macro("VK_GAMEPAD_LEFT_SHOULDER")
+#undef VK_GAMEPAD_LEFT_SHOULDER
+    inline constexpr auto VK_GAMEPAD_LEFT_SHOULDER
+#pragma pop_macro("VK_GAMEPAD_LEFT_SHOULDER")
+      = VK_GAMEPAD_LEFT_SHOULDER;
+#pragma push_macro("VK_GAMEPAD_LEFT_TRIGGER")
+#undef VK_GAMEPAD_LEFT_TRIGGER
+    inline constexpr auto VK_GAMEPAD_LEFT_TRIGGER
+#pragma pop_macro("VK_GAMEPAD_LEFT_TRIGGER")
+      = VK_GAMEPAD_LEFT_TRIGGER;
+#pragma push_macro("VK_GAMEPAD_RIGHT_TRIGGER")
+#undef VK_GAMEPAD_RIGHT_TRIGGER
+    inline constexpr auto VK_GAMEPAD_RIGHT_TRIGGER
+#pragma pop_macro("VK_GAMEPAD_RIGHT_TRIGGER")
+      = VK_GAMEPAD_RIGHT_TRIGGER;
+#pragma push_macro("VK_GAMEPAD_DPAD_UP")
+#undef VK_GAMEPAD_DPAD_UP
+    inline constexpr auto VK_GAMEPAD_DPAD_UP
+#pragma pop_macro("VK_GAMEPAD_DPAD_UP")
+      = VK_GAMEPAD_DPAD_UP;
+#pragma push_macro("VK_GAMEPAD_DPAD_DOWN")
+#undef VK_GAMEPAD_DPAD_DOWN
+    inline constexpr auto VK_GAMEPAD_DPAD_DOWN
+#pragma pop_macro("VK_GAMEPAD_DPAD_DOWN")
+      = VK_GAMEPAD_DPAD_DOWN;
+#pragma push_macro("VK_GAMEPAD_DPAD_LEFT")
+#undef VK_GAMEPAD_DPAD_LEFT
+    inline constexpr auto VK_GAMEPAD_DPAD_LEFT
+#pragma pop_macro("VK_GAMEPAD_DPAD_LEFT")
+      = VK_GAMEPAD_DPAD_LEFT;
+#pragma push_macro("VK_GAMEPAD_DPAD_RIGHT")
+#undef VK_GAMEPAD_DPAD_RIGHT
+    inline constexpr auto VK_GAMEPAD_DPAD_RIGHT
+#pragma pop_macro("VK_GAMEPAD_DPAD_RIGHT")
+      = VK_GAMEPAD_DPAD_RIGHT;
+#pragma push_macro("VK_GAMEPAD_MENU")
+#undef VK_GAMEPAD_MENU
+    inline constexpr auto VK_GAMEPAD_MENU
+#pragma pop_macro("VK_GAMEPAD_MENU")
+      = VK_GAMEPAD_MENU;
+#pragma push_macro("VK_GAMEPAD_VIEW")
+#undef VK_GAMEPAD_VIEW
+    inline constexpr auto VK_GAMEPAD_VIEW
+#pragma pop_macro("VK_GAMEPAD_VIEW")
+      = VK_GAMEPAD_VIEW;
+#pragma push_macro("VK_GAMEPAD_LEFT_THUMBSTICK_BUTTON")
+#undef VK_GAMEPAD_LEFT_THUMBSTICK_BUTTON
+    inline constexpr auto VK_GAMEPAD_LEFT_THUMBSTICK_BUTTON
+#pragma pop_macro("VK_GAMEPAD_LEFT_THUMBSTICK_BUTTON")
+      = VK_GAMEPAD_LEFT_THUMBSTICK_BUTTON;
+#pragma push_macro("VK_GAMEPAD_RIGHT_THUMBSTICK_BUTTON")
+#undef VK_GAMEPAD_RIGHT_THUMBSTICK_BUTTON
+    inline constexpr auto VK_GAMEPAD_RIGHT_THUMBSTICK_BUTTON
+#pragma pop_macro("VK_GAMEPAD_RIGHT_THUMBSTICK_BUTTON")
+      = VK_GAMEPAD_RIGHT_THUMBSTICK_BUTTON;
+#pragma push_macro("VK_GAMEPAD_LEFT_THUMBSTICK_UP")
+#undef VK_GAMEPAD_LEFT_THUMBSTICK_UP
+    inline constexpr auto VK_GAMEPAD_LEFT_THUMBSTICK_UP
+#pragma pop_macro("VK_GAMEPAD_LEFT_THUMBSTICK_UP")
+      = VK_GAMEPAD_LEFT_THUMBSTICK_UP;
+#pragma push_macro("VK_GAMEPAD_LEFT_THUMBSTICK_DOWN")
+#undef VK_GAMEPAD_LEFT_THUMBSTICK_DOWN
+    inline constexpr auto VK_GAMEPAD_LEFT_THUMBSTICK_DOWN
+#pragma pop_macro("VK_GAMEPAD_LEFT_THUMBSTICK_DOWN")
+      = VK_GAMEPAD_LEFT_THUMBSTICK_DOWN;
+#pragma push_macro("VK_GAMEPAD_LEFT_THUMBSTICK_RIGHT")
+#undef VK_GAMEPAD_LEFT_THUMBSTICK_RIGHT
+    inline constexpr auto VK_GAMEPAD_LEFT_THUMBSTICK_RIGHT
+#pragma pop_macro("VK_GAMEPAD_LEFT_THUMBSTICK_RIGHT")
+      = VK_GAMEPAD_LEFT_THUMBSTICK_RIGHT;
+#pragma push_macro("VK_GAMEPAD_LEFT_THUMBSTICK_LEFT")
+#undef VK_GAMEPAD_LEFT_THUMBSTICK_LEFT
+    inline constexpr auto VK_GAMEPAD_LEFT_THUMBSTICK_LEFT
+#pragma pop_macro("VK_GAMEPAD_LEFT_THUMBSTICK_LEFT")
+      = VK_GAMEPAD_LEFT_THUMBSTICK_LEFT;
+#pragma push_macro("VK_GAMEPAD_RIGHT_THUMBSTICK_UP")
+#undef VK_GAMEPAD_RIGHT_THUMBSTICK_UP
+    inline constexpr auto VK_GAMEPAD_RIGHT_THUMBSTICK_UP
+#pragma pop_macro("VK_GAMEPAD_RIGHT_THUMBSTICK_UP")
+      = VK_GAMEPAD_RIGHT_THUMBSTICK_UP;
+#pragma push_macro("VK_GAMEPAD_RIGHT_THUMBSTICK_DOWN")
+#undef VK_GAMEPAD_RIGHT_THUMBSTICK_DOWN
+    inline constexpr auto VK_GAMEPAD_RIGHT_THUMBSTICK_DOWN
+#pragma pop_macro("VK_GAMEPAD_RIGHT_THUMBSTICK_DOWN")
+      = VK_GAMEPAD_RIGHT_THUMBSTICK_DOWN;
+#pragma push_macro("VK_GAMEPAD_RIGHT_THUMBSTICK_RIGHT")
+#undef VK_GAMEPAD_RIGHT_THUMBSTICK_RIGHT
+    inline constexpr auto VK_GAMEPAD_RIGHT_THUMBSTICK_RIGHT
+#pragma pop_macro("VK_GAMEPAD_RIGHT_THUMBSTICK_RIGHT")
+      = VK_GAMEPAD_RIGHT_THUMBSTICK_RIGHT;
+#pragma push_macro("VK_GAMEPAD_RIGHT_THUMBSTICK_LEFT")
+#undef VK_GAMEPAD_RIGHT_THUMBSTICK_LEFT
+    inline constexpr auto VK_GAMEPAD_RIGHT_THUMBSTICK_LEFT
+#pragma pop_macro("VK_GAMEPAD_RIGHT_THUMBSTICK_LEFT")
+      = VK_GAMEPAD_RIGHT_THUMBSTICK_LEFT;
+#pragma push_macro("VK_OEM_4")
+#undef VK_OEM_4
+    inline constexpr auto VK_OEM_4
+#pragma pop_macro("VK_OEM_4")
+      = VK_OEM_4;
+#pragma push_macro("VK_OEM_5")
+#undef VK_OEM_5
+    inline constexpr auto VK_OEM_5
+#pragma pop_macro("VK_OEM_5")
+      = VK_OEM_5;
+#pragma push_macro("VK_OEM_6")
+#undef VK_OEM_6
+    inline constexpr auto VK_OEM_6
+#pragma pop_macro("VK_OEM_6")
+      = VK_OEM_6;
+#pragma push_macro("VK_OEM_7")
+#undef VK_OEM_7
+    inline constexpr auto VK_OEM_7
+#pragma pop_macro("VK_OEM_7")
+      = VK_OEM_7;
+#pragma push_macro("VK_OEM_8")
+#undef VK_OEM_8
+    inline constexpr auto VK_OEM_8
+#pragma pop_macro("VK_OEM_8")
+      = VK_OEM_8;
+#pragma push_macro("VK_OEM_102")
+#undef VK_OEM_102
+    inline constexpr auto VK_OEM_102
+#pragma pop_macro("VK_OEM_102")
+      = VK_OEM_102;
+#pragma push_macro("VK_PROCESSKEY")
+#undef VK_PROCESSKEY
+    inline constexpr auto VK_PROCESSKEY
+#pragma pop_macro("VK_PROCESSKEY")
+      = VK_PROCESSKEY;
+#pragma push_macro("VK_PACKET")
+#undef VK_PACKET
+    inline constexpr auto VK_PACKET
+#pragma pop_macro("VK_PACKET")
+      = VK_PACKET;
+#pragma push_macro("VK_ATTN")
+#undef VK_ATTN
+    inline constexpr auto VK_ATTN
+#pragma pop_macro("VK_ATTN")
+      = VK_ATTN;
+#pragma push_macro("VK_CRSEL")
+#undef VK_CRSEL
+    inline constexpr auto VK_CRSEL
+#pragma pop_macro("VK_CRSEL")
+      = VK_CRSEL;
+#pragma push_macro("VK_EXSEL")
+#undef VK_EXSEL
+    inline constexpr auto VK_EXSEL
+#pragma pop_macro("VK_EXSEL")
+      = VK_EXSEL;
+#pragma push_macro("VK_EREOF")
+#undef VK_EREOF
+    inline constexpr auto VK_EREOF
+#pragma pop_macro("VK_EREOF")
+      = VK_EREOF;
+#pragma push_macro("VK_PLAY")
+#undef VK_PLAY
+    inline constexpr auto VK_PLAY
+#pragma pop_macro("VK_PLAY")
+      = VK_PLAY;
+#pragma push_macro("VK_ZOOM")
+#undef VK_ZOOM
+    inline constexpr auto VK_ZOOM
+#pragma pop_macro("VK_ZOOM")
+      = VK_ZOOM;
+#pragma push_macro("VK_NONAME")
+#undef VK_NONAME
+    inline constexpr auto VK_NONAME
+#pragma pop_macro("VK_NONAME")
+      = VK_NONAME;
+#pragma push_macro("VK_PA1")
+#undef VK_PA1
+    inline constexpr auto VK_PA1
+#pragma pop_macro("VK_PA1")
+      = VK_PA1;
+#pragma push_macro("VK_OEM_CLEAR")
+#undef VK_OEM_CLEAR
+    inline constexpr auto VK_OEM_CLEAR
+#pragma pop_macro("VK_OEM_CLEAR")
+      = VK_OEM_CLEAR;
+
+#pragma push_macro("MONITORINFOF_PRIMARY")
+#undef MONITORINFOF_PRIMARY
+    inline constexpr auto MONITORINFOF_PRIMARY
+#pragma pop_macro("MONITORINFOF_PRIMARY")
+      = MONITORINFOF_PRIMARY;
 } // namespace win32
 
 ////////////////////////////////////////////////////////////////////

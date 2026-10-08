@@ -8,9 +8,7 @@ module;
 
 #include <stormkit/core/contract_macro.hpp>
 
-#ifdef STORMKIT_OS_WINDOWS
-    #include <stormkit/core/platform/windows.hpp>
-#else
+#ifndef STORMKIT_OS_WINDOWS
     #include <dlfcn.h>
     #include <errno.h>
 #endif
@@ -19,6 +17,9 @@ module stormkit.core.dynamic_loader;
 
 import std;
 
+#ifdef STORMKIT_OS_WINDOWS
+import stormkit.core.win32;
+#endif
 import stormkit.core.typesafe.safecasts;
 import stormkit.core.errors;
 
@@ -30,7 +31,7 @@ namespace stormkit {
     dynamic_loader::~dynamic_loader() {
         if (m_library_handle != nullptr) [[likely]] {
 #ifdef STORMKIT_OS_WINDOWS
-            FreeLibrary(std::bit_cast<HMODULE>(m_library_handle));
+            ::win32::FreeLibrary(reinterpret_cast<::win32::HMODULE>(m_library_handle));
 #else
             dlclose(m_library_handle);
 #endif
@@ -44,7 +45,7 @@ namespace stormkit {
 #ifdef STORMKIT_OS_WINDOWS
         const auto wfilepath = filepath.wstring();
 
-        m_library_handle = ::LoadLibraryExW(std::data(wfilepath), nullptr, 0);
+        m_library_handle = ::win32::LoadLibraryExW(std::data(wfilepath), nullptr, 0);
 
         if (not m_library_handle) [[unlikely]]
             return std::unexpected { error_code::from_win32() };
@@ -65,7 +66,7 @@ namespace stormkit {
     auto dynamic_loader::do_get_func(string_view name) const -> system_result<void*> {
         EXPECTS(m_library_handle);
 #ifdef STORMKIT_OS_WINDOWS
-        auto func = ::GetProcAddress(std::bit_cast<HMODULE>(m_library_handle), std::data(name));
+        auto func = ::win32::GetProcAddress(std::bit_cast<::win32::HMODULE>(m_library_handle), std::data(name));
 
         if (not func) [[unlikely]]
             return std::unexpected { error_code::from_win32() };

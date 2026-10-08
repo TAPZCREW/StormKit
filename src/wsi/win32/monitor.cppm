@@ -2,13 +2,11 @@
 // This file is subject to the license terms in the LICENSE file
 // found in the top-level of this distribution
 
-module;
-
-#include <stormkit/core/platform/windows.hpp>
-
 export module stormkit.wsi:win32.monitor;
 
 import std;
+
+import stormkit.core.win32;
 
 import :core;
 import :monitor;
@@ -18,21 +16,23 @@ namespace stdr = std::ranges;
 export namespace stormkit::wsi::win32 {
     /////////////////////////////////////
     /////////////////////////////////////
-    auto load_monitor(HMONITOR native) noexcept -> monitor {
-        auto monitor_info   = MONITORINFOEX {};
-        monitor_info.cbSize = sizeof(MONITORINFOEX);
+    auto load_monitor(::win32::HMONITOR native) noexcept -> monitor {
+        auto monitor_info   = ::win32::MONITORINFOEX {};
+        monitor_info.cbSize = sizeof(::win32::MONITORINFOEX);
 
-        GetMonitorInfo(native, &monitor_info);
+        ::win32::GetMonitorInfoA(native, &monitor_info);
 
         auto monitor          = wsi::monitor {};
         monitor.native_handle = native;
-        if ((monitor_info.dwFlags & MONITORINFOF_PRIMARY) == MONITORINFOF_PRIMARY) monitor.flags = wsi::monitor::flag::primary;
+        if (has_flag_bit<::win32::DWORD>(monitor_info.dwFlags, ::win32::MONITORINFOF_PRIMARY))
+            monitor.flags = wsi::monitor::flag::primary;
+        // if ((monitor_info.dwFlags & MONITORINFOF_PRIMARY) == MONITORINFOF_PRIMARY) monitor.flags = wsi::monitor::flag::primary;
 
         monitor.name = string { monitor_info.szDevice };
 
-        auto dm = DEVMODE {};
+        auto dm = ::win32::DEVMODE {};
 
-        for (auto i = 0; EnumDisplaySettings(monitor_info.szDevice, i, &dm) != 0; ++i) {
+        for (auto i = 0; ::win32::EnumDisplaySettingsA(monitor_info.szDevice, i, &dm) != 0; ++i) {
             monitor.extents.emplace_back(as<u32>(dm.dmPelsWidth), as<u32>(dm.dmPelsHeight));
         }
 
@@ -47,13 +47,13 @@ export namespace stormkit::wsi::win32 {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto load_monitors(HMONITOR native, HDC, LPRECT, LPARAM data) noexcept -> BOOL {
-        if (native == nullptr) return TRUE;
+    auto load_monitors(::win32::HMONITOR native, ::win32::HDC, ::win32::LPRECT, ::win32::LPARAM data) noexcept -> ::win32::BOOL {
+        if (native == nullptr) return ::win32::TRUE;
 
         auto& monitors = *reinterpret_cast<dynarray<monitor>*>(data);
         monitors.emplace_back(load_monitor(native));
 
-        return TRUE;
+        return ::win32::TRUE;
     }
 
     /////////////////////////////////////
@@ -62,7 +62,7 @@ export namespace stormkit::wsi::win32 {
         thread_local auto monitors = dynarray<monitor> {};
 
         if (update or stdr::empty(monitors))
-            EnumDisplayMonitors(nullptr, nullptr, load_monitors, reinterpret_cast<LPARAM>(&monitors));
+            ::win32::EnumDisplayMonitors(nullptr, nullptr, load_monitors, reinterpret_cast<::win32::LPARAM>(&monitors));
 
         return monitors;
     }
