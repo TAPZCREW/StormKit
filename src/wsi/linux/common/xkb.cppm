@@ -35,8 +35,8 @@ export namespace stormkit::wsi::linux::common {
         };
     } // namespace xkb
 
+    auto xkb_key_to_stormkit(xkb_keysym_t scancode) noexcept -> key;
     auto stormkit_key_to_xkb(key k) noexcept -> xkb_keysym_t;
-    auto xkb_key_to_stormkit(xkb_keysym_t key) noexcept -> key;
 } // namespace stormkit::wsi::linux::common
 
 ////////////////////////////////////////////////////////////////////
