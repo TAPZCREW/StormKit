@@ -131,7 +131,7 @@ export namespace stormkit::wsi::linux::x11 {
         xcb::Image           m_image            = xcb::Image::empty();
         array_view<u32>      m_framebuffer;
         xcb::Pixmap          m_pixmap      = xcb::Pixmap::empty();
-        xcb::KeySymbols      m_key_symbols = xcb::KeySymbols::empty();
+        xcb::key_symbols      m_key_symbols = xcb::key_symbols::empty();
         common::xkb::keymap  m_keymap      = common::xkb::keymap::empty();
         common::xkb::state   m_xkb_state   = common::xkb::state::empty();
         common::xkb::mods    m_mods;

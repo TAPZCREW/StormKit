@@ -74,7 +74,7 @@ export namespace stormkit::wsi::linux::wayland {
                 common::fd timer_fd = common::fd::empty();
 
                 char c;
-                Key  key;
+                wsi::key  key;
 
                 bool enabled = false;
             } repeat;

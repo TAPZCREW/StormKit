@@ -88,7 +88,7 @@ export {
             auto handle_xdg_top_level_configure(u32, u32, array_view<const xdg_toplevel_state>) noexcept -> void;
             auto handle_surface_enter(wl_surface*, wl_output*) noexcept -> void;
 
-            auto handle_keyboard_key(Key, char, bool) noexcept -> void;
+            auto handle_keyboard_key(key, char, bool) noexcept -> void;
 
             auto handle_pointer_enter(wl_pointer*, wl::pointer_state&) noexcept -> void;
             auto handle_pointer_leave() noexcept -> void;

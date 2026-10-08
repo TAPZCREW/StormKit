@@ -192,7 +192,7 @@ namespace stormkit::wsi::linux::x11 {
         }
 
         // init key_symbol map, this is needed to extract the keysymbol from event
-        m_key_symbols = xcb::KeySymbols::create(connection);
+        m_key_symbols = xcb::key_symbols::create(connection);
         ensures(m_key_symbols, "Failed to initialize XKB symbols map");
 
         auto xkb_ext_reply = xcb_get_extension_data(connection, &xcb_xkb_id);

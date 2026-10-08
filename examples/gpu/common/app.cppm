@@ -83,7 +83,7 @@ export namespace base {
             m_window = wsi::window::open(std::format("Stormkit GPU {} example", example_name),
                                          { 800_u32, 600_u32 },
                                          wsi::window_flag::default | wsi::window_flag::external_context);
-            m_window->on<wsi::event_type::key_down>([this](u8 /*id*/, wsi::Key key, char /*c*/) mutable noexcept {
+            m_window->on<wsi::event_type::key_down>([this](u8 /*id*/, wsi::key key, char /*c*/) mutable noexcept {
                 if (key == wsi::key::escape) m_window->close();
             });
         }

@@ -17,7 +17,7 @@ import stormkit.wsi;
 
 namespace stormkit::lua::wsi {
     using stormkit::wsi::event_type;
-    using stormkit::wsi::Key;
+    using stormkit::wsi::key;
     using stormkit::wsi::Monitor;
     using stormkit::wsi::mouse_button;
     using stormkit::wsi::window;
@@ -146,8 +146,8 @@ namespace stormkit::lua::wsi {
         window_metatable["on_resized"]         = +make_lua_closure<event_type::resized, const math::uextent2&>();
         window_metatable["on_restored"]        = +make_lua_closure<event_type::restored>();
         window_metatable["on_minimized"]       = +make_lua_closure<event_type::minimized>();
-        window_metatable["on_key_up"]          = +make_lua_closure<event_type::key_up, u8, Key, char>();
-        window_metatable["on_key_down"]        = +make_lua_closure<event_type::key_down, u8, Key, char>();
+        window_metatable["on_key_up"]          = +make_lua_closure<event_type::key_up, u8, key, char>();
+        window_metatable["on_key_down"]        = +make_lua_closure<event_type::key_down, u8, key, char>();
         window_metatable
           ["on_mouse_button_up"] = +make_lua_closure<event_type::mouse_button_up, u8, mouse_button, const math::ivec2&>();
         window_metatable

@@ -46,8 +46,8 @@ export namespace stormkit::wsi::linux::x11 {
                                                     std::free,
                                                     struct InputXIQueryDeviceReplyTag,
                                                     nullptr>;
-        using KeySymbols
-          = raii_capsule<xcb_key_symbols_t*, xcb_key_symbols_alloc, xcb_key_symbols_free, struct KeySymbolsTag, nullptr>;
+        using key_symbols
+          = raii_capsule<xcb_key_symbols_t*, xcb_key_symbols_alloc, xcb_key_symbols_free, struct key_symbols_tag, nullptr>;
 
         constexpr auto atom_error(string_view msg, string_view atom_name) -> decltype(auto);
     } // namespace xcb

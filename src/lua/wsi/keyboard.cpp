@@ -16,14 +16,14 @@ import stormkit.core;
 import stormkit.wsi;
 
 namespace stormkit::lua::wsi {
-    using stormkit::wsi::Key;
+    using stormkit::wsi::key;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     auto bind_keyboard(sol::state& global_state, sol::table& metatable) noexcept -> void {
         metatable["key"] = global_state.create_table_with(
           sol::meta_function::as<string>,
-          +[](Key key) { return as<string>(key); },
+          +[](wsi::key key) { return as<string>(key); },
           "A",
           key::a,
           "B",

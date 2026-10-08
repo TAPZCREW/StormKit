@@ -533,7 +533,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto window::handle_keyboard_key(Key key, char character, bool down) noexcept -> void {
+    auto window::handle_keyboard_key(wsi::key key, char character, bool down) noexcept -> void {
         if (down) key_down_event(global_keyboard_id, key, character);
         else
             key_up_event(global_keyboard_id, key, character);

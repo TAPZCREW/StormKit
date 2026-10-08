@@ -109,10 +109,10 @@ auto main(array_view<const string_view> args) -> int {
                       default: break;
                   }
 
-                  ilog("Key down --\n    code: {}\n    value: '{}'\n    raw_value: 0x{:0x})", key, c, c);
+                  ilog("key down --\n    code: {}\n    value: '{}'\n    raw_value: 0x{:0x})", key, c, c);
               } },
               wsi::key_up_event_cb_type { [](u8 /*id*/, wsi::key key, char /*c*/) noexcept {
-                  ilog("Key up --\n    code: {}", key);
+                  ilog("key up --\n    code: {}", key);
               } });
 
     window.event_loop([&] mutable { window.clear(); });

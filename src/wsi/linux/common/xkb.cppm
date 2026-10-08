@@ -19,7 +19,7 @@ import stormkit.wsi;
 
 export namespace stormkit::wsi::linux::common {
     namespace xkb {
-        using Keymap  = raii_capsule<xkb_keymap*, xkb_keymap_new_from_string, xkb_keymap_unref, struct KeymapTag, nullptr>;
+        using keymap  = raii_capsule<xkb_keymap*, xkb_keymap_new_from_string, xkb_keymap_unref, struct keymap_tag, nullptr>;
         using State   = raii_capsule<xkb_state*, xkb_state_new, xkb_state_unref, struct StateTag, nullptr>;
         using Context = raii_capsule<xkb_context*, xkb_context_new, xkb_context_unref, struct ContextTag, nullptr>;
 
@@ -36,7 +36,7 @@ export namespace stormkit::wsi::linux::common {
     } // namespace xkb
 
     auto stormkit_key_to_xkb(key k) noexcept -> xkb_keysym_t;
-    auto xkb_key_to_stormkit(xkb_keysym_t key) noexcept -> Key;
+    auto xkb_key_to_stormkit(xkb_keysym_t key) noexcept -> key;
 } // namespace stormkit::wsi::linux::common
 
 ////////////////////////////////////////////////////////////////////
@@ -186,7 +186,7 @@ namespace stormkit::wsi::linux::common {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_CONST
-    inline auto xkb_key_to_stormkit(xkb_keysym_t scancode) noexcept -> Key {
+    inline auto xkb_key_to_stormkit(xkb_keysym_t scancode) noexcept -> key {
         const auto it = scancode_as_key.find(scancode);
         if (it == stdr::cend(scancode_as_key)) return key::unknown;
         return it->second;

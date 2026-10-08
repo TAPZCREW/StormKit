@@ -42,7 +42,7 @@ auto App::run([[maybe_unused]] const int argc, [[maybe_unused]] czstring argv[])
                               [this]([[maybe_unused]]
                                      const wsi::Event& event) { m_window->close(); });
     event_handler.addCallback(wsi::event_type::KEY_RELEASED, [this](const wsi::Event& event) {
-        const auto& event_data = as<wsi::KeyReleasedEventData>(event.data);
+        const auto& event_data = as<wsi::keyReleasedEventData>(event.data);
 
         handleKeyboard(event_data);
     });
@@ -88,7 +88,7 @@ auto App::do_initWindow() -> void {
     m_renderer = allocate<Renderer>(*m_window);
 }
 
-auto App::handleKeyboard(const stormkit::wsi::KeyReleasedEventData& event) -> void {
+auto App::handleKeyboard(const stormkit::wsi::keyReleasedEventData& event) -> void {
     using namespace stormkit::literals;
 
     const auto size = wsi::window::get_primary_monitor_settings().sizes.back();

@@ -161,7 +161,7 @@ class Application: public base::Application {
         ImGui_ImplVulkan_LoadFunctions(VK_API_VERSION_1_1, gpu::vk::imgui_vk_loader, &*m_device);
         ImGui_ImplVulkan_Init(&init_info);
 
-        m_window->on(wsi::key_down_event_cb_type { [this, &io](u8 /*id*/, wsi::Key key, char c) mutable noexcept {
+        m_window->on(wsi::key_down_event_cb_type { [this, &io](u8 /*id*/, wsi::key key, char c) mutable noexcept {
                          if (key == wsi::key::escape) m_window->close();
                          io.AddInputCharactersUTF8(&c);
                      } },

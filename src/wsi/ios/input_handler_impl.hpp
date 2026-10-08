@@ -21,7 +21,7 @@ namespace storm::window {
         InputHandlerImpl(InputHandlerImpl&&);
         InputHandlerImpl& operator=(InputHandlerImpl&&);
 
-        static bool isKeyPressed(Key key);
+        static bool isKeyPressed(wsi::key key);
         static bool ismouse_buttonPressed(mouse_button button);
         static void set_mouse_position(core::math::uvec2 position);
         static void set_mouse_position(core::math::uvec2 position, const Window& relative_to);
