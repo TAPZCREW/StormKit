@@ -11,7 +11,6 @@ export module stormkit.wsi:mouse;
 import std;
 
 import stormkit.core;
-import stormkit.core.win32;
 
 using namespace stormkit::literals;
 
