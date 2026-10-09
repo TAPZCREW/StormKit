@@ -467,7 +467,7 @@ class Application: public base::Application {
         TryXAssert(viewer_buffer.upload(viewer_data), "Failed to upload texture to gpu!");
 
         const auto rendering_info = gpu::RenderingInfo {
-            .render_area = { .x = 0, .y = 0, .width = window_extent.to<i32>().width, .height = window_extent.to<i32>().height },
+            .render_area = { .x = 0, .y = 0, .width = window_as<iextent2>(extent())().width, .height = window_as<iextent2>(extent())().height },
             .color_attachments = { { .image_view  = swapchain_image_resource.view,
                                      .layout      = gpu::ImageLayout::ATTACHMENT_OPTIMAL,
                                      .clear_value = gpu::ClearColor { .color = colors::SILVER<f32> } } },

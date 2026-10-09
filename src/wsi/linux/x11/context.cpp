@@ -29,7 +29,7 @@ namespace stdr = std::ranges;
 namespace stormkit::wsi::linux::x11::xcb {
     namespace {
         thread_local constinit auto initialized = false;
-        thread_local constinit auto globals     = xcb::globals {};
+        thread_local constinit auto globals     = x11_globals {};
         thread_local auto           atoms       = stormkit::string_hash_map<xcb_atom_t> {};
     } // namespace
 
@@ -56,7 +56,7 @@ namespace stormkit::wsi::linux::x11::xcb {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_globals() noexcept -> xcb::globals& {
+    auto get_globals() noexcept -> x11_globals& {
         if (not initialized) initialized = init();
 
         EXPECTS(initialized);
@@ -77,7 +77,8 @@ namespace stormkit::wsi::linux::x11::xcb {
             auto       error = xcb::generic_error::empty();
             const auto reply = xcb::intern_atom_reply::create(globals.connection, cookie, &error.handle());
 
-            if (error or not reply.handle()) out = std::unexpected<error> { std::in_place, get_error(as_ref_mut(*error)) };
+            if (error or not reply.handle())
+                out = std::unexpected<x11::error> { std::in_place, get_error(mutable_view_of(*error)) };
             else {
                 auto atom = reply.handle()->atom;
                 atoms.emplace(name, atom);
@@ -96,7 +97,7 @@ namespace stormkit::wsi::linux::x11::xcb {
 
         auto       error = xcb::generic_error::empty();
         const auto reply = xcb::atom_name_reply::create(globals.connection, cookie, &error.handle());
-        if (error) out = std::unexpected<xcb::error> { std::in_place, get_error(as_ref_mut(*error)) };
+        if (error) out = std::unexpected<x11::error> { std::in_place, get_error(mutable_view_of(*error)) };
         else
             out = string { xcb_get_atom_name_name(reply), as<usize>(xcb_get_atom_name_name_length(reply)) };
 
@@ -105,7 +106,7 @@ namespace stormkit::wsi::linux::x11::xcb {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_error(ref<xcb_generic_error_t> error) -> string {
+    auto get_error(ref_ptr<xcb_generic_error_t> error) -> string {
         auto guard = xcb::generic_error::take(error);
 
         const auto major = xcb_errors_get_name_for_major_code(globals.error_context, error->major_code);
@@ -123,20 +124,20 @@ namespace stormkit::wsi::linux::x11::xcb {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_xi_device_info(xcb_input_device_id_t device_id) -> std::expected<ref<xcb_input_xi_device_info_t>, error> {
-        auto out = std::expected<ref<xcb_input_xi_device_info_t>, error> { std::unexpect };
+    auto get_xi_device_info(xcb_input_device_id_t device_id) -> std::expected<ref_ptr<xcb_input_xi_device_info_t>, error> {
+        auto out = std::expected<ref_ptr<xcb_input_xi_device_info_t>, error> { std::unexpect };
 
         const auto cookie = xcb_input_xi_query_device(globals.connection, device_id);
         auto       error  = xcb::generic_error::empty();
         const auto reply  = xcb::input_xi_query_device_reply::create(globals.connection, cookie, &error.handle());
 
-        if (error) out = std::unexpected<error> { std::in_place, get_error(as_ref_mut(*error)) };
+        if (error) out = std::unexpected<x11::error> { std::in_place, get_error(mutable_view_of(*error)) };
         else {
             auto device_info_it = xcb_input_xi_query_device_infos_iterator(reply);
             for (; device_info_it.rem != 0; xcb_input_xi_device_info_next(&device_info_it)) {
                 auto info = device_info_it.data;
 
-                if (info->deviceid == device_id) out = as_ref_mut(info);
+                if (info->deviceid == device_id) out = mutable_view_of(info);
             }
 
             ensures(out.has_value());

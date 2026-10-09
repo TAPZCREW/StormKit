@@ -32,7 +32,7 @@ export namespace stormkit::wsi::linux::wayland {
             wsi::monitor monitor;
         };
 
-        struct globals {
+        struct wl_globals {
             bool                            initialized = false;
             wl::display                     display     = wl::display::empty();
             wl::registry                    registry    = wl::registry::empty();
@@ -67,8 +67,8 @@ export namespace stormkit::wsi::linux::wayland {
         };
 
         auto init() noexcept -> bool;
-        auto get_globals() noexcept -> globals&;
-        auto get_monitor(wl::globals& globals, void* output) noexcept -> monitor&;
+        auto get_globals() noexcept -> wl_globals&;
+        auto get_monitor(wl_globals& globals, void* output) noexcept -> monitor&;
     } // namespace wl
 } // namespace stormkit::wsi::linux::wayland
 

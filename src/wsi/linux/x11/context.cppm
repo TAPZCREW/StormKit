@@ -21,7 +21,7 @@ import :linux.common.xkb;
 import :linux.x11.xcb;
 
 export namespace stormkit::wsi::linux::x11::xcb {
-    struct globals {
+    struct x11_globals {
         connection    connection    = connection::empty();
         error_context error_context = error_context::empty();
 
@@ -29,14 +29,14 @@ export namespace stormkit::wsi::linux::x11::xcb {
     };
 
     auto init() noexcept -> bool;
-    auto get_globals() noexcept -> xcb::globals&;
+    auto get_globals() noexcept -> x11_globals&;
 
     auto get_atom(string_view name, bool only_if_exists) noexcept -> std::expected<xcb_atom_t, error>;
     auto get_atom_name(xcb_atom_t atom) -> std::expected<string, error>;
 
-    auto get_error(ref<xcb_generic_error_t> e) -> string;
+    auto get_error(ref_ptr<const xcb_generic_error_t> e) -> string;
 
-    auto get_xi_device_info(xcb_input_device_id_t device_id) -> std::expected<ref<xcb_input_xi_device_info_t>, error>;
+    auto get_xi_device_info(xcb_input_device_id_t device_id) -> std::expected<ref_ptr<xcb_input_xi_device_info_t>, error>;
 
     // template<typename T>
     // auto get_xft_value(string_view name) -> std::optional<T>;

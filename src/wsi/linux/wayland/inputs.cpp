@@ -76,22 +76,24 @@ namespace stormkit::wsi::linux::wayland::wl {
     /////////////////////////////////////
     /////////////////////////////////////
     auto seat_capabilities_handler(void* data, wl_seat* seat, u32 capabilities) noexcept -> void {
-        auto& globals       = *std::bit_cast<globals*>(data);
-        auto  _capabilities = unchecked_narrow<wl_seat_capability>(capabilities);
-        if (has_flag_bit(_capabilities, WL_SEAT_CAPABILITY_KEYBOARD)) {
+        if (data == nullptr) return;
+        auto& globals = get_globals();
+        // auto& globals       = *reinterpret_cast<x11_globals*>(data);
+        const auto capabilities_ = as<wl_seat_capability>(capabilities);
+        if (has_flag_bit(capabilities_, WL_SEAT_CAPABILITY_KEYBOARD)) {
             auto& [keyboard, state] = globals.keyboards.emplace_back(wl::keyboard::create(seat), keyboard_state {});
             wl_keyboard_add_listener(keyboard, &g_keyboard_listener, &state);
 
             state.repeat.timer_fd = common::fd::take(timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK));
         }
-        if (has_flag_bit(_capabilities, WL_SEAT_CAPABILITY_POINTER)) {
+        if (has_flag_bit(capabilities_, WL_SEAT_CAPABILITY_POINTER)) {
             auto& [pointer, state] = globals.pointers.emplace_back(wl::pointer::create(seat), pointer_state {});
             wl_pointer_add_listener(pointer, &g_pointer_listener, &state);
             state.cursor.surface = wl::surface::create(globals.compositor);
             if (globals.cursor_shape_manager)
                 state.cursor.shape_device = wl::cursor_shape_device::create(globals.cursor_shape_manager, pointer);
         }
-        if (has_flag_bit(_capabilities, WL_SEAT_CAPABILITY_TOUCH)) {
+        if (has_flag_bit(capabilities_, WL_SEAT_CAPABILITY_TOUCH)) {
             auto& _ = globals.touchs.emplace_back(wl::touch::create(seat), touch_state {});
             // wl_touch_add_listener(touch, &g_touch_listener, &globals);
         }
@@ -168,7 +170,7 @@ namespace stormkit::wsi::linux::wayland::wl {
 
         const auto down = kstate == WL_KEYBOARD_KEY_STATE_PRESSED;
 
-        auto timer = zeroed<itimerspec>();
+        auto timer = itimerspec {};
         if (state.repeat.enabled and down) {
             if (xkb_keymap_key_repeats(state.xkb_keymap, key) and state.repeat.rate > 0) {
                 state.repeat.c   = character;

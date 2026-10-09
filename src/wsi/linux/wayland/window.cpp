@@ -37,13 +37,13 @@ namespace stdv = std::views;
 
 namespace stormkit::wsi::linux::wayland {
     namespace wl {
-        auto xdg_surface_configure_handler(void*, xdg_surface*, u32) noexcept -> void;
+        auto xdg_surface_configure_handler(void*, ::xdg_surface*, u32) noexcept -> void;
 
-        auto xdg_top_level_configure_bounds_handler(void*, xdg_toplevel*, i32, i32) noexcept -> void;
-        auto xdg_top_level_configure_handler(void*, xdg_toplevel*, i32, i32, wl_array*) noexcept -> void;
-        auto xdg_top_level_close_handler(void*, xdg_toplevel*) noexcept -> void;
+        auto xdg_top_level_configure_bounds_handler(void*, ::xdg_toplevel*, i32, i32) noexcept -> void;
+        auto xdg_top_level_configure_handler(void*, ::xdg_toplevel*, i32, i32, wl_array*) noexcept -> void;
+        auto xdg_top_level_close_handler(void*, ::xdg_toplevel*) noexcept -> void;
 
-        auto xdg_top_level_decoration_configure_handler(void*, zxdg_toplevel_decoration_v1*, u32) noexcept -> void;
+        auto xdg_top_level_decoration_configure_handler(void*, ::zxdg_toplevel_decoration_v1*, u32) noexcept -> void;
 
         auto buffer_release_handler(void*, wl_buffer*) noexcept -> void;
 
@@ -154,9 +154,9 @@ namespace stormkit::wsi::linux::wayland {
         handles_.surface = surface_;
 
         if (globals.viewporter) {
-            viewport_          = wl::viewport::create(globals.viewporter, surface_);
-            const auto _extent = state_.extent.to<i32>();
-            wp_viewport_set_destination(viewport_, _extent.width, _extent.height);
+            viewport_         = wl::viewport::create(globals.viewporter, surface_);
+            const auto extent = as<math::iextent2>(state_.extent);
+            wp_viewport_set_destination(viewport_, extent.width, extent.height);
         }
 
         if (not has_flag_bit(flags_, window_flag::external_context)) reallocate_pixel_buffer();
@@ -200,7 +200,7 @@ namespace stormkit::wsi::linux::wayland {
         auto view = array_view<i32> { std::bit_cast<i32*>(shm_buffer_.value().begin()), shm_buffer_->size() / sizeof(i32) };
         stdr::fill(view, value);
 
-        const auto [width, height] = extent().to<i32>();
+        const auto [width, height] = as<math::iextent2>(extent());
 
         wl_surface_damage(surface_, 0, 0, width, height);
     }
@@ -214,7 +214,7 @@ namespace stormkit::wsi::linux::wayland {
                    }),
                    stdr::begin(view));
 
-        const auto [width, height] = extent().to<i32>();
+        const auto [width, height] = as<math::iextent2>(extent());
 
         wl_surface_damage(surface_, 0, 0, width, height);
     }
@@ -435,14 +435,14 @@ namespace stormkit::wsi::linux::wayland {
 
         if (has_flag_bit(state.flags, wl::pointer_state::flag::locked))
             zwp_locked_pointer_v1_set_cursor_position_hint(state.locked_pointer,
-                                                           wl_fixed_to_int(position.x),
-                                                           wl_fixed_to_int(position.y));
+                                                           wl_fixed_to_int(position.x()),
+                                                           wl_fixed_to_int(position.y()));
         else if (globals.pointer_warp)
             wp_pointer_warp_v1_warp_pointer(globals.pointer_warp,
                                             surface_,
                                             pointer,
-                                            wl_fixed_from_int(position.x),
-                                            wl_fixed_from_int(position.y),
+                                            wl_fixed_from_int(position.x()),
+                                            wl_fixed_from_int(position.y()),
                                             state.serial.value());
         else
             elog("{} protocol is not supported by this DE, can't warp mouse.", wp_pointer_warp_v1_interface.name);
@@ -465,8 +465,8 @@ namespace stormkit::wsi::linux::wayland {
             if (not has_flag_bit(flags_, window_flag::external_context)) reallocate_pixel_buffer();
 
             if (viewport_) {
-                const auto _extent = state_.extent.to<i32>();
-                wp_viewport_set_destination(viewport_, _extent.width, _extent.height);
+                const auto extent = as<math::iextent2>(state_.extent);
+                wp_viewport_set_destination(viewport_, extent.width, extent.height);
             }
 
             resized_event(state_.extent);
@@ -556,7 +556,7 @@ namespace stormkit::wsi::linux::wayland {
     /////////////////////////////////////
     /////////////////////////////////////
     auto window::handle_pointer_motion(wl_fixed_t surface_x, wl_fixed_t surface_y) noexcept -> void {
-        mouse_moved_event(global_mouse_id, math::vec2 { wl_fixed_to_int(surface_x), wl_fixed_to_int(surface_y) });
+        mouse_moved_event(global_mouse_id, math::ivec2 { wl_fixed_to_int(surface_x), wl_fixed_to_int(surface_y) });
     }
 
     /////////////////////////////////////
@@ -580,9 +580,9 @@ namespace stormkit::wsi::linux::wayland {
             std::unreachable();
         }(button);
 
-        if (down) mouse_button_down_event(global_mouse_id, _button, math::vec2 { _x, _y });
+        if (down) mouse_button_down_event(global_mouse_id, _button, math::ivec2 { _x, _y });
         else
-            mouse_button_up_event(global_mouse_id, _button, math::vec2 { _x, _y });
+            mouse_button_up_event(global_mouse_id, _button, math::ivec2 { _x, _y });
     }
 
     /////////////////////////////////////
@@ -598,7 +598,7 @@ namespace stormkit::wsi::linux::wayland {
         auto old_shm_pool     = defer_init<wl::shm_pool> {};
         auto old_pixel_buffer = defer_init<wl::Buffer> {};
 
-        const auto [width, height] = extent.to<i32>();
+        const auto [width, height] = as<math::iextent2>(extent);
         if (not shm_buffer_ or stdr::size(shm_buffer_.value()) < size) {
             old_shm_buffer   = std::move(shm_buffer_);
             old_shm_pool     = std::move(shm_pool_);
@@ -697,28 +697,29 @@ namespace stormkit::wsi::linux::wayland {
     namespace wl {
         /////////////////////////////////////
         /////////////////////////////////////
-        auto xdg_surface_close_handler(void* data, xdg_surface*, u32) noexcept -> void {
-            auto& window = *std::bit_cast<window*>(data);
+        auto xdg_surface_close_handler(void* data, ::xdg_surface*, u32) noexcept -> void {
+            auto& window = *reinterpret_cast<wayland::window*>(data);
             window.handle_xdg_surface_close();
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        auto xdg_surface_configure_handler(void* data, xdg_surface*, u32 serial) noexcept -> void {
-            auto& window = *std::bit_cast<window*>(data);
+        auto xdg_surface_configure_handler(void* data, ::xdg_surface*, u32 serial) noexcept -> void {
+            auto& window = *reinterpret_cast<wayland::window*>(data);
             window.handle_xdg_surface_configure(serial);
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        auto xdg_top_level_configure_bounds_handler(void*, xdg_toplevel*, i32, i32) noexcept -> void {
+        auto xdg_top_level_configure_bounds_handler(void*, ::xdg_toplevel*, i32, i32) noexcept -> void {
             // nothing
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
-        auto xdg_top_level_configure_handler(void* data, xdg_toplevel*, i32 width, i32 height, wl_array* state) noexcept -> void {
-            auto& window = *std::bit_cast<window*>(data);
+        auto xdg_top_level_configure_handler(void* data, ::xdg_toplevel*, i32 width, i32 height, wl_array* state) noexcept
+          -> void {
+            auto& window = *reinterpret_cast<wayland::window*>(data);
             window.handle_xdg_top_level_configure(as<u32>(width),
                                                   as<u32>(height),
                                                   { std::bit_cast<const xdg_toplevel_state*>(state->data), state->size });
@@ -726,7 +727,7 @@ namespace stormkit::wsi::linux::wayland {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        auto xdg_top_level_close_handler(void*, xdg_toplevel*) noexcept -> void {
+        auto xdg_top_level_close_handler(void*, ::xdg_toplevel*) noexcept -> void {
             // nothing
         }
 
@@ -739,14 +740,14 @@ namespace stormkit::wsi::linux::wayland {
 
         /////////////////////////////////////
         /////////////////////////////////////
-        auto xdg_top_level_decoration_configure_handler(void*, zxdg_toplevel_decoration_v1*, u32) noexcept -> void {
+        auto xdg_top_level_decoration_configure_handler(void*, ::zxdg_toplevel_decoration_v1*, u32) noexcept -> void {
             // nothing
         }
 
         /////////////////////////////////////
         /////////////////////////////////////
         auto surface_enter_handler(void* data, wl_surface* surface, wl_output* output) noexcept -> void {
-            auto* window = std::bit_cast<window*>(data);
+            auto* window = reinterpret_cast<wayland::window*>(data);
             window->handle_surface_enter(surface, output);
         }
 

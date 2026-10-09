@@ -47,10 +47,10 @@ export namespace stormkit::wsi::linux::x11 {
           = raii_capsule<xcb_get_atom_name_reply_t*, xcb_get_atom_name_reply, std::free, struct atom_name_reply_tag, nullptr>;
 
         using input_xi_query_device_reply = raii_capsule<xcb_input_xi_query_device_reply_t*,
-                                                     xcb_input_xi_query_device_reply,
-                                                     std::free,
-                                                     struct input_xi_query_device_reply_tag,
-                                                     nullptr>;
+                                                         xcb_input_xi_query_device_reply,
+                                                         std::free,
+                                                         struct input_xi_query_device_reply_tag,
+                                                         nullptr>;
 
         using key_symbols
           = raii_capsule<xcb_key_symbols_t*, xcb_key_symbols_alloc, xcb_key_symbols_free, struct key_symbols_tag, nullptr>;
@@ -62,7 +62,7 @@ export namespace stormkit::wsi::linux::x11 {
 export namespace stormkit::wsi::linux::x11::xcb {
     STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto atom_error(string_view atom_name) -> decltype(auto) {
-        return [atom_name]<typename Error>(Error&& error) noexcept -> error {
+        return [atom_name]<typename Error>(Error&& error) noexcept -> Error {
             elog("Failed to get atom "
                  "{}\n        > reason: {}",
                  atom_name,

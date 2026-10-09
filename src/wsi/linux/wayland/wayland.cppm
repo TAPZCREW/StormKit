@@ -155,3 +155,6 @@ export namespace stormkit::wsi::linux::wayland::wl {
                                                 struct content_type_tag,
                                                 nullptr>;
 } // namespace stormkit::wsi::linux::wayland::wl
+
+export template<>
+inline constexpr auto stormkit::core::meta::FLAG_TRAIT<wl_seat_capability> = true;

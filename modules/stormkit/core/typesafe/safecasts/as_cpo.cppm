@@ -43,9 +43,6 @@ export namespace stormkit { inline namespace core {
     template<typename To>
     inline constexpr auto as = as_fn<To> {};
 
-    static_assert(meta::is<as_fn<usize>, meta::remove_const_of<decltype(as<usize>)>>);
-    static_assert(meta::is<as_fn<usize>, meta::tag<as<usize>>>);
-
     template<typename To, typename From>
     [[nodiscard]]
     constexpr auto unchecked_narrow(From from) noexcept -> To

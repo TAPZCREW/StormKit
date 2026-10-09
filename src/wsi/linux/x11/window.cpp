@@ -5,6 +5,7 @@
 module;
 
 #include <stormkit/core/platform_macro.hpp>
+#include <stormkit/core/try_expected.hpp>
 
 extern "C" {
 #include <xkbcommon/xkbcommon-x11.h>
@@ -140,7 +141,7 @@ namespace stormkit::wsi::linux::x11 {
         const auto& connection = xcb::get_globals().connection;
 
         const auto screen = xcb_setup_roots_iterator(xcb_get_setup(connection)).data;
-        window_          = xcb::window::create(connection);
+        window_           = xcb::window::create(connection);
 
         // dpi_ = xcb::get_xft_value<f32>("Xft.dpi").value_or(96.f) / 96.f;
 
@@ -166,7 +167,7 @@ namespace stormkit::wsi::linux::x11 {
 
             auto error = xcb_request_check(connection, cookie);
             if (error) [[unlikely]] {
-                elog("Failed to create window\n    > reason: {}", xcb::get_error(as_ref_mut(error)));
+                elog("Failed to create window\n    > reason: {}", xcb::get_error(mutable_view_of(error)));
                 return;
             }
         }
@@ -327,14 +328,7 @@ namespace stormkit::wsi::linux::x11 {
         else if (!close_atom) [[unlikely]]
             xcb::atom_error(WM_DELETE_WINDOW)(close_atom.error());
         else
-            xcb_change_property(connection,
-                                XCB_PROP_MODE_REPLACE,
-                                window_,
-                                *protocol_atom,
-                                XCB_ATOM_ATOM,
-                                32,
-                                1,
-                                &(*close_atom));
+            xcb_change_property(connection, XCB_PROP_MODE_REPLACE, window_, *protocol_atom, XCB_ATOM_ATOM, 32, 1, &(*close_atom));
 
         auto _ = xcb::get_atom(WM_STATE_STR, false)
                    .transform([this, &connection](auto&& atom) noexcept {
@@ -349,8 +343,8 @@ namespace stormkit::wsi::linux::x11 {
         xcb_flush(connection);
 
         if (not has_flag_bit(flags, window_flag::external_context)) {
-            graphics_ctx_ = xcb::graphics_context::create(connection);
-            const auto values  = array<u32, 3> { screen->white_pixel, screen->black_pixel, 0_u32 };
+            graphics_ctx_     = xcb::graphics_context::create(connection);
+            const auto values = array<u32, 3> { screen->white_pixel, screen->black_pixel, 0_u32 };
             xcb_create_gc(connection,
                           graphics_ctx_,
                           window_,
@@ -372,8 +366,8 @@ namespace stormkit::wsi::linux::x11 {
         const auto& connection = xcb::get_globals().connection;
         if (window_) xcb_unmap_window(connection, window_);
 
-        image_            = xcb::image::empty();
-        framebuffer_      = {};
+        image_        = xcb::image::empty();
+        framebuffer_  = {};
         graphics_ctx_ = xcb::graphics_context::empty();
 
         window_.reset();
@@ -386,7 +380,7 @@ namespace stormkit::wsi::linux::x11 {
         mods_ = {};
 
         m_xi_opcode      = 0;
-        dpi_            = 1.f;
+        dpi_             = 1.f;
         keyboard_states_ = {};
         mouse_states_    = {};
         state_           = {};
@@ -403,8 +397,8 @@ namespace stormkit::wsi::linux::x11 {
             process_events(xevent);
 
         if (mouse_states_[global_mouse_id].locked) {
-            const auto locked_at = mouse_states_[global_mouse_id].locked_at.to<f32>();
-            xcb_warp_pointer(globals.connection, XCB_NONE, window_, 0, 0, 0, 0, as<i16>(locked_at.x), as<i16>(locked_at.y));
+            const auto locked_at = as<math::fvec2>(mouse_states_[global_mouse_id].locked_at);
+            xcb_warp_pointer(globals.connection, XCB_NONE, window_, 0, 0, 0, 0, as<i16>(locked_at.x()), as<i16>(locked_at.y()));
 
             if (mouse_states_[global_mouse_id].hidden) xcb_xfixes_hide_cursor(globals.connection, window_);
             else
@@ -422,7 +416,7 @@ namespace stormkit::wsi::linux::x11 {
         const auto& connection = xcb::get_globals().connection;
         const auto  cookie     = xcb_image_put(connection, window_, graphics_ctx_, image_, 0, 0, 0);
         auto        error      = xcb_request_check(connection, cookie);
-        if (error) [[unlikely]] { elog("Failed to copy image\n    > reason: {}", xcb::get_error(as_ref_mut(error))); }
+        if (error) [[unlikely]] { elog("Failed to copy image\n    > reason: {}", xcb::get_error(mutable_view_of(error))); }
         // dlog("cleared");
     }
 
@@ -440,7 +434,7 @@ namespace stormkit::wsi::linux::x11 {
         const auto  cookie     = xcb_image_put(connection, window_, graphics_ctx_, image_, 0, 0, 0);
         auto        error      = xcb_request_check(connection, cookie);
         if (error) [[unlikely]]
-            elog("Failed to copy image\n    > reason: {}", xcb::get_error(as_ref_mut(error)));
+            elog("Failed to copy image\n    > reason: {}", xcb::get_error(mutable_view_of(error)));
     }
 
     /////////////////////////////////////
@@ -482,34 +476,59 @@ namespace stormkit::wsi::linux::x11 {
     /////////////////////////////////////
     /////////////////////////////////////
     auto window::set_fullscreen(bool enabled) noexcept -> void {
-        auto _ = xcb::get_atom(WM_STATE_FULLSCREEN_STR, false)
-                   .transform_error(xcb::atom_error(WM_STATE_FULLSCREEN_STR))
-                   .and_then([](auto&& fullscreen_atom) static noexcept {
-                       return xcb::get_atom(WM_STATE_STR, false).transform(monadic::as_tuple(std::move(fullscreen_atom)));
-                   })
-                   .transform_error(xcb::atom_error(WM_STATE_STR))
-                   .transform(monadic::unpack_tuple_to([this, enabled](auto&& fullscreen_atom, auto&& state_atom) {
-                       auto& globals     = xcb::get_globals();
-                       auto  ev          = xcb_client_message_event_t {};
-                       ev.response_type  = XCB_CLIENT_MESSAGE;
-                       ev.type           = state_atom;
-                       ev.format         = 32;
-                       ev.window         = window_;
-                       ev.data.data32[0] = enabled ? _NET_WM_STATE_ADD : _NET_WM_STATE_REMOVE;
-                       ev.data.data32[1] = fullscreen_atom;
-                       ev.data.data32[2] = XCB_ATOM_NONE;
-                       ev.data.data32[3] = 0;
-                       ev.data.data32[4] = 0;
+        TryToOr(fullscreen_atom,
+                xcb::get_atom(WM_STATE_FULLSCREEN_STR, false),
+                monadic::map(xcb::atom_error(WM_STATE_FULLSCREEN_STR), monadic::discard()));
+        TryToOr(state_atom, xcb::get_atom(WM_STATE_STR, false), monadic::map(xcb::atom_error(WM_STATE_STR), monadic::discard()));
 
-                       xcb_send_event(globals.connection,
-                                      1,
-                                      window_,
-                                      XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY,
-                                      std::bit_cast<const char*>(&ev));
+        auto& globals     = xcb::get_globals();
+        auto  ev          = xcb_client_message_event_t {};
+        ev.response_type  = XCB_CLIENT_MESSAGE;
+        ev.type           = state_atom;
+        ev.format         = 32;
+        ev.window         = window_;
+        ev.data.data32[0] = enabled ? _NET_WM_STATE_ADD : _NET_WM_STATE_REMOVE;
+        ev.data.data32[1] = fullscreen_atom;
+        ev.data.data32[2] = XCB_ATOM_NONE;
+        ev.data.data32[3] = 0;
+        ev.data.data32[4] = 0;
 
-                       xcb_flush(globals.connection);
-                       state_.fullscreen = enabled;
-                   }));
+        xcb_send_event(globals.connection,
+                       1,
+                       window_,
+                       XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY,
+                       std::bit_cast<const char*>(&ev));
+
+        xcb_flush(globals.connection);
+        state_.fullscreen = enabled;
+
+        // .transform_error(xcb::atom_error(WM_STATE_FULLSCREEN_STR))
+        //   .and_then([](auto&& fullscreen_atom) static noexcept {
+        //       return xcb::get_atom(WM_STATE_STR, false).transform(monadic::as_tuple(std::move(fullscreen_atom)));
+        //   })
+        //   .transform_error(xcb::atom_error(WM_STATE_STR))
+        //   .transform(monadic::unpack_tuple_to([this, enabled](auto&& fullscreen_atom, auto&& state_atom) {
+        //       auto& globals     = xcb::get_globals();
+        //       auto  ev          = xcb_client_message_event_t {};
+        //       ev.response_type  = XCB_CLIENT_MESSAGE;
+        //       ev.type           = state_atom;
+        //       ev.format         = 32;
+        //       ev.window         = window_;
+        //       ev.data.data32[0] = enabled ? _NET_WM_STATE_ADD : _NET_WM_STATE_REMOVE;
+        //       ev.data.data32[1] = fullscreen_atom;
+        //       ev.data.data32[2] = XCB_ATOM_NONE;
+        //       ev.data.data32[3] = 0;
+        //       ev.data.data32[4] = 0;
+
+        //    xcb_send_event(globals.connection,
+        //                   1,
+        //                   window_,
+        //                   XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY,
+        //                   std::bit_cast<const char*>(&ev));
+
+        //    xcb_flush(globals.connection);
+        //    state_.fullscreen = enabled;
+        // }));
     }
 
     /////////////////////////////////////
@@ -550,8 +569,8 @@ namespace stormkit::wsi::linux::x11 {
 
         if (locked) {
             mouse_states_[global_mouse_id].locked_at = mouse_states_[global_mouse_id].last_position;
-            const auto locked_at                     = mouse_states_[global_mouse_id].locked_at.to<f32>();
-            xcb_warp_pointer(globals.connection, XCB_NONE, window_, 0, 0, 0, 0, as<i16>(locked_at.x), as<i16>(locked_at.y));
+            const auto locked_at                     = as<math::fvec2>(mouse_states_[global_mouse_id].locked_at);
+            xcb_warp_pointer(globals.connection, XCB_NONE, window_, 0, 0, 0, 0, as<i16>(locked_at.x()), as<i16>(locked_at.y()));
         }
 
         if (mouse_states_[global_mouse_id].hidden) xcb_xfixes_hide_cursor(globals.connection, window_);
@@ -620,8 +639,8 @@ namespace stormkit::wsi::linux::x11 {
     auto window::set_mouse_position(const math::ivec2& position, u8) noexcept -> void {
         auto& globals = xcb::get_globals();
 
-        const auto _position = position.to<f32>();
-        xcb_warp_pointer(globals.connection, XCB_NONE, window_, 0, 0, 0, 0, as<i16>(_position.x), as<i16>(_position.y));
+        const auto _position = as<math::fvec2>(position);
+        xcb_warp_pointer(globals.connection, XCB_NONE, window_, 0, 0, 0, 0, as<i16>(_position.x()), as<i16>(_position.y()));
 
         xcb_flush(globals.connection);
     }
@@ -652,19 +671,19 @@ namespace stormkit::wsi::linux::x11 {
                 const auto y = unchecked_narrow<u32>(mouse_event->event_y);
 
                 if (mouse_states_[global_mouse_id].locked)
-                    if (x == mouse_states_[global_mouse_id].locked_at.x and y == mouse_states_[global_mouse_id].locked_at.y)
+                    if (x == mouse_states_[global_mouse_id].locked_at.x() and y == mouse_states_[global_mouse_id].locked_at.y())
                         break;
 
                 if (mouse_states_[global_mouse_id].relative) {
-                    const auto dx = x - mouse_states_[global_mouse_id].last_position.x;
-                    const auto dy = y - mouse_states_[global_mouse_id].last_position.y;
+                    const auto dx = x - mouse_states_[global_mouse_id].last_position.x();
+                    const auto dy = y - mouse_states_[global_mouse_id].last_position.y();
 
-                    mouse_moved_event(global_mouse_id, math::vec2 { dx, dy }.to<i32>());
+                    mouse_moved_event(global_mouse_id, math::ivec2 { as<i32>(dx), as<i32>(dy) });
                 } else
-                    mouse_moved_event(global_mouse_id, math::vec2 { x, y }.to<i32>());
+                    mouse_moved_event(global_mouse_id, math::ivec2 { as<i32>(x), as<i32>(y) });
 
-                mouse_states_[global_mouse_id].last_position.x = x;
-                mouse_states_[global_mouse_id].last_position.y = y;
+                mouse_states_[global_mouse_id].last_position.x() = x;
+                mouse_states_[global_mouse_id].last_position.y() = y;
 
             } break;
             case XCB_BUTTON_PRESS: {
@@ -673,7 +692,7 @@ namespace stormkit::wsi::linux::x11 {
                 auto button = button_event->detail;
                 mouse_button_down_event(global_mouse_id,
                                         x11_button_to_stormkit(button),
-                                        math::vec2 { button_event->event_x, button_event->event_y }.to<i32>());
+                                        math::ivec2 { as<i32>(button_event->event_x), as<i32>(button_event->event_y) });
             } break;
             case XCB_BUTTON_RELEASE: {
                 auto button_event = std::bit_cast<xcb_button_press_event_t*>(xevent);
@@ -681,13 +700,13 @@ namespace stormkit::wsi::linux::x11 {
                 auto button = button_event->detail;
                 mouse_button_up_event(global_mouse_id,
                                       x11_button_to_stormkit(button),
-                                      math::vec2 { button_event->event_x, button_event->event_y }.to<i32>());
+                                      math::ivec2 { as<i32>(button_event->event_x), as<i32>(button_event->event_y) });
             } break;
             case XCB_CONFIGURE_NOTIFY: {
                 auto configure_event = std::bit_cast<xcb_configure_notify_event_t*>(xevent);
 
                 if ((configure_event->width != state_.extent.width) || (configure_event->height != state_.extent.height)) {
-                    state_.extent = math::extent2 { configure_event->width, configure_event->height }.narrow_to<u32>();
+                    state_.extent = math::uextent2 { as<u32>(configure_event->width), as<u32>(configure_event->height) };
 
                     if (graphics_ctx_) update_framebuffer();
 
@@ -848,8 +867,8 @@ namespace stormkit::wsi::linux::x11 {
 
         const auto format          = XCB_IMAGE_FORMAT_Z_PIXMAP;
         const auto depth           = screen->root_depth;
-        const auto [width, height] = state_.extent.to<u16>();
-        image_                    = xcb::image::create(connection, width, height, format, depth, nullptr, 0_u32, nullptr);
+        const auto [width, height] = as<math::extent2<u16>>(state_.extent);
+        image_                     = xcb::image::create(connection, width, height, format, depth, nullptr, 0_u32, nullptr);
 
         framebuffer_ = { std::bit_cast<u32*>(image_.handle()->data), image_.handle()->size / 8 };
 

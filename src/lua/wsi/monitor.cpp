@@ -23,14 +23,14 @@ namespace stormkit::lua::wsi {
     auto bind_monitor(sol::state& global_state, sol::table& metatable) noexcept -> void {
         metatable["monitor_flag"] = global_state.create_table_with(
           sol::meta_function::as<string>,
-          +[](monitor::Flags flags) { return as<string>(flags); },
+          +[](monitor::flag flags) { return as<string>(flags); },
           "none",
-          monitor::Flags::none,
+          monitor::flag::none,
           "PRIMARY",
-          monitor::Flags::PRIMARY);
+          monitor::flag::primary);
 
         auto monitor                           = metatable.new_usertype<monitor>("monitor");
-        monitor[sol::meta_function::as<string>] = +[](monitor::Flags flags) { return as<string>(flags); },
+        monitor[sol::meta_function::as<string>] = +[](monitor::flag flags) { return as<string>(flags); },
         monitor[sol::meta_function::is]  = &monitor::operator==;
         monitor[sol::meta_function::less_than] = +[](const monitor& first, const monitor& second) static noexcept {
             return first < second;

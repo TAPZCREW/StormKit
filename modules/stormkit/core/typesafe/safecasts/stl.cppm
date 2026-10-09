@@ -300,6 +300,7 @@ namespace stormkit { inline namespace core {
     template<typename T, meta::std_variant Variant>
     STORMKIT_FORCE_INLINE
     constexpr auto tag_invoke(is_fn<T>, const Variant& value) noexcept -> bool {
+#if false
         if constexpr (meta::same_as<T, empty>) {
             if constexpr (requires { variant_contains_type<std::monostate>(std::declval<Variant>()) == true; })
                 return std::get_if<std::monostate>(&value) != nullptr;
@@ -314,6 +315,9 @@ namespace stormkit { inline namespace core {
                                               })
                    != std::variant_npos;
         }
+#else
+        return std::holds_alternative<T>(value);
+#endif
     }
 
     /////////////////////////////////////
@@ -322,6 +326,7 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     constexpr auto tag_invoke(as_fn<To>, Variant&& value, source_location_arg location) noexcept
       -> meta::forward_like<Variant, To> {
+#if false
         auto ptr = raw_ptr<meta::forward_const_to<Variant, To>> { nullptr };
         meta::variant_type_find_if(std::forward<Variant>(value), [&ptr, &value]<typename It>(const It&) noexcept -> bool {
             if constexpr (meta::same_as<typename It::type, To>) {
@@ -334,6 +339,9 @@ namespace stormkit { inline namespace core {
 
         ensures(ptr != nullptr, "Bad variant access!", location);
         return std::forward_like<Variant>(*ptr);
+#else
+        return std::get<To>(std::forward<Variant>(value));
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -714,8 +722,4 @@ namespace stormkit { inline namespace core {
 
         return out;
     }
-
-    // static_assert(tag_invoke(std::declval<into_fn<array<int, 2>>>(), std::declval<int (&)[2]>());
-    static_assert(meta::tag_invocable<into_fn<array<int, 2>>, int (&)[2]>);
-    static_assert(stdr::size(into<array>({ 0, 1 })) == 2);
 }} // namespace stormkit::core

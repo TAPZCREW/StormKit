@@ -47,7 +47,7 @@ namespace stormkit { inline namespace core {
                              console_style { .fg = console_color::RED, .modifiers = style_modifier::BOLD } | message);
                 std::fflush(get_stderr());
 #if defined(__cpp_lib_debugging) and __cpp_lib_debugging >= 202311L
-                if (std::is_debugger_present) { std::breakpoint(); }
+                if (std::is_debugger_present()) { std::breakpoint(); }
 #endif
 
                 std::terminate();
