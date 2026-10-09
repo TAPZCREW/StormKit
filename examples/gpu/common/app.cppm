@@ -68,10 +68,10 @@ export namespace base {
         }
 
       protected:
-        defer_init<wsi::Window>               m_window;
+        defer_init<wsi::window>               m_window;
         defer_init<gpu::Instance>             m_instance;
         defer_init<gpu::DebugCallback>        m_debug_callback;
-        defer_init<gpu::Surface>              m_surface;
+        defer_init<gpu::Surface>              surface_;
         defer_init<gpu::view::PhysicalDevice> m_physical_device;
         defer_init<gpu::Device>               m_device;
         defer_init<gpu::SwapChain>            m_swapchain;
@@ -80,11 +80,11 @@ export namespace base {
 
       private:
         auto init_window(string_view example_name) noexcept -> void {
-            m_window = wsi::Window::open(std::format("Stormkit GPU {} example", example_name),
+            m_window = wsi::window::open(std::format("Stormkit GPU {} example", example_name),
                                          { 800_u32, 600_u32 },
-                                         wsi::WindowFlag::DEFAULT | wsi::WindowFlag::EXTERNAL_CONTEXT);
-            m_window->on<wsi::EventType::KEY_DOWN>([this](u8 /*id*/, wsi::Key key, char /*c*/) mutable noexcept {
-                if (key == wsi::Key::ESCAPE) m_window->close();
+                                         wsi::window_flag::default | wsi::window_flag::external_context);
+            m_window->on<wsi::event_type::key_down>([this](u8 /*id*/, wsi::key key, char /*c*/) mutable noexcept {
+                if (key == wsi::key::escape) m_window->close();
             });
         }
 
@@ -102,7 +102,7 @@ export namespace base {
                                               "Failed to initialize gpu instance");
             }
 
-            m_surface = TryXAssert(gpu::Surface::create_from_window(m_instance, m_window),
+            surface_ = TryXAssert(gpu::Surface::create_from_window(m_instance, m_window),
                                    "Failed to initialize window gpu surface");
 
             // pick the best physical device
@@ -131,7 +131,7 @@ export namespace base {
 
             // create swapchain
             const auto window_extent = m_window->extent();
-            m_swapchain              = TryXAssert(gpu::SwapChain::create(m_device, { gpu::as_view(m_surface), window_extent }),
+            m_swapchain              = TryXAssert(gpu::SwapChain::create(m_device, { gpu::as_view(surface_), window_extent }),
                                                   "Failed to create swapchain");
 
             const auto queue_entries = m_device->queue_entries();

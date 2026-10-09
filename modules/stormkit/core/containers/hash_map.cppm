@@ -41,6 +41,12 @@ export namespace stormkit { inline namespace core {
 
     template<typename Key, typename Value, usize N>
     constexpr auto make_static_hash_map(std::pair<Key, Value> (&&pairs)[N]) noexcept -> static_hash_map<Key, Value, N>;
+
+    template<typename Key, typename Value, usize N>
+    constexpr auto make_static_hash_map(std::array<std::pair<Key, Value>, N>& pairs) noexcept -> static_hash_map<Key, Value, N>;
+
+    template<typename Key, typename Value, usize N>
+    constexpr auto make_static_hash_map(std::array<std::pair<Key, Value>, N>&& pairs) noexcept -> static_hash_map<Key, Value, N>;
 }} // namespace stormkit::core
 
 export template<stormkit::core::meta::has_hasher T>
@@ -70,6 +76,22 @@ namespace stormkit { inline namespace core {
     template<typename Key, typename Value, usize N>
     STORMKIT_FORCE_INLINE
     constexpr auto make_static_hash_map(std::pair<Key, Value> (&&pairs)[N]) noexcept -> static_hash_map<Key, Value, N> {
+        return frozen::make_unordered_map<Key, Value, N>(std::move(pairs));
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Key, typename Value, usize N>
+    STORMKIT_FORCE_INLINE
+    constexpr auto make_static_hash_map(std::array<std::pair<Key, Value>, N>& pairs) noexcept -> static_hash_map<Key, Value, N> {
+        return frozen::make_unordered_map<Key, Value, N>(pairs);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Key, typename Value, usize N>
+    STORMKIT_FORCE_INLINE
+    constexpr auto make_static_hash_map(std::array<std::pair<Key, Value>, N>&& pairs) noexcept -> static_hash_map<Key, Value, N> {
         return frozen::make_unordered_map<Key, Value, N>(std::move(pairs));
     }
 }} // namespace stormkit::core

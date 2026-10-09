@@ -33,6 +33,10 @@ export {
         [[nodiscard]]
         constexpr auto has_flag_bit(T value, T flag) noexcept -> bool;
 
+        template<meta::integral T>
+        [[nodiscard]]
+        constexpr auto has_flag_bit(T value, T flag) noexcept -> bool;
+
         template<meta::enumeration T, usize N, T DEFAULT_VALUE, usize BUF_LEN = 50>
         consteval auto generate_substitution_strings_for(string_view                                    prefix,
                                                          array_view<const std::pair<T, string_view>, N> mapping,
@@ -107,6 +111,14 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::is_flag T>
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
+    constexpr auto has_flag_bit(T value, T flag) noexcept -> bool {
+        return (value & flag) == flag;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::integral T>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto has_flag_bit(T value, T flag) noexcept -> bool {
         return (value & flag) == flag;

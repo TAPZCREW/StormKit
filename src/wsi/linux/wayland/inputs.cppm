@@ -22,176 +22,176 @@ import :linux.common.fd;
 import :linux.common.xkb;
 
 export namespace stormkit::wsi::linux::wayland {
-    class Window;
+    class window;
 
     namespace wl {
-        struct PointerState {
-            struct PointerButtonState {
+        struct pointer_state {
+            struct pointer_button_state {
                 u32  button;
                 bool down;
             };
 
-            enum class Flag : u8 {
-                NONE     = 0,
-                HIDDEN   = 1,
-                LOCKED   = 2,
-                CONFINED = 4,
-                RELATIVE = 4,
+            enum class flag : u8 {
+                none     = 0,
+                hidden   = 1,
+                locked   = 2,
+                confined = 4,
+                relative = 4,
             } flags;
 
             std::optional<u32> serial = std::nullopt;
 
-            array<PointerButtonState, 5> button_state;
+            array<pointer_button_state, 5> button_state;
 
-            wl::ConfinedPointer confined_pointer = wl::ConfinedPointer::empty();
-            wl::LockedPointer   locked_pointer   = wl::LockedPointer::empty();
-            wl::RelativePointer relative_pointer = wl::RelativePointer::empty();
+            wl::confined_pointer confined_pointer = wl::confined_pointer::empty();
+            wl::locked_pointer   locked_pointer   = wl::locked_pointer::empty();
+            wl::relative_pointer relative_pointer = wl::relative_pointer::empty();
 
-            struct Cursor {
+            struct {
                 string name;
 
-                wl::Surface           surface      = wl::Surface::empty();
-                wl::CursorShapeDevice shape_device = wl::CursorShapeDevice::empty();
+                wl::surface             surface      = wl::surface::empty();
+                wl::cursor_shape_device shape_device = wl::cursor_shape_device::empty();
             } cursor;
 
-            Window* focused_window = nullptr;
+            window* focused_window = nullptr;
 
             wl_fixed_t x;
             wl_fixed_t y;
         };
 
-        struct KeyboardState {
-            struct KeyState {
+        struct keyboard_state {
+            struct key_state {
                 xkb_keysym_t key;
                 bool         down;
             };
 
             std::optional<u32> serial = std::nullopt;
 
-            struct repeat {
+            struct {
                 i32        rate;
                 i32        delay;
-                common::FD timer_fd = common::FD::empty();
+                common::fd timer_fd = common::fd::empty();
 
                 char c;
-                Key  key;
+                wsi::key  key;
 
                 bool enabled = false;
             } repeat;
 
-            common::xkb::Keymap xkb_keymap = common::xkb::Keymap::empty();
-            common::xkb::State  xkb_state  = common::xkb::State::empty();
-            common::xkb::Mods   xkb_mods;
+            common::xkb::keymap xkb_keymap = common::xkb::keymap::empty();
+            common::xkb::state  xkb_state  = common::xkb::state::empty();
+            common::xkb::mods   xkb_mods;
 
-            Window* focused_window = nullptr;
+            window* focused_window = nullptr;
 
-            array<KeyState, 102> keyboard_state = {
-                KeyState { XKB_KEY_a,            false },
-                 KeyState { XKB_KEY_b,            false },
-                KeyState { XKB_KEY_c,            false },
-                 KeyState { XKB_KEY_d,            false },
-                KeyState { XKB_KEY_e,            false },
-                 KeyState { XKB_KEY_f,            false },
-                KeyState { XKB_KEY_g,            false },
-                 KeyState { XKB_KEY_h,            false },
-                KeyState { XKB_KEY_i,            false },
-                 KeyState { XKB_KEY_j,            false },
-                KeyState { XKB_KEY_k,            false },
-                 KeyState { XKB_KEY_l,            false },
-                KeyState { XKB_KEY_m,            false },
-                 KeyState { XKB_KEY_n,            false },
-                KeyState { XKB_KEY_o,            false },
-                 KeyState { XKB_KEY_p,            false },
-                KeyState { XKB_KEY_q,            false },
-                 KeyState { XKB_KEY_r,            false },
-                KeyState { XKB_KEY_s,            false },
-                 KeyState { XKB_KEY_t,            false },
-                KeyState { XKB_KEY_u,            false },
-                 KeyState { XKB_KEY_v,            false },
-                KeyState { XKB_KEY_w,            false },
-                 KeyState { XKB_KEY_x,            false },
-                KeyState { XKB_KEY_y,            false },
-                 KeyState { XKB_KEY_z,            false },
-                KeyState { XKB_KEY_0,            false },
-                 KeyState { XKB_KEY_1,            false },
-                KeyState { XKB_KEY_2,            false },
-                 KeyState { XKB_KEY_3,            false },
-                KeyState { XKB_KEY_4,            false },
-                 KeyState { XKB_KEY_5,            false },
-                KeyState { XKB_KEY_6,            false },
-                 KeyState { XKB_KEY_7,            false },
-                KeyState { XKB_KEY_8,            false },
-                 KeyState { XKB_KEY_9,            false },
-                KeyState { XKB_KEY_Escape,       false },
-                 KeyState { XKB_KEY_Control_L,    false },
-                KeyState { XKB_KEY_Shift_L,      false },
-                 KeyState { XKB_KEY_Alt_L,        false },
-                KeyState { XKB_KEY_Super_L,      false },
-                 KeyState { XKB_KEY_Control_R,    false },
-                KeyState { XKB_KEY_Shift_R,      false },
-                 KeyState { XKB_KEY_Alt_R,        false },
-                KeyState { XKB_KEY_Super_R,      false },
-                 KeyState { XKB_KEY_Menu,         false },
-                KeyState { XKB_KEY_bracketleft,  false },
-                 KeyState { XKB_KEY_bracketright, false },
-                KeyState { XKB_KEY_semicolon,    false },
-                 KeyState { XKB_KEY_comma,        false },
-                KeyState { XKB_KEY_period,       false },
-                 KeyState { XKB_KEY_quoteleft,    false },
-                KeyState { XKB_KEY_slash,        false },
-                 KeyState { XKB_KEY_backslash,    false },
-                KeyState { XKB_KEY_dead_grave,   false },
-                 KeyState { XKB_KEY_equal,        false },
-                KeyState { XKB_KEY_hyphen,       false },
-                 KeyState { XKB_KEY_space,        false },
-                KeyState { XKB_KEY_Return,       false },
-                 KeyState { XKB_KEY_BackSpace,    false },
-                KeyState { XKB_KEY_Tab,          false },
-                 KeyState { XKB_KEY_Page_Up,      false },
-                KeyState { XKB_KEY_Page_Down,    false },
-                 KeyState { XKB_KEY_Begin,        false },
-                KeyState { XKB_KEY_End,          false },
-                 KeyState { XKB_KEY_Home,         false },
-                KeyState { XKB_KEY_Insert,       false },
-                 KeyState { XKB_KEY_Delete,       false },
-                KeyState { XKB_KEY_KP_Add,       false },
-                 KeyState { XKB_KEY_KP_Subtract,  false },
-                KeyState { XKB_KEY_KP_Multiply,  false },
-                 KeyState { XKB_KEY_KP_Divide,    false },
-                KeyState { XKB_KEY_Left,         false },
-                 KeyState { XKB_KEY_Right,        false },
-                KeyState { XKB_KEY_Up,           false },
-                 KeyState { XKB_KEY_Down,         false },
-                KeyState { XKB_KEY_KP_0,         false },
-                 KeyState { XKB_KEY_KP_1,         false },
-                KeyState { XKB_KEY_KP_2,         false },
-                 KeyState { XKB_KEY_KP_3,         false },
-                KeyState { XKB_KEY_KP_4,         false },
-                 KeyState { XKB_KEY_KP_5,         false },
-                KeyState { XKB_KEY_KP_6,         false },
-                 KeyState { XKB_KEY_KP_7,         false },
-                KeyState { XKB_KEY_KP_8,         false },
-                 KeyState { XKB_KEY_KP_9,         false },
-                KeyState { XKB_KEY_F1,           false },
-                 KeyState { XKB_KEY_F2,           false },
-                KeyState { XKB_KEY_F3,           false },
-                 KeyState { XKB_KEY_F4,           false },
-                KeyState { XKB_KEY_F5,           false },
-                 KeyState { XKB_KEY_F6,           false },
-                KeyState { XKB_KEY_F7,           false },
-                 KeyState { XKB_KEY_F8,           false },
-                KeyState { XKB_KEY_F9,           false },
-                 KeyState { XKB_KEY_F10,          false },
-                KeyState { XKB_KEY_F11,          false },
-                 KeyState { XKB_KEY_F12,          false },
-                KeyState { XKB_KEY_F13,          false },
-                 KeyState { XKB_KEY_F14,          false },
-                KeyState { XKB_KEY_F15,          false },
-                 KeyState { XKB_KEY_Pause,        false },
+            array<key_state, 102> keyboard_state = {
+                key_state { XKB_KEY_a,            false },
+                 key_state { XKB_KEY_b,            false },
+                key_state { XKB_KEY_c,            false },
+                 key_state { XKB_KEY_d,            false },
+                key_state { XKB_KEY_e,            false },
+                 key_state { XKB_KEY_f,            false },
+                key_state { XKB_KEY_g,            false },
+                 key_state { XKB_KEY_h,            false },
+                key_state { XKB_KEY_i,            false },
+                 key_state { XKB_KEY_j,            false },
+                key_state { XKB_KEY_k,            false },
+                 key_state { XKB_KEY_l,            false },
+                key_state { XKB_KEY_m,            false },
+                 key_state { XKB_KEY_n,            false },
+                key_state { XKB_KEY_o,            false },
+                 key_state { XKB_KEY_p,            false },
+                key_state { XKB_KEY_q,            false },
+                 key_state { XKB_KEY_r,            false },
+                key_state { XKB_KEY_s,            false },
+                 key_state { XKB_KEY_t,            false },
+                key_state { XKB_KEY_u,            false },
+                 key_state { XKB_KEY_v,            false },
+                key_state { XKB_KEY_w,            false },
+                 key_state { XKB_KEY_x,            false },
+                key_state { XKB_KEY_y,            false },
+                 key_state { XKB_KEY_z,            false },
+                key_state { XKB_KEY_0,            false },
+                 key_state { XKB_KEY_1,            false },
+                key_state { XKB_KEY_2,            false },
+                 key_state { XKB_KEY_3,            false },
+                key_state { XKB_KEY_4,            false },
+                 key_state { XKB_KEY_5,            false },
+                key_state { XKB_KEY_6,            false },
+                 key_state { XKB_KEY_7,            false },
+                key_state { XKB_KEY_8,            false },
+                 key_state { XKB_KEY_9,            false },
+                key_state { XKB_KEY_Escape,       false },
+                 key_state { XKB_KEY_Control_L,    false },
+                key_state { XKB_KEY_Shift_L,      false },
+                 key_state { XKB_KEY_Alt_L,        false },
+                key_state { XKB_KEY_Super_L,      false },
+                 key_state { XKB_KEY_Control_R,    false },
+                key_state { XKB_KEY_Shift_R,      false },
+                 key_state { XKB_KEY_Alt_R,        false },
+                key_state { XKB_KEY_Super_R,      false },
+                 key_state { XKB_KEY_Menu,         false },
+                key_state { XKB_KEY_bracketleft,  false },
+                 key_state { XKB_KEY_bracketright, false },
+                key_state { XKB_KEY_semicolon,    false },
+                 key_state { XKB_KEY_comma,        false },
+                key_state { XKB_KEY_period,       false },
+                 key_state { XKB_KEY_quoteleft,    false },
+                key_state { XKB_KEY_slash,        false },
+                 key_state { XKB_KEY_backslash,    false },
+                key_state { XKB_KEY_dead_grave,   false },
+                 key_state { XKB_KEY_equal,        false },
+                key_state { XKB_KEY_hyphen,       false },
+                 key_state { XKB_KEY_space,        false },
+                key_state { XKB_KEY_Return,       false },
+                 key_state { XKB_KEY_BackSpace,    false },
+                key_state { XKB_KEY_Tab,          false },
+                 key_state { XKB_KEY_Page_Up,      false },
+                key_state { XKB_KEY_Page_Down,    false },
+                 key_state { XKB_KEY_Begin,        false },
+                key_state { XKB_KEY_End,          false },
+                 key_state { XKB_KEY_Home,         false },
+                key_state { XKB_KEY_Insert,       false },
+                 key_state { XKB_KEY_Delete,       false },
+                key_state { XKB_KEY_KP_Add,       false },
+                 key_state { XKB_KEY_KP_Subtract,  false },
+                key_state { XKB_KEY_KP_Multiply,  false },
+                 key_state { XKB_KEY_KP_Divide,    false },
+                key_state { XKB_KEY_Left,         false },
+                 key_state { XKB_KEY_Right,        false },
+                key_state { XKB_KEY_Up,           false },
+                 key_state { XKB_KEY_Down,         false },
+                key_state { XKB_KEY_KP_0,         false },
+                 key_state { XKB_KEY_KP_1,         false },
+                key_state { XKB_KEY_KP_2,         false },
+                 key_state { XKB_KEY_KP_3,         false },
+                key_state { XKB_KEY_KP_4,         false },
+                 key_state { XKB_KEY_KP_5,         false },
+                key_state { XKB_KEY_KP_6,         false },
+                 key_state { XKB_KEY_KP_7,         false },
+                key_state { XKB_KEY_KP_8,         false },
+                 key_state { XKB_KEY_KP_9,         false },
+                key_state { XKB_KEY_F1,           false },
+                 key_state { XKB_KEY_F2,           false },
+                key_state { XKB_KEY_F3,           false },
+                 key_state { XKB_KEY_F4,           false },
+                key_state { XKB_KEY_F5,           false },
+                 key_state { XKB_KEY_F6,           false },
+                key_state { XKB_KEY_F7,           false },
+                 key_state { XKB_KEY_F8,           false },
+                key_state { XKB_KEY_F9,           false },
+                 key_state { XKB_KEY_F10,          false },
+                key_state { XKB_KEY_F11,          false },
+                 key_state { XKB_KEY_F12,          false },
+                key_state { XKB_KEY_F13,          false },
+                 key_state { XKB_KEY_F14,          false },
+                key_state { XKB_KEY_F15,          false },
+                 key_state { XKB_KEY_Pause,        false },
             };
         };
 
-        struct TouchState {};
+        struct touch_state {};
 
         auto seat_capabilities_handler(void*, wl_seat*, u32) noexcept -> void;
         auto seat_name_handler(void*, wl_seat*, const char*) noexcept -> void;

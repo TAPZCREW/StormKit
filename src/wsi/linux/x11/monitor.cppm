@@ -21,27 +21,27 @@ namespace stdr = std::ranges;
 namespace stormkit::wsi::linux::x11 {
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_monitors(WM, bool update) noexcept -> array_view<const Monitor> {
-        thread_local auto monitors = dynarray<Monitor> {};
+    auto get_monitors(window_manager, bool update) noexcept -> array_view<const monitor> {
+        thread_local auto monitors = dynarray<monitor> {};
 
         if (stdr::empty(monitors) or update) {
             auto& globals = xcb::get_globals();
 
-            using Monitors = raii_capsule<xcb_randr_get_monitors_reply_t*,
-                                         xcb_randr_get_monitors_reply,
-                                         std::free,
-                                         struct MonitorTag>;
-            using Output   = raii_capsule<xcb_randr_get_output_info_reply_t*,
-                                         xcb_randr_get_output_info_reply,
-                                         std::free,
-                                         struct OutputTag>;
+            using xmonitors = raii_capsule<xcb_randr_get_monitors_reply_t*,
+                                           xcb_randr_get_monitors_reply,
+                                           std::free,
+                                           struct monitor_tag>;
+            using output    = raii_capsule<xcb_randr_get_output_info_reply_t*,
+                                           xcb_randr_get_output_info_reply,
+                                           std::free,
+                                           struct output_tag>;
             using CRTC = raii_capsule<xcb_randr_get_crtc_info_reply_t*, xcb_randr_get_crtc_info_reply, std::free, struct CRTCTag>;
 
             const auto root = xcb_setup_roots_iterator(xcb_get_setup(globals.connection)).data;
 
-            auto xcb_monitors = Monitors::create(globals.connection,
-                                                 xcb_randr_get_monitors(globals.connection, root->root, 0),
-                                                 nullptr);
+            auto xcb_monitors = xmonitors::create(globals.connection,
+                                                  xcb_randr_get_monitors(globals.connection, root->root, 0),
+                                                  nullptr);
 
             auto xcb_monitor_iter = xcb_randr_get_monitors_monitors_iterator(xcb_monitors);
             for (auto i = 0; xcb_monitor_iter.rem; xcb_randr_monitor_info_next(&xcb_monitor_iter), ++i) {
@@ -50,10 +50,10 @@ namespace stormkit::wsi::linux::x11 {
                 xcb_randr_select_input(globals.connection, root->root, true);
 
                 auto& monitor = monitors.emplace_back();
-                if (monitor_info->primary) monitor.flags = Monitor::Flags::PRIMARY;
+                if (monitor_info->primary) monitor.flags = monitor::flag::primary;
 
                 auto name = xcb::get_atom_name(monitor_info->name);
-                if (!name) monitor.name = std::format("Monitor {}", i);
+                if (!name) monitor.name = std::format("monitor {}", i);
                 else
                     monitor.name = std::move(*name);
 
@@ -63,7 +63,7 @@ namespace stormkit::wsi::linux::x11 {
                 for (auto j : range(len)) {
                     auto
                       output_cookie = xcb_randr_get_output_info(globals.connection, outputs[j], xcb_monitors.handle()->timestamp);
-                    auto output     = Output::create(globals.connection, output_cookie, nullptr);
+                    auto output     = output::create(globals.connection, output_cookie, nullptr);
 
                     if (!output) continue;
                     if (output.handle()->connection != XCB_RANDR_CONNECTION_CONNECTED) continue;

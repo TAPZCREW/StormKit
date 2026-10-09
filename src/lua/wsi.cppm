@@ -16,36 +16,36 @@ import stormkit.core;
 import stormkit.wsi;
 
 // template<>
-// struct lb::Stack<stormkit::wsi::WindowFlag>: lb::Enum<stormkit::wsi::WindowFlag> {};
+// struct lb::Stack<stormkit::wsi::window_flag>: lb::Enum<stormkit::wsi::window_flag> {};
 
 // template<>
-// struct lb::Stack<stormkit::wsi::WM>
-//     : lb::Enum<stormkit::wsi::WM,
-//                stormkit::wsi::WM::WIN32,
-//                stormkit::wsi::WM::WAYLAND,
-//                stormkit::wsi::WM::X11,
-//                stormkit::wsi::WM::ANDROID,
-//                stormkit::wsi::WM::MACOS,
-//                stormkit::wsi::WM::IOS,
-//                stormkit::wsi::WM::TVOS,
-//                stormkit::wsi::WM::SWITCH> {};
+// struct lb::Stack<stormkit::wsi::window_manager>
+//     : lb::Enum<stormkit::wsi::window_manager,
+//                stormkit::wsi::window_manager::win32,
+//                stormkit::wsi::window_manager::wayland,
+//                stormkit::wsi::window_manager::x11,
+//                stormkit::wsi::window_manager::android,
+//                stormkit::wsi::window_manager::macos,
+//                stormkit::wsi::window_manager::IOS,
+//                stormkit::wsi::window_manager::TVOS,
+//                stormkit::wsi::window_manager::SWITCH> {};
 
 // template<>
-// struct lb::Stack<stormkit::wsi::EventType>
-//     : lb::Enum<stormkit::wsi::EventType,
-//                stormkit::wsi::EventType::NONE,
-//                stormkit::wsi::EventType::CLOSED,
-//                stormkit::wsi::EventType::MONITOR_CHANGED,
-//                stormkit::wsi::EventType::RESIZED,
-//                stormkit::wsi::EventType::RESTORED,
-//                stormkit::wsi::EventType::MINIMIZED,
-//                stormkit::wsi::EventType::KEY_DOWN,
-//                stormkit::wsi::EventType::KEY_UP,
-//                stormkit::wsi::EventType::MOUSE_BUTTON_DOWN,
-//                stormkit::wsi::EventType::MOUSE_BUTTON_UP,
-//                stormkit::wsi::EventType::MOUSE_MOVED,
-//                stormkit::wsi::EventType::ACTIVATE,
-//                stormkit::wsi::EventType::DEACTIVATE> {};
+// struct lb::Stack<stormkit::wsi::event_type>
+//     : lb::Enum<stormkit::wsi::event_type,
+//                stormkit::wsi::event_type::none,
+//                stormkit::wsi::event_type::closed,
+//                stormkit::wsi::event_type::monitor_changed,
+//                stormkit::wsi::event_type::resized,
+//                stormkit::wsi::event_type::restored,
+//                stormkit::wsi::event_type::minimized,
+//                stormkit::wsi::event_type::key_down,
+//                stormkit::wsi::event_type::key_up,
+//                stormkit::wsi::event_type::mouse_button_down,
+//                stormkit::wsi::event_type::mouse_button_up,
+//                stormkit::wsi::event_type::mouse_moved,
+//                stormkit::wsi::event_type::activate,
+//                stormkit::wsi::event_type::deactivate> {};
 
 namespace stormkit::lua::wsi {
     auto init_lua(sol::state& global_state) noexcept -> void;

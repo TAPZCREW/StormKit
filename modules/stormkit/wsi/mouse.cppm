@@ -12,29 +12,31 @@ import std;
 
 import stormkit.core;
 
-export namespace stormkit::wsi {
-    inline constexpr auto GLOBAL_MOUSE_ID = 0_u8;
+using namespace stormkit::literals;
 
-    enum class MouseButton : u8 {
-        LEFT = 0,
-        RIGHT,
-        MIDDLE,
-        BUTTON_1,
-        BUTTON_2,
-        BUTTON_3,
-        BUTTON_4,
-        BUTTON_5,
-        BUTTON_6,
-        BUTTON_7,
-        BUTTON_8,
-        BUTTON_9,
-        BUTTON_10,
-        BUTTON_11,
-        BUTTON_12,
+export namespace stormkit::wsi {
+    inline constexpr auto global_mouse_id = 0_u8;
+
+    enum class mouse_button : u8 {
+        left = 0,
+        right,
+        middle,
+        button_1,
+        button_2,
+        button_3,
+        button_4,
+        button_5,
+        button_6,
+        button_7,
+        button_8,
+        button_9,
+        button_10,
+        button_11,
+        button_12,
     };
 
-    constexpr auto as_string(MouseButton button) noexcept -> string_view;
-    constexpr auto to_string(MouseButton button) noexcept -> string;
+    [[nodiscard]]
+    constexpr auto tag_invoke(as_fn<string_view>, mouse_button button, const std::source_location&) noexcept -> string_view;
 } // namespace stormkit::wsi
 
 ////////////////////////////////////////////////////////////////////
@@ -45,33 +47,26 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_string(MouseButton button) noexcept -> string_view {
+    constexpr auto tag_invoke(as_fn<string_view>, mouse_button button, const std::source_location&) noexcept -> string_view {
         switch (button) {
-            case MouseButton::LEFT: return "MouseButton::LEFT";
-            case MouseButton::RIGHT: return "MouseButton::RIGHT";
-            case MouseButton::MIDDLE: return "MouseButton::MIDDLE";
-            case MouseButton::BUTTON_1: return "MouseButton::BUTTON_1";
-            case MouseButton::BUTTON_2: return "MouseButton::BUTTON_2";
-            case MouseButton::BUTTON_3: return "MouseButton::BUTTON_3";
-            case MouseButton::BUTTON_4: return "MouseButton::BUTTON_4";
-            case MouseButton::BUTTON_5: return "MouseButton::BUTTON_5";
-            case MouseButton::BUTTON_6: return "MouseButton::BUTTON_6";
-            case MouseButton::BUTTON_7: return "MouseButton::BUTTON_7";
-            case MouseButton::BUTTON_8: return "MouseButton::BUTTON_8";
-            case MouseButton::BUTTON_9: return "MouseButton::BUTTON_9";
-            case MouseButton::BUTTON_10: return "MouseButton::BUTTON_10";
-            case MouseButton::BUTTON_11: return "MouseButton::BUTTON_11";
-            case MouseButton::BUTTON_12: return "MouseButton::BUTTON_12";
+            case mouse_button::left: return "mouse_button::left";
+            case mouse_button::right: return "mouse_button::right";
+            case mouse_button::middle: return "mouse_button::middle";
+            case mouse_button::button_1: return "mouse_button::button_1";
+            case mouse_button::button_2: return "mouse_button::button_2";
+            case mouse_button::button_3: return "mouse_button::button_3";
+            case mouse_button::button_4: return "mouse_button::button_4";
+            case mouse_button::button_5: return "mouse_button::button_5";
+            case mouse_button::button_6: return "mouse_button::button_6";
+            case mouse_button::button_7: return "mouse_button::button_7";
+            case mouse_button::button_8: return "mouse_button::button_8";
+            case mouse_button::button_9: return "mouse_button::button_9";
+            case mouse_button::button_10: return "mouse_button::button_10";
+            case mouse_button::button_11: return "mouse_button::button_11";
+            case mouse_button::button_12: return "mouse_button::button_12";
             default: break;
         }
 
         std::unreachable();
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    constexpr auto to_string(MouseButton button) noexcept -> string {
-        return string { as_string(button) };
     }
 } // namespace stormkit::wsi

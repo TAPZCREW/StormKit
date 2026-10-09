@@ -78,7 +78,7 @@ namespace stormkit::gpu {
         const auto& device_table = device.device_table();
 
         TryX(vk::call_checked(device_table.vkResetCommandBuffer, *this, 0));
-        *Base::m_state = CommandBuffer::State::INITIAL;
+        *Base::state_ = CommandBuffer::State::INITIAL;
 
         Return {};
     }
@@ -88,7 +88,7 @@ namespace stormkit::gpu {
     template<typename Base>
     auto CommandBufferInterface<Base>::begin(bool one_time_submit, InheritanceInfo inheritance_info_variant) noexcept
       -> expected<void> {
-        auto& state = *Base::m_state;
+        auto& state = *Base::state_;
         EXPECTS(state == CommandBuffer::State::INITIAL);
 
         const auto& device       = Base::owner();
@@ -167,7 +167,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     auto CommandBufferInterface<Base>::end() noexcept -> expected<void> {
-        auto& state = *Base::m_state;
+        auto& state = *Base::state_;
         EXPECTS(state == CommandBuffer::State::RECORDING);
 
         const auto& device       = Base::owner();
@@ -1180,7 +1180,7 @@ namespace stormkit::gpu {
                                               CommandBufferLevel     level,
                                               VkCommandBuffer&&      handle,
                                               CommandBufferDeleter&& deleter) noexcept -> void {
-        m_state = core::allocate_unsafe<State>(State::INITIAL);
+        state_ = core::allocate_unsafe<State>(State::INITIAL);
 
         m_level = level;
 

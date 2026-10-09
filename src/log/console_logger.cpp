@@ -26,8 +26,8 @@ namespace stormkit::log {
           { severity::DEBUG,   console_style { .fg = console_color::CYAN, .modifiers = style_modifier::INVERSE }    },
         });
 
-        constexpr auto FORMAT_STRING             = "{}[ {:<7} | {:%S} ]{} {}"sv;
-        constexpr auto FORMAT_STRING_WITH_MODULE = "{}[ {:<7} | {} | {:%S} ]{} {}"sv;
+        constexpr auto FORMAT_STRING             = "{}[ {:^7} | {:%S} ]{} {}"sv;
+        constexpr auto FORMAT_STRING_WITH_MODULE = "{}[ {:^7} | {} | {:%S} ]{} {}"sv;
     } // namespace
 
     ////////////////////////////////////////

@@ -31,7 +31,7 @@ export namespace stormkit { inline namespace core {
         static constexpr auto TAG_INVOKABLE = meta::tag_invocable<to_fn<To>, Ts..., source_location_arg>;
 
         template<typename... Ts>
-        static constexpr auto AS_TAG_INVOKABLE = meta::tag_invocable<to_fn<To>, Ts..., source_location_arg>;
+        static constexpr auto AS_TAG_INVOKABLE = as_fn<To>::template TAG_INVOKABLE<Ts...>;
 
         template<typename... Ts>
         static constexpr auto operator()(Ts&&...) noexcept = delete ("Try to caster not defined for these types!");

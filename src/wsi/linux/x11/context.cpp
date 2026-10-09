@@ -29,7 +29,7 @@ namespace stdr = std::ranges;
 namespace stormkit::wsi::linux::x11::xcb {
     namespace {
         thread_local constinit auto initialized = false;
-        thread_local constinit auto globals     = Globals {};
+        thread_local constinit auto globals     = x11_globals {};
         thread_local auto           atoms       = stormkit::string_hash_map<xcb_atom_t> {};
     } // namespace
 
@@ -38,16 +38,16 @@ namespace stormkit::wsi::linux::x11::xcb {
     auto init() noexcept -> bool {
         if (initialized) return true;
 
-        globals.connection = xcb::Connection::create(nullptr, nullptr);
+        globals.connection = xcb::connection::create(nullptr, nullptr);
         if (not globals.connection or xcb_connection_has_error(globals.connection)) {
             elog("Failed to connect to X11");
             return false;
         }
 
-        globals.error_context = xcb::ErrorContext::create(globals.connection);
+        globals.error_context = xcb::error_context::create(globals.connection);
         if (not globals.error_context) elog("Failed to setup X11 error context");
 
-        globals.xkb_context = common::xkb::Context::create(XKB_CONTEXT_NO_FLAGS);
+        globals.xkb_context = common::xkb::context::create(XKB_CONTEXT_NO_FLAGS);
 
         initialized = true;
         dlog("Successfully connected to X11");
@@ -56,7 +56,7 @@ namespace stormkit::wsi::linux::x11::xcb {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_globals() noexcept -> Globals& {
+    auto get_globals() noexcept -> x11_globals& {
         if (not initialized) initialized = init();
 
         EXPECTS(initialized);
@@ -66,18 +66,19 @@ namespace stormkit::wsi::linux::x11::xcb {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_atom(string_view name, bool only_if_exists) noexcept -> std::expected<xcb_atom_t, Error> {
-        auto out = std::expected<xcb_atom_t, Error> {};
+    auto get_atom(string_view name, bool only_if_exists) noexcept -> std::expected<xcb_atom_t, error> {
+        auto out = std::expected<xcb_atom_t, error> {};
 
         auto it = atoms.find(name);
         if (it != stdr::end(atoms)) out = it->second;
         else {
             const auto
               cookie = xcb_intern_atom(globals.connection, (only_if_exists) ? 1 : 0, as<u16>(stdr::size(name)), stdr::data(name));
-            auto       error = xcb::GenericError::empty();
-            const auto reply = xcb::InternAtomReply::create(globals.connection, cookie, &error.handle());
+            auto       error = xcb::generic_error::empty();
+            const auto reply = xcb::intern_atom_reply::create(globals.connection, cookie, &error.handle());
 
-            if (error or not reply.handle()) out = std::unexpected<Error> { std::in_place, get_error(as_ref_mut(*error)) };
+            if (error or not reply.handle())
+                out = std::unexpected<x11::error> { std::in_place, get_error(mutable_view_of(*error)) };
             else {
                 auto atom = reply.handle()->atom;
                 atoms.emplace(name, atom);
@@ -89,14 +90,14 @@ namespace stormkit::wsi::linux::x11::xcb {
         return out;
     }
 
-    auto get_atom_name(xcb_atom_t atom) -> std::expected<string, Error> {
-        auto out = std::expected<string, Error> {};
+    auto get_atom_name(xcb_atom_t atom) -> std::expected<string, error> {
+        auto out = std::expected<string, error> {};
 
         const auto cookie = xcb_get_atom_name(globals.connection, atom);
 
-        auto       error = xcb::GenericError::empty();
-        const auto reply = xcb::AtomNameReply::create(globals.connection, cookie, &error.handle());
-        if (error) out = std::unexpected<Error> { std::in_place, get_error(as_ref_mut(*error)) };
+        auto       error = xcb::generic_error::empty();
+        const auto reply = xcb::atom_name_reply::create(globals.connection, cookie, &error.handle());
+        if (error) out = std::unexpected<x11::error> { std::in_place, get_error(mutable_view_of(*error)) };
         else
             out = string { xcb_get_atom_name_name(reply), as<usize>(xcb_get_atom_name_name_length(reply)) };
 
@@ -105,8 +106,8 @@ namespace stormkit::wsi::linux::x11::xcb {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_error(ref<xcb_generic_error_t> error) -> string {
-        auto guard = xcb::GenericError::take(error);
+    auto get_error(ref_ptr<xcb_generic_error_t> error) -> string {
+        auto guard = xcb::generic_error::take(error);
 
         const auto major = xcb_errors_get_name_for_major_code(globals.error_context, error->major_code);
         const auto minor = xcb_errors_get_name_for_minor_code(globals.error_context, error->major_code, error->minor_code);
@@ -123,20 +124,20 @@ namespace stormkit::wsi::linux::x11::xcb {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_xi_device_info(xcb_input_device_id_t device_id) -> std::expected<ref<xcb_input_xi_device_info_t>, Error> {
-        auto out = std::expected<ref<xcb_input_xi_device_info_t>, Error> { std::unexpect };
+    auto get_xi_device_info(xcb_input_device_id_t device_id) -> std::expected<ref_ptr<xcb_input_xi_device_info_t>, error> {
+        auto out = std::expected<ref_ptr<xcb_input_xi_device_info_t>, error> { std::unexpect };
 
         const auto cookie = xcb_input_xi_query_device(globals.connection, device_id);
-        auto       error  = xcb::GenericError::empty();
-        const auto reply  = xcb::InputXIQueryDeviceReply::create(globals.connection, cookie, &error.handle());
+        auto       error  = xcb::generic_error::empty();
+        const auto reply  = xcb::input_xi_query_device_reply::create(globals.connection, cookie, &error.handle());
 
-        if (error) out = std::unexpected<Error> { std::in_place, get_error(as_ref_mut(*error)) };
+        if (error) out = std::unexpected<x11::error> { std::in_place, get_error(mutable_view_of(*error)) };
         else {
             auto device_info_it = xcb_input_xi_query_device_infos_iterator(reply);
             for (; device_info_it.rem != 0; xcb_input_xi_device_info_next(&device_info_it)) {
                 auto info = device_info_it.data;
 
-                if (info->deviceid == device_id) out = as_ref_mut(info);
+                if (info->deviceid == device_id) out = mutable_view_of(info);
             }
 
             ensures(out.has_value());

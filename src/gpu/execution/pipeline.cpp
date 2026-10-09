@@ -208,9 +208,9 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     auto PipelineImplementation::do_init(PrivateTag, const RasterizationCreateInfo& create_info) noexcept -> expected<void> {
         m_type  = Type::RASTER;
-        m_state = core::allocate_unsafe<StateVariant>(create_info.state);
+        state_ = core::allocate_unsafe<StateVariant>(create_info.state);
 
-        const auto& state = as<RasterPipelineState>(*m_state);
+        const auto& state = as<RasterPipelineState>(*state_);
 
         const auto [binding_descriptions,
                     attribute_descriptions,
@@ -291,9 +291,9 @@ namespace stormkit::gpu {
     auto PipelineImplementation::do_init(PrivateTag, const LegacyRasterizationCreateInfo& create_info) noexcept
       -> expected<void> {
         m_type  = Type::RASTER;
-        m_state = core::allocate_unsafe<StateVariant>(create_info.state);
+        state_ = core::allocate_unsafe<StateVariant>(create_info.state);
 
-        const auto& state = as<RasterPipelineState>(*m_state);
+        const auto& state = as<RasterPipelineState>(*state_);
 
         const auto [binding_descriptions,
                     attribute_descriptions,

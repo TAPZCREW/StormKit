@@ -24,6 +24,7 @@ target("core", function()
 
     if is_plat("linux", "macosx", "iphoneos", "tvos", "android") then
         add_files(path.join(src_core_dir, "posix/**.cpp"))
+        remove_files(path.join(module_core_dir, "win32.cppm"))
     end
     if is_plat("linux") then add_files(path.join(src_core_dir, "linux/**.cpp")) end
     if is_plat("windows") then add_files(path.join(src_core_dir, "win32/**.cpp")) end
