@@ -182,7 +182,7 @@ export namespace stormkit::wsi::macos {
         inline auto native_handle() const noexcept -> native_handle_type {
             auto f = const_cast<macOS::Window&>(window_.value()).getNativeHandle();
 
-            return f;
+            return std::bit_cast<native_handle_type>(f);
         }
 
       private:
