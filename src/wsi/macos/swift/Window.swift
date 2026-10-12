@@ -155,13 +155,7 @@ public final class Window {
         controller.drawBitmap(data: data)
     }
 
-    public func nativeHandle() -> UnsafeMutableRawPointer {
+    public nonmutating func nativeHandle() -> UnsafeRawPointer {
         return toCPtr(controller.view.layer)
-    }
-
-    public func nativeHandle2() -> UnsafeMutableRawPointer {
-        return withUnsafeMutablePointer(to: &(controller.view.layer)) { ptr in
-            return UnsafeMutableRawPointer(ptr)
-        }
     }
 }

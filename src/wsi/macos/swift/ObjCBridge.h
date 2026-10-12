@@ -8,4 +8,9 @@ extern "C"
 #endif
   void* toCPtr(CALayer*);
 
+#if __cplusplus
+extern "C"
+#endif
+  void* toCPtr(const CALayer*);
+
 #endif
