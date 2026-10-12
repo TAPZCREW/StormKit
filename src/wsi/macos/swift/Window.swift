@@ -2,7 +2,7 @@ import AppKit
 import SwiftStormKitCpp
 import SwiftStormKitObjc
 
-final class Window: NSWindow {
+final class Window_: NSWindow {
     override var acceptsFirstResponder: Bool { return true }
     override var canBecomeKey: Bool { return true }
     override var canBecomeMain: Bool { return true }
@@ -40,7 +40,7 @@ final class WindowController: NSWindowController, NSWindowDelegate {
         }
 
         let window_ =
-            Window(
+            Window_(
                 contentRect: NSRect(x: 0, y: 0, width: width, height: height),
                 styleMask: [.closable, .titled, .resizable, .miniaturizable],
                 backing: .buffered,
