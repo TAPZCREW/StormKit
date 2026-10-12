@@ -180,7 +180,7 @@ export namespace stormkit::wsi::macos {
         [[nodiscard]]
         STORMKIT_FORCE_INLINE
         inline auto native_handle() const noexcept -> native_handle_type {
-            auto f = window_->getNativeHandle();
+            auto f = const_cast<macOS::Window&>(window_.get()).getNativeHandle();
 
             return f;
         }
