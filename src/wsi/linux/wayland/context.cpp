@@ -190,6 +190,7 @@ namespace stormkit::wsi::linux::wayland::wl {
             elog("Failed to find compositor interface");
             return false;
         }
+        dlog("COMPOSITOR! {}", globals_compositor.handle());
 
         if (not globals_.decoration_manager) {
             elog("{} protocol is not supported by this DE, can't enable server side decoration.",
