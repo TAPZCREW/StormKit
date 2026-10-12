@@ -43,7 +43,7 @@ runs:
          --sanitizers=n \
          --mold=y \
          --on_ci=y \
-         --lto=${{ case(inputs.mode == 'release', 'y', 'n') }} \
+         --lto=${{ case(startsWith(inputs.mode, 'release'), 'y', 'n') }} \
          --yes \
          ${{ case(inputs.compiler == 'llvm', '--toolchain=llvm', '') }} \
          ${{ case(inputs.compiler == 'llvm' && inputs.cpplib == 'libc++', '--runtimes="c++_static"', '') }} \
@@ -65,8 +65,10 @@ runs:
 
     - name: Run unit tests
       if: ${{ inputs.os == 'macos' }}
-      run: $DYLD_LIBRARY_PATH='${{ runner.workspace }}/build/macosx/arm64/releasedbg/stormkit/' xmake test -v
+      run: xmake test -v
       shell: bash
+      env:
+        DYLD_LIBRARY_PATH: "${{ runner.workspace }}/build/macosx/${{ input.arch }}/${{ input.mode }}/stormkit/"
 
     - name: Run unit tests
       if: ${{ inputs.os != 'macos' }}
