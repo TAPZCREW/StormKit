@@ -186,7 +186,7 @@ using namespace stormkit::wsi::macos;
 extern "C" {
     /////////////////////////////////////
     /////////////////////////////////////
-    auto swiftClosedEvent(id ptr) noexcept -> bool {
+    auto swiftClosedEvent(swift_id ptr) noexcept -> bool {
         EXPECTS(ptr != 0);
 
         auto& window = *reinterpret_cast<stormkit::wsi::macos::window*>(ptr);
@@ -199,7 +199,7 @@ extern "C" {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto swiftResizedEvent(id ptr, float width, float height) noexcept -> void {
+    auto swiftResizedEvent(swift_id ptr, float width, float height) noexcept -> void {
         EXPECTS(ptr != 0);
 
         auto& window = *reinterpret_cast<stormkit::wsi::macos::window*>(ptr);
@@ -210,7 +210,7 @@ extern "C" {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto swiftRestoredEvent(id ptr) noexcept -> void {
+    auto swiftRestoredEvent(swift_id ptr) noexcept -> void {
         EXPECTS(ptr != 0);
 
         auto& window = *reinterpret_cast<stormkit::wsi::macos::window*>(ptr);
@@ -220,7 +220,7 @@ extern "C" {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto swiftMinimizedEvent(id ptr) noexcept -> void {
+    auto swiftMinimizedEvent(swift_id ptr) noexcept -> void {
         EXPECTS(ptr != 0);
 
         auto& window = *reinterpret_cast<stormkit::wsi::macos::window*>(ptr);
@@ -230,7 +230,7 @@ extern "C" {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto swiftActivatedEvent(id ptr) noexcept -> void {
+    auto swiftActivatedEvent(swift_id ptr) noexcept -> void {
         EXPECTS(ptr != 0);
 
         auto& window = *reinterpret_cast<stormkit::wsi::macos::window*>(ptr);
@@ -240,7 +240,7 @@ extern "C" {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto swiftDeactivatedEvent(id ptr) noexcept -> void {
+    auto swiftDeactivatedEvent(swift_id ptr) noexcept -> void {
         EXPECTS(ptr != 0);
 
         auto& window = *reinterpret_cast<stormkit::wsi::macos::window*>(ptr);
@@ -250,7 +250,7 @@ extern "C" {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto swiftMouseDownEvent(id ptr, i32 button, i32 x, i32 y) noexcept -> void {
+    auto swiftMouseDownEvent(swift_id ptr, i32 button, i32 x, i32 y) noexcept -> void {
         EXPECTS(ptr != 0);
 
         auto&      window                        = *reinterpret_cast<stormkit::wsi::macos::window*>(ptr);
@@ -263,7 +263,7 @@ extern "C" {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto swiftMouseUpEvent(id ptr, i32 button, i32 x, i32 y) noexcept -> void {
+    auto swiftMouseUpEvent(swift_id ptr, i32 button, i32 x, i32 y) noexcept -> void {
         EXPECTS(ptr != 0);
 
         auto&      window                        = *reinterpret_cast<stormkit::wsi::macos::window*>(ptr);
@@ -277,7 +277,7 @@ extern "C" {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto swiftMouseMovedEvent(id ptr, i32 x, i32 y) noexcept -> void {
+    auto swiftMouseMovedEvent(swift_id ptr, i32 x, i32 y) noexcept -> void {
         EXPECTS(ptr != 0);
 
         auto& window        = *reinterpret_cast<stormkit::wsi::macos::window*>(ptr);
@@ -289,7 +289,7 @@ extern "C" {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto swiftkeyDownEvent(id ptr, u16 scancode, char c) noexcept -> void {
+    auto swiftkeyDownEvent(swift_id ptr, u16 scancode, char c) noexcept -> void {
         EXPECTS(ptr != 0);
 
         const auto key = scancode_as_key[scancode];
@@ -304,7 +304,7 @@ extern "C" {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto swiftkeyUpEvent(id ptr, u16 scancode, char c) noexcept -> void {
+    auto swiftkeyUpEvent(swift_id ptr, u16 scancode, char c) noexcept -> void {
         EXPECTS(ptr != 0);
 
         const auto key = scancode_as_key[scancode];
