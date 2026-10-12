@@ -844,10 +844,8 @@ namespace stormkit::wsi::linux::x11 {
     /////////////////////////////////////
     /////////////////////////////////////
     auto window::handle_key_event(xcb_keycode_t keycode, bool down) noexcept -> void {
-        auto symbol = xkb_keysym_t {};
-
         auto character = char {};
-        symbol         = xkb_state_key_get_one_sym(xkb_state_, keycode);
+        auto symbol    = xkb_state_key_get_one_sym(xkb_state_, keycode);
         xkb_state_key_get_utf8(xkb_state_, keycode, std::bit_cast<char*>(&character), sizeof(char));
 
         auto key = common::xkb_key_to_stormkit(symbol);

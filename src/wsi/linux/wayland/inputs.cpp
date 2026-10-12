@@ -78,7 +78,7 @@ namespace stormkit::wsi::linux::wayland::wl {
     auto seat_capabilities_handler(void* data, wl_seat* seat, u32 capabilities) noexcept -> void {
         if (data == nullptr) return;
         // auto& globals = get_globals();
-        auto& globals       = *reinterpret_cast<wl_globals*>(data);
+        auto&      globals       = *reinterpret_cast<wl_globals*>(data);
         const auto capabilities_ = as<wl_seat_capability>(capabilities);
         if (has_flag_bit(capabilities_, WL_SEAT_CAPABILITY_KEYBOARD)) {
             auto& [keyboard, state] = globals.keyboards.emplace_back(wl::keyboard::create(seat), keyboard_state {});
@@ -111,9 +111,9 @@ namespace stormkit::wsi::linux::wayland::wl {
         if (data == nullptr) return;
         auto& globals = get_globals();
 
-        auto& state = *std::bit_cast<keyboard_state*>(data);
         for (const auto& [_surface, window] : globals.windows) {
             if (_surface == surface) {
+                auto& state          = *std::bit_cast<keyboard_state*>(data);
                 state.focused_window = window;
                 break;
             }

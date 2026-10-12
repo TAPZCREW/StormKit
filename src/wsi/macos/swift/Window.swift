@@ -156,8 +156,6 @@ public final class Window {
     }
 
     public var nativeHandle: UnsafeRawPointer {
-        get {
-            return toCPtr(controller.view.layer)
-        }
+        return toCPtr(controller.view.layer)
     }
 }
