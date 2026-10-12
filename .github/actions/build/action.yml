@@ -43,7 +43,7 @@ runs:
          --sanitizers=n \
          --mold=y \
          --on_ci=y \
-         --lto=${{ case(startsWith(inputs.mode, 'release'), 'y', 'n') }} \
+         --lto=n \
          --yes \
          ${{ case(inputs.compiler == 'llvm', '--toolchain=llvm', '') }} \
          ${{ case(inputs.compiler == 'llvm' && inputs.cpplib == 'libc++', '--runtimes="c++_static"', '') }} \
