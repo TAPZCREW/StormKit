@@ -114,7 +114,7 @@ namespace stormkit::wsi::linux::wayland {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto window::open(string title, const math::uextent2& extent, window_flag flags) noexcept -> void {
+    auto window::open(string&& title, const math::uextent2& extent, window_flag flags) noexcept -> void {
         auto& globals = wl::get_globals();
 
         surface_ = wl::surface::create(globals.compositor);
@@ -145,7 +145,7 @@ namespace stormkit::wsi::linux::wayland {
 
         globals.windows.emplace_back(surface_, this);
 
-        title_           = std::move(title);
+        window_base::set_title(std::move(title));
         state_.extent    = extent;
         state_.visible   = true;
         flags_           = flags;
@@ -171,10 +171,8 @@ namespace stormkit::wsi::linux::wayland {
         auto& globals = wl::get_globals();
         wl_display_flush(globals.display);
 
-        state_ = {};
-        title_.clear();
+        state_      = {};
         flags_      = {};
-        state_.open = false;
         configured_ = false;
     }
 
@@ -224,7 +222,7 @@ namespace stormkit::wsi::linux::wayland {
     auto window::set_title(string&& title) noexcept -> void {
         window_base::set_title(std::move(title));
 
-        xdg_toplevel_set_title(xdg_top_level_, stdr::data(title_));
+        xdg_toplevel_set_title(xdg_top_level_, stdr::data(state_.title));
     }
 
     /////////////////////////////////////
@@ -604,7 +602,7 @@ namespace stormkit::wsi::linux::wayland {
             old_shm_pool     = std::move(shm_pool_);
             old_pixel_buffer = std::move(pixel_buffer_);
 
-            auto _ = shm_buffer::create(size, std::format("StormKit::{}::PixelBuffer", title_))
+            auto _ = shm_buffer::create(size, std::format("StormKit::{}::PixelBuffer", state_.title))
                        .transform(bind_front(&defer_init<shm_buffer>::construct<shm_buffer&&>, &shm_buffer_))
                        .transform_error(monadic::assert());
 

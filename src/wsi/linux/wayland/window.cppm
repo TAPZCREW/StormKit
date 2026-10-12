@@ -41,7 +41,7 @@ export {
             window(window&&) noexcept;
             auto operator=(window&&) noexcept -> window&;
 
-            auto open(string title, const math::uextent2& size, window_flag flags) noexcept -> void;
+            auto open(string&& title, const math::uextent2& size, window_flag flags) noexcept -> void;
             auto close() noexcept -> void;
 
             auto handle_events() noexcept -> void;
@@ -109,8 +109,6 @@ export {
             bool        scale_content_ = false;
             window_flag flags_;
             wl_output*  current_output_ = nullptr;
-
-            string title_;
 
             handles handles_;
 

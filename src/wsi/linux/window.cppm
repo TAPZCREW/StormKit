@@ -35,7 +35,7 @@ export namespace stormkit::wsi::linux {
         window(window&&) noexcept;
         auto operator=(window&&) noexcept -> window&;
 
-        auto open(string title, const math::uextent2& size, window_flag flags) noexcept -> void;
+        auto open(string&& title, const math::uextent2& size, window_flag flags) noexcept -> void;
         auto close() noexcept -> void;
 
         [[nodiscard]]
@@ -141,7 +141,7 @@ namespace stormkit::wsi::linux {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto window::open(string title, const math::uextent2& extent, window_flag flags) noexcept -> void {
+    inline auto window::open(string&& title, const math::uextent2& extent, window_flag flags) noexcept -> void {
         switch (m_wm) {
             case window_manager::x11: as<x11::window>(m_impl).open(std::move(title), extent, flags); break;
             case window_manager::wayland: as<wayland::window>(m_impl).open(std::move(title), extent, flags); break;
