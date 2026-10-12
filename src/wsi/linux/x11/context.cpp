@@ -106,9 +106,7 @@ namespace stormkit::wsi::linux::x11::xcb {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto get_error(ref_ptr<xcb_generic_error_t> error) -> string {
-        auto guard = xcb::generic_error::take(error);
-
+    auto get_error(ref_ptr<const xcb_generic_error_t> error) -> string {
         const auto major = xcb_errors_get_name_for_major_code(globals.error_context, error->major_code);
         const auto minor = xcb_errors_get_name_for_minor_code(globals.error_context, error->major_code, error->minor_code);
 

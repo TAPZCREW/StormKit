@@ -22,7 +22,6 @@ export module stormkit.wsi:linux.wayland;
 import std;
 
 import stormkit.core;
-
 import stormkit.wsi;
 
 export namespace stormkit::wsi::linux::wayland::wl {

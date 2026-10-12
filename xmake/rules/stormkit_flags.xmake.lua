@@ -1,13 +1,21 @@
+local lto_signaled = false
+
 namespace("stormkit", function()
     rule("flags", function()
         on_config("linux", "mingw", "macosx", "ios", "android", function(target)
             target:set("utf-8", true)
 
             if get_config("lto") then
-                target:set("policy", "build.optimization.lto", true)
-                if get_config("toolchain") == "llvm" or get_config("toolchain") == "clang" then
-                    target:add("ldflags", "-flto=thin", { force = true })
-                    target:add("shflags", "-flto=thin", { force = true })
+                if not is_mode("debug") then
+                    target:set("policy", "build.optimization.lto", true)
+                    if get_config("toolchain") == "llvm" or get_config("toolchain") == "clang" then
+                        target:add("cxflags", "-flto=thin", { force = true })
+                        target:add("ldflags", "-flto=thin", { force = true })
+                        target:add("shflags", "-flto=thin", { force = true })
+                    end
+                elseif not lto_signaled then
+                    print("compiling in debug mode, --lto will have no effect!")
+                    lto_signaled = true
                 end
             end
             if not is_plat("macosx") then

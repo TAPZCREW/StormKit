@@ -1,4 +1,4 @@
-add_requires("libktx")
+-- add_requires("libktx")
 add_requires("libpng")
 add_requires("libjpeg-turbo", is_plat("windows") and {
     system = false,
