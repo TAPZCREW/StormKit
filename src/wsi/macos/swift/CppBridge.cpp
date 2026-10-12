@@ -289,7 +289,7 @@ extern "C" {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto swiftkeyDownEvent(swift_id ptr, u16 scancode, char c) noexcept -> void {
+    auto swiftKeyDownEvent(swift_id ptr, u16 scancode, char c) noexcept -> void {
         EXPECTS(ptr != 0);
 
         const auto key = scancode_as_key[scancode];
@@ -304,7 +304,7 @@ extern "C" {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto swiftkeyUpEvent(swift_id ptr, u16 scancode, char c) noexcept -> void {
+    auto swiftKeyUpEvent(swift_id ptr, u16 scancode, char c) noexcept -> void {
         EXPECTS(ptr != 0);
 
         const auto key = scancode_as_key[scancode];
