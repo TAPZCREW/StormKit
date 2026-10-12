@@ -127,7 +127,7 @@ jobs:
             ${{ case(matrix.compiler == 'llvm' && matrix.cpplib == 'libc++', '--runtimes="c++_static"', '') }} \
             ${{ case(matrix.compiler == 'llvm' && matrix.cpplib == 'libc++', '--ldflags="-fuse-ld=lld -L/usr/lib/llvm-24/lib/ -lc++abi" --shflags="-fuse-ld=lld -L/usr/lib/llvm-24/lib/ -lc++abi"', '') }} \
             ${{ case(matrix.compiler == 'llvm' && matrix.cpplib == 'libstdc++', '--runtimes="stdc++_static"', '') }} \
-            ${{ case(matrix.compiler == 'llvm' && matrix.cpplib == 'libstdc++', '--ldflags="-fuse-ld=lld -lc++exp" --shflags="-lc++exp"', '') }}
+            ${{ case(matrix.compiler == 'llvm' && matrix.cpplib == 'libstdc++', '--ldflags="-fuse-ld=lld -L/usr/lib/gcc/i686-linux-gnu/16/64/ -lc++exp" --shflags=" -L/usr/lib/gcc/i686-linux-gnu/16/64/ -lc++exp"', '') }}
 
       - name: Upload artifacts
         id: upload
