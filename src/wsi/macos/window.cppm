@@ -83,19 +83,19 @@ export namespace stormkit::wsi::macos {
 
         auto clear([[maybe_unused]] const ucolor_rgb& color) noexcept -> void {
             const auto value = as<u32>(color.r) << 16 | as<u32>(color.g) << 8 | color.b;
-            stdr::fill(m_pixels, value);
-            window_->drawBitmap(reinterpret_cast<uchar*>(stdr::data(m_pixels)));
+            stdr::fill(pixels_, value);
+            window_->drawBitmap(reinterpret_cast<uchar*>(stdr::data(pixels_)));
         }
 
         auto fill_framebuffer(array_view<const ucolor_rgb> pixels) noexcept -> void {
             const auto [width, height] = extent();
             const auto count           = std::min(as<u32>(stdr::size(pixels)), height * width);
-            if (stdr::size(pixels) > stdr::size(m_pixels)) m_pixels.resize(stdr::size(pixels));
+            if (stdr::size(pixels) > stdr::size(pixels_)) pixels_.resize(stdr::size(pixels));
             stdr::copy(pixels | stdv::reverse | stdv::take(count) | stdv::transform([](const auto& col) static noexcept {
                            return as<u32>(col.r) << 16 | as<u32>(col.g) << 8 | col.b;
                        }),
-                       stdr::begin(m_pixels));
-            window_->drawBitmap(reinterpret_cast<uchar*>(stdr::data(m_pixels)));
+                       stdr::begin(pixels_));
+            window_->drawBitmap(reinterpret_cast<uchar*>(stdr::data(pixels_)));
         }
 
         auto set_title(string title) noexcept -> void {
@@ -188,6 +188,6 @@ export namespace stormkit::wsi::macos {
       private:
         defer_init<macOS::Window> window_;
 
-        dynarray<u32> m_pixels;
+        dynarray<u32> pixels_;
     };
 } // namespace stormkit::wsi::macos

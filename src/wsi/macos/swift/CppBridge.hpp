@@ -2,7 +2,6 @@
 #define CPP_BINDINGS_HPP
 
 #include <cstdint>
-#include <limits>
 
 using swift_id = std::uint64_t;
 
