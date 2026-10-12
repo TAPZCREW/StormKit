@@ -60,7 +60,7 @@ export namespace stormkit::wsi::macos {
             const auto resizeable  = has_flag_bit(flags, window_flag::resizeable);
             const auto borderless  = has_flag_bit(flags, window_flag::borderless);
             const auto metal_layer = has_flag_bit(flags, window_flag::external_context);
-            window_                = macOS::window::init(swift::String { title },
+            window_                = macOS::Window::init(swift::String { title },
                                                          as<f64>(size.width),
                                                          as<f64>(size.height),
                                                          resizeable,
