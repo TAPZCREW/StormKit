@@ -64,6 +64,11 @@ runs:
       shell: bash
 
     - name: Run unit tests
-      run: xmake test -v
+      if: ${{ inputs.os == 'macos' }}
+      run: $DYLD_LIBRARY_PATH='${{ runner.workspace }}/build/macosx/arm64/releasedbg/stormkit/' xmake test -v
       shell: bash
 
+    - name: Run unit tests
+      if: ${{ inputs.os != 'macos' }}
+      run: xmake test -v
+      shell: bash
