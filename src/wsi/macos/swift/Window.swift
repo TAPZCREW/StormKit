@@ -155,7 +155,9 @@ public final class Window {
         controller.drawBitmap(data: data)
     }
 
-    public nonmutating func nativeHandle() -> UnsafeRawPointer {
-        return toCPtr(controller.view.layer)
+    public var nativeHandle: {
+        get {
+            return toCPtr(controller.view.layer)
+        }
     }
 }
