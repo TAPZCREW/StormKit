@@ -203,7 +203,7 @@ extern "C" {
         EXPECTS(ptr != 0);
 
         auto& window = *reinterpret_cast<stormkit::wsi::macos::window*>(ptr);
-        window.window_base::set_extent(math::extent2 { width, height }.to<u32>());
+        window.window_base::set_extent(math::uextent2 { as<u32>(width), as<u32>(height) });
 
         window.resized_event(window.extent());
     }
@@ -255,10 +255,10 @@ extern "C" {
 
         auto&      window                        = *reinterpret_cast<stormkit::wsi::macos::window*>(ptr);
         auto&      state                         = window.mouse_state(global_mouse_id);
-        const auto _button                       = mouse_button(button);
+        const auto _button                       = macos::mouse_button(button);
         state.buttons[common::as_index(_button)] = common::button_state::down;
 
-        window.mouse_button_down_event(global_mouse_id, _button, math::vec2 { x, y }.to<i32>());
+        window.mouse_button_down_event(global_mouse_id, _button, math::ivec2 { x, y });
     }
 
     /////////////////////////////////////
@@ -268,11 +268,11 @@ extern "C" {
 
         auto&      window                        = *reinterpret_cast<stormkit::wsi::macos::window*>(ptr);
         auto&      state                         = window.mouse_state(global_mouse_id);
-        const auto _button                       = mouse_button(button);
+        const auto _button                       = macos::mouse_button(button);
         state.buttons[common::as_index(_button)] = common::button_state::up;
-        state.last_position                      = math::vec2 { x, y }.to<u32>();
+        state.last_position                      = math::uvec2 { as<u32>(x), as<u32>(y) };
 
-        window.mouse_button_up_event(global_mouse_id, _button, math::vec2 { x, y }.to<i32>());
+        window.mouse_button_up_event(global_mouse_id, _button, math::ivec2 { x, y });
     }
 
     /////////////////////////////////////
@@ -282,9 +282,9 @@ extern "C" {
 
         auto& window        = *reinterpret_cast<stormkit::wsi::macos::window*>(ptr);
         auto& state         = window.mouse_state(global_mouse_id);
-        state.last_position = math::vec2 { x, y }.to<u32>();
+        state.last_position = math::uvec2 { as<u32>(x), as<u32>(y) };
 
-        window.mouse_moved_event(global_mouse_id, state.last_position.to<i32>());
+        window.mouse_moved_event(global_mouse_id, math::ivec2 { x, y });
     }
 
     /////////////////////////////////////
