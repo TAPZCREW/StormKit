@@ -60,7 +60,7 @@ export namespace stormkit::wsi::macos {
             const auto resizeable  = has_flag_bit(flags, window_flag::resizeable);
             const auto borderless  = has_flag_bit(flags, window_flag::borderless);
             const auto metal_layer = has_flag_bit(flags, window_flag::external_context);
-            window_               = macOS::window::init(swift::String { title },
+            window_                = macOS::window::init(swift::String { title },
                                                          as<f64>(size.width),
                                                          as<f64>(size.height),
                                                          resizeable,
@@ -76,7 +76,7 @@ export namespace stormkit::wsi::macos {
 
         auto close() noexcept -> void {
             window_ = {};
-            state_   = {};
+            state_  = {};
         }
 
         auto handle_events() noexcept -> void { macOS::processEvents(); }
@@ -180,15 +180,13 @@ export namespace stormkit::wsi::macos {
         [[nodiscard]]
         STORMKIT_FORCE_INLINE
         inline auto native_handle() const noexcept -> native_handle_type {
-            auto f  = window_->nativeHandle();
-            auto f2 = window_->nativeHandle2();
+            auto f = window_->nativeHandle();
 
-            std::println("{} {}", f, f2);
             return f;
         }
 
       private:
-        defer_init<macOS::window> window_;
+        defer_init<macOS::Window> window_;
 
         dynarray<u32> m_pixels;
     };
