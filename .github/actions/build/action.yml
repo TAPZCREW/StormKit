@@ -68,7 +68,7 @@ runs:
       run: xmake test -v
       shell: bash
       env:
-        DYLD_LIBRARY_PATH: "${{ runner.workspace }}/build/macosx/${{ inputs.arch }}/${{ inputs.mode }}/stormkit/"
+        DYLD_LIBRARY_PATH: "${{ runner.workspace }}/StormKit/build/macosx/${{ inputs.arch }}/${{ inputs.mode }}/stormkit/"
 
     - name: Run unit tests
       if: ${{ inputs.os != 'macos' }}
