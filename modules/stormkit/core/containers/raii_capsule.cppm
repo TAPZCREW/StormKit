@@ -5,7 +5,6 @@
 module;
 
 #include <stormkit/core/platform_macro.hpp>
-#include <stormkit/core/contract_macro.hpp>
 
 export module stormkit.core.containers.raii_capsule;
 
@@ -64,7 +63,8 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, auto Constructor, auto Deleter, typename Tag, auto Release_value>
     template<typename... Ts>
-    constexpr auto raii_capsule<T, Constructor, Deleter, Tag, Release_value>::create(Ts&&... args) noexcept -> raii_capsule<T, Constructor, Deleter, Tag, Release_value>
+    constexpr auto raii_capsule<T, Constructor, Deleter, Tag, Release_value>::create(Ts&&... args) noexcept
+      -> raii_capsule<T, Constructor, Deleter, Tag, Release_value>
         requires meta::is<std::invoke_result_t<decltype(Constructor), Ts...>, value_type>
     {
         return raii_capsule<T, Constructor, Deleter, Tag, Release_value> { Constructor(std::forward<Ts>(args)...) };
@@ -77,14 +77,16 @@ namespace stormkit { inline namespace core {
     constexpr auto raii_capsule<T, Constructor, Deleter, Tag, Release_value>::create(Ts&&... args) noexcept -> decltype(auto)
         requires meta::specialization_of<std::invoke_result_t<decltype(Constructor), Ts...>, std::expected>
     {
-        return Constructor(std::forward<Ts>(args)...).transform(monadic::init<raii_capsule<T, Constructor, Deleter, Tag, Release_value>>());
+        return Constructor(std::forward<Ts>(args)...)
+          .transform(monadic::init<raii_capsule<T, Constructor, Deleter, Tag, Release_value>>());
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename T, auto Constructor, auto Deleter, typename Tag, auto Release_value>
     STORMKIT_FORCE_INLINE
-    constexpr auto raii_capsule<T, Constructor, Deleter, Tag, Release_value>::take(value_type&& value) noexcept -> raii_capsule<T, Constructor, Deleter, Tag, Release_value> {
+    constexpr auto raii_capsule<T, Constructor, Deleter, Tag, Release_value>::take(value_type&& value) noexcept
+      -> raii_capsule<T, Constructor, Deleter, Tag, Release_value> {
         return raii_capsule<T, Constructor, Deleter, Tag, Release_value> { std::move(value) };
     }
 
@@ -92,8 +94,9 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T, auto Constructor, auto Deleter, typename Tag, auto Release_value>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto raii_capsule<T, Constructor, Deleter, Tag, Release_value>::empty() noexcept -> raii_capsule<T, Constructor, Deleter, Tag, Release_value> {
-        return raii_capsule<T, Constructor, Deleter, Tag, Release_value> { Release_value};
+    constexpr auto raii_capsule<T, Constructor, Deleter, Tag, Release_value>::empty() noexcept
+      -> raii_capsule<T, Constructor, Deleter, Tag, Release_value> {
+        return raii_capsule<T, Constructor, Deleter, Tag, Release_value> { Release_value };
     }
 
     /////////////////////////////////////
@@ -127,7 +130,6 @@ namespace stormkit { inline namespace core {
     template<typename T, auto Constructor, auto Deleter, typename Tag, auto Release_value>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr raii_capsule<T, Constructor, Deleter, Tag, Release_value>::operator value_type() const noexcept {
-        EXPECTS(m_handle != Release_value);
         return m_handle;
     }
 
@@ -136,7 +138,6 @@ namespace stormkit { inline namespace core {
     template<typename T, auto Constructor, auto Deleter, typename Tag, auto Release_value>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto raii_capsule<T, Constructor, Deleter, Tag, Release_value>::handle() noexcept -> reference_type {
-        EXPECTS(m_handle != Release_value);
         return m_handle;
     }
 
@@ -145,7 +146,6 @@ namespace stormkit { inline namespace core {
     template<typename T, auto Constructor, auto Deleter, typename Tag, auto Release_value>
     STORMKIT_PURE STORMKIT_FORCE_INLINE
     constexpr auto raii_capsule<T, Constructor, Deleter, Tag, Release_value>::handle() const noexcept -> value_type {
-        EXPECTS(m_handle != Release_value);
         return m_handle;
     }
 

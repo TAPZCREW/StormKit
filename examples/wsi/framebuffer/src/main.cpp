@@ -84,7 +84,8 @@ auto main(array_view<const string_view> args) -> int {
 
     window.event_loop([&] noexcept {
         if (not active) std::this_thread::yield();
-        window.fill_framebuffer(pixels);
+        else
+            window.fill_framebuffer(pixels);
     });
 
     return 0;

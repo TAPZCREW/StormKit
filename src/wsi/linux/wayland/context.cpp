@@ -6,7 +6,6 @@ module;
 
 #include <wayland-client.h>
 #include <wayland-cursor.h>
-#include <xdg-shell.h>
 
 #include <content-type-v1.h>
 #include <cursor-shape-v1.h>
@@ -16,8 +15,9 @@ module;
 #include <single-pixel-buffer-v1.h>
 #include <viewporter.h>
 #include <xdg-decoration-unstable-v1.h>
-// #include <xdg-shell-client-protocol.h>
-//
+#include <xdg-shell.h>
+
+#include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/try_expected.hpp>
 
 module stormkit.wsi;
@@ -190,7 +190,7 @@ namespace stormkit::wsi::linux::wayland::wl {
             elog("Failed to find compositor interface");
             return false;
         }
-        dlog("COMPOSITOR! {}", globals_compositor.handle());
+        dlog("COMPOSITOR! {:#x}", std::bit_cast<uptr>(globals_.compositor.handle()));
 
         if (not globals_.decoration_manager) {
             elog("{} protocol is not supported by this DE, can't enable server side decoration.",
@@ -223,6 +223,10 @@ namespace stormkit::wsi::linux::wayland::wl {
     /////////////////////////////////////
     /////////////////////////////////////
     auto get_globals() noexcept -> wl_globals& {
+        if (not globals.initialized) init();
+
+        EXPECTS(globals.initialized);
+
         return globals;
     }
 
@@ -231,7 +235,7 @@ namespace stormkit::wsi::linux::wayland::wl {
     auto registry_handler(void* data, wl_registry* registry, u32 id, const char* interface, u32 version) noexcept -> void {
         dlog("registry found interface {} (id: {}, version: {})", interface, id, version);
 
-        auto& globals = *reinterpret_cast<wl_globals*>(data);
+        auto globals = reinterpret_cast<wl_globals*>(data);
 
         const auto interface_name = string_view { interface, std::char_traits<char>::length(interface) };
 
@@ -245,8 +249,8 @@ namespace stormkit::wsi::linux::wayland::wl {
         }
 
         const auto ptr = wl_registry_bind(registry, id, binder.interface, binder.version);
-        binder.bind(globals, ptr);
-        binder.after_bind(globals, ptr);
+        binder.bind(*globals, ptr);
+        binder.after_bind(*globals, ptr);
     }
 
     /////////////////////////////////////
