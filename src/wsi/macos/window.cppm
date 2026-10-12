@@ -56,7 +56,7 @@ export namespace stormkit::wsi::macos {
             return *this;
         }
 
-        auto open(string title, const math::uextent2& size, window_flag flags) noexcept -> void {
+        auto open(string&& title, const math::uextent2& size, window_flag flags) noexcept -> void {
             const auto resizeable  = has_flag_bit(flags, window_flag::resizeable);
             const auto borderless  = has_flag_bit(flags, window_flag::borderless);
             const auto metal_layer = has_flag_bit(flags, window_flag::external_context);
@@ -68,7 +68,7 @@ export namespace stormkit::wsi::macos {
                                                          metal_layer,
                                                          std::bit_cast<u64>(std::bit_cast<uptr>(this)));
 
-            state_.title  = std::move(title);
+            window_base::set_title(std::move(title));
             state_.active = true;
             state_.open   = true;
             state_.extent = size;
@@ -98,7 +98,7 @@ export namespace stormkit::wsi::macos {
             window_->drawBitmap(reinterpret_cast<uchar*>(stdr::data(pixels_)));
         }
 
-        auto set_title(string title) noexcept -> void {
+        auto set_title(string&& title) noexcept -> void {
             if (window_base::set_title(std::move(title))) { window_->setTitle(swift::String { state_.title }); }
         }
 
