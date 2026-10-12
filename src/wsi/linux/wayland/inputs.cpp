@@ -138,10 +138,10 @@ namespace stormkit::wsi::linux::wayland::wl {
         auto& globals = get_globals();
         if (not globals.xkb_context) globals.xkb_context = common::xkb::context::create(XKB_CONTEXT_NO_FLAGS);
 
-        auto& state = *std::bit_cast<keyboard_state*>(data);
         if (format == WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1) {
             auto map_shm = std::bit_cast<char*>(mmap(nullptr, size, PROT_READ, MAP_PRIVATE, fd, 0));
 
+            auto& state = *std::bit_cast<keyboard_state*>(data);
             update_keymap(state, string_view { map_shm, size });
 
             munmap(map_shm, size);
