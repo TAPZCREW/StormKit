@@ -10,13 +10,13 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-#if defined(STORMKIT_OS_WINDOWS)
-    #include <stormkit/core/platform/windows.hpp>
-#endif
-
 export module stormkit.core.string.encodings;
 
 import std;
+
+#ifdef STORMKIT_OS_WINDOWS
+import stormkit.core.win32;
+#endif
 
 import stormkit.core.types;
 import stormkit.core.typesafe;
@@ -91,10 +91,15 @@ namespace stormkit { inline namespace core {
         [[maybe_unused]]
         auto output = wstring {};
 #if defined(STORMKIT_OS_WINDOWS)
-        auto count = MultiByteToWideChar(CP_ACP, 0, stdr::data(input), stdr::size(input), nullptr, 0);
+        auto count = ::win32::MultiByteToWideChar(::win32::CP_ACP, 0, stdr::data(input), stdr::size(input), nullptr, 0);
         output.resize(count);
 
-        MultiByteToWideChar(CP_UTF8, 0, stdr::data(input), stdr::size(input), stdr::data(output), stdr::size(output));
+        ::win32::MultiByteToWideChar(::win32::CP_UTF8,
+                                     0,
+                                     stdr::data(input),
+                                     stdr::size(input),
+                                     stdr::data(output),
+                                     stdr::size(output));
 #elif defined(STORMKIT_OS_MACOS)
         output.resize(stdr::size(input));
         auto i = 0;
@@ -119,17 +124,18 @@ namespace stormkit { inline namespace core {
         [[maybe_unused]]
         auto output = string {};
 #if defined(STORMKIT_OS_WINDOWS)
-        auto count = WideCharToMultiByte(CP_ACP, 0, stdr::data(input), stdr::size(input), nullptr, 0, nullptr, nullptr);
+        auto count = ::win32::
+          WideCharToMultiByte(::win32::CP_ACP, 0, stdr::data(input), stdr::size(input), nullptr, 0, nullptr, nullptr);
         output.resize(count);
 
-        WideCharToMultiByte(CP_UTF8,
-                            0,
-                            stdr::data(input),
-                            stdr::size(input),
-                            stdr::data(output),
-                            stdr::size(output),
-                            nullptr,
-                            nullptr);
+        ::win32::WideCharToMultiByte(::win32::CP_UTF8,
+                                     0,
+                                     stdr::data(input),
+                                     stdr::size(input),
+                                     stdr::data(output),
+                                     stdr::size(output),
+                                     nullptr,
+                                     nullptr);
 #elif defined(STORMKIT_OS_MACOS)
         output.resize(stdr::size(input));
         auto i = 0;

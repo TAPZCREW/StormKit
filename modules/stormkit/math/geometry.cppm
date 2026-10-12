@@ -246,7 +246,7 @@ namespace stormkit::math {
     template<typename T>
     STORMKIT_FORCE_INLINE STORMKIT_PURE
     constexpr auto AABB(const vec2<T>& pos, const bounding_rect<T>& rect) noexcept -> bool {
-        return pos.x >= rect.left and pos.x <= rect.right and pos.y >= rect.top and pos.y <= rect.bottom;
+        return pos.x() >= rect.left and pos.x() <= rect.right and pos.y() >= rect.top and pos.y() <= rect.bottom;
     }
 
     ////////////////////////////////////////

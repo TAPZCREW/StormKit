@@ -40,6 +40,7 @@ namespace("tests", function()
                     end)
 
                     add_files(file)
+                    set_prefixdir("/", { bindir = "tests" })
 
                     add_deps("stormkit::test", "stormkit::" .. name)
 

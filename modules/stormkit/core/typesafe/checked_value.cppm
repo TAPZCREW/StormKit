@@ -32,7 +32,7 @@ export namespace stormkit { inline namespace core {
       public:
         using value_type           = T;
         using reference_type       = T&;
-        using const_reference_type = T&;
+        using const_reference_type = const meta::remove_const_of<T>&;
         using copy_param_type      = meta::in<T>;
         using checked_param_type   = meta::in<checked_value>;
 
@@ -276,7 +276,7 @@ namespace stormkit { inline namespace core {
         requires(meta::destructible<T> and meta::unary_predicate<decltype(CHECK_FN), T>)
     STORMKIT_FORCE_INLINE
     constexpr checked_value<T, Tag, CHECK_FN>::operator const_reference_type() const noexcept {
-        return value;
+        return std::as_const(value);
     }
 
     /////////////////////////////////////

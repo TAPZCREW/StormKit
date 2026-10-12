@@ -49,10 +49,10 @@ namespace storm::window {
         bool is_open() const noexcept override;
         bool isVisible() const noexcept override;
 
-        storm::window::NativeHandle native_handle() const noexcept override;
+        storm::window::native_handle_type native_handle() const noexcept override;
 
       private:
-        UIWindowPtr       m_window;
+        UIWindowPtr       window_;
         ViewControllerPtr m_view_controller;
         ViewPtr           m_view;
     };

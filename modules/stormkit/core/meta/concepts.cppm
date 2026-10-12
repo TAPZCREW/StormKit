@@ -36,6 +36,9 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     using std::convertible_to;
 
+    template<typename T, typename... U>
+    concept convertible_to_any_of = (convertible_to<T, U> or ...);
+
     template<typename From, typename To>
     concept explicitly_convertible_to = convertible_to<From, To> or requires(From val) { static_cast<To>(val); };
 

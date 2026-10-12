@@ -7,14 +7,15 @@ module;
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
 
-#ifdef STORMKIT_OS_WINDOWS
-    #include <stormkit/core/platform/windows.hpp>
-#endif
 #include <cerrno>
 
 export module stormkit.core.errors;
 
 import std;
+
+#ifdef STORMKIT_OS_WINDOWS
+import stormkit.core.win32;
+#endif
 
 import stormkit.core.types;
 
@@ -102,13 +103,13 @@ namespace stormkit { inline namespace core {
         ////////////////////////////////////////
         STORMKIT_FORCE_INLINE
         inline auto from_win32() noexcept -> system_code {
-            return system_error2::win32_code { GetLastError() };
+            return system_error2::win32_code { ::win32::GetLastError() };
         }
 
         ////////////////////////////////////////
         ////////////////////////////////////////
         STORMKIT_FORCE_INLINE
-        inline auto from_ntstatus(long status) noexcept -> system_code {
+        inline auto from_ntstatus(::win32::LONG status) noexcept -> system_code {
             return system_error2::nt_code { status };
         }
 #endif

@@ -57,7 +57,7 @@ option("log", { default = true, category = "root menu/modules" })
 option("math", { default = true, category = "root menu/modules" })
 option("entities", { default = false, category = "root menu/modules" })
 option("image", { default = true, category = "root menu/modules", deps = { "math", "log" } })
-option("wsi", { default = false, category = "root menu/modules", deps = { "log" } })
+option("wsi", { default = true, category = "root menu/modules", deps = { "log" } })
 option("gpu", { default = false, category = "root menu/modules", deps = { "log", "image", "wsi" } })
 option("lua", { default = false, category = "root menu/modules", deps = { "log" } })
 

@@ -142,6 +142,14 @@ export namespace stormkit { inline namespace core {
         template<typename T>
         struct implicit_convertion {};
 
+        template<typename T>
+        struct callable {
+            template<typename Self, typename... Ts>
+            constexpr auto operator()(this Self& self,
+                                      Ts&&... args) noexcept(noexcept(self.value().operator()(std::forward<Ts>(args)...)))
+              -> decltype(self.value().operator()(std::forward<Ts>(args)...));
+        };
+
         namespace meta {
             template<template<class> typename... Capabilities>
             concept has_arithmetic = core::meta::is_any_of<arithmetic<int>, Capabilities<int>...>;
@@ -668,6 +676,17 @@ namespace stormkit { inline namespace core {
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
             self.m_value /= other.m_value;
+        }
+
+        ////////////////////////////////////////
+        ////////////////////////////////////////
+        template<typename T>
+        template<typename Self, typename... Ts>
+        STORMKIT_FORCE_INLINE
+        constexpr auto callable<
+          T>::operator()(this Self& self, Ts&&... args) noexcept(noexcept(self.value().operator()(std::forward<Ts>(args)...)))
+          -> decltype(self.value().operator()(std::forward<Ts>(args)...)) {
+            return self.value().operator()(std::forward<Ts>(args)...);
         }
     } // namespace capabilities
 }} // namespace stormkit::core

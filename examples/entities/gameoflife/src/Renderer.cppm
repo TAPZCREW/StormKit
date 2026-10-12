@@ -42,11 +42,11 @@ export {
 
         std::unique_ptr<stormkit::gpu::Instance> m_instance;
         std::unique_ptr<stormkit::gpu::Device>   m_device;
-        std::unique_ptr<stormkit::gpu::Surface>  m_surface;
+        std::unique_ptr<stormkit::gpu::Surface>  surface_;
         stormkit::gpu::Fence*                    m_current_fence = nullptr;
 
         const stormkit::gpu::Queue*           m_queue = nullptr;
-        dynarray<stormkit::gpu::ImageView> m_surface_views;
+        dynarray<stormkit::gpu::ImageView> surface__views;
 
         std::unique_ptr<stormkit::gpu::DescriptorSetLayout> m_descriptor_set_layout;
         std::unique_ptr<stormkit::gpu::DescriptorPool>      m_descriptor_pool;

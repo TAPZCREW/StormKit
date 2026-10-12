@@ -58,7 +58,7 @@ namespace stormkit::gpu {
             u32                layers     = 1u;
             u32                mip_levels = 1u;
             ImageType          type       = ImageType::T2D;
-            ImageCreateFlag    flags      = ImageCreateFlag::NONE;
+            ImageCreateFlag    flags      = ImageCreateFlag::none;
             SampleCountFlag    samples    = SampleCountFlag::C1;
             ImageUsageFlag     usages     = ImageUsageFlag::SAMPLED | ImageUsageFlag::TRANSFER_DST | ImageUsageFlag::TRANSFER_SRC;
             ImageTiling        tiling     = ImageTiling::OPTIMAL;
@@ -132,7 +132,7 @@ namespace stormkit::gpu {
         u32             m_faces      = 0;
         u32             m_mip_levels = 0;
         ImageType       m_type       = {};
-        ImageCreateFlag m_flags      = {};
+        ImageCreateFlag flags_      = {};
         SampleCountFlag m_samples    = {};
         ImageUsageFlag  m_usages     = {};
 
@@ -164,7 +164,7 @@ namespace stormkit::gpu {
             ImageType      m_type       = {};
             STORMKIT_PUSH_WARNINGS
 #pragma clang diagnostic ignored "-Wunused-private-field"
-            ImageCreateFlag m_flags = {};
+            ImageCreateFlag flags_ = {};
             STORMKIT_POP_WARNINGS
             SampleCountFlag m_samples = {};
             ImageUsageFlag  m_usages  = {};
@@ -500,7 +500,7 @@ namespace stormkit::gpu {
         image.m_faces      = 1;
         image.m_mip_levels = create_info.mip_levels;
         image.m_type       = create_info.type;
-        image.m_flags      = create_info.flags;
+        image.flags_      = create_info.flags;
         image.m_samples    = create_info.samples;
         image.m_usages     = create_info.usages;
 
@@ -523,7 +523,7 @@ namespace stormkit::gpu {
               m_faces { of.faces() },
               m_mip_levels { of.mip_levels() },
               m_type { of.type() },
-              m_flags { of.m_flags },
+              flags_ { of.flags_ },
               m_samples { of.samples() },
               m_usages { of.usages() } {
             if (not of.m_no_delete) m_vma_allocation = of.allocation();

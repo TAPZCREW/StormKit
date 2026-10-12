@@ -10,8 +10,6 @@ module;
 #include <stormkit/core/try_expected.hpp>
 
 #ifdef STORMKIT_OS_WINDOWS
-    #include <stormkit/core/platform/windows.hpp>
-
     #include <fcntl.h>
     #include <io.h>
     #include <sys/stat.h>
@@ -27,6 +25,10 @@ module;
 export module stormkit.core.filesystem;
 
 import std;
+
+#ifdef STORMKIT_OS_WINDOWS
+import stormkit.core.win32;
+#endif
 
 import stormkit.core.errors;
 import stormkit.core.contract;
@@ -71,8 +73,8 @@ export {
 
               public:
 #ifdef STORMKIT_OS_WINDOWS
-                using native_handle_type                = HANDLE;
-                static inline const auto INVALID_HANDLE = native_handle_type { INVALID_HANDLE_VALUE };
+                using native_handle_type                = win32::HANDLE;
+                static inline const auto INVALID_HANDLE = native_handle_type { win32::INVALID_HANDLE_VALUE };
 #else
                 using native_handle_type             = i32;
                 static constexpr auto INVALID_HANDLE = native_handle_type { 0 };
@@ -221,7 +223,7 @@ namespace stormkit { inline namespace core { namespace io {
         if (m_descriptor != INVALID_HANDLE) {
             flush();
 #ifdef STORMKIT_OS_WINDOWS
-            CloseHandle
+            win32::CloseHandle
 #else
             ::close
 #endif
@@ -239,12 +241,15 @@ namespace stormkit { inline namespace core { namespace io {
         EXPECTS(m_descriptor != INVALID_HANDLE);
 #ifdef STORMKIT_OS_WINDOWS
         // TODO support async WriteFileEx
-        auto ret = DWORD { 0 };
-        const auto
-          succeed = ReadFile(m_descriptor, std::bit_cast<void*>(stdr::data(out)), as<DWORD>(stdr::size(out)), &ret, nullptr);
+        auto       ret     = win32::DWORD { 0 };
+        const auto succeed = win32::ReadFile(m_descriptor,
+                                             reinterpret_cast<void*>(stdr::data(out)),
+                                             as<win32::DWORD>(stdr::size(out)),
+                                             &ret,
+                                             nullptr);
         if (not succeed) return std::unexpected { error_code::from_win32() };
 #else
-        const auto ret = ::read(m_descriptor, std::bit_cast<void*>(stdr::data(out)), as<u32>(stdr::size(out)));
+        const auto ret = ::read(m_descriptor, reinterpret_cast<void*>(stdr::data(out)), as<u32>(stdr::size(out)));
         if (ret == -1) return std::unexpected { error_code::from_errno() };
 #endif
 
@@ -279,12 +284,12 @@ namespace stormkit { inline namespace core { namespace io {
         EXPECTS(m_descriptor != INVALID_HANDLE);
 #ifdef STORMKIT_OS_WINDOWS
         // TODO support async WriteFileEx
-        auto       ret     = DWORD { 0 };
-        const auto succeed = WriteFile(m_descriptor,
-                                       std::bit_cast<const void*>(stdr::data(data)),
-                                       as<DWORD>(stdr::size(data)),
-                                       &ret,
-                                       nullptr);
+        auto       ret     = win32::DWORD { 0 };
+        const auto succeed = win32::WriteFile(m_descriptor,
+                                              std::bit_cast<const void*>(stdr::data(data)),
+                                              as<win32::DWORD>(stdr::size(data)),
+                                              &ret,
+                                              nullptr);
         if (not succeed) return std::unexpected { error_code::from_win32() };
 #else
         const auto ret = ::write(m_descriptor, std::bit_cast<const void*>(stdr::data(data)), as<u32>(stdr::size(data)));
@@ -321,7 +326,7 @@ namespace stormkit { inline namespace core { namespace io {
     inline auto file_descriptor<MODE>::flush() noexcept -> void {
         EXPECTS(m_descriptor != INVALID_HANDLE);
 #ifdef STORMKIT_OS_WINDOWS
-        FlushFileBuffers(reinterpret_cast<HANDLE>(m_descriptor));
+        win32::FlushFileBuffers(reinterpret_cast<win32::HANDLE>(m_descriptor));
 #else
     #ifdef STORMKIT_OS_LINUX
         fdatasync
@@ -339,8 +344,8 @@ namespace stormkit { inline namespace core { namespace io {
     inline auto file_descriptor<MODE>::position() const noexcept -> usize {
         EXPECTS(m_descriptor != INVALID_HANDLE);
 #ifdef STORMKIT_OS_WINDOWS
-        auto current_position = LARGE_INTEGER { .QuadPart = 0 };
-        SetFilePointerEx(m_descriptor, LARGE_INTEGER { .QuadPart = 0 }, &current_position, FILE_CURRENT);
+        auto current_position = win32::LARGE_INTEGER { .QuadPart = 0 };
+        SetFilePointerEx(m_descriptor, win32::LARGE_INTEGER { .QuadPart = 0 }, &current_position, win32::FILE_CURRENT);
         return as<usize>(current_position.QuadPart);
 #else
         return as<usize>(lseek(m_descriptor, 0, SEEK_CUR));
@@ -354,8 +359,8 @@ namespace stormkit { inline namespace core { namespace io {
         EXPECTS(m_descriptor != INVALID_HANDLE);
         if (m_size == 0) {
 #ifdef STORMKIT_OS_WINDOWS
-            auto       size    = LARGE_INTEGER { .QuadPart = 0 };
-            const auto succeed = GetFileSizeEx(m_descriptor, &size);
+            auto       size    = win32::LARGE_INTEGER { .QuadPart = 0 };
+            const auto succeed = win32::GetFileSizeEx(m_descriptor, &size);
             if (succeed) m_size = as<usize>(size.QuadPart);
 #else
             const auto old_pos = lseek(m_descriptor, 0, SEEK_SET);
@@ -388,23 +393,23 @@ namespace stormkit { inline namespace core { namespace io {
 #ifdef STORMKIT_OS_WINDOWS
         const auto path_ = "\\\\?\\" / path;
 
-        const auto win32_access = [&access]() noexcept -> DWORD {
-            if (access == access::READ) return GENERIC_READ;
+        const auto win32_access = [&access]() noexcept -> win32::DWORD {
+            if (access == access::READ) return win32::GENERIC_READ;
             else if (access == access::WRITE)
-                return GENERIC_WRITE;
+                return win32::GENERIC_WRITE;
             else
-                return GENERIC_WRITE | GENERIC_READ;
+                return win32::GENERIC_WRITE | win32::GENERIC_READ;
             std::unreachable();
         }();
         const auto path_as_string = path_.string();
-        const auto ret            = CreateFile(stdr::data(path_as_string),
-                                               win32_access,
-                                               FILE_SHARE_READ,
-                                               nullptr,
-                                               OPEN_ALWAYS,
-                                               FILE_ATTRIBUTE_NORMAL,
-                                               INVALID_HANDLE_VALUE);
-        if (ret == INVALID_HANDLE_VALUE) return std::unexpected { error_code::from_win32() };
+        const auto ret            = win32::CreateFileA(stdr::data(path_as_string),
+                                                       win32_access,
+                                                       win32::FILE_SHARE_READ,
+                                                       nullptr,
+                                                       win32::OPEN_ALWAYS,
+                                                       win32::FILE_ATTRIBUTE_NORMAL,
+                                                       win32::INVALID_HANDLE_VALUE);
+        if (ret == win32::INVALID_HANDLE_VALUE) return std::unexpected { error_code::from_win32() };
 #else
         const auto posix_access = [&access]() noexcept {
             if (access == access::READ) return O_RDONLY;

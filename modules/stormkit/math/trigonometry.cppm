@@ -8,11 +8,9 @@ export module stormkit.math.trigonometry;
 
 import std;
 
-export {
-    namespace stormkit::math {
-
-    } // namespace stormkit::math
-}
+export namespace stormkit::math {
+    inline constexpr auto dummy2 = 0;
+} // namespace stormkit::math
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///

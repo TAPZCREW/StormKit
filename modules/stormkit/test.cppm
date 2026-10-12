@@ -6,10 +6,6 @@ module;
 
 #include <stormkit/core/platform_macro.hpp>
 
-#ifdef STORMKIT_OS_WINDOWS
-    #include <stormkit/core/platform/windows.hpp>
-#endif
-
 export module stormkit.test;
 
 import stormkit.core;

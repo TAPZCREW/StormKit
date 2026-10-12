@@ -16,7 +16,7 @@ import :core;
 
 namespace stormkit::wsi {
     namespace {
-        constinit auto wm_hint = std::optional<WM> {};
+        constinit auto wm_hint = std::optional<window_manager> {};
     }
 
     /////////////////////////////////////
@@ -25,33 +25,33 @@ namespace stormkit::wsi {
         auto hint = std::ranges::find_if(args, [](auto&& v) { return v == "--x11" or v == "--wayland"; });
 
         if (hint != std::ranges::cend(args)) {
-            if (*hint == "--x11") wm_hint = WM::X11;
+            if (*hint == "--x11") wm_hint = window_manager::x11;
             else if (*hint == "--wayland")
-                wm_hint = WM::WAYLAND;
+                wm_hint = window_manager::wayland;
         }
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    WM wm() noexcept {
+    window_manager wm() noexcept {
 #if defined(STORMKIT_OS_WINDOWS)
-        return WM::WIN32;
+        return window_manager::win32;
 #elif defined(STORMKIT_OS_MACOS)
-        return WM::MACOS;
+        return window_manager::macos;
 #elif defined(STORMKIT_OS_IOS)
-        return WM::IOS;
+        return window_manager::IOS;
 #elif defined(STORMKIT_OS_ANDROID)
-        return WM::ANDROID;
+        return window_manager::android;
 #elif defined(STORMKIT_OS_SWITCH)
-        return WM::SWITCH;
+        return window_manager::SWITCH;
 #elif defined(STORMKIT_OS_LINUX)
         auto is_wayland = std::getenv("WAYLAND_DISPLAY") != nullptr;
 
         if (wm_hint) return wm_hint.value();
         else if (is_wayland)
-            return WM::WAYLAND;
+            return window_manager::wayland;
         else
-            return WM::X11;
+            return window_manager::x11;
         std::unreachable();
 #endif
     }

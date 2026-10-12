@@ -323,7 +323,8 @@ namespace stormkit { inline namespace core { namespace monadic {
     template<typename T>
     STORMKIT_FORCE_INLINE
     constexpr auto is() noexcept -> decltype(auto) {
-        return []<typename U>(U&& value) static noexcept { return core::is<T>(std::forward<U>(value)); };
+        return overload_set { [](meta::in<T> first, meta::in<T> second) static noexcept { return core::is(first, second); },
+                              []<typename U>(U&& value) static noexcept { return core::is<T>(std::forward<U>(value)); } };
     }
 
     ////////////////////////////////////////

@@ -6,6 +6,6 @@
 #if __cplusplus
 extern "C"
 #endif
-  void* toCPtr(CALayer*);
+  const void* toCPtr(const CALayer*);
 
 #endif

@@ -327,7 +327,7 @@ namespace stormkit::gpu {
         using NamedConstructor::allocate;
         using NamedConstructor::create;
 
-        heap_ptr<State>        m_state;
+        heap_ptr<State>        state_;
         CommandBufferLevel m_level = CommandBufferLevel::PRIMARY;
 
         CommandBufferDeleter m_deleter;
@@ -355,7 +355,7 @@ namespace stormkit::gpu {
             auto operator=(CommandBufferImplementation&&) noexcept -> CommandBufferImplementation&;
 
           protected:
-            ref<State>         m_state;
+            ref<State>         state_;
             CommandBufferLevel m_level;
         };
     } // namespace view
@@ -468,8 +468,8 @@ namespace stormkit::gpu {
     template<typename Base>
     STORMKIT_FORCE_INLINE
     inline auto CommandBufferInterface<Base>::state() const noexcept -> State {
-        EXPECTS(Base::m_state != nullptr);
-        return *Base::m_state;
+        EXPECTS(Base::state_ != nullptr);
+        return *Base::state_;
     }
 
     /////////////////////////////////////
@@ -632,7 +632,7 @@ namespace stormkit::gpu {
         /////////////////////////////////////
         STORMKIT_FORCE_INLINE
         inline CommandBufferImplementation::CommandBufferImplementation(const gpu::CommandBuffer& of) noexcept
-            : GpuObjectViewImplementation { of }, m_state { as_ref_mut(of.m_state) }, m_level { of.level() } {
+            : GpuObjectViewImplementation { of }, state_ { as_ref_mut(of.state_) }, m_level { of.level() } {
         }
 
         /////////////////////////////////////
@@ -664,7 +664,7 @@ namespace stormkit::gpu {
             GpuObjectViewImplementation::operator=(other);
 
             m_level = other.m_level;
-            m_state = as_ref_mut(other.m_state);
+            state_ = as_ref_mut(other.state_);
 
             return *this;
         }

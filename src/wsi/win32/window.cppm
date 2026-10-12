@@ -4,8 +4,6 @@
 
 module;
 
-#include <stormkit/core/platform/windows.hpp>
-
 #include <stormkit/core/platform_macro.hpp>
 
 #include <stormkit/core/contract_macro.hpp>
@@ -15,27 +13,24 @@ export module stormkit.wsi:win32.window;
 import std;
 
 import stormkit.core;
+import stormkit.core.win32;
 import stormkit.wsi;
 
 import :common.window_base;
 
-// import :win32.keyboard;
-// import :win32.mouse;
-
 export namespace stormkit::wsi::win32 {
-    class Window: public ::stormkit::wsi::common::WindowBase {
+    class window: public ::stormkit::wsi::common::window_base {
       public:
-        explicit Window(WM wm) noexcept;
-        ~Window() noexcept;
+        explicit window(window_manager wm) noexcept;
+        ~window() noexcept;
 
-        Window(const Window&) noexcept;
-        auto operator=(const Window&) noexcept -> Window&;
+        window(const window&) noexcept;
+        auto operator=(const window&) noexcept -> window&;
 
-        Window(Window&&) noexcept;
-        auto operator=(Window&&) noexcept -> Window&;
+        window(window&&) noexcept;
+        auto operator=(window&&) noexcept -> window&;
 
-        auto open(string title, const math::uextent2& size, WindowFlag flags) noexcept
-          -> void;
+        auto open(string&& title, const math::uextent2& size, window_flag flags) noexcept -> void;
         auto close() noexcept -> void;
 
         auto handle_events() noexcept -> void;
@@ -43,7 +38,7 @@ export namespace stormkit::wsi::win32 {
         auto clear(const ucolor_rgb& color) noexcept -> void;
         auto fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void;
 
-        auto set_title(string title) noexcept -> void;
+        auto set_title(string&& title) noexcept -> void;
         auto set_extent(const math::uextent2& extent) noexcept -> void;
         auto set_fullscreen(bool fullscreen) noexcept -> void;
 
@@ -82,7 +77,7 @@ export namespace stormkit::wsi::win32 {
         auto end_resize() noexcept -> void;
 
         [[nodiscard]]
-        auto native_handle() const noexcept -> NativeHandle;
+        auto native_handle() const noexcept -> native_handle_type;
 
         auto update_geometry(const math::uextent2& extent) noexcept -> void;
 
@@ -95,8 +90,8 @@ export namespace stormkit::wsi::win32 {
 
       private:
         struct {
-            DWORD style;
-            DWORD style_ex;
+            ::win32::DWORD style;
+            ::win32::DWORD style_ex;
 
             bool external_context = false;
             bool mouse_inside     = false;
@@ -105,16 +100,16 @@ export namespace stormkit::wsi::win32 {
             math::uextent2 extent;
             math::uextent2 last_extent;
 
-            DWORD tls_index = 0;
+            ::win32::DWORD tls_index = 0;
 
             bool mouse_tracked = false;
-        } m_win32_state;
+        } win32_state_;
 
-        HWND m_window_handle = nullptr;
+        ::win32::HWND window_handle_ = nullptr;
 
-        using Hdc = raii_capsule<HDC, CreateCompatibleDC, DeleteDC, struct HdcTag, nullptr>;
-        using HBitmap
-          = raii_capsule<HBITMAP, CreateDIBSection, DeleteObject, struct HBitmapTag, nullptr>;
+        using hdc = raii_capsule<::win32::HDC, ::win32::CreateCompatibleDC, ::win32::DeleteDC, struct hdc_tag, nullptr>;
+        using hbitmap
+          = raii_capsule<::win32::HBITMAP, ::win32::CreateDIBSection, ::win32::DeleteObject, struct hbitmap_tag, nullptr>;
 
         struct GDIFrameData {
             GDIFrameData();
@@ -127,12 +122,12 @@ export namespace stormkit::wsi::win32 {
 
             ~GDIFrameData() noexcept;
 
-            Hdc                context    = Hdc::empty();
-            HBitmap            bitmap     = HBitmap::empty();
+            hdc                context    = hdc::empty();
+            hbitmap            bitmap     = hbitmap::empty();
             std::atomic<void*> pixels_ptr = nullptr;
 
-            math::extent2<LONG> extent;
-        } m_gdi_frame_data;
+            math::extent2<::win32::LONG> extent;
+        } gdi_frame_data_;
     };
 } // namespace stormkit::wsi::win32
 
@@ -143,99 +138,101 @@ export namespace stormkit::wsi::win32 {
 namespace stormkit::wsi::win32 {
     /////////////////////////////////////
     /////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_PURE
-    inline auto Window::is_mouse_inside() const noexcept -> bool {
-        return m_win32_state.mouse_inside;
+    STORMKIT_FORCE_INLINE
+    inline auto window::is_mouse_inside() const noexcept -> bool {
+        return win32_state_.mouse_inside;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::set_mouse_inside(bool inside) noexcept -> void {
-        m_win32_state.mouse_inside = inside;
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE STORMKIT_PURE
-    inline auto Window::native_handle() const noexcept -> NativeHandle {
-        return std::bit_cast<NativeHandle>(m_window_handle);
+    inline auto window::set_mouse_inside(bool inside) noexcept -> void {
+        win32_state_.mouse_inside = inside;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::update_geometry(const math::uextent2& extent) noexcept -> void {
-        m_state.extent       = extent;
-        m_win32_state.extent = extent;
+    inline auto window::native_handle() const noexcept -> native_handle_type {
+        return std::bit_cast<native_handle_type>(window_handle_);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::begin_resize() noexcept -> void {
-        m_win32_state.resizing = true;
+    inline auto window::update_geometry(const math::uextent2& extent) noexcept -> void {
+        state_.extent       = extent;
+        win32_state_.extent = extent;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::resize(u32 width, u32 height) noexcept -> void {
-        m_win32_state.last_extent.width  = width;
-        m_win32_state.last_extent.height = height;
+    inline auto window::begin_resize() noexcept -> void {
+        win32_state_.resizing = true;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::end_resize() noexcept -> void {
-        m_win32_state.resizing = false;
+    inline auto window::resize(u32 width, u32 height) noexcept -> void {
+        win32_state_.last_extent.width  = width;
+        win32_state_.last_extent.height = height;
+    }
 
-        if (m_win32_state.last_extent != extent()) {
-            m_win32_state.last_extent = extent();
+    /////////////////////////////////////
+    /////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto window::end_resize() noexcept -> void {
+        win32_state_.resizing = false;
 
-            resized_event({ m_win32_state.last_extent.width, m_win32_state.last_extent.height });
+        if (win32_state_.last_extent != extent()) {
+            win32_state_.last_extent = extent();
+
+            resized_event(win32_state_.last_extent);
         }
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::win32_state(this auto& self) noexcept -> decltype(auto) {
-        return std::forward_like<decltype(self)>(self.m_win32_state);
+    inline auto window::win32_state(this auto& self) noexcept -> decltype(auto) {
+        return std::forward_like<decltype(self)>(self.win32_state_);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::state(this auto& self) noexcept -> decltype(auto) {
-        return std::forward_like<decltype(self)>(self.m_state);
+    inline auto window::state(this auto& self) noexcept -> decltype(auto) {
+        return std::forward_like<decltype(self)>(self.state_);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::gdi_frame_data(this auto& self) noexcept -> decltype(auto) {
-        return std::forward_like<decltype(self)>(self.m_gdi_frame_data);
+    inline auto window::gdi_frame_data(this auto& self) noexcept -> decltype(auto) {
+        return std::forward_like<decltype(self)>(self.gdi_frame_data_);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Window::GDIFrameData::GDIFrameData() = default;
+    inline window::GDIFrameData::GDIFrameData() = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Window::GDIFrameData::GDIFrameData(GDIFrameData&& other) noexcept
-        : context { std::move(other.context) }, bitmap { std::move(other.bitmap) },
-          pixels_ptr { other.pixels_ptr.load() }, extent { other.extent } {
+    inline window::GDIFrameData::GDIFrameData(GDIFrameData&& other) noexcept
+        : context { std::move(other.context) },
+          bitmap { std::move(other.bitmap) },
+          pixels_ptr { other.pixels_ptr.load() },
+          extent { other.extent } {
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::GDIFrameData::operator=(GDIFrameData&& other) noexcept -> GDIFrameData& {
+    inline auto window::GDIFrameData::operator=(GDIFrameData&& other) noexcept -> GDIFrameData& {
         if (&other == this) return *this;
 
         context    = std::move(other.context);
@@ -249,6 +246,6 @@ namespace stormkit::wsi::win32 {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline Window::GDIFrameData::~GDIFrameData() noexcept = default;
+    inline window::GDIFrameData::~GDIFrameData() noexcept = default;
 
 } // namespace stormkit::wsi::win32

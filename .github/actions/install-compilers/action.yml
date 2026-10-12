@@ -22,6 +22,11 @@ runs:
         repo-name: llvm
         keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
 
+    - name: Add gcc apt repository
+      if: ${{ inputs.os == 'linux' }}
+      run: sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+      shell: bash
+
     - name: Update apt repositories
       if: ${{ inputs.os == 'linux' }}
       run: sudo apt update
@@ -44,6 +49,15 @@ runs:
           mold
           nasm
           ninja-build
+          gcc-16
+          g++-16
+
+    - name: Update GCC alternatives
+      if: ${{ inputs.os == 'linux' }}
+      run: |
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-16 60 \
+                                 --slave /usr/bin/g++ g++ /usr/bin/g++-16
+      shell: bash
 
     - name: Install LLVM
       if: ${{ inputs.os == 'linux' && inputs.compiler == 'llvm' }}
@@ -68,14 +82,14 @@ runs:
           libomp-${{ inputs.llvm_version }}-dev
           libclc-${{ inputs.llvm_version }}-dev
           libunwind-${{ inputs.llvm_version }}-dev
-          libllvmlibc-${{ inputs.llvm_version }}-dev 
+          libllvmlibc-${{ inputs.llvm_version }}-dev
 
     - name: Restore cached LLVM
       id: restore-llvmcache
       if: ${{ inputs.os == 'windows' && inputs.compiler == 'llvm' }}
       uses: actions/cache/restore@v6
       with:
-        path: '${{ runner.workspace }}/llvm.7z'
+        path: "${{ runner.workspace }}/llvm.7z"
         key: ${{ matrix.os }}-LLVM-24-${{ matrix.arch }}
 
     - name: Download LLVM
@@ -94,7 +108,7 @@ runs:
       if: ${{ inputs.os == 'windows' && inputs.compiler == 'llvm' && !steps.restore-llvmcache.outputs.cache-hit }}
       uses: actions/cache/save@v6
       with:
-        path: '${{ runner.workspace }}/llvm.7z'
+        path: "${{ runner.workspace }}/llvm.7z"
         key: ${{ steps.restore-llvmcache.outputs.cache-primary-key }}
 
     - name: Install build tools
@@ -104,4 +118,3 @@ runs:
         tools: llvm ninja meson cmake mold nasm pkgconf
         key: ${{ matrix.os }}-homebrew-${{ matrix.arch }}
         verbose: false
-

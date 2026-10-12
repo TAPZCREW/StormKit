@@ -23,7 +23,7 @@ import :linux.x11.log;
 
 export namespace stormkit::wsi::linux::x11 {
     auto x11_key_to_char(xcb_keysym_t key) noexcept -> char;
-    auto x11_button_to_stormkit(xcb_button_t button) noexcept -> MouseButton;
+    auto x11_button_to_stormkit(xcb_button_t button) noexcept -> mouse_button;
     auto default_root_window(xcb_connection_t* connection, i32 screen_id) noexcept -> xcb_window_t;
 } // namespace stormkit::wsi::linux::x11
 
@@ -35,13 +35,13 @@ namespace stormkit::wsi::linux::x11 {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_CONST
-    inline auto x11_button_to_stormkit(xcb_button_t button) noexcept -> MouseButton {
+    inline auto x11_button_to_stormkit(xcb_button_t button) noexcept -> mouse_button {
         switch (button) {
-            case XCB_BUTTON_INDEX_1: return MouseButton::LEFT;
-            case XCB_BUTTON_INDEX_2: return MouseButton::MIDDLE;
-            case XCB_BUTTON_INDEX_3: return MouseButton::RIGHT;
-            case XCB_BUTTON_INDEX_4: return MouseButton::BUTTON_1;
-            case XCB_BUTTON_INDEX_5: return MouseButton::BUTTON_2;
+            case XCB_BUTTON_INDEX_1: return mouse_button::left;
+            case XCB_BUTTON_INDEX_2: return mouse_button::middle;
+            case XCB_BUTTON_INDEX_3: return mouse_button::right;
+            case XCB_BUTTON_INDEX_4: return mouse_button::button_1;
+            case XCB_BUTTON_INDEX_5: return mouse_button::button_2;
             default: break;
         }
 

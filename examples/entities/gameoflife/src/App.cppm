@@ -36,7 +36,7 @@ export {
       private:
         auto do_initWindow() -> void;
 
-        auto handleKeyboard(const stormkit::wsi::KeyReleasedEventData& event) -> void;
+        auto handleKeyboard(const stormkit::wsi::keyReleasedEventData& event) -> void;
         auto handleMouse(const stormkit::wsi::MouseButtonPushedEventData& event) -> void;
         auto createCell(stormkit::u32 x, stormkit::u32 y) -> void;
 

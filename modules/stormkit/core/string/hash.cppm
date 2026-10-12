@@ -10,6 +10,8 @@ export module stormkit.core.string.hash;
 
 import std;
 
+import frozen;
+
 import stormkit.core.types;
 import stormkit.core.hash;
 import stormkit.core.meta.concepts;
@@ -29,11 +31,11 @@ export namespace stormkit { inline namespace core {
         static constexpr auto operator()(string_view value, T seed = 0) noexcept -> T;
     };
 
-    template<class Value, usize SIZE, class Key = string>
-    using static_string_hash_map = static_hash_map<Key, Value, SIZE, string_hash_fn, std::equal_to<>>;
+    template<class Value, usize SIZE, class Key = frozen::string>
+    using static_string_hash_map = static_hash_map<Key, Value, SIZE>;
 
-    template<usize SIZE, class Value = string>
-    using static_string_hash_set = static_hash_set<Value, SIZE, string_hash_fn, std::equal_to<>>;
+    template<usize SIZE, class Value = frozen::string>
+    using static_string_hash_set = static_hash_set<Value, SIZE>;
 
     template<class Value, class Key = string>
     using string_hash_map = hash_map<Key, Value, string_hash_fn, std::equal_to<>>;

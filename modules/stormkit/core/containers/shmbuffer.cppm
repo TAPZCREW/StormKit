@@ -7,6 +7,7 @@ module;
 #include <stormkit/core/api.hpp>
 #include <stormkit/core/contract_macro.hpp>
 #include <stormkit/core/platform_macro.hpp>
+#include <stormkit/core/try_expected.hpp>
 
 export module stormkit.core.containers.shmbuffer;
 
@@ -84,7 +85,7 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     inline auto shm_buffer::create(usize size, string name, io::access access) noexcept -> system_result<shm_buffer> {
         auto out = shm_buffer { PRIVATE<shm_buffer> };
-        out.do_init(size, std::move(name), access);
+        Try(out.do_init(size, std::move(name), access));
         return out;
     }
 
@@ -93,7 +94,7 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     inline auto shm_buffer::allocate(usize size, string name, io::access access) noexcept -> system_result<heap_ptr<shm_buffer>> {
         auto out = allocate_unsafe<shm_buffer>(PRIVATE<shm_buffer>);
-        out->do_init(size, std::move(name), access);
+        Try(out->do_init(size, std::move(name), access));
         return out;
     }
 

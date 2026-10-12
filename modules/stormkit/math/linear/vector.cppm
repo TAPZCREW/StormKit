@@ -141,6 +141,9 @@ export namespace stormkit::math {
     constexpr auto tag_invoke(format_as_fn<CharT>, vec_view<const T, N> matrix, cmeta::format_context auto& ctx) noexcept
       -> decltype(ctx.out());
 
+    template<meta::is_vec To, meta::is_vec From>
+    constexpr auto tag_invoke(as_fn<To>, const From& vec, source_location_arg = std::source_location::current()) noexcept -> To;
+
     template<cmeta::arithmetic T, usize N>
     [[nodiscard]]
     constexpr auto normalize(const vec<T, N>& vector) noexcept -> vec<T, N>;
@@ -334,5 +337,21 @@ namespace stormkit::math {
         out[1] = a[2] * b[0] - a[0] * b[2];
         out[2] = a[0] * b[1] - a[1] * b[0];
         out[3] = T { 0 };
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<meta::is_vec To, meta::is_vec From>
+    constexpr auto tag_invoke(as_fn<To>, const From& vec, source_location_arg) noexcept -> To {
+        using to_value_type   = cmeta::value_type<To>;
+        using from_value_type = cmeta::value_type<From>;
+
+        auto out = To {};
+        if constexpr (To::static_extent(0) > From::static_extent(0))
+            for (auto i : range(From::static_extent(0))) out[i] = as<to_value_type>(vec[i]);
+        else
+            for (auto i : range(To::static_extent(0))) out[i] = as<to_value_type>(vec[i]);
+
+        return out;
     }
 } // namespace stormkit::math

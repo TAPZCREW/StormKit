@@ -8,11 +8,9 @@ export module stormkit.math.hypercomplex;
 
 import std;
 
-export {
-    namespace stormkit::math {
-
-    } // namespace stormkit::math
-}
+export namespace stormkit::math {
+    inline constexpr auto dummy = 0;
+} // namespace stormkit::math
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///

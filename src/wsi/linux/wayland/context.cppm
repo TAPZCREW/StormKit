@@ -24,53 +24,53 @@ import :linux.wayland;
 import :linux.wayland.input;
 
 export namespace stormkit::wsi::linux::wayland {
-    class Window;
+    class window;
 
     namespace wl {
-        struct WaylandMonitor {
+        struct wayland_monitor {
             uptr         id;
-            wsi::Monitor monitor;
+            wsi::monitor monitor;
         };
 
-        struct Globals {
-            bool                         initialized = false;
-            wl::Display                  display     = wl::Display::empty();
-            wl::Registry                 registry    = wl::Registry::empty();
-            wl::Compositor               compositor  = wl::Compositor::empty();
-            dynarray<wl::Output>         outputs;
-            wl::XDGWmBase                xdg_wm_base                 = wl::XDGWmBase::empty();
-            wl::Shm                      shm                         = wl::Shm::empty();
-            wl::XDGDecorationManager     decoration_manager          = wl::XDGDecorationManager::empty();
-            wl::Seat                     seat                        = wl::Seat::empty();
-            wl::SinglePixelBufferManager single_pixel_buffer_manager = wl::SinglePixelBufferManager::empty();
-            wl::Viewporter               viewporter                  = wl::Viewporter::empty();
-            wl::CursorShapeManager       cursor_shape_manager        = wl::CursorShapeManager::empty();
-            wl::CursorShapeDevice        cursor_shape_device         = wl::CursorShapeDevice::empty();
-            wl::PointerWarp              pointer_warp                = wl::PointerWarp::empty();
-            wl::PointerConstraints       pointer_constraints         = wl::PointerConstraints::empty();
-            wl::ContentTypeManager       content_type_manager        = wl::ContentTypeManager::empty();
+        struct wl_globals {
+            bool                            initialized = false;
+            wl::display                     display     = wl::display::empty();
+            wl::registry                    registry    = wl::registry::empty();
+            wl::compositor                  compositor  = wl::compositor::empty();
+            dynarray<wl::output>            outputs;
+            wl::xdg_wm_base                 xdg_wm_base                 = wl::xdg_wm_base::empty();
+            wl::shm                         shm                         = wl::shm::empty();
+            wl::xdg_decoration_manager      decoration_manager          = wl::xdg_decoration_manager::empty();
+            wl::seat                        seat                        = wl::seat::empty();
+            wl::single_pixel_buffer_manager single_pixel_buffer_manager = wl::single_pixel_buffer_manager::empty();
+            wl::viewporter                  viewporter                  = wl::viewporter::empty();
+            wl::cursor_shape_manager        cursor_shape_manager        = wl::cursor_shape_manager::empty();
+            wl::cursor_shape_device         cursor_shape_device         = wl::cursor_shape_device::empty();
+            wl::pointer_warp                pointer_warp                = wl::pointer_warp::empty();
+            wl::pointer_constraints         pointer_constraints         = wl::pointer_constraints::empty();
+            wl::content_type_manager        content_type_manager        = wl::content_type_manager::empty();
 
-            wl::CursorTheme cursor_theme          = wl::CursorTheme::empty();
-            wl::CursorTheme cursor_theme_high_dpi = wl::CursorTheme::empty();
+            wl::cursor_theme cursor_theme          = wl::cursor_theme::empty();
+            wl::cursor_theme cursor_theme_high_dpi = wl::cursor_theme::empty();
 
-            dynarray<std::pair<Keyboard, KeyboardState>> keyboards;
-            dynarray<std::pair<Pointer, PointerState>>   pointers;
-            dynarray<std::pair<Touch, TouchState>>       touchs;
+            dynarray<std::pair<keyboard, keyboard_state>> keyboards;
+            dynarray<std::pair<pointer, pointer_state>>   pointers;
+            dynarray<std::pair<touch, touch_state>>       touchs;
 
-            wl::RelativePointerManager relative_pointer_manager = wl::RelativePointerManager::empty();
+            wl::relative_pointer_manager relative_pointer_manager = wl::relative_pointer_manager::empty();
 
-            dynarray<WaylandMonitor> monitors;
+            dynarray<wayland_monitor> monitors;
 
-            dynarray<std::pair<wl_surface*, Window*>> windows;
+            dynarray<std::pair<wl_surface*, window*>> windows;
 
-            common::xkb::Context xkb_context = common::xkb::Context::empty();
+            common::xkb::context xkb_context = common::xkb::context::empty();
         };
 
         auto init() noexcept -> bool;
-        auto get_globals() noexcept -> Globals&;
-        auto get_monitor(Globals& _globals, void* output) noexcept -> Monitor&;
+        auto get_globals() noexcept -> wl_globals&;
+        auto get_monitor(wl_globals& globals, void* output) noexcept -> monitor&;
     } // namespace wl
 } // namespace stormkit::wsi::linux::wayland
 
 template<>
-inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::wsi::linux::wayland::wl::PointerState::Flag> = true;
+inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::wsi::linux::wayland::wl::pointer_state::flag> = true;

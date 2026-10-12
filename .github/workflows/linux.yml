@@ -83,7 +83,7 @@ jobs:
       matrix:
         os: [ubuntu-26.04]
         compiler: [llvm]
-        cpplib: [libc++]
+        cpplib: [libc++, libstdc++]
         arch: [x64]
         kind: [static, shared]
         mode: [releasedbg, debug]
@@ -123,9 +123,11 @@ jobs:
           dep_hash: ${{ steps.bootstrap.outputs.dep_hash }}
           cache_key: ${{ steps.bootstrap.outputs.cache_key }}
           additional_flags: |
-            ${{ case(matrix.compiler == 'llvm' && matrix.cpplib == 'libc++', '--sdk="/usr/lib/llvm-24"', '') }} \
+            ${{ case(matrix.compiler == 'llvm', '--sdk="/usr/lib/llvm-24"', '') }} \
+            ${{ case(matrix.compiler == 'llvm' && matrix.cpplib == 'libc++', '--runtimes="c++_static"', '') }} \
             ${{ case(matrix.compiler == 'llvm' && matrix.cpplib == 'libc++', '--ldflags="-fuse-ld=lld -L/usr/lib/llvm-24/lib/ -lc++abi" --shflags="-fuse-ld=lld -L/usr/lib/llvm-24/lib/ -lc++abi"', '') }} \
-            ${{ case(matrix.cpplib == 'libc++', '--runtimes="c++_static"', '') }}
+            ${{ case(matrix.compiler == 'llvm' && matrix.cpplib == 'libstdc++', '--runtimes="stdc++_static"', '') }} \
+            ${{ case(matrix.compiler == 'llvm' && matrix.cpplib == 'libstdc++', '--ldflags="-fuse-ld=lld -L/usr/lib/gcc/i686-linux-gnu/16/64/ -lstdc++exp" --shflags=" -L/usr/lib/gcc/i686-linux-gnu/16/64/ -lstdc++exp"', '') }}
 
       - name: Upload artifacts
         id: upload

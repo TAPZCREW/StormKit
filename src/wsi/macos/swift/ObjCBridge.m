@@ -3,6 +3,6 @@
 #if __cplusplus
 extern "C"
 #endif
-  void* toCPtr(CALayer* layer) {
-    return (__bridge void*)(layer);
+  const void* toCPtr(const CALayer* layer) {
+    return (__bridge const void*)(layer);
 }

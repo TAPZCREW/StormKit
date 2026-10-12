@@ -17,9 +17,11 @@ import stormkit.core.meta.concepts;
 import stormkit.core.meta.type_manipulation;
 
 export namespace stormkit { inline namespace core {
-    struct underlying;
-    struct empty;
-    struct error;
+    struct underlying {};
+
+    struct empty {};
+
+    struct error {};
 
     template<typename To>
     struct as_fn final {
@@ -40,9 +42,6 @@ export namespace stormkit { inline namespace core {
 
     template<typename To>
     inline constexpr auto as = as_fn<To> {};
-
-    static_assert(meta::is<as_fn<usize>, meta::remove_const_of<decltype(as<usize>)>>);
-    static_assert(meta::is<as_fn<usize>, meta::tag<as<usize>>>);
 
     template<typename To, typename From>
     [[nodiscard]]

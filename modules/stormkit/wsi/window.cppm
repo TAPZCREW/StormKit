@@ -13,6 +13,8 @@ export module stormkit.wsi:window;
 import std;
 
 import stormkit.core;
+import stormkit.math.extent;
+import stormkit.math.linear;
 
 import :core;
 import :monitor;
@@ -20,149 +22,157 @@ import :mouse;
 import :keyboard;
 
 namespace stormkit::wsi {
-    class WindowImpl;
+    class window_impl;
 }
 
 export {
     namespace stormkit { namespace wsi {
-        enum class WindowFlag : u8 {
-            // DEFAULT          = 0b0,
-            // BORDERLESS       = 0b1,
-            // RESIZEABLE       = 0b10,
-            // EXTERNAL_CONTEXT = 0b100,
-            DEFAULT          = 0b1,
-            BORDERLESS       = 0b10,
-            RESIZEABLE       = 0b100,
-            EXTERNAL_CONTEXT = 0b1000,
+        enum class window_flag : u8 {
+            standard         = 0b1,
+            borderless       = 0b10,
+            resizeable       = 0b100,
+            external_context = 0b1000,
         };
 
         [[nodiscard]]
-        constexpr auto tag_invoke(as_fn<string_view>, WindowFlag value, const std::source_location&) noexcept -> string_view;
+        constexpr auto tag_invoke(as_fn<string_view>, window_flag value, const std::source_location&) noexcept -> string_view;
 
-        enum class EventType : u8 {
-            NONE = 0,
-            CLOSED,
-            MONITOR_CHANGED,
-            RESIZED,
-            RESTORED,
-            MINIMIZED,
-            KEY_DOWN,
-            KEY_UP,
-            MOUSE_BUTTON_DOWN,
-            MOUSE_BUTTON_UP,
-            MOUSE_MOVED,
-            ACTIVATE,
-            DEACTIVATE,
-        };
-        constexpr auto as_string(EventType type) noexcept -> string_view;
-        constexpr auto to_string(EventType type) noexcept -> string;
-
-        using NativeHandle = void*;
-
-        struct ClosedEventFunc: std::function<bool()> {
-            using std::function<bool()>::function;
+        enum class event_type : u8 {
+            none = 0,
+            closed,
+            monitor_changed,
+            resized,
+            restored,
+            minimized,
+            key_down,
+            key_up,
+            mouse_button_down,
+            mouse_button_up,
+            mouse_moved,
+            activate,
+            deactivate,
         };
 
-        struct MonitorChangedEventFunc: std::function<void(const Monitor&)> {
-            using std::function<void(const Monitor&)>::function;
-        };
+        [[nodiscard]]
+        constexpr auto tag_invoke(as_fn<string_view>,
+                                  event_type value,
+                                  source_location_arg = std::source_location::current()) noexcept -> string_view;
 
-        struct ResizedEventFunc: std::function<void(const math::uextent2&)> {
-            using std::function<void(const math::uextent2&)>::function;
-        };
+        using native_handle_type = void*;
 
-        struct RestoredEventFunc: std::function<void()> {
-            using std::function<void()>::function;
-        };
-
-        struct MinimizedEventFunc: std::function<void()> {
-            using std::function<void()>::function;
-        };
-
-        struct KeyDownEventFunc: std::function<void(u8, Key, char)> {
-            using std::function<void(u8, Key, char)>::function;
-        };
-
-        struct KeyUpEventFunc: std::function<void(u8, Key, char)> {
-            using std::function<void(u8, Key, char)>::function;
-        };
-
-        struct MouseButtonDownEventFunc: std::function<void(u8, MouseButton, const math::ivec2&)> {
-            using std::function<void(u8, MouseButton, const math::ivec2&)>::function;
-        };
-
-        struct MouseButtonUpEventFunc: std::function<void(u8, MouseButton, const math::ivec2&)> {
-            using std::function<void(u8, MouseButton, const math::ivec2&)>::function;
-        };
-
-        struct MouseMovedEventFunc: std::function<void(u8, const math::ivec2&)> {
-            using std::function<void(u8, const math::ivec2&)>::function;
-        };
-
-        struct DeactivateEventFunc: std::function<void()> {
-            using std::function<void()>::function;
-        };
-
-        struct ActivateEventFunc: std::function<void()> {
-            using std::function<void()>::function;
-        };
+        using closed_event_cb_type
+          = strong_type<std23::move_only_function<bool()>, struct closed_event_cb_tag, "closed", capabilities::callable>;
+        using monitor_changed_event_cb_type = strong_type<std23::move_only_function<void(const monitor&)>,
+                                                          struct monitor_changed_event_cb_tag,
+                                                          "monitor_changed",
+                                                          capabilities::callable>;
+        using resized_event_cb_type         = strong_type<std23::move_only_function<void(const math::uextent2&)>,
+                                                          struct resized_event_cb_tag,
+                                                          "resized",
+                                                          capabilities::callable>;
+        using restored_event_cb_type
+          = strong_type<std23::move_only_function<void()>, struct restored_event_cb_tag, "restored", capabilities::callable>;
+        using minimized_event_cb_type
+          = strong_type<std23::move_only_function<void()>, struct minimized_event_cb_tag, "minimized", capabilities::callable>;
+        using key_down_event_cb_type          = strong_type<std23::move_only_function<void(u8, key, char)>,
+                                                            struct key_down_event_cb_tag,
+                                                            "key_down_event",
+                                                            capabilities::callable>;
+        using key_up_event_cb_type            = strong_type<std23::move_only_function<void(u8, key, char)>,
+                                                            struct key_up_event_cb_tag,
+                                                            "key_up_event",
+                                                            capabilities::callable>;
+        using mouse_button_down_event_cb_type = strong_type<std23::move_only_function<void(u8, mouse_button, const math::ivec2&)>,
+                                                            struct mouse_button_down_event_cb_tag,
+                                                            "mouse_button_down_event",
+                                                            capabilities::callable>;
+        using mouse_button_up_event_cb_type   = strong_type<std23::move_only_function<void(u8, mouse_button, const math::ivec2&)>,
+                                                            struct mouse_button_up_event_cb_tag,
+                                                            "mouse_button_up_event",
+                                                            capabilities::callable>;
+        using mouse_moved_event_cb_type       = strong_type<std23::move_only_function<void(u8, const math::ivec2&)>,
+                                                            struct mouse_moved_event_cb_tag,
+                                                            "mouse_moved",
+                                                            capabilities::callable>;
+        using deactivate_event_cb_type
+          = strong_type<std23::move_only_function<void()>, struct deactivate_event_cb_tag, "deactivate", capabilities::callable>;
+        using activate_event_cb_type
+          = strong_type<std23::move_only_function<void()>, struct activate_event_cb_tag, "activate", capabilities::callable>;
 
         template<typename T>
-        concept EventCallbackFunc = meta::IsConvertibleToOneOf<
-          T,
-          ClosedEventFunc,
-          MonitorChangedEventFunc,
-          ResizedEventFunc,
-          RestoredEventFunc,
-          MinimizedEventFunc,
-          KeyDownEventFunc,
-          KeyUpEventFunc,
-          MouseButtonDownEventFunc,
-          MouseButtonUpEventFunc,
-          MouseMovedEventFunc,
-          DeactivateEventFunc,
-          ActivateEventFunc>;
+        concept event_cb_type
+          = meta::is_any_of<T,
+                            closed_event_cb_type,
+                            monitor_changed_event_cb_type,
+                            resized_event_cb_type,
+                            restored_event_cb_type,
+                            minimized_event_cb_type,
+                            key_down_event_cb_type,
+                            key_up_event_cb_type,
+                            mouse_button_down_event_cb_type,
+                            mouse_button_up_event_cb_type,
+                            mouse_moved_event_cb_type,
+                            deactivate_event_cb_type,
+                            activate_event_cb_type>
+            or meta::convertible_to_any_of<
+              T,
+              closed_event_cb_type,
+              monitor_changed_event_cb_type,
+              resized_event_cb_type,
+              restored_event_cb_type,
+              minimized_event_cb_type,
+              key_down_event_cb_type,
+              key_up_event_cb_type,
+              mouse_button_down_event_cb_type,
+              mouse_button_up_event_cb_type,
+              mouse_moved_event_cb_type,
+              deactivate_event_cb_type,
+              activate_event_cb_type>;
 
-        class STORMKIT_WSI_API Window {
+        class STORMKIT_WSI_API window {
           public:
-            ~Window() noexcept;
+            ~window() noexcept;
 
-            Window(Window&&) noexcept;
-            auto operator=(Window&&) noexcept -> Window&;
+            window(const window&)                    = delete;
+            auto operator=(const window&) -> window& = delete;
+            window(window&&) noexcept;
+            auto operator=(window&&) noexcept -> window&;
 
-            static auto open(string title, const math::uextent2& size, WindowFlag flags) noexcept -> Window;
-            static auto allocate_and_open(string title, const math::uextent2& size, WindowFlag flags) noexcept
-              -> heap_ptr<Window>;
+            static auto open(const string& title, meta::in<math::uextent2> size, window_flag flags) noexcept -> window;
+            static auto open(string&& title, meta::in<math::uextent2> size, window_flag flags) noexcept -> window;
+            static auto allocate_and_open(string title, meta::in<math::uextent2> size, window_flag flags) noexcept
+              -> heap_ptr<window>;
 
             auto close() noexcept -> void;
             [[nodiscard]]
             auto is_open() const noexcept -> bool;
             auto handle_events() noexcept -> void;
 
-            auto clear(const ucolor_rgb& color = colors::BLACK<u8>) noexcept -> void;
+            auto clear(meta::in<ucolor_rgb> color = colors::BLACK<u8>) noexcept -> void;
             auto fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void;
 
-            template<EventCallbackFunc T>
+            template<event_cb_type T>
             auto on(T&& callback) noexcept -> void;
 
-            template<EventCallbackFunc... Ts>
+            template<event_cb_type... Ts>
                 requires(sizeof...(Ts) >= 2)
             auto on(Ts&&... callbacks) noexcept -> void;
 
-            template<EventType TYPE, EventCallbackFunc T>
+            template<event_type Type, std::invocable T>
             auto on(T&& callback) noexcept -> void;
 
             [[nodiscard]]
             auto visible() const noexcept -> bool;
 
             [[nodiscard]]
-            auto current_monitor() const noexcept -> const Monitor&;
+            auto current_monitor() const noexcept -> const monitor&;
 
             [[nodiscard]]
             auto title() const noexcept -> const string&;
-            auto set_title(string title) noexcept -> void;
+            auto set_title(const string& title) noexcept -> void;
+            auto set_title(string&& title) noexcept -> void;
 
-            auto set_extent(const math::uextent2& extent) noexcept -> void;
+            auto set_extent(meta::in<math::uextent2> extent) noexcept -> void;
 
             [[nodiscard]]
             auto extent() const noexcept -> const math::uextent2&;
@@ -172,34 +182,34 @@ export {
             [[nodiscard]]
             auto fullscreen() const noexcept -> bool;
 
-            auto confine_mouse(bool confined = true, u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
-            auto unconfine_mouse(u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
-            auto toggle_confined_mouse(u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
+            auto confine_mouse(bool confined = true, u8 mouse_id = global_mouse_id) noexcept -> void;
+            auto unconfine_mouse(u8 mouse_id = global_mouse_id) noexcept -> void;
+            auto toggle_confined_mouse(u8 mouse_id = global_mouse_id) noexcept -> void;
             [[nodiscard]]
-            auto is_mouse_confined(u8 mouse_id = GLOBAL_MOUSE_ID) const noexcept -> bool;
+            auto is_mouse_confined(u8 mouse_id = global_mouse_id) const noexcept -> bool;
 
-            auto lock_mouse(bool locked = true, u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
-            auto unlock_mouse(u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
-            auto toggle_locked_mouse(u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
+            auto lock_mouse(bool locked = true, u8 mouse_id = global_mouse_id) noexcept -> void;
+            auto unlock_mouse(u8 mouse_id = global_mouse_id) noexcept -> void;
+            auto toggle_locked_mouse(u8 mouse_id = global_mouse_id) noexcept -> void;
             [[nodiscard]]
-            auto is_mouse_locked(u8 mouse_id = GLOBAL_MOUSE_ID) const noexcept -> bool;
+            auto is_mouse_locked(u8 mouse_id = global_mouse_id) const noexcept -> bool;
 
-            auto hide_mouse(bool hidden = true, u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
-            auto unhide_mouse(u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
-            auto toggle_hidden_mouse(u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
+            auto hide_mouse(bool hidden = true, u8 mouse_id = global_mouse_id) noexcept -> void;
+            auto unhide_mouse(u8 mouse_id = global_mouse_id) noexcept -> void;
+            auto toggle_hidden_mouse(u8 mouse_id = global_mouse_id) noexcept -> void;
             [[nodiscard]]
-            auto is_mouse_hidden(u8 mouse_id = GLOBAL_MOUSE_ID) const noexcept -> bool;
+            auto is_mouse_hidden(u8 mouse_id = global_mouse_id) const noexcept -> bool;
 
-            auto set_relative_mouse(bool enabled = true, u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
-            auto toggle_relative_mouse(u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
+            auto set_relative_mouse(bool enabled = true, u8 mouse_id = global_mouse_id) noexcept -> void;
+            auto toggle_relative_mouse(u8 mouse_id = global_mouse_id) noexcept -> void;
             [[nodiscard]]
-            auto is_mouse_relative(u8 mouse_id = GLOBAL_MOUSE_ID) const noexcept -> bool;
+            auto is_mouse_relative(u8 mouse_id = global_mouse_id) const noexcept -> bool;
 
-            auto set_key_repeat(bool enabled = true, u8 keyboard_id = GLOBAL_KEYBOARD_ID) noexcept -> void;
-            auto disable_key_repeat(u8 keyboard_id = GLOBAL_KEYBOARD_ID) noexcept -> void;
-            auto toggle_key_repeat(u8 keyboard_id = GLOBAL_KEYBOARD_ID) noexcept -> void;
+            auto set_key_repeat(bool enabled = true, u8 keyboard_id = global_keyboard_id) noexcept -> void;
+            auto disable_key_repeat(u8 keyboard_id = global_keyboard_id) noexcept -> void;
+            auto toggle_key_repeat(u8 keyboard_id = global_keyboard_id) noexcept -> void;
             [[nodiscard]]
-            auto is_key_repeat_enabled(u8 keyboard_id = GLOBAL_KEYBOARD_ID) const noexcept -> bool;
+            auto is_key_repeat_enabled(u8 keyboard_id = global_keyboard_id) const noexcept -> bool;
 
             auto show_virtual_keyboard(bool visible = true) noexcept -> void;
             auto hide_virtual_keyboard() noexcept -> void;
@@ -207,41 +217,41 @@ export {
             [[nodiscard]]
             auto is_virtual_keyboard_visible() const noexcept -> bool;
 
-            auto set_mouse_position(const math::ivec2& position, u8 mouse_id = GLOBAL_MOUSE_ID) noexcept -> void;
+            auto set_mouse_position(meta::in<math::ivec2> position, u8 mouse_id = global_mouse_id) noexcept -> void;
 
             [[nodiscard]]
-            auto native_handle() const noexcept -> NativeHandle;
+            auto native_handle() const noexcept -> native_handle_type;
 
             [[nodiscard]]
-            auto wm() const noexcept -> WM;
+            auto wm() const noexcept -> window_manager;
 
             auto event_loop() noexcept -> void;
-            auto event_loop(std::invocable<> auto&& func) noexcept -> void;
+            auto event_loop(std23::function_ref<void()> func) noexcept -> void;
 
           private:
-            Window() noexcept;
+            window() noexcept;
 
-            auto on_closed(ClosedEventFunc&&) noexcept -> void;
-            auto on_monitor_changed(MonitorChangedEventFunc&&) noexcept -> void;
-            auto on_resized(ResizedEventFunc&&) noexcept -> void;
-            auto on_restored(RestoredEventFunc&&) noexcept -> void;
-            auto on_minimized(MinimizedEventFunc&&) noexcept -> void;
-            auto on_key_down(KeyDownEventFunc&&) noexcept -> void;
-            auto on_key_up(KeyUpEventFunc&&) noexcept -> void;
-            auto on_mouse_button_down(MouseButtonDownEventFunc&&) noexcept -> void;
-            auto on_mouse_button_up(MouseButtonUpEventFunc&&) noexcept -> void;
-            auto on_mouse_moved(MouseMovedEventFunc&&) noexcept -> void;
-            auto on_activate(ActivateEventFunc&&) noexcept -> void;
-            auto on_deactivate(DeactivateEventFunc&&) noexcept -> void;
+            auto on_closed(closed_event_cb_type&&) noexcept -> void;
+            auto on_monitor_changed(monitor_changed_event_cb_type&&) noexcept -> void;
+            auto on_resized(resized_event_cb_type&&) noexcept -> void;
+            auto on_restored(restored_event_cb_type&&) noexcept -> void;
+            auto on_minimized(minimized_event_cb_type&&) noexcept -> void;
+            auto on_key_down(key_down_event_cb_type&&) noexcept -> void;
+            auto on_key_up(key_up_event_cb_type&&) noexcept -> void;
+            auto on_mouse_button_down(mouse_button_down_event_cb_type&&) noexcept -> void;
+            auto on_mouse_button_up(mouse_button_up_event_cb_type&&) noexcept -> void;
+            auto on_mouse_moved(mouse_moved_event_cb_type&&) noexcept -> void;
+            auto on_activate(activate_event_cb_type&&) noexcept -> void;
+            auto on_deactivate(deactivate_event_cb_type&&) noexcept -> void;
 
-            WM m_wm;
+            window_manager m_wm;
 
-            pimpl<WindowImpl> m_impl;
+            pimpl<window_impl> m_impl;
         };
     }} // namespace stormkit::wsi
 
     template<>
-    inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::wsi::WindowFlag> = true;
+    inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::wsi::window_flag> = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -256,46 +266,40 @@ namespace stormkit::wsi {
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_string(WindowFlag flag) noexcept -> string_view {
-        using Pair                    = std::pair<WindowFlag, string_view>;
-        static constexpr auto MAPPING = core::generate_substitutions_as_string_for<WindowFlag, 4, WindowFlag::DEFAULT, 67>(
-          "WindowFlag::",
-          {
-            Pair { WindowFlag::DEFAULT,          "DEFAULT"sv          },
-            Pair { WindowFlag::BORDERLESS,       "BORDERLESS"sv       },
-            Pair { WindowFlag::RESIZEABLE,       "RESIZEABLE"sv       },
-            Pair { WindowFlag::EXTERNAL_CONTEXT, "EXTERNAL_CONTEXT"sv },
+    constexpr auto tag_invoke(as_fn<string_view>, window_flag flags, source_location_arg) noexcept -> string_view {
+        using pair                    = std::pair<window_flag, string_view>;
+        static constexpr auto mapping = core::generate_substitution_strings_for<window_flag, 4, window_flag::standard, 67>(
+          "window_flag::",
+          array {
+            pair { window_flag::standard,         "standard"sv         },
+            pair { window_flag::borderless,       "borderless"sv       },
+            pair { window_flag::resizeable,       "resizeable"sv       },
+            pair { window_flag::external_context, "external_context"sv },
         });
 
-        const auto it = stdr::find_if(MAPPING, [&flag](auto&& pair) { return pair.first == flag; });
-        ensures(it != stdr::cend(MAPPING));
+        const auto it = stdr::find_if(mapping, [flags](auto&& pair) { return pair.first == flags; });
+        ensures(it != stdr::cend(mapping));
+
         return it->second;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    constexpr auto to_string(WindowFlag flag) noexcept -> string {
-        return string { as_string(flag) };
-    }
-
-    ////////////////////////////////////////
-    ////////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto as_string(EventType type) noexcept -> string_view {
+    constexpr auto tag_invoke(as_fn<string_view>, event_type type, source_location_arg) noexcept -> string_view {
         switch (type) {
-            case EventType::NONE: return "EventType::NONE";
-            case EventType::CLOSED: return "EventType::CLOSED";
-            case EventType::RESIZED: return "EventType::RESIZED";
-            case EventType::RESTORED: return "EventType::RESTORED";
-            case EventType::MINIMIZED: return "EventType::MINIMIZED";
-            case EventType::KEY_DOWN: return "EventType::KEY_DOWN";
-            case EventType::KEY_UP: return "EventType::KEY_UP";
-            case EventType::MOUSE_BUTTON_DOWN: return "EventType::MOUSE_BUTTON_DOWN";
-            case EventType::MOUSE_BUTTON_UP: return "EventType::MOUSE_BUTTON_UP";
-            case EventType::MOUSE_MOVED: return "EventType::MOUSE_MOVED";
-            case EventType::ACTIVATE: return "EventType::ACTIVATE";
-            case EventType::DEACTIVATE: return "EventType::DEACTIVATE";
+            case event_type::none: return "event_type::none";
+            case event_type::closed: return "event_type::closed";
+            case event_type::resized: return "event_type::resized";
+            case event_type::restored: return "event_type::restored";
+            case event_type::minimized: return "event_type::minimized";
+            case event_type::key_down: return "event_type::key_down";
+            case event_type::key_up: return "event_type::key_up";
+            case event_type::mouse_button_down: return "event_type::mouse_button_down";
+            case event_type::mouse_button_up: return "event_type::mouse_button_up";
+            case event_type::mouse_moved: return "event_type::mouse_moved";
+            case event_type::activate: return "event_type::activate";
+            case event_type::deactivate: return "event_type::deactivate";
             default: break;
         }
 
@@ -304,175 +308,182 @@ namespace stormkit::wsi {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    constexpr auto to_string(EventType type) noexcept -> string {
-        return string { as_string(type) };
+    inline auto window::open(const string& title, meta::in<math::uextent2> size, window_flag flags) noexcept -> window {
+        return open(string { title }, size, flags);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<EventCallbackFunc T>
+    template<event_cb_type T>
     STORMKIT_FORCE_INLINE
-    inline auto Window::on(T&& callback) noexcept -> void {
-        if constexpr (meta::IsCanonical<ClosedEventFunc, T>) on_closed(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<MonitorChangedEventFunc, T>)
+    inline auto window::on(T&& callback) noexcept -> void {
+        if constexpr (meta::plain::is<closed_event_cb_type, T>) on_closed(std::forward<T>(callback));
+        else if constexpr (meta::plain::is<monitor_changed_event_cb_type, T>)
             on_monitor_changed(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<ResizedEventFunc, T>)
+        else if constexpr (meta::plain::is<resized_event_cb_type, T>)
             on_resized(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<RestoredEventFunc, T>)
+        else if constexpr (meta::plain::is<restored_event_cb_type, T>)
             on_restored(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<MinimizedEventFunc, T>)
+        else if constexpr (meta::plain::is<minimized_event_cb_type, T>)
             on_minimized(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<KeyDownEventFunc, T>)
+        else if constexpr (meta::plain::is<key_down_event_cb_type, T>)
             on_key_down(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<KeyUpEventFunc, T>)
+        else if constexpr (meta::plain::is<key_up_event_cb_type, T>)
             on_key_up(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<MouseButtonDownEventFunc, T>)
+        else if constexpr (meta::plain::is<mouse_button_down_event_cb_type, T>)
             on_mouse_button_down(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<MouseButtonUpEventFunc, T>)
+        else if constexpr (meta::plain::is<mouse_button_up_event_cb_type, T>)
             on_mouse_button_up(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<MouseMovedEventFunc, T>)
+        else if constexpr (meta::plain::is<mouse_moved_event_cb_type, T>)
             on_mouse_moved(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<ActivateEventFunc, T>)
+        else if constexpr (meta::plain::is<activate_event_cb_type, T>)
             on_activate(std::forward<T>(callback));
-        else if constexpr (meta::IsCanonical<DeactivateEventFunc, T>)
+        else if constexpr (meta::plain::is<deactivate_event_cb_type, T>)
             on_deactivate(std::forward<T>(callback));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<EventCallbackFunc... Ts>
+    template<event_cb_type... Ts>
         requires(sizeof...(Ts) >= 2)
     STORMKIT_FORCE_INLINE
-    inline auto Window::on(Ts&&... callbacks) noexcept -> void {
+    inline auto window::on(Ts&&... callbacks) noexcept -> void {
         (on(std::forward<Ts>(callbacks)), ...);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<EventType TYPE, EventCallbackFunc T>
+    template<event_type Type, std::invocable T>
     STORMKIT_FORCE_INLINE
-    inline auto Window::on(T&& callback) noexcept -> void {
-        if constexpr (TYPE == EventType::CLOSED) on_closed(std::forward<T>(callback));
-        else if constexpr (TYPE == EventType::MONITOR_CHANGED)
+    inline auto window::on(T&& callback) noexcept -> void {
+        if constexpr (Type == event_type::closed) {
+            static_assert(meta::constructible_from<closed_event_cb_type, T>);
+            on_closed(closed_event_cb_type { std::forward<T>(callback) });
+        } else if constexpr (Type == event_type::monitor_changed)
             on_monitor_changed(std::forward<T>(callback));
-        else if constexpr (TYPE == EventType::RESIZED)
+        else if constexpr (Type == event_type::resized)
             on_resized(std::forward<T>(callback));
-        else if constexpr (TYPE == EventType::RESTORED)
+        else if constexpr (Type == event_type::restored)
             on_restored(std::forward<T>(callback));
-        else if constexpr (TYPE == EventType::MINIMIZED)
+        else if constexpr (Type == event_type::minimized)
             on_minimized(std::forward<T>(callback));
-        else if constexpr (TYPE == EventType::KEY_DOWN)
+        else if constexpr (Type == event_type::key_down)
             on_key_down(std::forward<T>(callback));
-        else if constexpr (TYPE == EventType::KEY_UP)
+        else if constexpr (Type == event_type::key_up)
             on_key_up(std::forward<T>(callback));
-        else if constexpr (TYPE == EventType::MOUSE_BUTTON_DOWN)
+        else if constexpr (Type == event_type::mouse_button_down)
             on_mouse_button_down(std::forward<T>(callback));
-        else if constexpr (TYPE == EventType::MOUSE_BUTTON_UP)
+        else if constexpr (Type == event_type::mouse_button_up)
             on_mouse_button_up(std::forward<T>(callback));
-        else if constexpr (TYPE == EventType::MOUSE_MOVED)
+        else if constexpr (Type == event_type::mouse_moved)
             on_mouse_moved(std::forward<T>(callback));
-        else if constexpr (TYPE == EventType::ACTIVATE)
+        else if constexpr (Type == event_type::activate)
             on_activate(std::forward<T>(callback));
-        else if constexpr (TYPE == EventType::DEACTIVATE)
+        else if constexpr (Type == event_type::deactivate)
             on_deactivate(std::forward<T>(callback));
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    inline auto window::set_title(const string& title) noexcept -> void {
+        set_title(string { title });
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::toggle_fullscreen() noexcept -> void {
+    inline auto window::toggle_fullscreen() noexcept -> void {
         set_fullscreen(not fullscreen());
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::unconfine_mouse(u8 mouse_id) noexcept -> void {
+    inline auto window::unconfine_mouse(u8 mouse_id) noexcept -> void {
         confine_mouse(false, mouse_id);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::toggle_confined_mouse(u8 mouse_id) noexcept -> void {
+    inline auto window::toggle_confined_mouse(u8 mouse_id) noexcept -> void {
         confine_mouse(not is_mouse_confined(mouse_id), mouse_id);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::unlock_mouse(u8 mouse_id) noexcept -> void {
+    inline auto window::unlock_mouse(u8 mouse_id) noexcept -> void {
         lock_mouse(false, mouse_id);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::toggle_locked_mouse(u8 mouse_id) noexcept -> void {
+    inline auto window::toggle_locked_mouse(u8 mouse_id) noexcept -> void {
         lock_mouse(not is_mouse_locked(mouse_id), mouse_id);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::unhide_mouse(u8 mouse_id) noexcept -> void {
+    inline auto window::unhide_mouse(u8 mouse_id) noexcept -> void {
         hide_mouse(false, mouse_id);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::toggle_hidden_mouse(u8 mouse_id) noexcept -> void {
+    inline auto window::toggle_hidden_mouse(u8 mouse_id) noexcept -> void {
         hide_mouse(not is_mouse_hidden(mouse_id), mouse_id);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::toggle_relative_mouse(u8 mouse_id) noexcept -> void {
+    inline auto window::toggle_relative_mouse(u8 mouse_id) noexcept -> void {
         set_relative_mouse(not is_mouse_relative(mouse_id), mouse_id);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::toggle_key_repeat(u8 keyboard_id) noexcept -> void {
+    inline auto window::toggle_key_repeat(u8 keyboard_id) noexcept -> void {
         set_key_repeat(not is_key_repeat_enabled(keyboard_id), keyboard_id);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::hide_virtual_keyboard() noexcept -> void {
+    inline auto window::hide_virtual_keyboard() noexcept -> void {
         show_virtual_keyboard(false);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::toggle_virtual_keyboard() noexcept -> void {
+    inline auto window::toggle_virtual_keyboard() noexcept -> void {
         show_virtual_keyboard(not is_virtual_keyboard_visible());
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::wm() const noexcept -> WM {
+    inline auto window::wm() const noexcept -> window_manager {
         return m_wm;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::event_loop() noexcept -> void {
+    inline auto window::event_loop() noexcept -> void {
         event_loop(monadic::noop());
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    inline auto Window::event_loop(std::invocable<> auto&& func) noexcept -> void {
+    inline auto window::event_loop(std23::function_ref<void()> func) noexcept -> void {
         while (is_open()) {
             func();
 

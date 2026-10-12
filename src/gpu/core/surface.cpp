@@ -68,10 +68,10 @@ namespace stormkit::gpu {
         };
 #elif defined(STORMKIT_OS_LINUX)
         const auto make_wayland_surface = [&window, &instance] {
-            struct Handles {
+            struct handles {
                 wl_display* display;
                 wl_surface* surface;
-            }* handles = std::bit_cast<Handles*>(window.native_handle());
+            }* handles = std::bit_cast<handles*>(window.native_handle());
 
             const auto create_info = VkWaylandSurfaceCreateInfoKHR {
                 .sType   = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR,
@@ -83,12 +83,12 @@ namespace stormkit::gpu {
             return vk::call_checked<VkSurfaceKHR>(vkCreateWaylandSurfaceKHR, instance, &create_info, nullptr);
         };
         const auto make_xcb_surface = [&window, &instance] {
-            struct Handles {
+            struct handles {
                 xcb_connection_t* connection;
                 xcb_window_t      window;
                 void*             key_symbols;
                 void*             state;
-            }* handles = reinterpret_cast<Handles*>(window.native_handle());
+            }* handles = reinterpret_cast<handles*>(window.native_handle());
 
             const auto create_info = VkXcbSurfaceCreateInfoKHR {
                 .sType      = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR,
@@ -102,7 +102,7 @@ namespace stormkit::gpu {
 
         const auto create_surface =
           [&window, &make_wayland_surface, &make_xcb_surface] noexcept -> std23::function_ref<expected<VkSurfaceKHR>()> {
-            const auto is_wayland = window.wm() == wsi::WM::WAYLAND;
+            const auto is_wayland = window.wm() == wsi::window_manager::wayland;
 
             if (is_wayland) return make_wayland_surface;
 
@@ -117,7 +117,7 @@ namespace stormkit::gpu {
                 .flags = 0,
                 .pView = window->native_handle()
             };
-            CHECK_VK_ERROR(vkCreateIOSSurfaceMVK(m_instance, &create_info, &m_surface));
+            CHECK_VK_ERROR(vkCreateIOSSurfaceMVK(m_instance, &create_info, &surface_));
         };
 #else
         const auto create_surface = [] static noexcept {};
