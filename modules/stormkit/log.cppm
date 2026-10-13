@@ -22,11 +22,11 @@ export {
     namespace stormkit::log {
         struct module;
         enum class severity : u8 {
-            INFO    = 1 << 0,
-            WARNING = 1 << 1,
-            ERROR   = 1 << 2,
-            FATAL   = 1 << 3,
-            DEBUG   = 1 << 4,
+            info    = 1 << 0,
+            warning = 1 << 1,
+            error   = 1 << 2,
+            fatal   = 1 << 3,
+            debug   = 1 << 4,
         };
 
         [[nodiscard]]
@@ -137,10 +137,10 @@ export {
             static auto instance() noexcept -> logger&;
 
           protected:
-            clock_type::time_point m_start_time;
-            severity               m_severity_mask;
+            clock_type::time_point start_time_;
+            severity               severity_mask_;
 
-            std::mutex m_mutex;
+            std::mutex mutex_;
         };
 
         struct module {
@@ -191,9 +191,9 @@ export {
             auto flush() noexcept -> void override;
 
           private:
-            string_hash_map<std::ofstream> m_streams;
+            string_hash_map<std::ofstream> streams_;
 
-            stdfs::path m_base_path;
+            stdfs::path base_path_;
         };
 
         class STORMKIT_LOG_API console_logger final: public logger {
@@ -227,11 +227,11 @@ namespace stormkit::log {
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto tag_invoke(as_fn<string_view>, severity severity, source_location_arg) noexcept -> string_view {
         switch (severity) {
-            case severity::INFO: return "INFO";
-            case severity::WARNING: return "WARNING";
-            case severity::ERROR: return "ERROR";
-            case severity::FATAL: return "FATAL";
-            case severity::DEBUG: return "DEBUG";
+            case severity::info: return "INFO";
+            case severity::warning: return "WARNING";
+            case severity::error: return "ERROR";
+            case severity::fatal: return "FATAL";
+            case severity::debug: return "DEBUG";
             default: break;
         }
 
@@ -242,28 +242,28 @@ namespace stormkit::log {
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto logger::set_severity_mask(severity mask) noexcept -> void {
-        m_severity_mask = mask;
+        severity_mask_ = mask;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto logger::start_time() const noexcept -> const clock_type::time_point& {
-        return m_start_time;
+        return start_time_;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto logger::severity_mask() const noexcept -> severity {
-        return m_severity_mask;
+        return severity_mask_;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto logger::mutex() noexcept -> std::mutex& {
-        return m_mutex;
+        return mutex_;
     }
 
     ////////////////////////////////////////
@@ -401,7 +401,7 @@ namespace stormkit::log {
     template<class... Ts>
     STORMKIT_FORCE_INLINE
     inline auto logger::dlog(std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
-        log(severity::DEBUG, std::move(format_string), std::forward<Ts>(args)...);
+        log(severity::debug, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -409,7 +409,7 @@ namespace stormkit::log {
     template<class... Ts>
     STORMKIT_FORCE_INLINE
     inline auto logger::ilog(std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
-        log(severity::INFO, std::move(format_string), std::forward<Ts>(args)...);
+        log(severity::info, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -417,7 +417,7 @@ namespace stormkit::log {
     template<class... Ts>
     STORMKIT_FORCE_INLINE
     inline auto logger::wlog(std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
-        log(severity::WARNING, std::move(format_string), std::forward<Ts>(args)...);
+        log(severity::warning, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -425,7 +425,7 @@ namespace stormkit::log {
     template<class... Ts>
     STORMKIT_FORCE_INLINE
     inline auto logger::elog(std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
-        log(severity::ERROR, std::move(format_string), std::forward<Ts>(args)...);
+        log(severity::error, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -433,7 +433,7 @@ namespace stormkit::log {
     template<class... Ts>
     STORMKIT_FORCE_INLINE
     inline auto logger::flog(std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
-        log(severity::FATAL, std::move(format_string), std::forward<Ts>(args)...);
+        log(severity::fatal, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -441,7 +441,7 @@ namespace stormkit::log {
     template<class... Ts>
     STORMKIT_FORCE_INLINE
     inline auto logger::dlog(const module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
-        log(severity::DEBUG, module, std::move(format_string), std::forward<Ts>(args)...);
+        log(severity::debug, module, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -449,7 +449,7 @@ namespace stormkit::log {
     template<class... Ts>
     STORMKIT_FORCE_INLINE
     inline auto logger::ilog(const module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
-        log(severity::INFO, module, std::move(format_string), std::forward<Ts>(args)...);
+        log(severity::info, module, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -457,7 +457,7 @@ namespace stormkit::log {
     template<class... Ts>
     STORMKIT_FORCE_INLINE
     inline auto logger::wlog(const module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
-        log(severity::WARNING, module, std::move(format_string), std::forward<Ts>(args)...);
+        log(severity::warning, module, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -465,7 +465,7 @@ namespace stormkit::log {
     template<class... Ts>
     STORMKIT_FORCE_INLINE
     inline auto logger::elog(const module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
-        log(severity::ERROR, module, std::move(format_string), std::forward<Ts>(args)...);
+        log(severity::error, module, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -473,7 +473,7 @@ namespace stormkit::log {
     template<class... Ts>
     STORMKIT_FORCE_INLINE
     inline auto logger::flog(const module& module, std::format_string<Ts...> format_string, Ts&&... args) noexcept -> void {
-        log(severity::FATAL, module, std::move(format_string), std::forward<Ts>(args)...);
+        log(severity::fatal, module, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -481,7 +481,7 @@ namespace stormkit::log {
     template<class... Ts>
     STORMKIT_FORCE_INLINE
     inline auto logger::dlog_runtime(string_view format_string, Ts&&... args) noexcept -> void {
-        log_runtime(severity::DEBUG, std::move(format_string), std::forward<Ts>(args)...);
+        log_runtime(severity::debug, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -489,7 +489,7 @@ namespace stormkit::log {
     template<class... Ts>
     STORMKIT_FORCE_INLINE
     inline auto logger::ilog_runtime(string_view format_string, Ts&&... args) noexcept -> void {
-        log_runtime(severity::INFO, std::move(format_string), std::forward<Ts>(args)...);
+        log_runtime(severity::info, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -497,7 +497,7 @@ namespace stormkit::log {
     template<class... Ts>
     STORMKIT_FORCE_INLINE
     inline auto logger::wlog_runtime(string_view format_string, Ts&&... args) noexcept -> void {
-        log_runtime(severity::WARNING, std::move(format_string), std::forward<Ts>(args)...);
+        log_runtime(severity::warning, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -505,7 +505,7 @@ namespace stormkit::log {
     template<class... Ts>
     STORMKIT_FORCE_INLINE
     inline auto logger::elog_runtime(string_view format_string, Ts&&... args) noexcept -> void {
-        log_runtime(severity::ERROR, std::move(format_string), std::forward<Ts>(args)...);
+        log_runtime(severity::error, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -513,7 +513,7 @@ namespace stormkit::log {
     template<class... Ts>
     STORMKIT_FORCE_INLINE
     inline auto logger::flog_runtime(string_view format_string, Ts&&... args) noexcept -> void {
-        log_runtime(severity::FATAL, std::move(format_string), std::forward<Ts>(args)...);
+        log_runtime(severity::fatal, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -521,7 +521,7 @@ namespace stormkit::log {
     template<class... Ts>
     STORMKIT_FORCE_INLINE
     inline auto logger::dlog_runtime(const module& module, string_view format_string, Ts&&... args) noexcept -> void {
-        log_runtime(severity::DEBUG, module, std::move(format_string), std::forward<Ts>(args)...);
+        log_runtime(severity::debug, module, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -529,7 +529,7 @@ namespace stormkit::log {
     template<class... Ts>
     STORMKIT_FORCE_INLINE
     inline auto logger::ilog_runtime(const module& module, string_view format_string, Ts&&... args) noexcept -> void {
-        log_runtime(severity::INFO, module, std::move(format_string), std::forward<Ts>(args)...);
+        log_runtime(severity::info, module, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -537,7 +537,7 @@ namespace stormkit::log {
     template<class... Ts>
     STORMKIT_FORCE_INLINE
     inline auto logger::wlog_runtime(const module& module, string_view format_string, Ts&&... args) noexcept -> void {
-        log_runtime(severity::WARNING, module, std::move(format_string), std::forward<Ts>(args)...);
+        log_runtime(severity::warning, module, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -545,7 +545,7 @@ namespace stormkit::log {
     template<class... Ts>
     STORMKIT_FORCE_INLINE
     inline auto logger::elog_runtime(const module& module, string_view format_string, Ts&&... args) noexcept -> void {
-        log_runtime(severity::ERROR, module, std::move(format_string), std::forward<Ts>(args)...);
+        log_runtime(severity::error, module, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -553,7 +553,7 @@ namespace stormkit::log {
     template<class... Ts>
     STORMKIT_FORCE_INLINE
     inline auto logger::flog_runtime(const module& module, string_view format_string, Ts&&... args) noexcept -> void {
-        log_runtime(severity::FATAL, module, std::move(format_string), std::forward<Ts>(args)...);
+        log_runtime(severity::fatal, module, std::move(format_string), std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -651,5 +651,5 @@ namespace stormkit::log {
         return module { str };
     }
 
-    auto test = std::format("{}", severity::INFO);
+    auto test = std::format("{}", severity::info);
 } // namespace stormkit::log
