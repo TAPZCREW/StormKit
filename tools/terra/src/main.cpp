@@ -32,7 +32,7 @@ auto main(const array_view<const string_view> args) noexcept -> int {
         return stdfs::path { args[2] };
     }();
 
-    const auto template_data = TryXAssert(io::readfile<io::open_mode::AINSI>(template_path),
+    const auto template_data = TryXAssert(io::readfile<io::open_mode::ainsi>(template_path),
                                           std::format("Failed to read file {}, reason: ", template_path.string()));
 
     auto out = string {};

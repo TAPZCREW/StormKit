@@ -27,9 +27,9 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     auto assert_base(bool cond, assert_type type, string_view message, const std::source_location& location) noexcept -> void {
         if constexpr (STORMKIT_ASSERT == 1) {
-            constexpr auto ASSERTION_PREFIX = console_style {
-                .fg        = console_color::BRIGHT_RED,
-                .modifiers = style_modifier::BOLD | style_modifier::INVERSE
+            static constexpr auto assertion_prefix = console_style {
+                .fg        = console_color::bright_red,
+                .modifiers = style_modifier::bold | style_modifier::inverse
             } | "[Assertion]"sv;
             if (not cond) [[unlikely]] {
                 auto lock = std::unique_lock { mutex };
@@ -38,13 +38,13 @@ namespace stormkit { inline namespace core {
                              "    > file:     {}:{}:{}\n"
                              "      function: {}\n"
                              "      reason:   {}",
-                             ASSERTION_PREFIX,
+                             assertion_prefix,
                              as_string(type),
-                             console_style { .fg = console_color::GREEN } | location.file_name(),
-                             console_style { .fg = console_color::BLUE } | location.line(),
-                             console_style { .fg = console_color::BLUE } | location.column(),
-                             console_style { .fg = console_color::YELLOW } | location.function_name(),
-                             console_style { .fg = console_color::RED, .modifiers = style_modifier::BOLD } | message);
+                             console_style { .fg = console_color::green } | location.file_name(),
+                             console_style { .fg = console_color::blue } | location.line(),
+                             console_style { .fg = console_color::blue } | location.column(),
+                             console_style { .fg = console_color::yellow } | location.function_name(),
+                             console_style { .fg = console_color::red, .modifiers = style_modifier::bold } | message);
                 std::fflush(get_stderr());
 #if defined(__cpp_lib_debugging) and __cpp_lib_debugging >= 202311L
                 if (std::is_debugger_present()) { std::breakpoint(); }

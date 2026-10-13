@@ -63,6 +63,8 @@ namespace stdr = std::ranges;
 namespace stdv = std::views;
 
 namespace stormkit { inline namespace core {
+    /////////////////////////////////////
+    /////////////////////////////////////
     template<meta::arithmetic T>
     STORMKIT_FORCE_INLINE
     constexpr auto range(const numeric_range<T>& nrange) noexcept -> decltype(auto) {

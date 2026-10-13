@@ -84,7 +84,7 @@ namespace stormkit { inline namespace core {
         {
             if constexpr (meta::arithmetic<From> and meta::arithmetic<To>)
                 return (static_cast<From>(static_cast<To>(from)) == from)
-                       or (meta::signed_type<To> != meta::unsigned_type<From>
+                       or (meta::signed_integer<To> != meta::unsigned_integer<From>
                            and ((static_cast<To>(from) < To {}) == (from < From {})));
             else
                 return (static_cast<From>(static_cast<To>(from)) == from);

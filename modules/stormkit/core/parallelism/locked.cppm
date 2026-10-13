@@ -18,8 +18,8 @@ import stormkit.core.typesafe;
 namespace stormkit { inline namespace core {
     export {
         enum class lock_access_mode : u8 {
-            READ_ONLY,
-            READ_WRITE,
+            read_only,
+            read_write,
         };
     }
 
@@ -61,27 +61,27 @@ namespace stormkit { inline namespace core {
             using reference       = value_type&;
             using const_reference = const value_type&;
             template<typename Self>
-            using conditional_reference = meta::conditional<meta::const_type<Self>, const_reference, reference>;
-            template<lock_access_mode MODE>
-            using mode_conditional_reference = meta::conditional<MODE == lock_access_mode::READ_ONLY, const_reference, reference>;
+            using conditional_reference = meta::conditional<meta::const_qualified<Self>, const_reference, reference>;
+            template<lock_access_mode Mode>
+            using mode_conditional_reference = meta::conditional<Mode == lock_access_mode::read_only, const_reference, reference>;
             using pointer                    = ref_ptr<value_type>;
             using const_pointer              = ref_ptr<const value_type>;
-            template<lock_access_mode MODE>
-            using mode_conditional_pointer = meta::conditional<MODE == lock_access_mode::READ_ONLY, const_pointer, pointer>;
+            template<lock_access_mode Mode>
+            using mode_conditional_pointer = meta::conditional<Mode == lock_access_mode::read_only, const_pointer, pointer>;
             using mutex_type               = Mutex;
 
             using copy_param_type = meta::in<stored_type>;
             using move_param_type = meta::take<stored_type>;
 
           private:
-            template<template<class> typename Lock, lock_access_mode MODE>
+            template<template<class> typename Lock, lock_access_mode Mode>
             class accessor;
 
           public:
             template<template<class> typename Lock>
-            using read_access = accessor<Lock, lock_access_mode::READ_ONLY>;
+            using read_access = accessor<Lock, lock_access_mode::read_only>;
             template<template<class> typename Lock>
-            using write_access = accessor<Lock, lock_access_mode::READ_WRITE>;
+            using write_access = accessor<Lock, lock_access_mode::read_write>;
 
             locked() noexcept(meta::noexcept_default_constructible<stored_type>);
 
@@ -105,16 +105,16 @@ namespace stormkit { inline namespace core {
 
             ~locked() noexcept;
 
-            template<lock_access_mode MODE, template<class> typename Lock, typename... LockTs, typename Self>
-            auto access(this Self& self, LockTs&&... lock_args) noexcept -> accessor<Lock, MODE>;
+            template<lock_access_mode Mode, template<class> typename Lock, typename... LockTs, typename Self>
+            auto access(this Self& self, LockTs&&... lock_args) noexcept -> accessor<Lock, Mode>;
 
-            template<lock_access_mode                                 MODE,
-                     std::invocable<mode_conditional_reference<MODE>> Closure,
+            template<lock_access_mode                                 Mode,
+                     std::invocable<mode_conditional_reference<Mode>> Closure,
                      template<class> typename Lock,
                      typename... LockTs,
                      typename Self>
             auto access(this Self& self, Closure&& closure, LockTs&&... lock_args) noexcept
-              -> std::invoke_result_t<Closure, mode_conditional_reference<MODE>>;
+              -> std::invoke_result_t<Closure, mode_conditional_reference<Mode>>;
 
             template<template<class> typename Lock = details::default_read_only_lock, typename... LockTs>
             auto read(LockTs&&... lock_args) const noexcept -> read_access<Lock>;
@@ -149,18 +149,18 @@ namespace stormkit { inline namespace core {
             auto mutex() const noexcept -> mutex_type&;
 
           private:
-            template<template<class> typename Lock, lock_access_mode MODE>
+            template<template<class> typename Lock, lock_access_mode Mode>
             class accessor {
               public:
-                using pointer       = mode_conditional_pointer<MODE>;
-                using const_pointer = mode_conditional_pointer<lock_access_mode::READ_ONLY>;
+                using pointer       = mode_conditional_pointer<Mode>;
+                using const_pointer = mode_conditional_pointer<lock_access_mode::read_only>;
                 template<typename U>
-                using conditional_pointer = meta::conditional<meta::const_type<U>, const_pointer, pointer>;
-                using reference           = mode_conditional_reference<MODE>;
-                using const_reference     = mode_conditional_reference<lock_access_mode::READ_ONLY>;
+                using conditional_pointer = meta::conditional<meta::const_qualified<U>, const_pointer, pointer>;
+                using reference           = mode_conditional_reference<Mode>;
+                using const_reference     = mode_conditional_reference<lock_access_mode::read_only>;
                 template<typename U>
-                using conditional_reference = meta::conditional<meta::const_type<U>, const_reference, reference>;
-                using locked_reference      = meta::conditional<MODE == lock_access_mode::READ_ONLY, const locked&, locked&>;
+                using conditional_reference = meta::conditional<meta::const_qualified<U>, const_reference, reference>;
+                using locked_reference      = meta::conditional<Mode == lock_access_mode::read_only, const locked&, locked&>;
 
                 template<typename... LockTs>
                 accessor(reference value, mutex_type& mutex, LockTs&&... args) noexcept;
@@ -186,11 +186,11 @@ namespace stormkit { inline namespace core {
                 mutable Lock<mutex_type> lock;
 
               private:
-                pointer m_value;
+                pointer value_;
             };
 
-            mutable mutex_type m_mutex;
-            T m_value          STORMKIT_GUARDED_BY(m_mutex);
+            mutable mutex_type mutex_;
+            T value_           STORMKIT_GUARDED_BY(mutex_);
         };
 
         template<typename T>
@@ -217,7 +217,7 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     inline locked<T, Mutex>::locked(copy_param_type value) noexcept(meta::noexcept_copyable<stored_type>)
         requires(meta::copyable<stored_type>)
-        : m_value { value } {
+        : value_ { value } {
     }
 
     ////////////////////////////////////////
@@ -227,7 +227,7 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     inline locked<T, Mutex>::locked(move_param_type value) noexcept(meta::noexcept_movable<stored_type>)
         requires(meta::movable<stored_type>)
-        : m_value { std::move(value) } {
+        : value_ { std::move(value) } {
     }
 
     ////////////////////////////////////////
@@ -238,7 +238,7 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     inline locked<T, Mutex>::locked(std::in_place_t, Ts&&... args) noexcept(meta::noexcept_constructible_from<stored_type, Ts...>)
         requires(meta::constructible_from<stored_type, Ts...>)
-        : m_value { std::forward<Ts>(args)... } {
+        : value_ { std::forward<Ts>(args)... } {
     }
 
     ////////////////////////////////////////
@@ -251,7 +251,7 @@ namespace stormkit { inline namespace core {
     {
         auto _ = other.write();
 
-        m_value = std::move(other.m_value);
+        value_ = std::move(other.value_);
     }
 
     ////////////////////////////////////////
@@ -284,32 +284,32 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<meta::is_decayed T, class Mutex>
         requires(meta::destructible<T>)
-    template<lock_access_mode MODE, template<class> typename Lock, typename... LockTs, typename Self>
+    template<lock_access_mode Mode, template<class> typename Lock, typename... LockTs, typename Self>
     STORMKIT_FORCE_INLINE
-    inline auto locked<T, Mutex>::access(this Self& self, LockTs&&... lock_args) noexcept -> accessor<Lock, MODE> {
-        static_assert(not(MODE == lock_access_mode::READ_WRITE and meta::const_type<Self>),
+    inline auto locked<T, Mutex>::access(this Self& self, LockTs&&... lock_args) noexcept -> accessor<Lock, Mode> {
+        static_assert(not(Mode == lock_access_mode::read_write and meta::const_qualified<Self>),
                       "can't get read access on const locked<T>");
 
-        if constexpr (meta::wrapped_value<stored_type> and meta::boolean_testable<stored_type>) expects(self.m_value != false);
+        if constexpr (meta::wrapped_value<stored_type> and meta::boolean_testable<stored_type>) expects(self.value_ != false);
         else if constexpr (meta::pointer<stored_type>)
-            expects(self.m_value != nullptr);
+            expects(self.value_ != nullptr);
 
-        return accessor<Lock, MODE> { std::forward<Self&>(self), std::forward<LockTs>(lock_args)... };
+        return accessor<Lock, Mode> { std::forward<Self&>(self), std::forward<LockTs>(lock_args)... };
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::is_decayed T, class Mutex>
         requires(meta::destructible<T>)
-    template<lock_access_mode                                                                     MODE,
-             std::invocable<typename locked<T, Mutex>::template mode_conditional_reference<MODE>> Closure,
+    template<lock_access_mode                                                                     Mode,
+             std::invocable<typename locked<T, Mutex>::template mode_conditional_reference<Mode>> Closure,
              template<class> typename Lock,
              typename... LockTs,
              typename Self>
     STORMKIT_FORCE_INLINE
     inline auto locked<T, Mutex>::access(this Self& self, Closure&& closure, LockTs&&... lock_args) noexcept
-      -> std::invoke_result_t<Closure, mode_conditional_reference<MODE>> {
-        auto access_ = self.template access<MODE, Lock>(std::forward<LockTs>(lock_args)...);
+      -> std::invoke_result_t<Closure, mode_conditional_reference<Mode>> {
+        auto access_ = self.template access<Mode, Lock>(std::forward<LockTs>(lock_args)...);
         return std::invoke(std::forward<Closure>(closure), *access_);
     }
 
@@ -320,7 +320,7 @@ namespace stormkit { inline namespace core {
     template<template<class> typename Lock, typename... LockTs>
     STORMKIT_FORCE_INLINE
     inline auto locked<T, Mutex>::read(LockTs&&... lock_args) const noexcept -> read_access<Lock> {
-        return access<lock_access_mode::READ_ONLY, Lock>(std::forward<LockTs>(lock_args)...);
+        return access<lock_access_mode::read_only, Lock>(std::forward<LockTs>(lock_args)...);
     }
 
     ////////////////////////////////////////
@@ -333,7 +333,7 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     inline auto locked<T, Mutex>::read(Closure&& closure, LockTs&&... lock_args) const noexcept
       -> std::invoke_result_t<Closure, const_reference> {
-        return access<lock_access_mode::READ_ONLY, Closure, Lock>(std::forward<Closure>(closure),
+        return access<lock_access_mode::read_only, Closure, Lock>(std::forward<Closure>(closure),
                                                                   std::forward<LockTs>(lock_args)...);
     }
 
@@ -344,7 +344,7 @@ namespace stormkit { inline namespace core {
     template<template<class> typename Lock, typename... LockTs>
     STORMKIT_FORCE_INLINE
     inline auto locked<T, Mutex>::write(LockTs&&... lock_args) noexcept -> write_access<Lock> {
-        return access<lock_access_mode::READ_WRITE, Lock>(std::forward<LockTs>(lock_args)...);
+        return access<lock_access_mode::read_write, Lock>(std::forward<LockTs>(lock_args)...);
     }
 
     ////////////////////////////////////////
@@ -355,7 +355,7 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     inline auto locked<T, Mutex>::write(Closure&& closure, LockTs&&... lock_args) noexcept
       -> std::invoke_result_t<Closure, reference> {
-        return access<lock_access_mode::READ_WRITE, Closure, Lock>(std::forward<Closure>(closure),
+        return access<lock_access_mode::read_write, Closure, Lock>(std::forward<Closure>(closure),
                                                                    std::forward<LockTs>(lock_args)...);
     }
 
@@ -404,7 +404,7 @@ namespace stormkit { inline namespace core {
     template<typename Self>
     STORMKIT_FORCE_INLINE
     inline auto locked<T, Mutex>::unsafe(this Self& self) noexcept -> conditional_reference<Self> {
-        return std::forward_like<Self&>(self.m_value);
+        return std::forward_like<Self&>(self.value_);
     }
 
     ////////////////////////////////////////
@@ -413,75 +413,75 @@ namespace stormkit { inline namespace core {
         requires(meta::destructible<T>)
     STORMKIT_FORCE_INLINE
     inline auto locked<T, Mutex>::mutex() const noexcept -> mutex_type& {
-        return m_mutex;
+        return mutex_;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::is_decayed T, class Mutex>
         requires(meta::destructible<T>)
-    template<template<class> typename Lock, lock_access_mode MODE>
+    template<template<class> typename Lock, lock_access_mode Mode>
     template<typename... LockTs>
     STORMKIT_FORCE_INLINE
-    inline locked<T, Mutex>::accessor<Lock, MODE>::accessor(reference value, mutex_type& mutex, LockTs&&... lock_args) noexcept
-        : lock { mutex, std::forward<LockTs>(lock_args)... }, m_value { value } {
+    inline locked<T, Mutex>::accessor<Lock, Mode>::accessor(reference value, mutex_type& mutex, LockTs&&... lock_args) noexcept
+        : lock { mutex, std::forward<LockTs>(lock_args)... }, value_ { value } {
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::is_decayed T, class Mutex>
         requires(meta::destructible<T>)
-    template<template<class> typename Lock, lock_access_mode MODE>
+    template<template<class> typename Lock, lock_access_mode Mode>
     template<typename... LockTs>
     STORMKIT_FORCE_INLINE
-    inline locked<T, Mutex>::accessor<Lock, MODE>::accessor(locked_reference locked, LockTs&&... lock_args) noexcept
+    inline locked<T, Mutex>::accessor<Lock, Mode>::accessor(locked_reference locked, LockTs&&... lock_args) noexcept
         requires(not meta::wrapped_value<T> and not meta::pointer<T>)
-        : accessor { locked.m_value, locked.m_mutex, std::forward<LockTs>(lock_args)... } {
+        : accessor { locked.value_, locked.mutex_, std::forward<LockTs>(lock_args)... } {
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::is_decayed T, class Mutex>
         requires(meta::destructible<T>)
-    template<template<class> typename Lock, lock_access_mode MODE>
+    template<template<class> typename Lock, lock_access_mode Mode>
     template<typename... LockTs>
     STORMKIT_FORCE_INLINE
-    inline locked<T, Mutex>::accessor<Lock, MODE>::accessor(locked_reference locked, LockTs&&... lock_args) noexcept
+    inline locked<T, Mutex>::accessor<Lock, Mode>::accessor(locked_reference locked, LockTs&&... lock_args) noexcept
         requires(meta::wrapped_value<T>)
-        : accessor { locked.m_value.value(), locked.m_mutex, std::forward<LockTs>(lock_args)... } {
+        : accessor { locked.value_.value(), locked.mutex_, std::forward<LockTs>(lock_args)... } {
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::is_decayed T, class Mutex>
         requires(meta::destructible<T>)
-    template<template<class> typename Lock, lock_access_mode MODE>
+    template<template<class> typename Lock, lock_access_mode Mode>
     template<typename... LockTs>
     STORMKIT_FORCE_INLINE
-    inline locked<T, Mutex>::accessor<Lock, MODE>::accessor(locked_reference locked, LockTs&&... lock_args) noexcept
+    inline locked<T, Mutex>::accessor<Lock, Mode>::accessor(locked_reference locked, LockTs&&... lock_args) noexcept
         requires(meta::pointer<T>)
-        : accessor { *(locked.m_value), locked.m_mutex, std::forward<LockTs>(lock_args)... } {
+        : accessor { *(locked.value_), locked.mutex_, std::forward<LockTs>(lock_args)... } {
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::is_decayed T, class Mutex>
         requires(meta::destructible<T>)
-    template<template<class> typename Lock, lock_access_mode MODE>
+    template<template<class> typename Lock, lock_access_mode Mode>
     template<typename Self>
     STORMKIT_FORCE_INLINE
-    inline auto locked<T, Mutex>::accessor<Lock, MODE>::operator->(this Self& self) noexcept -> conditional_pointer<Self> {
-        return self.m_value;
+    inline auto locked<T, Mutex>::accessor<Lock, Mode>::operator->(this Self& self) noexcept -> conditional_pointer<Self> {
+        return self.value_;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<meta::is_decayed T, class Mutex>
         requires(meta::destructible<T>)
-    template<template<class> typename Lock, lock_access_mode MODE>
+    template<template<class> typename Lock, lock_access_mode Mode>
     template<typename Self>
     STORMKIT_FORCE_INLINE
-    inline auto locked<T, Mutex>::accessor<Lock, MODE>::operator*(this Self& self) noexcept -> conditional_reference<Self> {
-        return *self.m_value;
+    inline auto locked<T, Mutex>::accessor<Lock, Mode>::operator*(this Self& self) noexcept -> conditional_reference<Self> {
+        return *self.value_;
     }
 }} // namespace stormkit::core

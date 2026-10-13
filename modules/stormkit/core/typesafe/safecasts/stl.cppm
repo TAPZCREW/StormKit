@@ -28,13 +28,13 @@ namespace stdr = std::ranges;
 namespace stdv = std::views;
 
 namespace stormkit { inline namespace core { namespace meta::details {
-    template<typename T, usize EXTENT>
+    template<typename T, usize Extent>
     consteval auto get_byte_extent_value_of() -> usize {
-        if constexpr (EXTENT == std::dynamic_extent) return EXTENT;
+        if constexpr (Extent == std::dynamic_extent) return Extent;
         else if constexpr (is<remove_const_of<T>, void>)
-            return EXTENT;
+            return Extent;
         else
-            return EXTENT * sizeof(T);
+            return Extent * sizeof(T);
     }
 
     template<auto>
@@ -277,7 +277,7 @@ export namespace stormkit { inline namespace core {
     //                           From value,
     //                           source_location_arg = std::source_location::current()) noexcept
     //   -> array_view<byte, get_byte_extent_value_of<meta::value_type<From>, get_constexpr_size<From>()>()>
-    //     requires(not meta::const_type<meta::range_value_type<From>>);
+    //     requires(not meta::const_qualified<meta::range_value_type<From>>);
 
     // template<meta::std_span From>
     // [[nodiscard]]

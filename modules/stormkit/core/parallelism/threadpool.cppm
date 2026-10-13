@@ -55,8 +55,8 @@ export namespace stormkit { inline namespace core {
 
       private:
         enum class task_type {
-            STANDARD,
-            TERMINATE,
+            standard,
+            terminate,
         };
 
         struct task {
@@ -81,14 +81,14 @@ export namespace stormkit { inline namespace core {
 
         auto spawn_workers() noexcept -> void;
 
-        u32 m_worker_count = 0;
+        u32 worker_count_ = 0;
 
-        dynarray<std::jthread> m_workers;
+        dynarray<std::jthread> workers_;
 
-        mutable std::mutex          m_mutex;
-        std::condition_variable     m_work_signal;
-        std::counting_semaphore<64> m_running_task_counter;
-        std::queue<task>            m_tasks;
+        mutable std::mutex          mutex_;
+        std::condition_variable     work_signal_;
+        std::counting_semaphore<64> running_task_counter_;
+        std::queue<task>            tasks_;
     };
 
     template<meta::plain::apply_to<std::ranges::input_range>                     Range,
@@ -112,7 +112,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline thread_pool::thread_pool(u32 worker_count)
-        : m_worker_count { worker_count }, m_running_task_counter { worker_count } {
+        : worker_count_ { worker_count }, running_task_counter_ { worker_count } {
         spawn_workers();
     }
 
@@ -128,15 +128,15 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto thread_pool::worker_count() const noexcept -> u32 {
-        return m_worker_count;
+        return worker_count_;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto thread_pool::set_name(string_view name) noexcept -> void {
-        // for (const auto& [i, worker] : stdv::enumerate(m_workers))
-        for (auto i : range(m_worker_count)) set_thread_name(m_workers[i], std::format("{}:{}", name, i));
+        // for (const auto& [i, worker] : stdv::enumerate(workers_))
+        for (auto i : range(worker_count_)) set_thread_name(workers_[i], std::format("{}:{}", name, i));
     }
 
     ////////////////////////////////////////
@@ -144,7 +144,7 @@ namespace stormkit { inline namespace core {
     template<typename T>
     STORMKIT_FORCE_INLINE
     inline auto thread_pool::post_task(closure_type<T>&& task) noexcept -> decltype(auto) {
-        return post_task<T>(task_type::STANDARD, std::move(task));
+        return post_task<T>(task_type::standard, std::move(task));
     }
 
     ////////////////////////////////////////
@@ -152,7 +152,7 @@ namespace stormkit { inline namespace core {
     template<typename T>
     STORMKIT_FORCE_INLINE
     inline auto thread_pool::post_task(closure_type<T>&& task, no_future_type t) noexcept -> void {
-        post_task<T>(task_type::STANDARD, std::move(task), t);
+        post_task<T>(task_type::standard, std::move(task), t);
     }
 
     ////////////////////////////////////////
@@ -166,12 +166,12 @@ namespace stormkit { inline namespace core {
         auto task_ = task { type, [task = std::move(packaged_task)]() noexcept { (*task)(); } };
 
         {
-            auto _ = std::unique_lock { m_mutex };
+            auto _ = std::unique_lock { mutex_ };
 
-            m_tasks.emplace(std::move(task_));
+            tasks_.emplace(std::move(task_));
         }
 
-        m_work_signal.notify_one();
+        work_signal_.notify_one();
 
         return future;
     }
@@ -183,12 +183,12 @@ namespace stormkit { inline namespace core {
         auto task_ = task { type, [task = std::move(closure)]() mutable noexcept { task(); } };
 
         {
-            auto lock = std::unique_lock { m_mutex };
+            auto lock = std::unique_lock { mutex_ };
 
-            m_tasks.emplace(std::move(task_));
+            tasks_.emplace(std::move(task_));
         }
 
-        m_work_signal.notify_one();
+        work_signal_.notify_one();
     }
 
     ////////////////////////////////////////

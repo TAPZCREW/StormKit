@@ -16,22 +16,22 @@ import stormkit.core.meta.algorithms;
 import stormkit.core.typesafe.ref_ptr;
 
 export namespace stormkit { inline namespace core {
-    template<meta::polymorphic_type T, meta::negate<meta::pointer> U>
+    template<meta::polymorphic T, meta::negate<meta::pointer> U>
     [[nodiscard]]
     constexpr auto tag_invoke(meta::tag<is<T>>, const U& value) noexcept -> bool
         requires(meta::polymorphic_reference<U&>);
 
-    template<meta::polymorphic_type T, meta::polymorphic_pointer U>
+    template<meta::polymorphic T, meta::polymorphic_pointer U>
     [[nodiscard]]
     constexpr auto tag_invoke(meta::tag<is<T>>, const U& value) noexcept -> bool;
 
-    template<meta::polymorphic_type To, meta::negate<meta::pointer> From>
+    template<meta::polymorphic To, meta::negate<meta::pointer> From>
     [[nodiscard]]
     constexpr auto tag_invoke(meta::tag<as<To>>, From& value, source_location_arg = std::source_location::current()) noexcept
       -> To&
         requires(meta::polymorphic_reference<From&>);
 
-    template<meta::polymorphic_type To, meta::polymorphic_pointer From>
+    template<meta::polymorphic To, meta::polymorphic_pointer From>
     [[nodiscard]]
     constexpr auto tag_invoke(meta::tag<as<To>>,
                               const From& value,
@@ -46,7 +46,7 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::polymorphic_type T, meta::negate<meta::pointer> U>
+    template<meta::polymorphic T, meta::negate<meta::pointer> U>
         STORMKIT_FORCE_INLINE
     constexpr auto tag_invoke(meta::tag<is<T>>, const U& value) noexcept -> bool
         requires(meta::polymorphic_reference<U&>)
@@ -58,7 +58,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::polymorphic_type T, meta::polymorphic_pointer U>
+    template<meta::polymorphic T, meta::polymorphic_pointer U>
         STORMKIT_FORCE_INLINE
     constexpr auto tag_invoke(meta::tag<is<T>>, const U& value) noexcept -> bool {
         if constexpr (meta::plain::is<T, U>) {
@@ -71,7 +71,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::polymorphic_type To, meta::negate<meta::pointer> From>
+    template<meta::polymorphic To, meta::negate<meta::pointer> From>
         STORMKIT_FORCE_INLINE
     constexpr auto tag_invoke(meta::tag<as<To>>, From& value, source_location_arg location) noexcept -> To&
         requires(meta::polymorphic_reference<From&>)
@@ -82,7 +82,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::polymorphic_type To, meta::polymorphic_pointer From>
+    template<meta::polymorphic To, meta::polymorphic_pointer From>
         STORMKIT_FORCE_INLINE
     constexpr auto tag_invoke(meta::tag<as<To>>, const From& value, source_location_arg location) noexcept -> ref_ptr<To> {
         expects(is<To>(value), "Invalid polymorphic cast!", location);

@@ -23,7 +23,7 @@ namespace stdr = std::ranges;
 namespace stdv = std::views;
 
 export namespace stormkit { inline namespace core {
-    template<bool MUTABLE>
+    template<bool Mutable>
     struct view_of_fn final {
         template<typename From, typename... Ts>
         [[nodiscard]]
@@ -87,11 +87,11 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<bool MUTABLE>
+    template<bool Mutable>
     template<typename From, typename... Ts>
     STORMKIT_FORCE_INLINE
     constexpr auto view_of_fn<
-      MUTABLE>::operator()(From&& from, Ts&&... args) noexcept(not meta::tag_invocable<view_of_fn, From, Ts...>
+      Mutable>::operator()(From&& from, Ts&&... args) noexcept(not meta::tag_invocable<view_of_fn, From, Ts...>
                                                                or meta::noexcept_tag_invocable<view_of_fn, From, Ts...>)
       -> decltype(auto) {
         if constexpr (meta::tag_invocable<view_of_fn, From, Ts...>)
@@ -104,10 +104,10 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<bool MUTABLE>
+    template<bool Mutable>
     template<typename Tag, typename From, typename... Ts>
     STORMKIT_FORCE_INLINE
-    constexpr auto view_of_fn<MUTABLE>::
+    constexpr auto view_of_fn<Mutable>::
       operator()(Tag tag, From&& from, Ts&&... args) noexcept(meta::noexcept_tag_invocable<view_of_fn, Tag, From, Ts...>)
         -> meta::tag_invoke_result<view_of_fn, Tag, From, Ts...>
         requires(meta::tag_invocable<view_of_fn, Tag, From, Ts...>)

@@ -74,7 +74,7 @@ namespace stormkit::gpu {
         auto data(this Self& self) noexcept -> cmeta::forward_const_to<Self, byte>*;
         template<typename Self>
         [[nodiscard]]
-        auto data(this Self& self, usize size) noexcept -> cmeta::lazy_conditional<cmeta::const_type<Self>, array_view<byte>, array_view<const byte>>;
+        auto data(this Self& self, usize size) noexcept -> cmeta::lazy_conditional<cmeta::const_qualified<Self>, array_view<byte>, array_view<const byte>>;
 
         template<typename T>
         [[nodiscard]]
@@ -159,7 +159,7 @@ namespace stormkit::gpu {
             u64          offset = 0;
         };
 
-        template<core::meta::hash_type Ret = hash32>
+        template<core::meta::hash Ret = hash32>
         constexpr auto hasher(const Buffer::CreateInfo& value) noexcept -> Ret;
     }
 } // namespace stormkit::gpu
@@ -286,7 +286,7 @@ namespace stormkit::gpu {
     template<typename Self>
     STORMKIT_FORCE_INLINE
     inline auto BufferInterface<Base>::data(this Self& self, usize size) noexcept
-      -> cmeta::lazy_conditional<cmeta::const_type<Self>, array_view<byte>, array_view<const byte>> {
+      -> cmeta::lazy_conditional<cmeta::const_qualified<Self>, array_view<byte>, array_view<const byte>> {
         using Out = array_view<cmeta::forward_const_to<Self, byte>>;
         return Out { std::bit_cast<typename Out::element_type>(self.data()), size };
     }
@@ -392,7 +392,7 @@ namespace stormkit::gpu {
 
     ///////////////////////////////////
     ///////////////////////////////////
-    template<cmeta::hash_type Ret = hash32>
+    template<cmeta::hash Ret = hash32>
     constexpr auto hasher(const Buffer::CreateInfo& create_info) noexcept -> Ret {
         return hash(create_info.usages, create_info.size, create_info.properties);
     }

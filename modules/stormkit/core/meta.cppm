@@ -10,7 +10,6 @@ import stormkit.core.types;
 
 export import stormkit.core.meta.algorithms;
 export import stormkit.core.meta.concepts;
-export import stormkit.core.meta.type_traits;
 export import stormkit.core.meta.type_query;
 export import stormkit.core.meta.type_manipulation;
 export import stormkit.core.meta.priority_tag;

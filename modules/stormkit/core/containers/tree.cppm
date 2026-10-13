@@ -28,11 +28,12 @@ export namespace stormkit { inline namespace core {
         using index_type    = u32;
         using bitfield_type = u32;
 
-        static constexpr auto INVALID_INDEX = std::numeric_limits<index_type>::max();
+        static constexpr auto invalid_index = std::numeric_limits<index_type>::max();
 
         [[nodiscard]]
         auto name() const noexcept -> const string&;
-        auto set_name(string name) noexcept -> void;
+        auto set_name(const string& name) noexcept -> void;
+        auto set_name(string&& name) noexcept -> void;
 
         [[nodiscard]]
         auto parent() const noexcept -> index_type;
@@ -50,18 +51,18 @@ export namespace stormkit { inline namespace core {
         auto invalidate() noexcept -> void;
 
       private:
-        index_type    m_parent       = INVALID_INDEX;
-        index_type    m_next_sibling = INVALID_INDEX;
-        index_type    m_first_child  = INVALID_INDEX;
-        bitfield_type m_dirty_bits   = 0;
+        index_type    parent_       = invalid_index;
+        index_type    next_sibling_ = invalid_index;
+        index_type    first_child_  = invalid_index;
+        bitfield_type dirty_bits_   = 0;
 
-        string m_name;
+        string name_;
     };
 
     template<typename T = tree_node>
     class tree {
       public:
-        static constexpr auto DEFAULT_PREALLOCATED_TREE_SIZE = usize { 10 };
+        static constexpr auto default_preallocated_tree_size = usize { 10 };
 
         using tree_node_type          = T;
         using tree_node_index_type    = typename tree_node_type::index_type;
@@ -116,9 +117,9 @@ export namespace stormkit { inline namespace core {
                           std23::function_ref<string_view(string_view)> colorize_node) const noexcept -> system_result<usize>;
 
       private:
-        tree_node_index_type           m_first_free_index = 0;
-        dynarray<tree_node_type>       m_tree;
-        dynarray<tree_node_index_type> m_dirties;
+        tree_node_index_type           first_free_index_ = 0;
+        dynarray<tree_node_type>       tree_;
+        dynarray<tree_node_index_type> dirties_;
     };
 }} // namespace stormkit::core
 
@@ -129,127 +130,149 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto tree_node::name() const noexcept -> const string& {
-        return m_name;
+        return name_;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    inline auto tree_node::set_name(string name) noexcept -> void {
-        m_name = std::move(name);
+    STORMKIT_FORCE_INLINE
+    inline auto tree_node::set_name(const string& name) noexcept -> void {
+        name_ = string { name };
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
+    inline auto tree_node::set_name(string&& name) noexcept -> void {
+        name_ = std::move(name);
+    }
+
+    ////////////////////////////////////////
+    ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto tree_node::parent() const noexcept -> tree_node::index_type {
-        return m_parent;
+        return parent_;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto tree_node::set_parent(index_type index) noexcept -> void {
-        m_parent = index;
+        parent_ = index;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto tree_node::next_sibling() const noexcept -> tree_node::index_type {
-        return m_next_sibling;
+        return next_sibling_;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto tree_node::set_next_sibling(index_type index) noexcept -> void {
-        m_next_sibling = index;
+        next_sibling_ = index;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto tree_node::first_child() const noexcept -> tree_node::index_type {
-        return m_first_child;
+        return first_child_;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto tree_node::set_first_child(index_type index) noexcept -> void {
-        m_first_child = index;
+        first_child_ = index;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto tree_node::dirty_bits() const noexcept -> const tree_node::bitfield_type& {
-        return m_dirty_bits;
+        return dirty_bits_;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
+    STORMKIT_FORCE_INLINE
     inline auto tree_node::set_dirty_bits(bitfield_type bits) noexcept -> void {
-        m_dirty_bits = bits;
+        dirty_bits_ = bits;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     inline auto tree_node::invalidate() noexcept -> void {
-        m_parent       = { INVALID_INDEX };
-        m_next_sibling = { INVALID_INDEX };
-        m_first_child  = { INVALID_INDEX };
-        m_dirty_bits   = 0;
-        m_name         = "";
+        parent_       = { invalid_index };
+        next_sibling_ = { invalid_index };
+        first_child_  = { invalid_index };
+        dirty_bits_   = 0;
+        name_         = "";
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename tree_nodeClass>
     tree<tree_nodeClass>::tree() {
-        m_tree.resize(DEFAULT_PREALLOCATED_TREE_SIZE);
+        tree_.resize(default_preallocated_tree_size);
 
-        for (auto i : range<tree_node_index_type>(stdr::size(m_tree) - 1u)) m_tree[i].set_next_sibling(i + 1u);
+        for (auto i : range<tree_node_index_type>(stdr::size(tree_) - 1u)) tree_[i].set_next_sibling(i + 1u);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename tree_nodeClass>
+    STORMKIT_FORCE_INLINE
     tree<tree_nodeClass>::~tree() = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename tree_nodeClass>
+    STORMKIT_FORCE_INLINE
     tree<tree_nodeClass>::tree(const tree&) = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename tree_nodeClass>
+    STORMKIT_FORCE_INLINE
     tree<tree_nodeClass>::tree(tree&&) = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename tree_nodeClass>
+    STORMKIT_FORCE_INLINE
     auto tree<tree_nodeClass>::operator=(const tree&) -> tree& = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename tree_nodeClass>
+    STORMKIT_FORCE_INLINE
     auto tree<tree_nodeClass>::operator=(tree&&) -> tree& = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename tree_nodeClass>
     auto tree<tree_nodeClass>::get_free_node() -> tree_node_index_type {
-        if (m_tree[m_first_free_index].next_sibling() == tree_node::INVALID_INDEX) {
-            const auto size      = as<f32>(stdr::size(m_tree));
-            const auto first_new = as<tree_node_index_type>(stdr::size(m_tree));
+        if (tree_[first_free_index_].next_sibling() == tree_node::invalid_index) {
+            const auto size      = as<f32>(stdr::size(tree_));
+            const auto first_new = as<tree_node_index_type>(stdr::size(tree_));
 
-            m_tree.resize(as<usize>(size * 1.5f));
-            const auto new_size = stdr::size(m_tree);
+            tree_.resize(as<usize>(size * 1.5f));
+            const auto new_size = stdr::size(tree_);
 
             // generate a new chain of free objects, with the last one pointing to
             // ~0
-            m_tree[m_first_free_index].set_next_sibling(first_new);
-            for (auto i : range(first_new, new_size - 1u)) m_tree[i].set_next_sibling(i + 1u);
+            tree_[first_free_index_].set_next_sibling(first_new);
+            for (auto i : range(first_new, new_size - 1u)) tree_[i].set_next_sibling(i + 1u);
         }
 
-        auto index         = m_first_free_index;
-        m_first_free_index = m_tree[m_first_free_index].next_sibling();
+        auto index        = first_free_index_;
+        first_free_index_ = tree_[first_free_index_].next_sibling();
 
         return index;
     }
@@ -262,22 +285,22 @@ namespace stormkit { inline namespace core {
                                       tree_node_index_type previous_sibling) -> tree_node_index_type {
         const auto index = get_free_node();
 
-        auto& _node = m_tree[index];
+        auto& _node = tree_[index];
         _node       = std::forward<tree_node_type>(node);
 
         _node.set_parent(parent_index);
 
         // check if parent is real node
-        if (parent_index != tree_node::INVALID_INDEX) {
-            auto& parent_node = *(std::ranges::begin(m_tree) + parent_index);
+        if (parent_index != tree_node::invalid_index) {
+            auto& parent_node = *(std::ranges::begin(tree_) + parent_index);
 
             // new node is first child
-            if (parent_node.first_child() == tree_node::INVALID_INDEX) parent_node.set_first_child(index);
-            else if (previous_sibling == tree_node::INVALID_INDEX) { // insert a beginning of childs
+            if (parent_node.first_child() == tree_node::invalid_index) parent_node.set_first_child(index);
+            else if (previous_sibling == tree_node::invalid_index) { // insert a beginning of childs
                 _node.set_next_sibling(parent_node.first_child());
                 parent_node.set_first_child(index);
             } else { // insert at the end
-                auto& prev_sibling_node = m_tree[previous_sibling];
+                auto& prev_sibling_node = tree_[previous_sibling];
                 _node.set_next_sibling(prev_sibling_node.next_sibling());
                 prev_sibling_node.set_next_sibling(index);
             }
@@ -290,15 +313,15 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<typename tree_nodeClass>
     auto tree<tree_nodeClass>::remove(tree_node_index_type index) -> void {
-        auto& node = m_tree[index];
+        auto& node = tree_[index];
 
-        if (node.parent() != tree_node::INVALID_INDEX) {
-            auto& parent = m_tree[node.parent()];
+        if (node.parent() != tree_node::invalid_index) {
+            auto& parent = tree_[node.parent()];
 
             // Remove sibling
             auto current_index = parent.first_child();
-            while (current_index != tree_node::INVALID_INDEX) {
-                auto& current_node = m_tree[current_index];
+            while (current_index != tree_node::invalid_index) {
+                auto& current_node = tree_[current_index];
 
                 if (current_node.next_sibling() == index) {
                     current_node.set_next_sibling(node.next_sibling());
@@ -310,41 +333,41 @@ namespace stormkit { inline namespace core {
             // remove parent
             if (parent.first_child() == index) parent.set_first_child(node.next_sibling());
 
-            node.set_parent(tree_node::INVALID_INDEX);
+            node.set_parent(tree_node::invalid_index);
         }
 
-        auto last_index = tree_node::INVALID_INDEX;
+        auto last_index = tree_node::invalid_index;
         auto queue      = std::deque<tree_node_index_type> {};
         queue.emplace_back(index);
         while (not queue.empty()) {
             auto  current_index = queue.front();
-            auto& current_node  = m_tree[current_index];
+            auto& current_node  = tree_[current_index];
             queue.pop_front();
 
             auto child_index = current_node.first_child();
-            while (child_index != tree_node::INVALID_INDEX) {
+            while (child_index != tree_node::invalid_index) {
                 queue.emplace_back(child_index);
-                child_index = m_tree[child_index].next_sibling();
+                child_index = tree_[child_index].next_sibling();
             }
 
             node.invalidate();
 
-            if (last_index != tree_node::INVALID_INDEX) m_tree[last_index].set_next_sibling(current_index);
+            if (last_index != tree_node::invalid_index) tree_[last_index].set_next_sibling(current_index);
 
             last_index = current_index;
         }
 
-        m_tree[last_index].set_next_sibling(m_first_free_index);
-        m_first_free_index = index;
+        tree_[last_index].set_next_sibling(first_free_index_);
+        first_free_index_ = index;
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename tree_nodeClass>
     auto tree<tree_nodeClass>::mark_dirty(tree_node_index_type index, tree_node_bitfield_type bits) -> void {
-        auto& node = m_tree[index];
+        auto& node = tree_[index];
         if (not node.dirty_bits()) {
-            m_dirties.emplace_back(index);
+            dirties_.emplace_back(index);
             node.set_dirty_bits(bits);
             return;
         }
@@ -355,86 +378,96 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename tree_nodeClass>
-    auto tree<tree_nodeClass>::operator[](tree_node_index_type index) noexcept -> tree_node_type& {
-        EXPECTS(index < stdr::size(m_tree));
+    STORMKIT_FORCE_INLINE
+    inline auto tree<tree_nodeClass>::operator[](tree_node_index_type index) noexcept -> tree_node_type& {
+        EXPECTS(index < stdr::size(tree_));
 
-        return m_tree[index];
+        return tree_[index];
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename tree_nodeClass>
-    auto tree<tree_nodeClass>::operator[](tree_node_index_type index) const noexcept -> const tree_node_type& {
-        EXPECTS(index < stdr::size(m_tree));
+    STORMKIT_FORCE_INLINE
+    inline auto tree<tree_nodeClass>::operator[](tree_node_index_type index) const noexcept -> const tree_node_type& {
+        EXPECTS(index < stdr::size(tree_));
 
-        return m_tree[index];
+        return tree_[index];
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename tree_nodeClass>
-    auto tree<tree_nodeClass>::size() const noexcept -> usize {
-        return stdr::size(m_tree);
+    STORMKIT_FORCE_INLINE
+    inline auto tree<tree_nodeClass>::size() const noexcept -> usize {
+        return stdr::size(tree_);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename tree_nodeClass>
-    auto tree<tree_nodeClass>::begin() noexcept {
-        return std::ranges::begin(m_tree);
+    STORMKIT_FORCE_INLINE
+    inline auto tree<tree_nodeClass>::begin() noexcept {
+        return std::ranges::begin(tree_);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename tree_nodeClass>
-    auto tree<tree_nodeClass>::begin() const noexcept {
-        return std::cbegin(m_tree);
+    STORMKIT_FORCE_INLINE
+    inline auto tree<tree_nodeClass>::begin() const noexcept {
+        return std::cbegin(tree_);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename tree_nodeClass>
-    auto tree<tree_nodeClass>::cbegin() const noexcept {
-        return std::cbegin(m_tree);
+    STORMKIT_FORCE_INLINE
+    inline auto tree<tree_nodeClass>::cbegin() const noexcept {
+        return std::cbegin(tree_);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename tree_nodeClass>
-    auto tree<tree_nodeClass>::end() noexcept {
-        return std::ranges::end(m_tree);
+    STORMKIT_FORCE_INLINE
+    inline auto tree<tree_nodeClass>::end() noexcept {
+        return std::ranges::end(tree_);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename tree_nodeClass>
-    auto tree<tree_nodeClass>::end() const noexcept {
-        return std::cend(m_tree);
+    STORMKIT_FORCE_INLINE
+    inline auto tree<tree_nodeClass>::end() const noexcept {
+        return std::cend(tree_);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename tree_nodeClass>
-    auto tree<tree_nodeClass>::cend() const noexcept {
-        return std::cend(m_tree);
+    STORMKIT_FORCE_INLINE
+    inline auto tree<tree_nodeClass>::cend() const noexcept {
+        return std::cend(tree_);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename tree_nodeClass>
     auto tree<tree_nodeClass>::clear_dirties() noexcept -> void {
-        if (std::empty(m_dirties)) return;
+        if (std::empty(dirties_)) return;
 
-        for (auto i : m_dirties) { m_tree[i].set_dirty_bits(0); }
+        for (auto i : dirties_) { tree_[i].set_dirty_bits(0); }
 
-        m_dirties.clear();
+        dirties_.clear();
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename tree_nodeClass>
-    auto tree<tree_nodeClass>::dirties() const noexcept -> array_view<const tree_node_index_type> {
-        return m_dirties;
+    STORMKIT_FORCE_INLINE
+    inline auto tree<tree_nodeClass>::dirties() const noexcept -> array_view<const tree_node_index_type> {
+        return dirties_;
     }
 
     ////////////////////////////////////////
@@ -452,7 +485,7 @@ namespace stormkit { inline namespace core {
                "    bgcolor = black\n\n"
                "    node [shape=box, fontname=\"helvetica\", fontsize=12];\n\n";
 
-        for (auto i : range(m_first_free_index)) {
+        for (auto i : range(first_free_index_)) {
             const auto name  = operator[](i).name();
             const auto dirty = bool(operator[](i).dirty_bits());
 
@@ -464,10 +497,10 @@ namespace stormkit { inline namespace core {
                                colorize_node(name));
         }
 
-        for (auto i : range(m_first_free_index)) {
-            if (operator[](i).first_child() == tree_nodeClass::INVALID_INDEX) continue;
+        for (auto i : range(first_free_index_)) {
+            if (operator[](i).first_child() == tree_nodeClass::invalid_index) continue;
 
-            for (auto current = operator[](i).first_child(); current != tree_nodeClass::INVALID_INDEX;
+            for (auto current = operator[](i).first_child(); current != tree_nodeClass::invalid_index;
                  current      = operator[](current).next_sibling()) {
                 out += std::format("    \"node{}\" -> \"node{}\" [color=seagreen] ;\n", i, current);
             }
@@ -494,7 +527,7 @@ namespace stormkit { inline namespace core {
                "    bgcolor = black\n\n"
                "    node [shape=box, fontname=\"helvetica\", fontsize=12];\n\n";
 
-        for (auto i : range(m_first_free_index)) {
+        for (auto i : range(first_free_index_)) {
             const auto name  = operator[](i).name();
             const auto dirty = bool(operator[](i).dirty_bits());
             if (i != highlight)
@@ -514,10 +547,10 @@ namespace stormkit { inline namespace core {
                                    colorize_node(name));
         }
 
-        for (auto i : range(m_first_free_index)) {
-            if (operator[](i).first_child() == tree_nodeClass::INVALID_INDEX) continue;
+        for (auto i : range(first_free_index_)) {
+            if (operator[](i).first_child() == tree_nodeClass::invalid_index) continue;
 
-            for (auto current = operator[](i).first_child(); current != tree_nodeClass::INVALID_INDEX;
+            for (auto current = operator[](i).first_child(); current != tree_nodeClass::invalid_index;
                  current      = operator[](current).next_sibling()) {
                 out += std::format("    \"node{}\" -> \"node{}\" [color=seagreen] ;\n", i, current);
             }

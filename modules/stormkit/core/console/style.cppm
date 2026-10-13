@@ -27,31 +27,31 @@ using namespace std::literals;
 export {
     namespace stormkit { inline namespace core {
         enum class console_color {
-            RED,
-            GREEN,
-            YELLOW,
-            BLUE,
-            MAGENTA,
-            CYAN,
-            WHITE,
-            BLACK,
-            BRIGHT_RED,
-            BRIGHT_GREEN,
-            BRIGHT_YELLOW,
-            BRIGHT_BLUE,
-            BRIGHT_MAGENTA,
-            BRIGHT_CYAN,
-            BRIGHT_WHITE,
-            BRIGHT_BLACK,
+            red,
+            green,
+            yellow,
+            blue,
+            magenta,
+            cyan,
+            white,
+            black,
+            bright_red,
+            bright_green,
+            bright_yellow,
+            bright_blue,
+            bright_magenta,
+            bright_cyan,
+            bright_white,
+            bright_black,
         };
 
         enum class style_modifier {
             none      = 0x0,
-            BOLD      = 0x1,
-            FAINT     = 0x2,
-            ITALIC    = 0x4,
-            INVERSE   = 0x8,
-            UNDERLINE = 0xA,
+            bold      = 0x1,
+            faint     = 0x2,
+            italic    = 0x4,
+            inverse   = 0x8,
+            underline = 0xA,
         };
 
         template<typename T>
@@ -74,60 +74,60 @@ export {
             style_modifier               modifiers = style_modifier::none;
         };
 
-        inline constexpr auto RED_TEXT_STYLE     = console_style { .fg = console_color::RED };
-        inline constexpr auto GREEN_TEXT_STYLE   = console_style { .fg = console_color::GREEN };
-        inline constexpr auto YELLOW_TEXT_STYLE  = console_style { .fg = console_color::YELLOW };
-        inline constexpr auto BLUE_TEXT_STYLE    = console_style { .fg = console_color::BLUE };
-        inline constexpr auto MAGENTA_TEXT_STYLE = console_style { .fg = console_color::MAGENTA };
-        inline constexpr auto CYAN_TEXT_STYLE    = console_style { .fg = console_color::CYAN };
-        inline constexpr auto WHITE_TEXT_STYLE   = console_style { .fg = console_color::WHITE };
-        inline constexpr auto BLACK_TEXT_STYLE   = console_style { .fg = console_color::BLACK };
+        inline constexpr auto red_text_style     = console_style { .fg = console_color::red };
+        inline constexpr auto green_text_style   = console_style { .fg = console_color::green };
+        inline constexpr auto yellow_text_style  = console_style { .fg = console_color::yellow };
+        inline constexpr auto blue_text_style    = console_style { .fg = console_color::blue };
+        inline constexpr auto magenta_text_style = console_style { .fg = console_color::magenta };
+        inline constexpr auto cyan_text_style    = console_style { .fg = console_color::cyan };
+        inline constexpr auto white_text_style   = console_style { .fg = console_color::white };
+        inline constexpr auto black_text_style   = console_style { .fg = console_color::black };
 
         namespace ecma48 {
-            inline constexpr auto FOREGROUND = make_static_hash_map<console_color, string_view>({
-              { console_color::BLACK,          "\x1B[30m" },
-              { console_color::RED,            "\x1B[31m" },
-              { console_color::GREEN,          "\x1B[32m" },
-              { console_color::YELLOW,         "\x1B[33m" },
-              { console_color::BLUE,           "\x1B[34m" },
-              { console_color::MAGENTA,        "\x1B[35m" },
-              { console_color::CYAN,           "\x1B[36m" },
-              { console_color::WHITE,          "\x1B[37m" },
-              { console_color::BRIGHT_BLACK,   "\x1B[90m" },
-              { console_color::BRIGHT_RED,     "\x1B[91m" },
-              { console_color::BRIGHT_GREEN,   "\x1B[92m" },
-              { console_color::BRIGHT_YELLOW,  "\x1B[93m" },
-              { console_color::BRIGHT_BLUE,    "\x1B[94m" },
-              { console_color::BRIGHT_MAGENTA, "\x1B[95m" },
-              { console_color::BRIGHT_CYAN,    "\x1B[96m" },
-              { console_color::BRIGHT_WHITE,   "\x1B[97m" },
+            inline constexpr auto foreground = make_static_hash_map<console_color, string_view>({
+              { console_color::black,          "\x1B[30m" },
+              { console_color::red,            "\x1B[31m" },
+              { console_color::green,          "\x1B[32m" },
+              { console_color::yellow,         "\x1B[33m" },
+              { console_color::blue,           "\x1B[34m" },
+              { console_color::magenta,        "\x1B[35m" },
+              { console_color::cyan,           "\x1B[36m" },
+              { console_color::white,          "\x1B[37m" },
+              { console_color::bright_black,   "\x1B[90m" },
+              { console_color::bright_red,     "\x1B[91m" },
+              { console_color::bright_green,   "\x1B[92m" },
+              { console_color::bright_yellow,  "\x1B[93m" },
+              { console_color::bright_blue,    "\x1B[94m" },
+              { console_color::bright_magenta, "\x1B[95m" },
+              { console_color::bright_cyan,    "\x1B[96m" },
+              { console_color::bright_white,   "\x1B[97m" },
             });
 
-            inline constexpr auto BACKGROUND = make_static_hash_map<console_color, string_view>({
-              { console_color::BLACK,          "\x1B[40m"  },
-              { console_color::RED,            "\x1B[41m"  },
-              { console_color::GREEN,          "\x1B[42m"  },
-              { console_color::YELLOW,         "\x1B[43m"  },
-              { console_color::BLUE,           "\x1B[44m"  },
-              { console_color::MAGENTA,        "\x1B[45m"  },
-              { console_color::CYAN,           "\x1B[46m"  },
-              { console_color::WHITE,          "\x1B[47m"  },
-              { console_color::BRIGHT_BLACK,   "\x1B[100m" },
-              { console_color::BRIGHT_RED,     "\x1B[101m" },
-              { console_color::BRIGHT_GREEN,   "\x1B[102m" },
-              { console_color::BRIGHT_YELLOW,  "\x1B[103m" },
-              { console_color::BRIGHT_BLUE,    "\x1B[104m" },
-              { console_color::BRIGHT_MAGENTA, "\x1B[105m" },
-              { console_color::BRIGHT_CYAN,    "\x1B[106m" },
-              { console_color::BRIGHT_WHITE,   "\x1B[107m" },
+            inline constexpr auto background = make_static_hash_map<console_color, string_view>({
+              { console_color::black,          "\x1B[40m"  },
+              { console_color::red,            "\x1B[41m"  },
+              { console_color::green,          "\x1B[42m"  },
+              { console_color::yellow,         "\x1B[43m"  },
+              { console_color::blue,           "\x1B[44m"  },
+              { console_color::magenta,        "\x1B[45m"  },
+              { console_color::cyan,           "\x1B[46m"  },
+              { console_color::white,          "\x1B[47m"  },
+              { console_color::bright_black,   "\x1B[100m" },
+              { console_color::bright_red,     "\x1B[101m" },
+              { console_color::bright_green,   "\x1B[102m" },
+              { console_color::bright_yellow,  "\x1B[103m" },
+              { console_color::bright_blue,    "\x1B[104m" },
+              { console_color::bright_magenta, "\x1B[105m" },
+              { console_color::bright_cyan,    "\x1B[106m" },
+              { console_color::bright_white,   "\x1B[107m" },
             });
 
-            inline constexpr auto RESET     = "\x1B[0m"sv;
-            inline constexpr auto BOLD      = "\x1B[1m"sv;
-            inline constexpr auto FAINT     = "\x1B[2m"sv;
-            inline constexpr auto ITALIC    = "\x1B[3m"sv;
-            inline constexpr auto UNDERLINE = "\x1B[4m"sv;
-            inline constexpr auto INVERSE   = "\x1B[7m"sv;
+            inline constexpr auto reset     = "\x1B[0m"sv;
+            inline constexpr auto bold      = "\x1B[1m"sv;
+            inline constexpr auto faint     = "\x1B[2m"sv;
+            inline constexpr auto italic    = "\x1B[3m"sv;
+            inline constexpr auto underline = "\x1B[4m"sv;
+            inline constexpr auto inverse   = "\x1B[7m"sv;
         } // namespace ecma48
 
         template<typename CharT, typename FormatContext>
@@ -138,7 +138,7 @@ export {
     }} // namespace stormkit::core
 
     template<>
-    inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::style_modifier> = true;
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::style_modifier> = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -179,18 +179,18 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     template<typename T>
     constexpr auto stylized<T>::render_into(stdr::output_range<char> auto& out) const noexcept -> void {
-        if (fg) out.append_range(ecma48::FOREGROUND.at(*fg));
-        if (bg) out.append_range(ecma48::BACKGROUND.at(*bg));
-        if (has_flag_bit(modifiers, style_modifier::BOLD)) out.append(ecma48::BOLD);
-        if (has_flag_bit(modifiers, style_modifier::FAINT)) out.append(ecma48::FAINT);
-        if (has_flag_bit(modifiers, style_modifier::ITALIC)) out.append(ecma48::ITALIC);
-        if (has_flag_bit(modifiers, style_modifier::INVERSE)) out.append(ecma48::INVERSE);
-        if (has_flag_bit(modifiers, style_modifier::UNDERLINE)) out.append(ecma48::UNDERLINE);
+        if (fg) out.append_range(ecma48::foreground.at(*fg));
+        if (bg) out.append_range(ecma48::background.at(*bg));
+        if (has_flag_bit(modifiers, style_modifier::bold)) out.append(ecma48::bold);
+        if (has_flag_bit(modifiers, style_modifier::faint)) out.append(ecma48::faint);
+        if (has_flag_bit(modifiers, style_modifier::italic)) out.append(ecma48::italic);
+        if (has_flag_bit(modifiers, style_modifier::inverse)) out.append(ecma48::inverse);
+        if (has_flag_bit(modifiers, style_modifier::underline)) out.append(ecma48::underline);
         if constexpr (meta::convertible_to<T, string_view>) out.append_range(string_view { value });
         else
             out.append_range(std::format("{}", value));
 
-        out.append(ecma48::RESET);
+        out.append(ecma48::reset);
     }
 
     /////////////////////////////////////
@@ -201,31 +201,31 @@ namespace stormkit { inline namespace core {
         auto              end  = stdr::begin(buff);
 
         if (style.fg) {
-            auto [_, end_] = stdr::copy(ecma48::FOREGROUND.at(*style.fg), end);
+            auto [_, end_] = stdr::copy(ecma48::foreground.at(*style.fg), end);
             end            = end_;
         }
         if (style.bg) {
-            auto [_, end_] = stdr::copy(ecma48::BACKGROUND.at(*style.bg), end);
+            auto [_, end_] = stdr::copy(ecma48::background.at(*style.bg), end);
             end            = end_;
         }
-        if (has_flag_bit(style.modifiers, style_modifier::BOLD)) {
-            auto [_, end_] = stdr::copy(ecma48::BOLD, end);
+        if (has_flag_bit(style.modifiers, style_modifier::bold)) {
+            auto [_, end_] = stdr::copy(ecma48::bold, end);
             end            = end_;
         }
-        if (has_flag_bit(style.modifiers, style_modifier::FAINT)) {
-            auto [_, end_] = stdr::copy(ecma48::FAINT, end);
+        if (has_flag_bit(style.modifiers, style_modifier::faint)) {
+            auto [_, end_] = stdr::copy(ecma48::faint, end);
             end            = end_;
         }
-        if (has_flag_bit(style.modifiers, style_modifier::ITALIC)) {
-            auto [_, end_] = stdr::copy(ecma48::ITALIC, end);
+        if (has_flag_bit(style.modifiers, style_modifier::italic)) {
+            auto [_, end_] = stdr::copy(ecma48::italic, end);
             end            = end_;
         }
-        if (has_flag_bit(style.modifiers, style_modifier::INVERSE)) {
-            auto [_, end_] = stdr::copy(ecma48::INVERSE, end);
+        if (has_flag_bit(style.modifiers, style_modifier::inverse)) {
+            auto [_, end_] = stdr::copy(ecma48::inverse, end);
             end            = end_;
         }
-        if (has_flag_bit(style.modifiers, style_modifier::UNDERLINE)) {
-            auto [_, end_] = stdr::copy(ecma48::UNDERLINE, end);
+        if (has_flag_bit(style.modifiers, style_modifier::underline)) {
+            auto [_, end_] = stdr::copy(ecma48::underline, end);
             end            = end_;
         }
 

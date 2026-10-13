@@ -183,13 +183,13 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept wrapped_value_of = wrapped_value<T> and is<typename T::value_type, U>;
 
     template<typename T>
-    concept polymorphic_type = std::is_polymorphic_v<T>;
+    concept polymorphic = std::is_polymorphic_v<T>;
 
     template<typename T>
-    concept polymorphic_pointer = pointer<T> and polymorphic_type<typename std::pointer_traits<T>::element_type>;
+    concept polymorphic_pointer = pointer<T> and polymorphic<typename std::pointer_traits<T>::element_type>;
 
     template<typename T>
-    concept polymorphic_reference = reference<T> and polymorphic_type<std::remove_reference_t<T>>;
+    concept polymorphic_reference = reference<T> and polymorphic<std::remove_reference_t<T>>;
 
     template<typename T>
     concept polymorphic_indirection = polymorphic_reference<T> or polymorphic_pointer<T>;
@@ -227,22 +227,22 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept binary_predicate = predicate<T, const U&, const U&>;
 
     template<typename T>
-    concept char_type = is_any_of<T, char, wchar_t, char8_t, char16_t, char32_t>;
+    concept character = is_any_of<T, char, wchar_t, char8_t, char16_t, char32_t>;
 
     template<typename... Ts>
-    concept char_types = (meta::char_type<Ts> and ...);
+    concept characters = (meta::character<Ts> and ...);
 
     template<typename T>
-    concept const_type = std::is_const_v<T>;
+    concept const_qualified = std::is_const_v<T>;
 
     template<typename... Ts>
-    concept const_types = (meta::const_type<Ts> and ...);
+    concept const_qualifieds = (meta::const_qualified<Ts> and ...);
 
     template<typename T>
-    concept volatile_type = std::is_volatile_v<T>;
+    concept volatile_qualified = std::is_volatile_v<T>;
 
     template<typename... Ts>
-    concept volatile_types = (meta::volatile_type<Ts> and ...);
+    concept volatile_qualifieds = (meta::volatile_qualified<Ts> and ...);
 
     template<class From, typename To>
     concept brace_initializable_to = requires(From&& from) { To { std::forward<From>(from) }; };
@@ -251,16 +251,16 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept structural_type = requires { []<T t> {}; };
 
     template<typename T>
-    concept unsigned_type = std::is_unsigned_v<T> or is<T, u128>;
+    concept unsigned_integer = std::is_unsigned_v<T> or is<T, u128>;
 
     template<typename T>
-    concept signed_type = std::is_signed_v<T> or is<T, i128>;
+    concept signed_integer = std::is_signed_v<T> or is<T, i128>;
 
     template<typename T, typename U>
-    concept has_same_signeness = (signed_type<T> and signed_type<U>) or (unsigned_type<T> and unsigned_type<U>);
+    concept same_signeness_as = (signed_integer<T> and signed_integer<U>) or (unsigned_integer<T> and unsigned_integer<U>);
 
     template<typename To, typename From>
-    concept is_sign_narrowing = (signed_type<From> ? not signed_type<To> : signed_type<To> and sizeof(From) == sizeof(To));
+    concept is_sign_narrowing = (signed_integer<From> ? not signed_integer<To> : signed_integer<To> and sizeof(From) == sizeof(To));
 
     template<typename To, typename From>
     concept is_byte_narrowing = ((arithmetic<To> and is<From, byte>) or (is<To, byte> and arithmetic<From>))
@@ -360,7 +360,7 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept prefer_pass_by_ref = not prefer_pass_by_value<T>;
 
     template<typename T>
-    concept hash_type = is_any_of<T, hash32, hash64>;
+    concept hash = is_any_of<T, hash32, hash64>;
 
     template<typename T>
     using iter_const_reference_t = std::common_reference_t<const std::iter_value_t<T>&&, std::iter_reference_t<T>>;

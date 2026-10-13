@@ -103,7 +103,7 @@ export namespace stormkit { inline namespace core {
         constexpr auto dump(closures closures_ = {}) const noexcept -> string;
 
         // FIXME find a way to make it not accessible to user
-        template<typename FromDag, bool AS_REF>
+        template<typename FromDag, bool As_ref>
         static constexpr auto reverse_from(index_type,
                                            array_view<const typename FromDag::vertex>,
                                            array_view<const typename FromDag::edge>) noexcept -> dag<value_type>;
@@ -111,20 +111,18 @@ export namespace stormkit { inline namespace core {
       private:
         index_type m_next_id = 0;
 
-        dynarray<vertex>                                m_vertices;
-        dynarray<edge>                                  m_edges;
-        dynarray<std::pair<index_type, dynarray<edge>>> m_adjacent_edges;
+        dynarray<vertex>                                vertices_;
+        dynarray<edge>                                  edges_;
+        dynarray<std::pair<index_type, dynarray<edge>>> adjacent_edges_;
     };
 
     template<typename CharT, typename FormatContext, typename T>
     [[nodiscard]]
-    // constexpr auto tag_invoke(format_as_fn<CharT>, meta::in<typename dag<T>::edge> value, FormatContext& ctx) noexcept
     constexpr auto tag_invoke(format_as_fn<CharT>, typename dag<T>::edge value, FormatContext& ctx) noexcept
       -> decltype(ctx.out());
 
     template<typename CharT, typename FormatContext, typename T>
     [[nodiscard]]
-    // constexpr auto tag_invoke(format_as_fn<CharT>, meta::in<typename dag<T>::vertex> value, FormatContext& ctx) noexcept
     constexpr auto tag_invoke(format_as_fn<CharT>, typename dag<T>::vertex value, FormatContext& ctx) noexcept
       -> decltype(ctx.out());
 }} // namespace stormkit::core
@@ -138,7 +136,7 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<typename T>
     constexpr dag<T>::dag(std::optional<usize> reserve) noexcept {
-        if (reserve) m_vertices.reserve(*reserve);
+        if (reserve) vertices_.reserve(*reserve);
     }
 
     ////////////////////////////////////////
@@ -160,9 +158,9 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<typename T>
     constexpr auto dag<T>::clear() noexcept(meta::noexcept_destructible<value_type>) -> void {
-        m_adjacent_edges.clear();
-        m_edges.clear();
-        m_vertices.clear();
+        adjacent_edges_.clear();
+        edges_.clear();
+        vertices_.clear();
     }
 
     ////////////////////////////////////////
@@ -170,7 +168,7 @@ namespace stormkit { inline namespace core {
     template<typename T>
     STORMKIT_FORCE_INLINE
     constexpr auto dag<T>::empty() const noexcept -> bool {
-        return stdr::empty(m_vertices);
+        return stdr::empty(vertices_);
     }
 
     ////////////////////////////////////////
@@ -180,8 +178,8 @@ namespace stormkit { inline namespace core {
         requires(meta::copyable<value_type>)
     {
         const auto id = m_next_id++;
-        m_vertices.emplace_back(id, value);
-        m_adjacent_edges.emplace_back(id, dynarray<edge> {});
+        vertices_.emplace_back(id, value);
+        adjacent_edges_.emplace_back(id, dynarray<edge> {});
         return id;
     }
 
@@ -192,8 +190,8 @@ namespace stormkit { inline namespace core {
         requires(meta::movable<value_type> and not meta::prefer_pass_by_value<value_type>)
     {
         const auto id = m_next_id++;
-        m_vertices.emplace_back(id, std::move(value));
-        m_adjacent_edges.emplace_back(id, dynarray<edge> {});
+        vertices_.emplace_back(id, std::move(value));
+        adjacent_edges_.emplace_back(id, dynarray<edge> {});
         return id;
     }
 
@@ -215,7 +213,7 @@ namespace stormkit { inline namespace core {
     constexpr auto dag<T>::get_vertex_value(this Self&& self, index_type id) noexcept -> meta::forward_like<Self, value_type> {
         expects(self.has_vertex(id), std::format("Unknown dag vertex id: {}!", id));
 
-        return std::forward_like<Self>(stdr::find_if(self.m_vertices, [id](const auto& vert) noexcept {
+        return std::forward_like<Self>(stdr::find_if(self.vertices_, [id](const auto& vert) noexcept {
                                            return vert.id == id;
                                        })->value);
     }
@@ -227,7 +225,7 @@ namespace stormkit { inline namespace core {
     constexpr auto dag<T>::has_vertex(meta::in<value_type> value) const noexcept -> bool
         requires(meta::has_equality_operator<value_type, value_type>)
     {
-        return stdr::any_of(m_vertices, [&value](const auto& vert) noexcept { return value == vert.value; });
+        return stdr::any_of(vertices_, [&value](const auto& vert) noexcept { return value == vert.value; });
     }
 
     ////////////////////////////////////////
@@ -235,7 +233,7 @@ namespace stormkit { inline namespace core {
     template<typename T>
     STORMKIT_FORCE_INLINE
     constexpr auto dag<T>::has_vertex(index_type id) const noexcept -> bool {
-        return stdr::any_of(m_vertices, [&id](const auto& vert) noexcept { return vert.id == id; });
+        return stdr::any_of(vertices_, [&id](const auto& vert) noexcept { return vert.id == id; });
     }
 
     ////////////////////////////////////////
@@ -248,7 +246,7 @@ namespace stormkit { inline namespace core {
         else
             expects(has_vertex(value), "Unknown dag vertex value!");
 
-        auto       it = stdr::find_if(m_vertices, [&other = value](const auto& vert) noexcept { return vert.value == other; });
+        auto       it = stdr::find_if(vertices_, [&other = value](const auto& vert) noexcept { return vert.value == other; });
         const auto id = it->id;
 
         remove_vertex(id);
@@ -261,16 +259,16 @@ namespace stormkit { inline namespace core {
         expects(has_vertex(id), std::format("Unknown dag vertex id: {}!", id));
 
         auto touching = dynarray<edge> {};
-        for (const auto& edge : m_edges)
+        for (const auto& edge : edges_)
             if (edge.from == id or edge.to == id) touching.emplace_back(edge);
 
         for (const auto& [from, to] : touching) remove_edge(from, to);
 
-        auto&& [begin, end]   = stdr::remove_if(m_vertices, [id](const auto& vert) noexcept { return vert.id == id; });
-        auto&& [begin2, end2] = stdr::remove_if(m_adjacent_edges, [id](const auto& pair) noexcept { return pair.first == id; });
+        auto&& [begin, end]   = stdr::remove_if(vertices_, [id](const auto& vert) noexcept { return vert.id == id; });
+        auto&& [begin2, end2] = stdr::remove_if(adjacent_edges_, [id](const auto& pair) noexcept { return pair.first == id; });
 
-        m_adjacent_edges.erase(begin2, end2);
-        m_vertices.erase(begin, end);
+        adjacent_edges_.erase(begin2, end2);
+        vertices_.erase(begin, end);
     }
 
     ////////////////////////////////////////
@@ -281,9 +279,9 @@ namespace stormkit { inline namespace core {
         expects(has_vertex(to), std::format("Unknown dag vertex to: {}", to));
         if (has_edge(from, to)) return;
 
-        const auto& edge = m_edges.emplace_back(from, to);
+        const auto& edge = edges_.emplace_back(from, to);
 
-        auto& adjacent_edges = stdr::find_if(m_adjacent_edges, [id = from](const auto& pair) noexcept {
+        auto& adjacent_edges = stdr::find_if(adjacent_edges_, [id = from](const auto& pair) noexcept {
                                    return pair.first == id;
                                })->second;
         adjacent_edges.emplace_back(edge);
@@ -295,7 +293,7 @@ namespace stormkit { inline namespace core {
     constexpr auto dag<T>::has_edge(index_type from, index_type to) const noexcept -> bool {
         if (not has_vertex(from) or not has_vertex(to)) return false;
 
-        return stdr::any_of(m_edges, [from, to](const auto& edge) noexcept { return edge.from == from and edge.to == to; });
+        return stdr::any_of(edges_, [from, to](const auto& edge) noexcept { return edge.from == from and edge.to == to; });
     }
 
     ////////////////////////////////////////
@@ -308,13 +306,13 @@ namespace stormkit { inline namespace core {
         if (not has_edge(from, to)) return;
 
         {
-            auto&& [begin, end] = stdr::remove_if(m_edges, [from, to](const auto& edge) noexcept {
+            auto&& [begin, end] = stdr::remove_if(edges_, [from, to](const auto& edge) noexcept {
                 return edge.from == from and edge.to == to;
             });
 
-            m_edges.erase(begin, end);
+            edges_.erase(begin, end);
         }
-        for (auto& [_, edges] : m_adjacent_edges) {
+        for (auto& [_, edges] : adjacent_edges_) {
             auto&& [begin, end] = stdr::remove_if(edges, [from, to](const auto& edge) noexcept {
                 return edge.from == from and edge.to == to;
             });
@@ -328,7 +326,7 @@ namespace stormkit { inline namespace core {
     constexpr auto dag<T>::adjacent_edges(index_type id) const noexcept -> const dynarray<edge>& {
         expects(has_vertex(id), std::format("Unknown dag vertex id: {}!", id));
 
-        const auto& adjacent_edges = stdr::find_if(m_adjacent_edges, [id](const auto& pair) noexcept {
+        const auto& adjacent_edges = stdr::find_if(adjacent_edges_, [id](const auto& pair) noexcept {
                                          return pair.first == id;
                                      })->second;
         return adjacent_edges;
@@ -339,7 +337,7 @@ namespace stormkit { inline namespace core {
     template<typename T>
     STORMKIT_FORCE_INLINE
     constexpr auto dag<T>::vertices() const noexcept -> const dynarray<vertex>& {
-        return m_vertices;
+        return vertices_;
     }
 
     ////////////////////////////////////////
@@ -347,7 +345,7 @@ namespace stormkit { inline namespace core {
     template<typename T>
     STORMKIT_FORCE_INLINE
     constexpr auto dag<T>::vertices_count() const noexcept -> usize {
-        return stdr::size(m_vertices);
+        return stdr::size(vertices_);
     }
 
     ////////////////////////////////////////
@@ -355,7 +353,7 @@ namespace stormkit { inline namespace core {
     template<typename T>
     STORMKIT_FORCE_INLINE
     constexpr auto dag<T>::edges() const noexcept -> const dynarray<edge>& {
-        return m_edges;
+        return edges_;
     }
 
     ////////////////////////////////////////
@@ -363,7 +361,7 @@ namespace stormkit { inline namespace core {
     template<typename T>
     STORMKIT_FORCE_INLINE
     constexpr auto dag<T>::edges_count() const noexcept -> usize {
-        return stdr::size(m_edges);
+        return stdr::size(edges_);
     }
 
     ////////////////////////////////////////
@@ -378,10 +376,10 @@ namespace stormkit { inline namespace core {
         };
 
         auto in_degree = dynarray<degree> {};
-        in_degree.reserve(stdr::size(m_vertices));
-        for (const auto& [id, _] : m_vertices) { in_degree.emplace_back(id, 0); }
+        in_degree.reserve(stdr::size(vertices_));
+        for (const auto& [id, _] : vertices_) { in_degree.emplace_back(id, 0); }
 
-        for (const auto& [id, _] : m_vertices) {
+        for (const auto& [id, _] : vertices_) {
             const auto& edges = adjacent_edges(id);
 
             if (not stdr::empty(edges)) {
@@ -395,13 +393,13 @@ namespace stormkit { inline namespace core {
 
         auto queue = std::queue<index_type> {};
 
-        for (const auto& [id, _] : m_vertices) {
+        for (const auto& [id, _] : vertices_) {
             auto&& [_, d] = *stdr::find_if(in_degree, [id](auto&& other) noexcept { return other.id == id; });
             if (d == 0) queue.push(id);
         }
 
         auto ordered_vertices = dynarray<index_type> {};
-        ordered_vertices.reserve(stdr::size(m_vertices));
+        ordered_vertices.reserve(stdr::size(vertices_));
         while (not stdr::empty(queue)) {
             auto id = queue.front();
             queue.pop();
@@ -430,7 +428,7 @@ namespace stormkit { inline namespace core {
         auto out = std::optional<dynarray<index_type>> { std::nullopt };
 
         auto visited = dynarray<index_type> {};
-        visited.reserve(stdr::size(m_vertices));
+        visited.reserve(stdr::size(vertices_));
         auto stack = dynarray<index_type> {};
 
         auto dfs = [&visited, &stack, &out, this](auto&& dfs, auto&& id) mutable noexcept -> bool {
@@ -465,7 +463,7 @@ namespace stormkit { inline namespace core {
             return false;
         };
 
-        for (const auto& [id, _] : m_vertices) {
+        for (const auto& [id, _] : vertices_) {
             if (stdr::contains(visited, id)) continue;
 
             if (dfs(dfs, id)) break;
@@ -478,14 +476,14 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     template<typename T>
     constexpr auto dag<T>::reverse_view() const noexcept -> dag<ref_ptr<const value_type>> {
-        return dag<ref_ptr<const value_type>>::template reverse_from<dag<value_type>, true>(m_next_id, m_vertices, m_edges);
+        return dag<ref_ptr<const value_type>>::template reverse_from<dag<value_type>, true>(m_next_id, vertices_, edges_);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
     constexpr auto dag<T>::reverse_clone() const noexcept -> dag<value_type> {
-        return reverse_from<dag<value_type>, false>(m_next_id, m_vertices, m_edges);
+        return reverse_from<dag<value_type>, false>(m_next_id, vertices_, edges_);
     }
 
     ////////////////////////////////////////
@@ -498,7 +496,7 @@ namespace stormkit { inline namespace core {
                             "    node [shape=box, fontname=\"helvetica\", fontsize=12];\n\n" };
 
         if (closures_.format_value)
-            for (const auto& [id, value] : m_vertices) {
+            for (const auto& [id, value] : vertices_) {
                 out += std::format("    \"node{}\" [label=\"id: {} value: {}\", style=filled,color=\"{}\"];\n",
                                    id,
                                    id,
@@ -506,14 +504,14 @@ namespace stormkit { inline namespace core {
                                    closures_.colorize ? closures_.colorize.value()(value) : "white");
             }
         else
-            for (const auto& [id, value] : m_vertices) {
+            for (const auto& [id, value] : vertices_) {
                 out += std::format("    \"node{}\" [label=\"id: {}\", style=filled,color=\"{}\"];\n",
                                    id,
                                    id,
                                    closures_.colorize ? closures_.colorize.value()(value) : "white");
             }
 
-        for (const auto& [from, to] : m_edges) out += std::format("    \"node{}\" -> \"node{}\" [color=seagreen];\n", from, to);
+        for (const auto& [from, to] : edges_) out += std::format("    \"node{}\" -> \"node{}\" [color=seagreen];\n", from, to);
 
         out += "}";
 
@@ -523,31 +521,31 @@ namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
     template<typename T>
-    template<typename FromDag, bool AS_REF>
+    template<typename FromDag, bool As_ref>
     constexpr auto dag<T>::reverse_from(index_type                                 next_id,
                                         array_view<const typename FromDag::vertex> vertices,
                                         array_view<const typename FromDag::edge>   edges) noexcept -> dag<value_type> {
         auto out      = dag<value_type> {};
         out.m_next_id = next_id;
 
-        out.m_adjacent_edges.reserve(stdr::size(vertices));
-        if constexpr (AS_REF) {
+        out.adjacent_edges_.reserve(stdr::size(vertices));
+        if constexpr (As_ref) {
             for (const auto& [id, vertice] : vertices) {
-                out.m_vertices.emplace_back(id, vertice);
-                out.m_adjacent_edges.emplace_back(id, dynarray<edge> {});
+                out.vertices_.emplace_back(id, vertice);
+                out.adjacent_edges_.emplace_back(id, dynarray<edge> {});
             }
         } else {
             for (const auto& [id, vertice] : vertices) {
-                out.m_vertices.emplace_back(id, auto(vertice));
-                out.m_adjacent_edges.emplace_back(id, dynarray<edge> {});
+                out.vertices_.emplace_back(id, auto(vertice));
+                out.adjacent_edges_.emplace_back(id, dynarray<edge> {});
             }
         }
 
-        out.m_edges.reserve(stdr::size(edges));
+        out.edges_.reserve(stdr::size(edges));
         for (const auto& [from, to] : edges) {
-            const auto& edge = out.m_edges.emplace_back(to, from);
+            const auto& edge = out.edges_.emplace_back(to, from);
 
-            auto& adjacent_edges = stdr::find_if(out.m_adjacent_edges, [id = to](const auto& pair) noexcept {
+            auto& adjacent_edges = stdr::find_if(out.adjacent_edges_, [id = to](const auto& pair) noexcept {
                                        return pair.first == id;
                                    })->second;
             adjacent_edges.emplace_back(edge);

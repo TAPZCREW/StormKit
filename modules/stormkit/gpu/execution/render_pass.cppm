@@ -188,13 +188,13 @@ namespace stormkit::gpu {
         };
     } // namespace view
 
-    template<core::meta::hash_type Ret = hash32>
+    template<core::meta::hash Ret = hash32>
     constexpr auto hasher(const AttachmentDescription& value) noexcept -> Ret;
-    template<core::meta::hash_type Ret = hash32>
+    template<core::meta::hash Ret = hash32>
     constexpr auto hasher(const Subpass::Ref& value) noexcept -> Ret;
-    template<core::meta::hash_type Ret = hash32>
+    template<core::meta::hash Ret = hash32>
     constexpr auto hasher(const Subpass& value) noexcept -> Ret;
-    template<core::meta::hash_type Ret = hash32>
+    template<core::meta::hash Ret = hash32>
     constexpr auto hasher(const RenderPassDescription& value) noexcept -> Ret;
 } // namespace stormkit::gpu
 
@@ -405,7 +405,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::hash_type Ret>
+    template<core::meta::hash Ret>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const AttachmentDescription& value) noexcept -> Ret {
         return hash<Ret>(value.format,
@@ -421,7 +421,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::hash_type Ret>
+    template<core::meta::hash Ret>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const Subpass::Ref& value) noexcept -> Ret {
         return hash<Ret>(value.attachment_id, value.layout);
@@ -429,7 +429,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::hash_type Ret>
+    template<core::meta::hash Ret>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const Subpass& value) noexcept -> Ret {
         return hash<Ret>(value.bind_point,
@@ -440,7 +440,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::hash_type Ret>
+    template<core::meta::hash Ret>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const RenderPassDescription& value) noexcept -> Ret {
         return hash<Ret>(value.attachments, value.subpasses);

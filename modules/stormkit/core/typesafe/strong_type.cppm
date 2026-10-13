@@ -20,7 +20,7 @@ import stormkit.core.string.format;
 namespace stdr = std::ranges;
 
 export namespace stormkit { inline namespace core {
-    template<meta::is_decayed T, typename Tag, static_string NAME, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string Name, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     class strong_type;
 
@@ -159,14 +159,14 @@ export namespace stormkit { inline namespace core {
         } // namespace meta
     } // namespace capabilities
 
-    template<meta::is_decayed T, typename Tag, static_string NAME_, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string Name, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     class STORMKIT_OWNER strong_type final: public Capabilities<T>... {
       public:
         using value_type = T;
         using param_type = meta::in<T>;
 
-        static constexpr auto NAME = std::string_view { stdr::data(NAME_), stdr::size(NAME_) };
+        static constexpr auto name = std::string_view { stdr::data(Name), stdr::size(Name) };
 
         constexpr explicit strong_type(meta::take<value_type>
                                          value) noexcept(meta::noexcept_constructible_from<value_type, meta::take<value_type>>);
@@ -200,18 +200,17 @@ export namespace stormkit { inline namespace core {
       private:
         friend class Capabilities<T>...;
 
-        value_type m_value;
+        value_type value_;
     };
 
     template<typename CharT,
              typename FormatContext,
              meta::is_decayed T,
              typename Tag,
-             static_string NAME_,
+             static_string Name,
              template<class> typename... Capabilities>
-    constexpr auto tag_invoke(format_as_fn<CharT>,
-                              meta::in<strong_type<T, Tag, NAME_, Capabilities...>> value,
-                              FormatContext&                                        ctx) -> decltype(ctx.out());
+    constexpr auto tag_invoke(format_as_fn<CharT>, meta::in<strong_type<T, Tag, Name, Capabilities...>> value, FormatContext& ctx)
+      -> decltype(ctx.out());
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -221,93 +220,93 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::is_decayed T, typename Tag, static_string NAME_, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string Name, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     STORMKIT_FORCE_INLINE
-    constexpr strong_type<T, Tag, NAME_, Capabilities...>::
+    constexpr strong_type<T, Tag, Name, Capabilities...>::
       strong_type(meta::take<value_type> value) noexcept(meta::noexcept_constructible_from<value_type, meta::take<value_type>>)
-        : m_value { std::forward<meta::take<value_type>>(value) } {
+        : value_ { std::forward<meta::take<value_type>>(value) } {
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::is_decayed T, typename Tag, static_string NAME_, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string Name, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     template<class... Ts>
     STORMKIT_FORCE_INLINE
-    constexpr strong_type<T, Tag, NAME_, Capabilities...>::
+    constexpr strong_type<T, Tag, Name, Capabilities...>::
       strong_type(std::in_place_t, Ts&&... args) noexcept(meta::noexcept_constructible_from<value_type, Ts...>)
         requires(not meta::decayed::is<meta::first_type<Ts...>, T> and meta::constructible_from<value_type, Ts...>)
-        : m_value { std::forward<Ts>(args)... } {
+        : value_ { std::forward<Ts>(args)... } {
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::is_decayed T, typename Tag, static_string NAME_, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string Name, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     STORMKIT_FORCE_INLINE
-    constexpr strong_type<T, Tag, NAME_, Capabilities...>::
+    constexpr strong_type<T, Tag, Name, Capabilities...>::
       ~strong_type() noexcept(meta::noexcept_destructible<value_type>) = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::is_decayed T, typename Tag, static_string NAME_, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string Name, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     STORMKIT_FORCE_INLINE
-    constexpr strong_type<T, Tag, NAME_, Capabilities...>::
+    constexpr strong_type<T, Tag, Name, Capabilities...>::
       strong_type(const strong_type&) noexcept(meta::noexcept_copyable<value_type>)
         requires(meta::copyable<value_type>)
     = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::is_decayed T, typename Tag, static_string NAME_, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string Name, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     STORMKIT_FORCE_INLINE
-    constexpr strong_type<T, Tag, NAME_, Capabilities...>::strong_type(strong_type&&) noexcept(meta::noexcept_movable<value_type>)
+    constexpr strong_type<T, Tag, Name, Capabilities...>::strong_type(strong_type&&) noexcept(meta::noexcept_movable<value_type>)
         requires(meta::movable<value_type>)
     = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::is_decayed T, typename Tag, static_string NAME_, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string Name, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto strong_type<T, Tag, NAME_, Capabilities...>::
+    constexpr auto strong_type<T, Tag, Name, Capabilities...>::
       operator=(const strong_type&) noexcept(meta::noexcept_copy_assignable<value_type>) -> strong_type&
         requires(meta::copy_assignable<value_type>)
     = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::is_decayed T, typename Tag, static_string NAME_, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string Name, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     STORMKIT_FORCE_INLINE
-    constexpr auto strong_type<T, Tag, NAME_, Capabilities...>::
+    constexpr auto strong_type<T, Tag, Name, Capabilities...>::
       operator=(strong_type&&) noexcept(meta::noexcept_move_assignable<value_type>) -> strong_type&
         requires(meta::move_assignable<value_type>)
     = default;
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::is_decayed T, typename Tag, static_string NAME_, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string Name, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     template<typename Self>
     STORMKIT_FORCE_INLINE
-    constexpr strong_type<T, Tag, NAME_, Capabilities...>::operator meta::forward_like<Self,
-                                                                                       value_type>(this Self&& self) noexcept {
-        return std::forward_like<Self>(self.m_value);
+    constexpr strong_type<T, Tag, Name, Capabilities...>::operator meta::forward_like<Self,
+                                                                                      value_type>(this Self&& self) noexcept {
+        return std::forward_like<Self>(self.value_);
     }
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::is_decayed T, typename Tag, static_string NAME_, template<class> typename... Capabilities>
+    template<meta::is_decayed T, typename Tag, static_string Name, template<class> typename... Capabilities>
         requires(meta::destructible<T>)
     template<typename Self>
     STORMKIT_FORCE_INLINE
-    constexpr auto strong_type<T, Tag, NAME_, Capabilities...>::value(this Self&& self) noexcept
+    constexpr auto strong_type<T, Tag, Name, Capabilities...>::value(this Self&& self) noexcept
       -> meta::forward_like<Self, value_type> {
-        return std::forward_like<Self>(self.m_value);
+        return std::forward_like<Self>(self.value_);
     }
 
     ////////////////////////////////////////
@@ -316,13 +315,12 @@ namespace stormkit { inline namespace core {
              typename FormatContext,
              meta::is_decayed T,
              typename Tag,
-             static_string NAME_,
+             static_string Name,
              template<class> typename... Capabilities>
              STORMKIT_FORCE_INLINE
-    constexpr auto tag_invoke(format_as_fn<CharT>,
-                              meta::in<strong_type<T, Tag, NAME_, Capabilities...>> value,
-                              FormatContext&                                        ctx) -> decltype(ctx.out()) {
-        return std::format_to(ctx.out(), "{{{} {}}}", NAME_, value.value());
+    constexpr auto tag_invoke(format_as_fn<CharT>, meta::in<strong_type<T, Tag, Name, Capabilities...>> value, FormatContext& ctx)
+      -> decltype(ctx.out()) {
+        return std::format_to(ctx.out(), "{{{} {}}}", Name, value.value());
     }
 
     namespace capabilities {
@@ -334,7 +332,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator+(this Self self, param_type other) noexcept -> Self
             requires(core::meta::prefer_pass_by_value<Self>)
         {
-            return Self { self.m_value + other };
+            return Self { self.value_ + other };
         }
 
         ////////////////////////////////////////
@@ -345,7 +343,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator+(this const Self& self, param_type other) noexcept -> const Self&
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
-            return Self { self.m_value + other };
+            return Self { self.value_ + other };
         }
 
         ////////////////////////////////////////
@@ -356,7 +354,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator+(this Self self, Self other) noexcept -> Self
             requires(core::meta::prefer_pass_by_value<Self>)
         {
-            return Self { self.m_value + other.m_value };
+            return Self { self.value_ + other.value_ };
         }
 
         ////////////////////////////////////////
@@ -367,7 +365,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator+(this const Self& self, const Self& other) noexcept -> Self
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
-            return Self { self.m_value + other.m_value };
+            return Self { self.value_ + other.value_ };
         }
 
         ////////////////////////////////////////
@@ -378,7 +376,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator+=(this Self self, param_type other) noexcept -> Self&
             requires(core::meta::prefer_pass_by_value<Self>)
         {
-            self.m_value += other;
+            self.value_ += other;
         }
 
         ////////////////////////////////////////
@@ -389,7 +387,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator+=(this Self& self, param_type other) noexcept -> Self&
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
-            self.m_value += other;
+            self.value_ += other;
         }
 
         ////////////////////////////////////////
@@ -400,7 +398,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator+=(this Self self, Self other) noexcept -> Self&
             requires(core::meta::prefer_pass_by_value<Self>)
         {
-            self.m_value += other.m_value;
+            self.value_ += other.value_;
         }
 
         ////////////////////////////////////////
@@ -411,7 +409,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator+=(this Self& self, const Self& other) noexcept -> Self&
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
-            self.m_value += other.m_value;
+            self.value_ += other.value_;
         }
 
         ////////////////////////////////////////
@@ -422,7 +420,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator-(this Self self, param_type other) noexcept -> Self
             requires(core::meta::prefer_pass_by_value<Self>)
         {
-            return Self { self.m_value - other };
+            return Self { self.value_ - other };
         }
 
         ////////////////////////////////////////
@@ -433,7 +431,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator-(this const Self& self, param_type other) noexcept -> const Self&
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
-            return Self { self.m_value - other };
+            return Self { self.value_ - other };
         }
 
         ////////////////////////////////////////
@@ -444,7 +442,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator-(this Self self, Self other) noexcept -> Self
             requires(core::meta::prefer_pass_by_value<Self>)
         {
-            return Self { self.m_value - other.m_value };
+            return Self { self.value_ - other.value_ };
         }
 
         ////////////////////////////////////////
@@ -455,7 +453,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator-(this const Self& self, const Self& other) noexcept -> Self
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
-            return Self { self.m_value - other.m_value };
+            return Self { self.value_ - other.value_ };
         }
 
         ////////////////////////////////////////
@@ -466,7 +464,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator-=(this Self self, param_type other) noexcept -> Self&
             requires(core::meta::prefer_pass_by_value<Self>)
         {
-            self.m_value -= other;
+            self.value_ -= other;
         }
 
         ////////////////////////////////////////
@@ -477,7 +475,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator-=(this Self& self, param_type other) noexcept -> Self&
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
-            self.m_value -= other;
+            self.value_ -= other;
         }
 
         ////////////////////////////////////////
@@ -488,7 +486,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator-=(this Self self, Self other) noexcept -> Self&
             requires(core::meta::prefer_pass_by_value<Self>)
         {
-            self.m_value -= other.m_value;
+            self.value_ -= other.value_;
         }
 
         ////////////////////////////////////////
@@ -499,7 +497,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator-=(this Self& self, const Self& other) noexcept -> Self&
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
-            self.m_value -= other.m_value;
+            self.value_ -= other.value_;
         }
 
         ////////////////////////////////////////
@@ -510,7 +508,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator*(this Self self, param_type other) noexcept -> Self
             requires(core::meta::prefer_pass_by_value<Self>)
         {
-            return Self { self.m_value * other };
+            return Self { self.value_ * other };
         }
 
         ////////////////////////////////////////
@@ -521,7 +519,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator*(this const Self& self, param_type other) noexcept -> const Self&
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
-            return Self { self.m_value * other };
+            return Self { self.value_ * other };
         }
 
         ////////////////////////////////////////
@@ -532,7 +530,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator*(this Self self, Self other) noexcept -> Self
             requires(core::meta::prefer_pass_by_value<Self>)
         {
-            return Self { self.m_value * other.m_value };
+            return Self { self.value_ * other.value_ };
         }
 
         ////////////////////////////////////////
@@ -543,7 +541,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator*(this const Self& self, const Self& other) noexcept -> Self
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
-            return Self { self.m_value * other.m_value };
+            return Self { self.value_ * other.value_ };
         }
 
         ////////////////////////////////////////
@@ -554,7 +552,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator*=(this Self self, param_type other) noexcept -> Self&
             requires(core::meta::prefer_pass_by_value<Self>)
         {
-            self.m_value *= other;
+            self.value_ *= other;
         }
 
         ////////////////////////////////////////
@@ -565,7 +563,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator*=(this Self& self, param_type other) noexcept -> Self&
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
-            self.m_value *= other;
+            self.value_ *= other;
         }
 
         ////////////////////////////////////////
@@ -576,7 +574,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator*=(this Self self, Self other) noexcept -> Self&
             requires(core::meta::prefer_pass_by_value<Self>)
         {
-            self.m_value *= other.m_value;
+            self.value_ *= other.value_;
         }
 
         ////////////////////////////////////////
@@ -587,7 +585,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator*=(this Self& self, const Self& other) noexcept -> Self&
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
-            self.m_value *= other.m_value;
+            self.value_ *= other.value_;
         }
 
         ////////////////////////////////////////
@@ -598,7 +596,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator/(this Self self, param_type other) noexcept -> Self
             requires(core::meta::prefer_pass_by_value<Self>)
         {
-            return Self { self.m_value / other };
+            return Self { self.value_ / other };
         }
 
         ////////////////////////////////////////
@@ -609,7 +607,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator/(this const Self& self, param_type other) noexcept -> const Self&
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
-            return Self { self.m_value / other };
+            return Self { self.value_ / other };
         }
 
         ////////////////////////////////////////
@@ -620,7 +618,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator/(this Self self, Self other) noexcept -> Self
             requires(core::meta::prefer_pass_by_value<Self>)
         {
-            return Self { self.m_value / other.m_value };
+            return Self { self.value_ / other.value_ };
         }
 
         ////////////////////////////////////////
@@ -631,7 +629,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator/(this const Self& self, const Self& other) noexcept -> Self
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
-            return Self { self.m_value / other.m_value };
+            return Self { self.value_ / other.value_ };
         }
 
         ////////////////////////////////////////
@@ -642,7 +640,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator/=(this Self self, param_type other) noexcept -> Self&
             requires(core::meta::prefer_pass_by_value<Self>)
         {
-            self.m_value /= other;
+            self.value_ /= other;
         }
 
         ////////////////////////////////////////
@@ -653,7 +651,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator/=(this Self& self, param_type other) noexcept -> Self&
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
-            self.m_value /= other;
+            self.value_ /= other;
         }
 
         ////////////////////////////////////////
@@ -664,7 +662,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator/=(this Self self, Self other) noexcept -> Self&
             requires(core::meta::prefer_pass_by_value<Self>)
         {
-            self.m_value /= other.m_value;
+            self.value_ /= other.value_;
         }
 
         ////////////////////////////////////////
@@ -675,7 +673,7 @@ namespace stormkit { inline namespace core {
         constexpr auto arithmetic<T>::operator/=(this Self& self, const Self& other) noexcept -> Self&
             requires(core::meta::prefer_pass_by_ref<Self>)
         {
-            self.m_value /= other.m_value;
+            self.value_ /= other.value_;
         }
 
         ////////////////////////////////////////

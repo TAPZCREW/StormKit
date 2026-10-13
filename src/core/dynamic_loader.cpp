@@ -29,13 +29,13 @@ namespace stormkit {
     /////////////////////////////////////
     /////////////////////////////////////
     dynamic_loader::~dynamic_loader() {
-        if (m_library_handle != nullptr) [[likely]] {
+        if (library_handle_ != nullptr) [[likely]] {
 #ifdef STORMKIT_OS_WINDOWS
-            ::win32::FreeLibrary(reinterpret_cast<::win32::HMODULE>(m_library_handle));
+            ::win32::FreeLibrary(reinterpret_cast<::win32::HMODULE>(library_handle_));
 #else
-            dlclose(m_library_handle);
+            dlclose(library_handle_);
 #endif
-            m_library_handle = nullptr;
+            library_handle_ = nullptr;
         }
     }
 
@@ -45,18 +45,18 @@ namespace stormkit {
 #ifdef STORMKIT_OS_WINDOWS
         const auto wfilepath = filepath.wstring();
 
-        m_library_handle = ::win32::LoadLibraryExW(std::data(wfilepath), nullptr, 0);
+        library_handle_ = ::win32::LoadLibraryExW(std::data(wfilepath), nullptr, 0);
 
-        if (not m_library_handle) [[unlikely]]
+        if (not library_handle_) [[unlikely]]
             return std::unexpected { error_code::from_win32() };
 #else
-        m_library_handle = ::dlopen(filepath.c_str(), RTLD_LAZY | RTLD_LOCAL);
+        library_handle_ = ::dlopen(filepath.c_str(), RTLD_LAZY | RTLD_LOCAL);
 
-        if (not m_library_handle) [[unlikely]]
+        if (not library_handle_) [[unlikely]]
             return std::unexpected { error_code::from_errno() };
 #endif
 
-        m_filepath = filepath;
+        filepath_ = filepath;
 
         return {};
     }
@@ -64,14 +64,14 @@ namespace stormkit {
     /////////////////////////////////////
     /////////////////////////////////////
     auto dynamic_loader::do_get_func(string_view name) const -> system_result<void*> {
-        EXPECTS(m_library_handle);
+        EXPECTS(library_handle_);
 #ifdef STORMKIT_OS_WINDOWS
-        auto func = ::win32::GetProcAddress(std::bit_cast<::win32::HMODULE>(m_library_handle), std::data(name));
+        auto func = ::win32::GetProcAddress(std::bit_cast<::win32::HMODULE>(library_handle_), std::data(name));
 
         if (not func) [[unlikely]]
             return std::unexpected { error_code::from_win32() };
 #else
-        auto func = ::dlsym(m_library_handle, std::data(name));
+        auto func = ::dlsym(library_handle_, std::data(name));
 
         if (not func) [[unlikely]]
             return std::unexpected { error_code::from_errno() };

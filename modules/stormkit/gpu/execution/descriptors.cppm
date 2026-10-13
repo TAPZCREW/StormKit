@@ -206,15 +206,15 @@ namespace stormkit::gpu {
         };
     } // namespace view
 
-    template<core::meta::hash_type Ret = hash32>
+    template<core::meta::hash Ret = hash32>
     constexpr auto hasher(view::DescriptorSetLayout value) noexcept -> Ret;
-    template<core::meta::hash_type Ret = hash32>
+    template<core::meta::hash Ret = hash32>
     constexpr auto hasher(const DescriptorSetLayoutBinding& value) noexcept -> Ret;
-    template<core::meta::hash_type Ret = hash32>
+    template<core::meta::hash Ret = hash32>
     constexpr auto hasher(const BufferDescriptor& value) noexcept -> Ret;
-    template<core::meta::hash_type Ret = hash32>
+    template<core::meta::hash Ret = hash32>
     constexpr auto hasher(const ImageDescriptor& value) noexcept -> Ret;
-    template<core::meta::hash_type Ret = hash32>
+    template<core::meta::hash Ret = hash32>
     constexpr auto hasher(const Descriptor& value) noexcept -> Ret;
 } // namespace stormkit::gpu
 
@@ -413,7 +413,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::hash_type Ret>
+    template<core::meta::hash Ret>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(view::DescriptorSetLayout value) noexcept -> Ret {
         auto out = Ret {};
@@ -423,7 +423,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::hash_type Ret>
+    template<core::meta::hash Ret>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const DescriptorSetLayoutBinding& value) noexcept -> Ret {
         return hash<Ret>(value.binding, value.type, value.stages, value.descriptor_count);
@@ -431,7 +431,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::hash_type Ret>
+    template<core::meta::hash Ret>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const BufferDescriptor& value) noexcept -> Ret {
         return hash<Ret>(value.type, value.binding, value.buffer, value.range, value.offset);
@@ -439,7 +439,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::hash_type Ret>
+    template<core::meta::hash Ret>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const ImageDescriptor& value) noexcept -> Ret {
         return hash<Ret>(value.type, value.binding, value.layout, value.image_view, value.sampler);
@@ -447,7 +447,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::hash_type Ret>
+    template<core::meta::hash Ret>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const Descriptor& value) noexcept -> Ret {
         return std::visit([](const auto& descriptor) static noexcept { return hash<Ret>(descriptor); }, value);

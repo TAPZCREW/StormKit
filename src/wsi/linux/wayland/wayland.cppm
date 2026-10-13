@@ -156,4 +156,4 @@ export namespace stormkit::wsi::linux::wayland::wl {
 } // namespace stormkit::wsi::linux::wayland::wl
 
 export template<>
-inline constexpr auto stormkit::core::meta::FLAG_TRAIT<wl_seat_capability> = true;
+inline constexpr auto stormkit::core::meta::flag_trait<wl_seat_capability> = true;

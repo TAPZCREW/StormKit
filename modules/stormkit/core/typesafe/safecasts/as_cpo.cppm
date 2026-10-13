@@ -29,7 +29,7 @@ export namespace stormkit { inline namespace core {
         using invoke_result = meta::tag_invoke_result<as_fn<To>, Ts..., source_location_arg>;
 
         template<typename... Ts>
-        static constexpr auto TAG_INVOKABLE = meta::tag_invocable<as_fn<To>, Ts..., source_location_arg>;
+        static constexpr auto tag_invokable = meta::tag_invocable<as_fn<To>, Ts..., source_location_arg>;
 
         template<typename... Ts>
         static constexpr auto operator()(Ts&&...) noexcept = delete ("As caster not defined for these types!");
@@ -37,7 +37,7 @@ export namespace stormkit { inline namespace core {
         template<typename... Ts>
         [[nodiscard]]
         static constexpr auto operator()(Ts&&... args) noexcept -> invoke_result<Ts...>
-            requires(TAG_INVOKABLE<Ts...>);
+            requires(tag_invokable<Ts...>);
     };
 
     template<typename To>
@@ -65,7 +65,7 @@ namespace stormkit { inline namespace core {
     template<typename... Ts>
     STORMKIT_FORCE_INLINE
     constexpr auto as_fn<To>::operator()(Ts&&... args) noexcept -> invoke_result<Ts...>
-        requires(TAG_INVOKABLE<Ts...>)
+        requires(tag_invokable<Ts...>)
     {
         return meta::tag_invoke(as<To>, std::forward<Ts>(args)..., std::source_location::current());
     }

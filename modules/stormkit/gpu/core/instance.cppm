@@ -62,7 +62,7 @@ namespace stormkit::gpu {
             struct CreateInfo {
                 string_view application_name;
                 u32         application_version     = vk::make_version(0, 0, 0);
-                bool        enable_validation_layers = (STORMKIT_BUILD_TYPE == "DEBUG");
+                bool        enable_validation_layers = (config::build_type == "DEBUG");
             };
         };
 

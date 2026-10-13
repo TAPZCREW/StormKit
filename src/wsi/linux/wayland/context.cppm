@@ -73,4 +73,4 @@ export namespace stormkit::wsi::linux::wayland {
 } // namespace stormkit::wsi::linux::wayland
 
 template<>
-inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::wsi::linux::wayland::wl::pointer_state::flag> = true;
+inline constexpr auto stormkit::core::meta::flag_trait<stormkit::wsi::linux::wayland::wl::pointer_state::flag> = true;

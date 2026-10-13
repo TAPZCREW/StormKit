@@ -293,7 +293,7 @@ namespace stormkit::gpu {
             ImageSubresourceRange range;
         };
 
-        template<core::meta::hash_type Ret = hash32>
+        template<core::meta::hash Ret = hash32>
         constexpr auto hasher(const Image::CreateInfo& value) noexcept -> Ret;
     }
 } // namespace stormkit::gpu
@@ -630,7 +630,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::hash_type Ret = hash32>
+    template<core::meta::hash Ret = hash32>
     constexpr auto hasher(const Image::CreateInfo& create_info) noexcept -> Ret {
         return hash(create_info.extent,
                     create_info.format,

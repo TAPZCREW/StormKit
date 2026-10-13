@@ -7,7 +7,7 @@ import stormkit.core.string.encodings;
 
 #pragma clang diagnostic ignored "-Wlanguage-extension-token"
 
-inline constexpr auto MS_VC_EXCEPTION = win32::DWORD { 0x406D1388 };
+inline constexpr auto msvc_exception = win32::DWORD { 0x406D1388 };
 
 #pragma pack(push, 8)
 
@@ -29,7 +29,7 @@ namespace stormkit { inline namespace core {
             auto       info = ThreadNameInfo { .szName = std::data(name), .dwThreadId = id };
 
             __try {
-                win32::RaiseException(MS_VC_EXCEPTION,
+                win32::RaiseException(msvc_exception,
                                       0,
                                       sizeof(info) / sizeof(win32::ULONG_PTR),
                                       reinterpret_cast<win32::ULONG_PTR*>(&info));

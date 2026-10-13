@@ -13,7 +13,7 @@ export namespace stormkit { inline namespace core {
             friend class private_tag_base<T>;
         };
 
-        static constexpr auto PRIVATE = tag {};
+        static constexpr auto private_token = tag {};
 
         friend T;
     };
@@ -22,5 +22,5 @@ export namespace stormkit { inline namespace core {
     using private_tag = private_tag_base<T>::tag;
 
     template<typename T>
-    inline constexpr auto PRIVATE = private_tag_base<T>::PRIVATE;
+    inline constexpr auto private_token = private_tag_base<T>::private_token;
 }} // namespace stormkit::core

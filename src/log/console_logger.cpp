@@ -19,11 +19,11 @@ namespace stdr = std::ranges;
 namespace stormkit::log {
     namespace {
         constexpr auto STYLE_MAP = make_static_hash_map<severity, console_style>({
-          { severity::INFO,    console_style { .fg = console_color::GREEN, .modifiers = style_modifier::INVERSE }   },
-          { severity::WARNING, console_style { .fg = console_color::MAGENTA, .modifiers = style_modifier::INVERSE } },
-          { severity::ERROR,   console_style { .fg = console_color::YELLOW, .modifiers = style_modifier::INVERSE }  },
-          { severity::FATAL,   console_style { .fg = console_color::RED, .modifiers = style_modifier::INVERSE }     },
-          { severity::DEBUG,   console_style { .fg = console_color::CYAN, .modifiers = style_modifier::INVERSE }    },
+          { severity::INFO,    console_style { .fg = console_color::green, .modifiers = style_modifier::inverse }   },
+          { severity::WARNING, console_style { .fg = console_color::magenta, .modifiers = style_modifier::inverse } },
+          { severity::ERROR,   console_style { .fg = console_color::yellow, .modifiers = style_modifier::inverse }  },
+          { severity::FATAL,   console_style { .fg = console_color::red, .modifiers = style_modifier::inverse }     },
+          { severity::DEBUG,   console_style { .fg = console_color::cyan, .modifiers = style_modifier::inverse }    },
         });
 
         constexpr auto FORMAT_STRING             = "{}[ {:^7} | {:%S} ]{} {}"sv;
@@ -50,9 +50,9 @@ namespace stormkit::log {
         const auto out      = (is_error) ? get_stderr() : get_stdout();
         const auto style    = STYLE_MAP.at(severity_);
 
-        if (stdr::empty(module.name)) std::println(out, FORMAT_STRING, style, severity_, time, ecma48::RESET, str);
+        if (stdr::empty(module.name)) std::println(out, FORMAT_STRING, style, severity_, time, ecma48::reset, str);
         else
-            std::println(out, FORMAT_STRING_WITH_MODULE, style, severity_, module.name, time, ecma48::RESET, str);
+            std::println(out, FORMAT_STRING_WITH_MODULE, style, severity_, module.name, time, ecma48::reset, str);
     }
 
     ////////////////////////////////////////

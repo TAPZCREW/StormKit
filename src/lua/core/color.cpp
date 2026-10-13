@@ -32,24 +32,24 @@ namespace stormkit::lua::core {
               }(),
               ...);
 
-            metatable["BLACK"]       = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::BLACK<typename T::Storage>.c));
-            metatable["GRAY"]        = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::GRAY<typename T::Storage>.c));
-            metatable["SILVER"]      = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::SILVER<typename T::Storage>.c));
-            metatable["WHITE"]       = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::WHITE<typename T::Storage>.c));
-            metatable["MAROON"]      = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::MAROON<typename T::Storage>.c));
-            metatable["RED"]         = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::RED<typename T::Storage>.c));
-            metatable["OLIVE"]       = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::OLIVE<typename T::Storage>.c));
-            metatable["YELLOW"]      = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::YELLOW<typename T::Storage>.c));
-            metatable["GREEN"]       = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::GREEN<typename T::Storage>.c));
-            metatable["LIME"]        = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::LIME<typename T::Storage>.c));
-            metatable["TEAL"]        = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::TEAL<typename T::Storage>.c));
-            metatable["AQUA"]        = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::AQUA<typename T::Storage>.c));
-            metatable["NAVY"]        = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::NAVY<typename T::Storage>.c));
-            metatable["BLUE"]        = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::PURPLE<typename T::Storage>.c));
-            metatable["PURPLE"]      = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::PURPLE<typename T::Storage>.c));
-            metatable["FUSCHIA"]     = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::FUSCHIA<typename T::Storage>.c));
+            metatable["BLACK"]       = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::black<typename T::Storage>.c));
+            metatable["GRAY"]        = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::gray<typename T::Storage>.c));
+            metatable["SILVER"]      = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::silver<typename T::Storage>.c));
+            metatable["WHITE"]       = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::white<typename T::Storage>.c));
+            metatable["MAROON"]      = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::maroon<typename T::Storage>.c));
+            metatable["RED"]         = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::red<typename T::Storage>.c));
+            metatable["OLIVE"]       = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::olive<typename T::Storage>.c));
+            metatable["YELLOW"]      = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::yellow<typename T::Storage>.c));
+            metatable["GREEN"]       = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::green<typename T::Storage>.c));
+            metatable["LIME"]        = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::lime<typename T::Storage>.c));
+            metatable["TEAL"]        = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::teal<typename T::Storage>.c));
+            metatable["AQUA"]        = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::aqua<typename T::Storage>.c));
+            metatable["NAVY"]        = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::navy<typename T::Storage>.c));
+            metatable["BLUE"]        = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::purple<typename T::Storage>.c));
+            metatable["PURPLE"]      = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::purple<typename T::Storage>.c));
+            metatable["FUSCHIA"]     = sol::var(stormkit::to_layout<T::LAYOUT>(stormkit::colors::fuschia<typename T::Storage>.c));
             metatable["TRANSPARENT"] = sol::var(stormkit::to_layout<
-                                                T::LAYOUT>(stormkit::colors::TRANSPARENT<typename T::Storage>.c));
+                                                T::LAYOUT>(stormkit::colors::transparent<typename T::Storage>.c));
         }
     } // namespace
 

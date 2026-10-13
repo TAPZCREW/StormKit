@@ -10,40 +10,40 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     shm_buffer::~shm_buffer() {
-        if (m_handle) {
-            win32::UnmapViewOfFile(stdr::data(m_data));
-            win32::CloseHandle(std::bit_cast<win32::HANDLE>(m_handle));
-            m_handle = nullptr;
-            m_size   = 0;
+        if (handle_) {
+            win32::UnmapViewOfFile(stdr::data(data_));
+            win32::CloseHandle(std::bit_cast<win32::HANDLE>(handle_));
+            handle_ = nullptr;
+            size_   = 0;
         }
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    auto shm_buffer::do_init(usize size, string name, io::access access) noexcept -> system_result<void> {
-        m_size                 = size;
-        m_name                 = std::move(name);
-        m_access               = access;
-        const auto page_access = (has_flag_bit(m_access, io::access::WRITE) ? win32::PAGE_READWRITE : win32::PAGE_READONLY);
+    auto shm_buffer::do_init(usize size, string&& name, io::access access) noexcept -> system_result<void> {
+        size_                  = size;
+        name_                  = std::move(name);
+        access_                = access;
+        const auto page_access = (has_flag_bit(access_, io::access::write) ? win32::PAGE_READWRITE : win32::PAGE_READONLY);
 
         // TODO handle reallocation
-        m_handle = win32::CreateFileMappingA(win32::INVALID_HANDLE_VALUE,
-                                             nullptr,
-                                             as<win32::DWORD>(page_access),
-                                             0,
-                                             as<win32::DWORD>(m_size),
-                                             stdr::data(m_name));
-        if (m_handle == nullptr) return std::unexpected { error_code::from_win32() };
+        handle_ = win32::CreateFileMappingA(win32::INVALID_HANDLE_VALUE,
+                                            nullptr,
+                                            as<win32::DWORD>(page_access),
+                                            0,
+                                            as<win32::DWORD>(size_),
+                                            stdr::data(name_));
+        if (handle_ == nullptr) return std::unexpected { error_code::from_win32() };
 
-        const auto file_access = init_by<u32>([access = m_access](auto& file_access) noexcept {
-            if (has_flag_bit(access, io::access::READ)) file_access |= win32::FILE_MAP_READ;
-            if (has_flag_bit(access, io::access::WRITE)) file_access |= win32::FILE_MAP_WRITE;
+        const auto file_access = init_by<u32>([access = access_](auto& file_access) noexcept {
+            if (has_flag_bit(access, io::access::read)) file_access |= win32::FILE_MAP_READ;
+            if (has_flag_bit(access, io::access::write)) file_access |= win32::FILE_MAP_WRITE;
         });
 
-        auto buf = win32::MapViewOfFile(m_handle, file_access, 0, 0, as<win32::DWORD>(m_size));
+        auto buf = win32::MapViewOfFile(handle_, file_access, 0, 0, as<win32::DWORD>(size_));
         if (buf == nullptr) return std::unexpected { error_code::from_win32() };
 
-        m_data = { reinterpret_cast<byte*>(buf), m_size };
+        data_ = { reinterpret_cast<byte*>(buf), size_ };
 
         return {};
     }

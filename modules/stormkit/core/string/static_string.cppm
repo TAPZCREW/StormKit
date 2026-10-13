@@ -30,22 +30,23 @@ export namespace stormkit { inline namespace core {
         using reference        = value_type&;
         using const_reference  = const value_type&;
         template<typename Self>
-        using conditional_reference = meta::conditional<meta::const_type<Self>, const_reference, reference>;
+        using conditional_reference = meta::conditional<meta::const_qualified<Self>, const_reference, reference>;
         using pointer               = value_type*;
         using const_pointer         = const value_type*;
         template<typename Self>
-        using conditional_pointer = meta::conditional<meta::const_type<Self>, const_pointer, pointer>;
+        using conditional_pointer = meta::conditional<meta::const_qualified<Self>, const_pointer, pointer>;
         using iterator            = typename storage_type::iterator;
         using const_iterator      = typename storage_type::const_iterator;
         template<typename Self>
-        using conditional_iterator   = meta::conditional<meta::const_type<Self>, const_iterator, iterator>;
+        using conditional_iterator   = meta::conditional<meta::const_qualified<Self>, const_iterator, iterator>;
         using reverse_iterator       = std::reverse_iterator<typename storage_type::iterator>;
         using const_reverse_iterator = std::reverse_iterator<typename storage_type::const_iterator>;
         template<typename Self>
-        using conditional_reverse_iterator = meta::conditional<meta::const_type<Self>, const_reverse_iterator, reverse_iterator>;
+        using conditional_reverse_iterator = meta::
+          conditional<meta::const_qualified<Self>, const_reverse_iterator, reverse_iterator>;
 
-        static constexpr auto SIZE = as<size_type>(N - 1u);
-        static constexpr auto npos = SIZE + 1;
+        static constexpr auto static_size = as<size_type>(N - 1u);
+        static constexpr auto npos        = static_size + 1;
 
         consteval static_string() noexcept;
         consteval static_string(const value_type (&str)[N]) noexcept;
@@ -203,7 +204,7 @@ export namespace stormkit { inline namespace core {
         [[nodiscard]]
         constexpr operator string_view_type() const noexcept STORMKIT_LIFETIMEBOUND;
 
-        storage_type m_data = {};
+        storage_type data_ = {};
     };
 
     static_assert(meta::structural_type<static_string<1>>);
@@ -225,7 +226,7 @@ namespace stormkit { inline namespace core {
     template<usize N, typename CharT>
     STORMKIT_FORCE_INLINE
     consteval static_string<N, CharT>::static_string(const value_type (&str)[N]) noexcept {
-        std::copy_n(str, SIZE, std::data(m_data));
+        std::copy_n(str, static_size, std::data(data_));
     }
 
     /////////////////////////////////////
@@ -264,7 +265,7 @@ namespace stormkit { inline namespace core {
     template<typename Self>
     STORMKIT_FORCE_INLINE
     constexpr auto static_string<N, CharT>::begin(this Self& self) noexcept -> conditional_iterator<Self> {
-        return stdr::begin(std::forward_like<Self&>(self.m_data));
+        return stdr::begin(std::forward_like<Self&>(self.data_));
     }
 
     /////////////////////////////////////
@@ -272,7 +273,7 @@ namespace stormkit { inline namespace core {
     template<usize N, typename CharT>
     STORMKIT_FORCE_INLINE
     constexpr auto static_string<N, CharT>::cbegin() const noexcept -> const_iterator {
-        return stdr::cbegin(m_data);
+        return stdr::cbegin(data_);
     }
 
     /////////////////////////////////////
@@ -281,7 +282,7 @@ namespace stormkit { inline namespace core {
     template<typename Self>
     STORMKIT_FORCE_INLINE
     constexpr auto static_string<N, CharT>::end(this Self& self) noexcept -> conditional_iterator<Self> {
-        return stdr::end(std::forward_like<Self&>(self.m_data));
+        return stdr::end(std::forward_like<Self&>(self.data_));
     }
 
     /////////////////////////////////////
@@ -289,7 +290,7 @@ namespace stormkit { inline namespace core {
     template<usize N, typename CharT>
     STORMKIT_FORCE_INLINE
     constexpr auto static_string<N, CharT>::cend() const noexcept -> const_iterator {
-        return stdr::cend(m_data);
+        return stdr::cend(data_);
     }
 
     /////////////////////////////////////
@@ -298,7 +299,7 @@ namespace stormkit { inline namespace core {
     template<typename Self>
     STORMKIT_FORCE_INLINE
     constexpr auto static_string<N, CharT>::rbegin(this Self& self) noexcept -> conditional_reverse_iterator<Self> {
-        return stdr::rbegin(std::forward_like<Self&>(self.m_data));
+        return stdr::rbegin(std::forward_like<Self&>(self.data_));
     }
 
     /////////////////////////////////////
@@ -306,7 +307,7 @@ namespace stormkit { inline namespace core {
     template<usize N, typename CharT>
     STORMKIT_FORCE_INLINE
     constexpr auto static_string<N, CharT>::crbegin() const noexcept -> const_iterator {
-        return stdr::crbegin(m_data);
+        return stdr::crbegin(data_);
     }
 
     /////////////////////////////////////
@@ -315,7 +316,7 @@ namespace stormkit { inline namespace core {
     template<typename Self>
     STORMKIT_FORCE_INLINE
     constexpr auto static_string<N, CharT>::rend(this Self& self) noexcept -> conditional_reverse_iterator<Self> {
-        return stdr::rend(std::forward_like<Self&>(self.m_data));
+        return stdr::rend(std::forward_like<Self&>(self.data_));
     }
 
     /////////////////////////////////////
@@ -323,7 +324,7 @@ namespace stormkit { inline namespace core {
     template<usize N, typename CharT>
     STORMKIT_FORCE_INLINE
     constexpr auto static_string<N, CharT>::crend() const noexcept -> const_iterator {
-        return stdr::crend(m_data);
+        return stdr::crend(data_);
     }
 
     /////////////////////////////////////
@@ -333,7 +334,7 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     constexpr auto static_string<N, CharT>::operator[](this Self& self, size_type index) noexcept
       -> meta::forward_const_to<Self, reference> {
-        return std::forward_like<Self&>(self.m_data[index]);
+        return std::forward_like<Self&>(self.data_[index]);
     }
 
     /////////////////////////////////////
@@ -343,7 +344,7 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     constexpr auto static_string<N, CharT>::at(this Self& self, size_type index) noexcept
       -> meta::forward_const_to<Self, reference> {
-        EXPECTS(index < SIZE);
+        EXPECTS(index < static_size);
         return std::forward_like<Self&>(self.operator[](index));
     }
 
@@ -362,7 +363,7 @@ namespace stormkit { inline namespace core {
     template<typename Self>
     STORMKIT_FORCE_INLINE
     constexpr auto static_string<N, CharT>::back(this Self& self) noexcept -> meta::forward_const_to<Self, reference> {
-        return std::forward_like<Self&>(self.operator[](SIZE - 1));
+        return std::forward_like<Self&>(self.operator[](static_size - 1));
     }
 
     /////////////////////////////////////
@@ -371,7 +372,7 @@ namespace stormkit { inline namespace core {
     template<typename Self>
     STORMKIT_FORCE_INLINE
     constexpr auto static_string<N, CharT>::data(this Self& self) noexcept -> meta::forward_const_to<Self, value_type>* {
-        return stdr::data(std::forward_like<Self&>(self.m_data));
+        return stdr::data(std::forward_like<Self&>(self.data_));
     }
 
     /////////////////////////////////////
@@ -379,7 +380,7 @@ namespace stormkit { inline namespace core {
     template<usize N, typename CharT>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto static_string<N, CharT>::size() const noexcept -> size_type {
-        return SIZE;
+        return static_size;
     }
 
     /////////////////////////////////////
@@ -387,7 +388,7 @@ namespace stormkit { inline namespace core {
     template<usize N, typename CharT>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto static_string<N, CharT>::length() const noexcept -> size_type {
-        return SIZE;
+        return static_size;
     }
 
     /////////////////////////////////////
@@ -395,7 +396,7 @@ namespace stormkit { inline namespace core {
     template<usize N, typename CharT>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto static_string<N, CharT>::max_size() const noexcept -> size_type {
-        return SIZE;
+        return static_size;
     }
 
     /////////////////////////////////////
@@ -403,7 +404,7 @@ namespace stormkit { inline namespace core {
     template<usize N, typename CharT>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto static_string<N, CharT>::empty() const noexcept -> bool {
-        return SIZE != 0;
+        return static_size != 0;
     }
 
     /////////////////////////////////////
@@ -412,9 +413,9 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     constexpr auto static_string<N, CharT>::copy(ref_ptr<value_type> dest, size_type count, size_type pos) const noexcept
       -> size_type {
-        EXPECTS(count <= (SIZE - pos));
+        EXPECTS(count <= (static_size - pos));
         stdr::copy_n(dest, count, begin() + pos);
-        return SIZE;
+        return static_size;
     }
 
     /////////////////////////////////////
@@ -430,7 +431,7 @@ namespace stormkit { inline namespace core {
     template<usize N, typename CharT>
     STORMKIT_FORCE_INLINE
     constexpr auto static_string<N, CharT>::subview(size_type pos, size_type count) const & noexcept -> string_view_type {
-        EXPECTS(count <= (SIZE - pos));
+        EXPECTS(count <= (static_size - pos));
         return operator string_view_type().subview(pos, (count == npos) ? string_view_type::npos : count);
     }
 
@@ -770,6 +771,6 @@ namespace stormkit { inline namespace core {
     template<usize N, typename CharT>
     STORMKIT_FORCE_INLINE
     constexpr static_string<N, CharT>::operator string_view_type() const noexcept {
-        return string_view_type { stdr::data(m_data), stdr::size(m_data) };
+        return string_view_type { stdr::data(data_), stdr::size(data_) };
     }
 }} // namespace stormkit::core

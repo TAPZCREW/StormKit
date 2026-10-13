@@ -25,11 +25,11 @@ export namespace stormkit { inline namespace core {
         using reference       = value_type&;
         using const_reference = const value_type&;
         template<typename Self>
-        using conditional_reference = meta::conditional<meta::const_type<Self>, const_reference, reference>;
+        using conditional_reference = meta::conditional<meta::const_qualified<Self>, const_reference, reference>;
         using pointer               = value_type*;
         using const_pointer         = const value_type*;
         template<typename Self>
-        using conditional_pointer = meta::conditional<meta::const_type<Self>, const_pointer, pointer>;
+        using conditional_pointer = meta::conditional<meta::const_qualified<Self>, const_pointer, pointer>;
 
         constexpr defer_init();
         constexpr ~defer_init();
@@ -72,8 +72,8 @@ export namespace stormkit { inline namespace core {
       private:
         constexpr auto reset() noexcept -> void;
 
-        alignas(value_type) Storage m_data;
-        pointer m_pointer = nullptr;
+        alignas(value_type) Storage data_;
+        pointer pointer_ = nullptr;
     };
 }} // namespace stormkit::core
 
@@ -104,7 +104,7 @@ namespace stormkit { inline namespace core {
         reset();
 
         if (other.has_value()) [[likely]] {
-            m_pointer = new (std::data(m_data)) value_type { std::move(other.value()) };
+            pointer_ = new (std::data(data_)) value_type { std::move(other.value()) };
 
             other.reset();
         }
@@ -122,7 +122,7 @@ namespace stormkit { inline namespace core {
         reset();
 
         if (other.has_value()) [[likely]] {
-            m_pointer = new (std::data(m_data)) value_type { std::move(other.value()) };
+            pointer_ = new (std::data(data_)) value_type { std::move(other.value()) };
 
             other.reset();
         }
@@ -139,7 +139,7 @@ namespace stormkit { inline namespace core {
       -> void {
         reset();
 
-        m_pointer = new (std::data(m_data)) value_type { std::forward<Ts>(args)... };
+        pointer_ = new (std::data(data_)) value_type { std::forward<Ts>(args)... };
     }
 
     ////////////////////////////////////////
@@ -151,7 +151,7 @@ namespace stormkit { inline namespace core {
       construct_with_narrowing(Ts&&... args) noexcept(meta::noexcept_constructible_from<value_type, Ts...>) -> void {
         reset();
 
-        m_pointer = new (std::data(m_data)) value_type(std::forward<Ts>(args)...);
+        pointer_ = new (std::data(data_)) value_type(std::forward<Ts>(args)...);
     }
 
     ////////////////////////////////////////
@@ -161,7 +161,7 @@ namespace stormkit { inline namespace core {
     constexpr auto defer_init<T, Storage>::operator=(T&& value) noexcept(meta::noexcept_movable<value_type>) -> void {
         reset();
 
-        m_pointer = new (std::data(m_data)) value_type { std::move(value) };
+        pointer_ = new (std::data(data_)) value_type { std::move(value) };
     }
 
     /////////////////////////////////////
@@ -177,7 +177,7 @@ namespace stormkit { inline namespace core {
     template<typename T, typename Storage>
     STORMKIT_FORCE_INLINE
     constexpr auto defer_init<T, Storage>::has_value() const noexcept -> bool {
-        return m_pointer != nullptr;
+        return pointer_ != nullptr;
     }
 
     /////////////////////////////////////
@@ -185,9 +185,9 @@ namespace stormkit { inline namespace core {
     template<typename T, typename Storage>
     STORMKIT_FORCE_INLINE
     constexpr auto defer_init<T, Storage>::reset() noexcept -> void {
-        if (m_pointer) [[likely]] {
+        if (pointer_) [[likely]] {
             value().~value_type();
-            m_pointer = nullptr;
+            pointer_ = nullptr;
         }
     }
 
@@ -199,7 +199,7 @@ namespace stormkit { inline namespace core {
     constexpr auto defer_init<T, Storage>::value(this Self&& self) noexcept -> meta::forward_like<Self, value_type> {
         expects(self.has_value(), "Underlying object is not has_value");
 
-        return std::forward_like<Self>(*self.m_pointer);
+        return std::forward_like<Self>(*self.pointer_);
     }
 
     /////////////////////////////////////
@@ -210,7 +210,7 @@ namespace stormkit { inline namespace core {
     constexpr auto defer_init<T, Storage>::operator->(this Self& self) noexcept -> conditional_pointer<Self> {
         expects(self.has_value(), "Underlying object is not has_value");
 
-        return self.m_pointer;
+        return self.pointer_;
     }
 
     /////////////////////////////////////

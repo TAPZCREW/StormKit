@@ -39,7 +39,7 @@ namespace stormkit::math {
     constexpr auto factoriel(T n) noexcept -> T {
         if constexpr (core::meta::integral<T>) {
             const auto i = [](auto n) static noexcept {
-                if constexpr (core::meta::signed_type<T>) return abs(static_cast<usize>(n));
+                if constexpr (core::meta::signed_integer<T>) return abs(static_cast<usize>(n));
                 else
                     return static_cast<usize>(n);
             }(n);

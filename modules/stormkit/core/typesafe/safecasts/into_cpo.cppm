@@ -22,7 +22,7 @@ export namespace stormkit { inline namespace core {
         using invoke_result = meta::tag_invoke_result<into_fn<To>, Ts...>;
 
         template<typename... Ts>
-        static constexpr auto TAG_INVOKABLE = meta::tag_invocable<into_fn<To>, Ts...>;
+        static constexpr auto tag_invokable = meta::tag_invocable<into_fn<To>, Ts...>;
 
         template<typename... Ts>
         static constexpr auto operator()(Ts&&...) noexcept = delete ("Into caster not defined for these types!");
@@ -30,22 +30,22 @@ export namespace stormkit { inline namespace core {
         template<typename T, usize N>
         [[nodiscard]]
         static constexpr auto operator()(T (&values)[N]) noexcept -> invoke_result<decltype(values)>
-            requires(TAG_INVOKABLE<T (&)[N]>);
+            requires(tag_invokable<T (&)[N]>);
 
         template<typename T, usize N>
         [[nodiscard]]
         static constexpr auto operator()(T (&&values)[N]) noexcept -> invoke_result<decltype(values)>
-            requires(TAG_INVOKABLE<T (&&)[N]>);
+            requires(tag_invokable<T (&&)[N]>);
 
         template<typename Tag, typename T, usize N>
         [[nodiscard]]
         static constexpr auto operator()(Tag, T (&values)[N]) noexcept -> invoke_result<Tag, decltype(values)>
-            requires(TAG_INVOKABLE<Tag, T (&)[N]>);
+            requires(tag_invokable<Tag, T (&)[N]>);
 
         template<typename Tag, typename T, usize N>
         [[nodiscard]]
         static constexpr auto operator()(Tag, T (&&values)[N]) noexcept -> invoke_result<Tag, decltype(values)>
-            requires(TAG_INVOKABLE<Tag, T (&&)[N]>);
+            requires(tag_invokable<Tag, T (&&)[N]>);
     };
 
     template<typename To, typename T, usize N>
@@ -96,7 +96,7 @@ namespace stormkit { inline namespace core {
     template<typename T, usize N>
     STORMKIT_FORCE_INLINE
     constexpr auto into_fn<To>::operator()(T (&values)[N]) noexcept -> invoke_result<decltype(values)>
-        requires(TAG_INVOKABLE<T (&)[N]>)
+        requires(tag_invokable<T (&)[N]>)
     {
         return meta::tag_invoke(into_fn<To> {}, values);
     }
@@ -107,7 +107,7 @@ namespace stormkit { inline namespace core {
     template<typename T, usize N>
     STORMKIT_FORCE_INLINE
     constexpr auto into_fn<To>::operator()(T (&&values)[N]) noexcept -> invoke_result<decltype(values)>
-        requires(TAG_INVOKABLE<T (&&)[N]>)
+        requires(tag_invokable<T (&&)[N]>)
     {
         return meta::tag_invoke(into_fn<To> {}, std::move(values));
     }
@@ -118,7 +118,7 @@ namespace stormkit { inline namespace core {
     template<typename Tag, typename T, usize N>
     STORMKIT_FORCE_INLINE
     constexpr auto into_fn<To>::operator()(Tag tag, T (&values)[N]) noexcept -> invoke_result<Tag, decltype(values)>
-        requires(TAG_INVOKABLE<Tag, T (&)[N]>)
+        requires(tag_invokable<Tag, T (&)[N]>)
     {
         return meta::tag_invoke(into_fn<To> {}, tag, values);
     }
@@ -129,7 +129,7 @@ namespace stormkit { inline namespace core {
     template<typename Tag, typename T, usize N>
     STORMKIT_FORCE_INLINE
     constexpr auto into_fn<To>::operator()(Tag tag, T (&&values)[N]) noexcept -> invoke_result<Tag, decltype(values)>
-        requires(TAG_INVOKABLE<Tag, T (&&)[N]>)
+        requires(tag_invokable<Tag, T (&&)[N]>)
     {
         return meta::tag_invoke(into_fn<To> {}, tag, std::move(values));
     }

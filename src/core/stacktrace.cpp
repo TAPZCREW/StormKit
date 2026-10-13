@@ -92,7 +92,7 @@ namespace stormkit { inline namespace core {
                                             .value();
             splitted                    = split(splitted[0], "!");
             const auto formatted_symbol = prettify((stdr::size(splitted) >= 2)
-                                                     ? "\n    in " + (YELLOW_TEXT_STYLE | splitted[1]).render()
+                                                     ? "\n    in " + (yellow_text_style | splitted[1]).render()
                                                      : ""s);
     #elifdef STORMKIT_COMPILER_LIBCPP
             // clang-format off
@@ -107,7 +107,7 @@ namespace stormkit { inline namespace core {
             });
 
             const auto formatted_symbol = prettify((stdr::size(splitted) > 2)
-                                                     ? "\n    in " + (YELLOW_TEXT_STYLE | splitted[1]).render()
+                                                     ? "\n    in " + (yellow_text_style | splitted[1]).render()
                                                      : ""s);
     #else
             // TODO LIBSTDC++
@@ -120,19 +120,19 @@ namespace stormkit { inline namespace core {
                 std::println(stderr,
                              "{}# {}{}\n    at {}:{}",
                              (count - ignore_count),
-                             BLUE_TEXT_STYLE | object_address,
+                             blue_text_style | object_address,
                              formatted_symbol,
-                             GREEN_TEXT_STYLE | frame.source_file(),
-                             BLUE_TEXT_STYLE | frame.source_line());
+                             green_text_style | frame.source_file(),
+                             blue_text_style | frame.source_line());
             } else if (not stdr::empty(frame.source_file())) {
                 std::println(stderr,
                              "{}# {}{}\n    at {}",
                              (count - ignore_count),
-                             BLUE_TEXT_STYLE | object_address,
+                             blue_text_style | object_address,
                              formatted_symbol,
-                             GREEN_TEXT_STYLE | frame.source_file());
+                             green_text_style | frame.source_file());
             } else {
-                std::println(stderr, "{}# {}{}", (count - ignore_count), BLUE_TEXT_STYLE | object_address, formatted_symbol);
+                std::println(stderr, "{}# {}{}", (count - ignore_count), blue_text_style | object_address, formatted_symbol);
             }
             ++count;
         }
@@ -187,9 +187,9 @@ namespace stormkit { inline namespace core {
                 std::println(stderr,
                              "{}# {}\n    in {}\n    at {}",
                              (count - ignore_count),
-                             BLUE_TEXT_STYLE | object_address,
-                             YELLOW_TEXT_STYLE | formatted_symbol,
-                             GREEN_TEXT_STYLE | object);
+                             blue_text_style | object_address,
+                             yellow_text_style | formatted_symbol,
+                             green_text_style | object);
                 ++count;
 
                 if ((count - ignore_count) == 0) std::println(stderr, "No stacktrace available!");

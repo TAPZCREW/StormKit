@@ -24,10 +24,10 @@ enum flag2 {
 };
 
 template<>
-inline constexpr auto stormkit::core::meta::FLAG_TRAIT<flag> = true;
+inline constexpr auto stormkit::core::meta::flag_trait<flag> = true;
 
 template<>
-inline constexpr auto stormkit::core::meta::FLAG_TRAIT<flag2> = true;
+inline constexpr auto stormkit::core::meta::flag_trait<flag2> = true;
 
 namespace {
     auto _ = test::test_suite {

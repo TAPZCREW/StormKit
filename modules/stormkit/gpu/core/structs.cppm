@@ -233,7 +233,7 @@ export {
         };
 
         struct ClearColor {
-            fcolor_rgba color = stormkit::colors::SILVER<f32>;
+            fcolor_rgba color = stormkit::colors::silver<f32>;
 
             constexpr auto operator==(const ClearColor& other) const noexcept -> bool;
         };
@@ -324,16 +324,16 @@ export {
         [[nodiscard]]
         auto to_string(const PhysicalDeviceInfo& data) noexcept;
 
-        template<core::meta::hash_type Ret = hash32>
+        template<core::meta::hash Ret = hash32>
         constexpr auto hasher(const Viewport& value) noexcept -> Ret;
 
-        template<core::meta::hash_type Ret = hash32>
+        template<core::meta::hash Ret = hash32>
         constexpr auto hasher(const Scissor& value) noexcept -> Ret;
 
-        template<core::meta::hash_type Ret = hash32>
+        template<core::meta::hash Ret = hash32>
         constexpr auto hasher(const ClearColor& value) noexcept -> Ret;
 
-        template<core::meta::hash_type Ret = hash32>
+        template<core::meta::hash Ret = hash32>
         constexpr auto hasher(const ClearDepthStencil& value) noexcept -> Ret;
     } // namespace stormkit::gpu
 }
@@ -416,7 +416,7 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::hash_type Ret>
+    template<core::meta::hash Ret>
     constexpr auto hasher(const Viewport& value) noexcept -> Ret {
         return hash(value.position, value.extent, value.depth);
     }
@@ -424,21 +424,21 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
 
-    template<core::meta::hash_type Ret>
+    template<core::meta::hash Ret>
     constexpr auto hasher(const Scissor& value) noexcept -> Ret {
         return hash(value.offset, value.extent);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::hash_type Ret>
+    template<core::meta::hash Ret>
     constexpr auto hasher(const ClearColor& value) noexcept -> Ret {
         return hash(value.color);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<core::meta::hash_type Ret>
+    template<core::meta::hash Ret>
     constexpr auto hasher(const ClearDepthStencil& value) noexcept -> Ret {
         return hash(value.depth, value.stencil);
     }
