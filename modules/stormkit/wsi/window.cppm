@@ -148,7 +148,7 @@ export {
             auto is_open() const noexcept -> bool;
             auto handle_events() noexcept -> void;
 
-            auto clear(meta::in<ucolor_rgb> color = colors::BLACK<u8>) noexcept -> void;
+            auto clear(meta::in<ucolor_rgb> color = colors::black<u8>) noexcept -> void;
             auto fill_framebuffer(array_view<const ucolor_rgb> colors) noexcept -> void;
 
             template<event_cb_type T>
@@ -251,7 +251,7 @@ export {
     }} // namespace stormkit::wsi
 
     template<>
-    inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::wsi::window_flag> = true;
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::wsi::window_flag> = true;
 }
 
 ////////////////////////////////////////////////////////////////////

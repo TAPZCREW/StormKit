@@ -23,10 +23,10 @@ export {
     namespace stormkit { inline namespace core {
         namespace meta {
             template<enumeration T>
-            inline constexpr auto FLAG_TRAIT = false;
+            inline constexpr auto flag_trait = false;
 
             template<typename T>
-            concept is_flag = FLAG_TRAIT<T>;
+            concept is_flag = flag_trait<T>;
         } // namespace meta
 
         template<meta::is_flag T>
@@ -37,12 +37,12 @@ export {
         [[nodiscard]]
         constexpr auto has_flag_bit(T value, T flag) noexcept -> bool;
 
-        template<meta::enumeration T, usize N, T DEFAULT_VALUE, usize BUF_LEN = 50>
+        template<meta::enumeration T, usize N, T Default_value, usize Buf_size = 50>
         consteval auto generate_substitution_strings_for(string_view                                    prefix,
                                                          array_view<const std::pair<T, string_view>, N> mapping,
                                                          char separator = '|') noexcept -> decltype(auto);
 
-        template<meta::enumeration T, usize N, usize BUF_LEN = 50>
+        template<meta::enumeration T, usize N, usize Buf_size = 50>
         consteval auto generate_substitution_strings_for(string_view                                    prefix,
                                                          array_view<const std::pair<T, string_view>, N> mapping,
                                                          char separator = '|') noexcept -> decltype(auto);
@@ -83,22 +83,22 @@ namespace stormkit { inline namespace core {
         template<meta::arithmetic T>
         STORMKIT_FORCE_INLINE STORMKIT_CONST
         constexpr auto factoriel(T n) noexcept -> T {
-            constexpr auto FTABLE = array<u64, 14> {
+            constexpr auto ftable = array<u64, 14> {
                 1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880, 3628800, 39916800, 479001600, 6227020800
             };
 
             if constexpr (meta::integral<T>) {
                 const auto i = [](auto n) static noexcept {
-                    if constexpr (meta::signed_type<T>) return static_cast<usize>(std::abs(n));
+                    if constexpr (meta::signed_integer<T>) return static_cast<usize>(std::abs(n));
                     else
                         return static_cast<usize>(n);
                 }(n);
 
                 if constexpr (sizeof(T) <= 4) {
-                    expects(FTABLE[i], "factoriel<i8> with n >= 5 result in integer overflow");
-                    return static_cast<T>(FTABLE[i]);
+                    expects(ftable[i], "factoriel<i8> with n >= 5 result in integer overflow");
+                    return static_cast<T>(ftable[i]);
                 } else {
-                    if (i < stdr::size(FTABLE)) return static_cast<T>(FTABLE[static_cast<usize>(n)]);
+                    if (i < stdr::size(ftable)) return static_cast<T>(ftable[static_cast<usize>(n)]);
                 }
             }
 
@@ -126,16 +126,16 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::enumeration T, usize N, T DEFAULT_VALUE, usize BUF_LEN>
+    template<meta::enumeration T, usize N, T Default_value, usize Buf_size>
     consteval auto generate_substitution_strings_for(string_view                                    prefix,
                                                      array_view<const std::pair<T, string_view>, N> mapping,
                                                      char separator) noexcept -> decltype(auto) {
-        constexpr auto OUT_SIZE = [] {
+        static constexpr auto out_size = [] {
             auto res = 0uz;
 
             constexpr auto n_fact = details::factoriel(N);
 
-            if constexpr (static_cast<int>(DEFAULT_VALUE) == 0)
+            if constexpr (static_cast<int>(Default_value) == 0)
                 for (auto R = 0uz; R < (N - 1); ++R) res += n_fact / (details::factoriel(N - R) * details::factoriel(R));
             else
                 for (auto R = 0uz; R < N; ++R) res += n_fact / (details::factoriel(N - R) * details::factoriel(R));
@@ -143,7 +143,7 @@ namespace stormkit { inline namespace core {
             return res + 1;
         }();
 
-        auto out   = array<std::pair<T, static_string<BUF_LEN>>, OUT_SIZE> {};
+        auto out   = array<std::pair<T, static_string<Buf_size>>, out_size> {};
         auto queue = dynarray<std::tuple<T, string, bool>> {};
         for (const auto& [k, v] : mapping) queue.emplace_back(k, string { v }, true);
 
@@ -167,7 +167,7 @@ namespace stormkit { inline namespace core {
 
                 i += 1;
             }
-            if (key != DEFAULT_VALUE) {
+            if (key != Default_value) {
                 for (const auto& [k, v] : mapping) {
                     const auto has_key = stdr::any_of(queue, ([_k = k | key](auto&& tuple) noexcept {
                                                           const auto& [_key, _, _] = tuple;
@@ -176,7 +176,7 @@ namespace stormkit { inline namespace core {
 
                     if (not has_key) {
                         auto str = string_;
-                        if (k != DEFAULT_VALUE) {
+                        if (k != Default_value) {
                             str += " ";
                             str += separator;
                             str += " ";
@@ -193,11 +193,11 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::enumeration T, usize N, usize BUF_LEN>
+    template<meta::enumeration T, usize N, usize Buf_size>
     consteval auto generate_substitution_strings_for(string_view                                    prefix,
                                                      array_view<const std::pair<T, string_view>, N> mapping,
                                                      char separator) noexcept -> decltype(auto) {
-        constexpr auto OUT_SIZE = [] {
+        constexpr auto out_size = [] {
             auto res = 0uz;
 
             constexpr auto n_fact = details::factoriel(N);
@@ -206,7 +206,7 @@ namespace stormkit { inline namespace core {
             return res;
         }();
 
-        auto out   = array<std::pair<T, static_string<BUF_LEN>>, OUT_SIZE> {};
+        auto out   = array<std::pair<T, static_string<Buf_size>>, out_size> {};
         auto queue = dynarray<std::tuple<T, string, bool>> {};
         for (const auto& [k, v] : mapping) queue.emplace_back(k, string { v }, true);
 

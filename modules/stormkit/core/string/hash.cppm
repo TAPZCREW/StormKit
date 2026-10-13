@@ -31,11 +31,11 @@ export namespace stormkit { inline namespace core {
         static constexpr auto operator()(string_view value, T seed = 0) noexcept -> T;
     };
 
-    template<class Value, usize SIZE, class Key = frozen::string>
-    using static_string_hash_map = static_hash_map<Key, Value, SIZE>;
+    template<class Value, usize N, class Key = frozen::string>
+    using static_string_hash_map = static_hash_map<Key, Value, N>;
 
-    template<usize SIZE, class Value = frozen::string>
-    using static_string_hash_set = static_hash_set<Value, SIZE>;
+    template<usize N, class Value = frozen::string>
+    using static_string_hash_set = static_hash_set<Value, N>;
 
     template<class Value, class Key = string>
     using string_hash_map = hash_map<Key, Value, string_hash_fn, std::equal_to<>>;
@@ -43,7 +43,7 @@ export namespace stormkit { inline namespace core {
     template<class Value = string>
     using string_hash_set = hash_set<Value, string_hash_fn, std::equal_to<>>;
 
-    template<meta::hash_type Ret>
+    template<meta::hash Ret>
     constexpr auto tag_invoke(hash_fn<Ret>, string_view value) noexcept -> Ret;
 
     namespace literals {
@@ -62,7 +62,7 @@ namespace stormkit { inline namespace core {
       public:
         STORMKIT_FORCE_INLINE
         explicit constexpr lehmer_128_hasher(T basis) noexcept
-            : m_hash { basis } {}
+            : hash_ { basis } {}
 
         STORMKIT_FORCE_INLINE
         constexpr auto bytes(array_view<const byte, 4> bytes) noexcept -> void {
@@ -77,12 +77,12 @@ namespace stormkit { inline namespace core {
 
         STORMKIT_FORCE_INLINE
         constexpr auto dword(T val) noexcept -> void {
-            m_hash = mix(val ^ m_hash);
+            hash_ = mix(val ^ hash_);
         }
 
         STORMKIT_FORCE_INLINE
         constexpr auto hash() const noexcept -> T {
-            return m_hash;
+            return hash_;
         }
 
       private:
@@ -100,7 +100,7 @@ namespace stormkit { inline namespace core {
                 std::unreachable();
         }
 
-        T m_hash;
+        T hash_;
     };
 
     template<class Hasher>
@@ -115,7 +115,7 @@ namespace stormkit { inline namespace core {
                 if consteval {
                     w = as<u16>(s[0] | (s[1] << 8));
                 } else {
-                    // FIXME(strager): This is endian-dependent, but it makes GCC
+                    // FIXME: This is endian-dependent, but it makes GCC
                     // generate the code we want.
                     std::memcpy(&w, s, 2);
                 }
@@ -191,7 +191,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::hash_type Ret>
+    template<meta::hash Ret>
     STORMKIT_FORCE_INLINE
     constexpr auto tag_invoke(hash_fn<Ret>, string_view value) noexcept -> Ret {
         return as<Ret>(string_hash_fn::operator()<meta::underlying_type<Ret>>(value));

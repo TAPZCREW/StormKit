@@ -33,11 +33,11 @@ namespace stormkit { inline namespace core { namespace meta::details {
     };
 
 #if not(defined(__cpp_pack_indexing) and __cpp_pack_indexing >= 202311L)
-    template<usize AT, typename... Ts>
+    template<usize At, typename... Ts>
     struct nth_type_impl;
 
-    template<usize AT, typename Head, typename... Ts>
-    struct nth_type_impl<AT, Head, Ts...>: nth_type_impl<AT - 1, Ts...> {};
+    template<usize At, typename Head, typename... Ts>
+    struct nth_type_impl<At, Head, Ts...>: nth_type_impl<At - 1, Ts...> {};
 
     template<typename Head, typename... Ts>
     struct nth_type_impl<0, Head, Ts...> {
@@ -47,11 +47,11 @@ namespace stormkit { inline namespace core { namespace meta::details {
 }}} // namespace stormkit::core::meta::details
 
 export namespace stormkit { inline namespace core { namespace meta {
-    template<bool COND, typename Then, typename OrElse>
-    using lazy_conditional = details::lazy_conditional<COND, details::lazy_type, Then, OrElse>::type;
+    template<bool Cond, typename Then, typename OrElse>
+    using lazy_conditional = details::lazy_conditional<Cond, details::lazy_type, Then, OrElse>::type;
 
-    template<bool COND, typename Then, typename OrElse>
-    using conditional = std::conditional_t<COND, Then, OrElse>;
+    template<bool Cond, typename Then, typename OrElse>
+    using conditional = std::conditional_t<Cond, Then, OrElse>;
 
     template<typename T, template<typename...> concept C, typename... Ts>
     concept negate = not C<T, Ts...>;
@@ -72,11 +72,11 @@ export namespace stormkit { inline namespace core { namespace meta {
     using identity = details::lazy_type<T>::type;
 
 #if defined(__cpp_pack_indexing) and __cpp_pack_indexing >= 202311L
-    template<usize AT, typename... Ts>
-    using nth_type = Ts...[AT];
+    template<usize At, typename... Ts>
+    using nth_type = Ts...[At];
 #else
-    template<usize AT, typename... Ts>
-    using nth_type = typename details::nth_type_impl<AT, Ts...>::type;
+    template<usize At, typename... Ts>
+    using nth_type = typename details::nth_type_impl<At, Ts...>::type;
 #endif
 
     template<typename... Ts>
@@ -87,7 +87,7 @@ export namespace stormkit { inline namespace core { namespace meta {
 }}} // namespace stormkit::core::meta
 
 ////////////////////////////////////////////////////////////////////
-///                      IMPLEMENTATION                          ///
+///                      IMPLEMENTAtION                          ///
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit { inline namespace core { namespace meta {

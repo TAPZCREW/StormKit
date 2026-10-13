@@ -144,7 +144,7 @@ namespace stormkit::image::details {
         for (auto i : range(image_rgb.mip_levels())) {
             if (i >= 1u) _filename += to_native_encoding(std::format("_mip{}", i));
 
-            auto file = io::binary_file::open(_filename, io::access::WRITE);
+            auto file = io::binary_file::open(_filename, io::access::write);
             if (not file) return std::unexpected { status_code(image_status_code::FAILED_TO_SAVE) };
             // return std::unexpected(Error { .reason = Reason::FAILED_TO_SAVE, .str_error = error_data.msg });
 

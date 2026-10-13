@@ -36,7 +36,7 @@ export {
     } // namespace stormkit::log
 
     template<>
-    inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::log::severity> = true;
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::log::severity> = true;
 
     namespace stormkit::log {
         STORMKIT_LOG_API

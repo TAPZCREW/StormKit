@@ -102,11 +102,11 @@ auto Renderer::do_initBaseRenderObjects() -> void {
     m_instance = allocate<gpu::Instance>();
     ilog("Render backend successfully initialized");
     ilog("Using StormKit {}.{}.{} {} {}, built with {}",
-         STORMKIT_MAJOR_VERSION,
-         STORMKIT_MINOR_VERSION,
-         STORMKIT_PATCH_VERSION,
-         STORMKIT_GIT_BRANCH,
-         STORMKIT_GIT_COMMIT_HASH,
+         config::major_version,
+         config::minor_version,
+         config::patch_version,
+         config::git_branch,
+         config::git_commit_hash,
          STORMKIT_COMPILER);
 
     ilog("--------- Physical Devices ----------");

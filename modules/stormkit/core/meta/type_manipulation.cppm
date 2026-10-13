@@ -63,7 +63,7 @@ module;
     template<typename First, typename... Ts>                                                               \
     concept wrapped_value_of = apply_to<First, meta::wrapped_value_of, Ts...>;                             \
     template<typename First, typename... Ts>                                                               \
-    concept polymorphic_type = apply_to<First, meta::polymorphic_type, Ts...>;                             \
+    concept polymorphic = apply_to<First, meta::polymorphic, Ts...>;                             \
     template<typename First, typename... Ts>                                                               \
     concept polymorphic_pointer = apply_to<First, meta::polymorphic_pointer, Ts...>;                       \
     template<typename First, typename... Ts>                                                               \
@@ -91,19 +91,19 @@ module;
     template<typename First, typename... Ts>                                                               \
     concept binary_predicate = apply_to<First, meta::binary_predicate, Ts...>;                             \
     template<typename First, typename... Ts>                                                               \
-    concept char_type = apply_to<First, meta::char_type, Ts...>;                                           \
+    concept character = apply_to<First, meta::character, Ts...>;                                           \
     template<typename First, typename... Ts>                                                               \
-    concept const_type = apply_to<First, meta::const_type, Ts...>;                                         \
+    concept const_qualified = apply_to<First, meta::const_qualified, Ts...>;                                         \
     template<typename First, typename... Ts>                                                               \
-    concept volatile_type = apply_to<First, meta::volatile_type, Ts...>;                                   \
+    concept volatile_qualified = apply_to<First, meta::volatile_qualified, Ts...>;                                   \
     template<typename First, typename... Ts>                                                               \
     concept brace_initializable_to = apply_to<First, meta::brace_initializable_to, Ts...>;                 \
     template<typename First, typename... Ts>                                                               \
-    concept unsigned_type = apply_to<First, meta::unsigned_type, Ts...>;                                   \
+    concept unsigned_integer = apply_to<First, meta::unsigned_integer, Ts...>;                                   \
     template<typename First, typename... Ts>                                                               \
-    concept signed_type = apply_to<First, meta::signed_type, Ts...>;                                       \
+    concept signed_integer = apply_to<First, meta::signed_integer, Ts...>;                                       \
     template<typename First, typename... Ts>                                                               \
-    concept has_same_signeness = apply_to<First, meta::has_same_signeness, Ts...>;                         \
+    concept same_signeness_as = apply_to<First, meta::same_signeness_as, Ts...>;                         \
     template<typename First, typename... Ts>                                                               \
     concept is_sign_narrowing = apply_to<First, meta::is_sign_narrowing, Ts...>;                           \
     template<typename First, typename... Ts>                                                               \
@@ -159,7 +159,7 @@ module;
     template<typename First, typename... Ts>                                                               \
     concept prefer_pass_by_ref = apply_to<First, meta::prefer_pass_by_ref, Ts...>;                         \
     template<typename First, typename... Ts>                                                               \
-    concept hash_type = apply_to<First, meta::hash_type, Ts...>;
+    concept hash = apply_to<First, meta::hash, Ts...>;
 
 export module stormkit.core.meta.type_manipulation;
 
@@ -295,8 +295,8 @@ namespace stormkit { inline namespace core { namespace meta::details {
     struct forward_const_to {
       private:
         using T1 = remove_indirections_of<T>;
-        using U1 = conditional<const_type<T1>, add_const_to<U>, U>;
-        using U2 = conditional<volatile_type<T1>, add_volatile_to<U1>, U1>;
+        using U1 = conditional<const_qualified<T1>, add_const_to<U>, U>;
+        using U2 = conditional<volatile_qualified<T1>, add_volatile_to<U1>, U1>;
 
       public:
         using type = U2;

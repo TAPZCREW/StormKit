@@ -17,19 +17,28 @@ ${define STORMKIT_LIB_WSI_ENABLED}
 ${define STORMKIT_LIB_GPU_ENABLED}
 ${define STORMKIT_LIB_LUA_ENABLED}
 
+#define STORMKIT_MAJOR_VERSION   ${VERSION_MAJOR};
+#define STORMKIT_MINOR_VERSION   ${VERSION_MINOR};
+#define STORMKIT_PATCH_VERSION   ${VERSION_ALTER};
+#define STORMKIT_BUILD_VERSION   "${VERSION_BUILD}"
+#define STORMKIT_VERSION         "${VERSION}-${VERSION_BUILD}"
+#define STORMKIT_BUILD_TYPE      "${MODE}"
+#define STORMKIT_GIT_COMMIT_HASH "${STORMKIT_GIT_COMMIT_HASH}"
+#define STORMKIT_GIT_BRANCH      "${STORMKIT_GIT_BRANCH}"
+
 #ifndef NO_CONSTANTS
-_STORMKIT_EXPORT namespace stormkit { inline namespace core {
+_STORMKIT_EXPORT namespace stormkit { inline namespace core { namespace config {
     // clang-format off
-    inline constexpr auto STORMKIT_MAJOR_VERSION   = ${VERSION_MAJOR};
-    inline constexpr auto STORMKIT_MINOR_VERSION   = ${VERSION_MINOR};
-    inline constexpr auto STORMKIT_PATCH_VERSION   = ${VERSION_ALTER};
-    inline constexpr auto STORMKIT_BUILD_VERSION   = std::string_view { "${VERSION_BUILD}" };
-    inline constexpr auto STORMKIT_VERSION         = std::string_view { "${VERSION}-${VERSION_BUILD}" };
-    inline constexpr auto STORMKIT_BUILD_TYPE      = std::string_view { "${MODE}" };
-    inline constexpr auto STORMKIT_GIT_COMMIT_HASH = std::string_view { "${STORMKIT_GIT_COMMIT_HASH}" };
-    inline constexpr auto STORMKIT_GIT_BRANCH      = std::string_view { "${STORMKIT_GIT_BRANCH}" };
+    inline constexpr auto major_version   = ${VERSION_MAJOR};
+    inline constexpr auto minor_version   = ${VERSION_MINOR};
+    inline constexpr auto patch_version   = ${VERSION_ALTER};
+    inline constexpr auto build_version   = std::string_view { "${VERSION_BUILD}" };
+    inline constexpr auto version         = std::string_view { "${VERSION}-${VERSION_BUILD}" };
+    inline constexpr auto build_type      = std::string_view { "${MODE}" };
+    inline constexpr auto git_commit_hash = std::string_view { "${STORMKIT_GIT_COMMIT_HASH}" };
+    inline constexpr auto git_branch      = std::string_view { "${STORMKIT_GIT_BRANCH}" };
     // clang-format on
-}} // namespace stormkit::core
+}}} // namespace stormkit::core
 #endif
 
 #undef _STORMKIT_EXPORT

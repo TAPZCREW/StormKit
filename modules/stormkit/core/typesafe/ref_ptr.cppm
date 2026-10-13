@@ -26,7 +26,7 @@ namespace stdv = std::views;
 namespace stormkit { inline namespace core { namespace meta::details {
     template<typename U, typename T>
     concept compatible_pointer = meta::is<meta::to_plain_type<meta::pointed_type<U>>, meta::remove_const_of<T>>
-                                 and not(not meta::const_type<T> and meta::const_type<meta::pointed_type<U>>);
+                                 and not(not meta::const_qualified<T> and meta::const_qualified<meta::pointed_type<U>>);
 }}} // namespace stormkit::core::meta::details
 
 export namespace stormkit { inline namespace core {
@@ -78,10 +78,10 @@ export namespace stormkit { inline namespace core {
         constexpr operator const_pointer() const noexcept;
         [[nodiscard]]
         constexpr operator ref_ptr<const_element_type>() const noexcept
-            requires(not meta::const_type<element_type>);
+            requires(not meta::const_qualified<element_type>);
         [[nodiscard]]
         constexpr operator std::reference_wrapper<element_type>() noexcept
-            requires(meta::const_type<element_type>);
+            requires(meta::const_qualified<element_type>);
         [[nodiscard]]
         constexpr operator std::reference_wrapper<const_element_type>() const noexcept;
         [[nodiscard]]
@@ -123,7 +123,7 @@ export namespace stormkit { inline namespace core {
             requires std::three_way_comparable<pointer, meta::pointer_type<ref_ptr<U>>>;
 
       private:
-        pointer m_pointed;
+        pointer pointed_;
     };
 
     template<meta::view_pointer U>
@@ -134,12 +134,12 @@ export namespace stormkit { inline namespace core {
 }} // namespace stormkit::core
 
 namespace stormkit { inline namespace core { namespace meta {
-    template<bool CONST, stdr::input_range Range>
-    using ref_type_from_range = ref_ptr<conditional<CONST, const range_value_type<Range>, range_value_type<Range>>>;
+    template<bool Const, stdr::input_range Range>
+    using ref_type_from_range = ref_ptr<conditional<Const, const range_value_type<Range>, range_value_type<Range>>>;
 
-    template<bool CONST, typename... Ts>
+    template<bool Const, typename... Ts>
     using ref_type_from_pack = ref_ptr<
-      conditional<CONST, const indirection_target_type<first_type<Ts...>>, indirection_target_type<first_type<Ts...>>>>;
+      conditional<Const, const indirection_target_type<first_type<Ts...>>, indirection_target_type<first_type<Ts...>>>>;
 }}} // namespace stormkit::core::meta
 
 export namespace stormkit { inline namespace core {
@@ -151,11 +151,11 @@ export namespace stormkit { inline namespace core {
     [[nodiscard]]
     constexpr auto ref_of(const T& of) noexcept -> ref_ptr<const meta::pointed_type<T>>;
 
-    template<meta::negate<meta::const_type> T>
+    template<meta::negate<meta::const_qualified> T>
     [[nodiscard]]
     constexpr auto mutable_ref_of(T& of) noexcept -> ref_ptr<T>;
 
-    template<meta::negate<meta::const_type> T>
+    template<meta::negate<meta::const_qualified> T>
     [[nodiscard]]
     constexpr auto mutable_ref_of(T& of) noexcept -> ref_ptr<meta::pointed_type<T>>
         requires(meta::pointer<T>);
@@ -202,7 +202,7 @@ namespace stormkit { inline namespace core {
     template<meta::negate<meta::reference> T>
     STORMKIT_FORCE_INLINE
     constexpr ref_ptr<T>::ref_ptr(T& pointed STORMKIT_LIFETIMEBOUND) noexcept
-        : m_pointed { std::addressof(pointed) } {
+        : pointed_ { std::addressof(pointed) } {
     }
 
     // template<meta::plain::view_pointer_to<element_type> U>
@@ -218,7 +218,7 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     constexpr ref_ptr<T>::ref_ptr(U pointed) noexcept
         requires(meta::details::compatible_pointer<U, T>)
-        : m_pointed { std::addressof(*pointed) } {
+        : pointed_ { std::addressof(*pointed) } {
     }
 
     /////////////////////////////////////
@@ -228,7 +228,7 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     constexpr ref_ptr<T>::ref_ptr(U& pointed STORMKIT_LIFETIMEBOUND) noexcept
         requires(meta::details::compatible_pointer<U, T>)
-        : m_pointed { std::addressof(*pointed) } {
+        : pointed_ { std::addressof(*pointed) } {
     }
 
     /////////////////////////////////////
@@ -243,7 +243,7 @@ namespace stormkit { inline namespace core {
     template<meta::is<meta::element_type<ref_ptr<T>>> U>
     STORMKIT_FORCE_INLINE
     constexpr ref_ptr<T>::ref_ptr(const ref_ptr<U>& other) noexcept
-        : m_pointed { static_cast<pointer>(other.m_pointed) } {
+        : pointed_ { static_cast<pointer>(other.pointed_) } {
     }
 
     /////////////////////////////////////
@@ -252,7 +252,7 @@ namespace stormkit { inline namespace core {
     template<meta::is<meta::element_type<ref_ptr<T>>> U>
     STORMKIT_FORCE_INLINE
     constexpr ref_ptr<T>::ref_ptr(ref_ptr<U>&& other) noexcept
-        : m_pointed { static_cast<pointer>(other.m_pointed) } {
+        : pointed_ { static_cast<pointer>(other.pointed_) } {
     }
 
     /////////////////////////////////////
@@ -264,7 +264,7 @@ namespace stormkit { inline namespace core {
         if (&other == this) [[unlikely]]
             return *this;
 
-        m_pointed = static_cast<pointer>(other.pointed);
+        pointed_ = static_cast<pointer>(other.pointed);
 
         return *this;
     }
@@ -275,7 +275,7 @@ namespace stormkit { inline namespace core {
     template<typename Self>
     STORMKIT_FORCE_INLINE
     constexpr auto ref_ptr<T>::operator->(this Self& self) noexcept -> meta::forward_const_to<Self, element_type>* {
-        return static_cast<meta::forward_const_to<Self, element_type>*>(self.m_pointed);
+        return static_cast<meta::forward_const_to<Self, element_type>*>(self.pointed_);
     }
 
     /////////////////////////////////////
@@ -284,7 +284,7 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     template<typename Self>
     constexpr auto ref_ptr<T>::operator*(this Self& self) noexcept -> meta::forward_const_to<Self, element_type>& {
-        return *self.m_pointed;
+        return *self.pointed_;
     }
 
     /////////////////////////////////////
@@ -293,7 +293,7 @@ namespace stormkit { inline namespace core {
     STORMKIT_FORCE_INLINE
     template<typename Self>
     constexpr auto ref_ptr<T>::get(this Self& self) noexcept -> meta::forward_const_to<Self, element_type>* {
-        return static_cast<meta::forward_const_to<Self, element_type>*>(self.m_pointed);
+        return static_cast<meta::forward_const_to<Self, element_type>*>(self.pointed_);
     }
 
     /////////////////////////////////////
@@ -301,7 +301,7 @@ namespace stormkit { inline namespace core {
     template<meta::negate<meta::reference> T>
     STORMKIT_FORCE_INLINE
     constexpr ref_ptr<T>::operator pointer() noexcept {
-        return m_pointed;
+        return pointed_;
     }
 
     /////////////////////////////////////
@@ -309,7 +309,7 @@ namespace stormkit { inline namespace core {
     template<meta::negate<meta::reference> T>
     STORMKIT_FORCE_INLINE
     constexpr ref_ptr<T>::operator const_pointer() const noexcept {
-        return static_cast<const_pointer>(m_pointed);
+        return static_cast<const_pointer>(pointed_);
     }
 
     /////////////////////////////////////
@@ -317,9 +317,9 @@ namespace stormkit { inline namespace core {
     template<meta::negate<meta::reference> T>
     STORMKIT_FORCE_INLINE
     constexpr ref_ptr<T>::operator ref_ptr<const_element_type>() const noexcept
-        requires(not meta::const_type<element_type>)
+        requires(not meta::const_qualified<element_type>)
     {
-        return ref_ptr<const element_type> { *m_pointed };
+        return ref_ptr<const element_type> { *pointed_ };
     }
 
     /////////////////////////////////////
@@ -327,9 +327,9 @@ namespace stormkit { inline namespace core {
     template<meta::negate<meta::reference> T>
     STORMKIT_FORCE_INLINE
     constexpr ref_ptr<T>::operator std::reference_wrapper<element_type>() noexcept
-        requires(meta::const_type<element_type>)
+        requires(meta::const_qualified<element_type>)
     {
-        return std::ref(*m_pointed);
+        return std::ref(*pointed_);
     }
 
     /////////////////////////////////////
@@ -337,7 +337,7 @@ namespace stormkit { inline namespace core {
     template<meta::negate<meta::reference> T>
     STORMKIT_FORCE_INLINE
     constexpr ref_ptr<T>::operator std::reference_wrapper<const_element_type>() const noexcept {
-        return std::cref(*m_pointed);
+        return std::cref(*pointed_);
     }
 
     /////////////////////////////////////
@@ -361,7 +361,7 @@ namespace stormkit { inline namespace core {
     template<meta::negate<meta::reference> T>
     STORMKIT_FORCE_INLINE
     constexpr auto ref_ptr<T>::operator<(std::nullptr_t) const noexcept -> bool {
-        return std::less<pointer> {}(m_pointed, nullptr);
+        return std::less<pointer> {}(pointed_, nullptr);
     }
 
     /////////////////////////////////////
@@ -395,7 +395,7 @@ namespace stormkit { inline namespace core {
     constexpr auto ref_ptr<T>::operator<=>(std::nullptr_t) const noexcept -> std::compare_three_way_result_t<pointer, pointer>
         requires std::three_way_comparable<pointer, pointer>
     {
-        return std::compare_three_way {}(m_pointed, static_cast<pointer>(nullptr));
+        return std::compare_three_way {}(pointed_, static_cast<pointer>(nullptr));
     }
 
     /////////////////////////////////////
@@ -404,7 +404,7 @@ namespace stormkit { inline namespace core {
     template<meta::negate<meta::reference> U>
     STORMKIT_FORCE_INLINE
     constexpr auto ref_ptr<T>::operator==(const ref_ptr<U>& other) const noexcept -> bool {
-        return m_pointed == other.m_pointed;
+        return pointed_ == other.pointed_;
     }
 
     /////////////////////////////////////
@@ -413,7 +413,7 @@ namespace stormkit { inline namespace core {
     template<meta::negate<meta::reference> U>
     STORMKIT_FORCE_INLINE
     constexpr auto ref_ptr<T>::operator<(const ref_ptr<U>& other) const noexcept -> bool {
-        return std::less<std::common_type_t<pointer, meta::pointer_type<ref_ptr<U>>>> {}(m_pointed, other.m_pointed);
+        return std::less<std::common_type_t<pointer, meta::pointer_type<ref_ptr<U>>>> {}(pointed_, other.pointed_);
     }
 
     /////////////////////////////////////
@@ -452,7 +452,7 @@ namespace stormkit { inline namespace core {
       -> std::compare_three_way_result_t<pointer, meta::pointer_type<ref_ptr<U>>>
         requires std::three_way_comparable<pointer, meta::pointer_type<ref_ptr<U>>>
     {
-        return m_pointed <=> other.m_pointed;
+        return pointed_ <=> other.pointed_;
     }
 
     /////////////////////////////////////
@@ -473,7 +473,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::negate<meta::const_type> T>
+    template<meta::negate<meta::const_qualified> T>
     STORMKIT_FORCE_INLINE
     constexpr auto mutable_ref_of(T& of) noexcept -> ref_ptr<T> {
         return ref_ptr { of };
@@ -481,7 +481,7 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::negate<meta::const_type> T>
+    template<meta::negate<meta::const_qualified> T>
     STORMKIT_FORCE_INLINE
     constexpr auto mutable_ref_of(T& of) noexcept -> ref_ptr<meta::pointed_type<T>>
         requires(meta::pointer<T>)

@@ -32,7 +32,7 @@ export namespace stormkit { inline namespace core {
       private:
         static auto once_flag() noexcept -> std::once_flag&;
 
-        static inline heap_ptr<T> m_instance = nullptr;
+        static inline heap_ptr<T> instance_ = nullptr;
     };
 }} // namespace stormkit::core
 
@@ -56,11 +56,11 @@ namespace stormkit { inline namespace core {
     template<typename T>
     template<typename... Ts>
     auto singleton<T>::instance(Ts&&... args) noexcept(meta::noexcept_constructible_from<T, Ts...>) -> T& {
-        const auto init = [](Ts&&... args) { m_instance = allocate_unsafe<T>(std::forward<Ts>(args)...); };
+        const auto init = [](Ts&&... args) { instance_ = allocate_unsafe<T>(std::forward<Ts>(args)...); };
 
         std::call_once(once_flag(), init, std::forward<Ts>(args)...);
 
-        return *m_instance;
+        return *instance_;
     }
 
     /////////////////////////////////////

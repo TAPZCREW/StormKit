@@ -25,49 +25,49 @@ using namespace stormkit::literals;
 export namespace stormkit { inline namespace core {
     namespace meta {
         template<typename T>
-        concept color_component_type = is_any_of<T, u8, f32, f64>;
+        concept color_component = is_any_of<T, u8, f32, f64>;
     } // namespace meta
 
     enum class color_layout {
-        R,
-        RG,
-        RGB,
-        BGR,
-        RGBA,
-        ARGB,
-        BGRA,
-        ABGR,
+        r,
+        rg,
+        rgb,
+        bgr,
+        rgba,
+        argb,
+        bgra,
+        abgr,
     };
 
-    template<meta::color_component_type T>
-    inline constexpr auto COLOR_COMPONENT_MAX = T { 1 };
+    template<meta::color_component T>
+    inline constexpr auto color_component_max = T { 1 };
 
     template<>
-    inline constexpr auto COLOR_COMPONENT_MAX<u8> = 0xFF;
+    inline constexpr auto color_component_max<u8> = 0xFF;
 
-    template<color_layout LAYOUT, meta::color_component_type T>
+    template<color_layout Layout, meta::color_component T>
     struct color;
 
-    template<meta::color_component_type T>
-    struct color<color_layout::R, T> {
+    template<meta::color_component T>
+    struct color<color_layout::r, T> {
         using component_type = T;
         using param_type     = meta::conditional<(sizeof(component_type) * 1) <= (sizeof(void*) * 2), color, const color&>;
 
-        static constexpr auto LAYOUT           = color_layout::R;
-        static constexpr auto COMPONENTS_COUNT = 1;
+        static constexpr auto layout          = color_layout::r;
+        static constexpr auto component_count = 1;
 
         component_type r;
 
         constexpr auto operator==(param_type other) const noexcept -> bool;
     };
 
-    template<meta::color_component_type T>
-    struct color<color_layout::RG, T> {
+    template<meta::color_component T>
+    struct color<color_layout::rg, T> {
         using component_type = T;
         using param_type     = meta::conditional<(sizeof(component_type) * 2) <= (sizeof(void*) * 2), color, const color&>;
 
-        static constexpr auto LAYOUT           = color_layout::RG;
-        static constexpr auto COMPONENTS_COUNT = 2;
+        static constexpr auto layout          = color_layout::rg;
+        static constexpr auto component_count = 2;
 
         component_type r;
         component_type g;
@@ -75,13 +75,13 @@ export namespace stormkit { inline namespace core {
         constexpr auto operator==(param_type other) const noexcept -> bool;
     };
 
-    template<meta::color_component_type T>
-    struct color<color_layout::RGB, T> {
+    template<meta::color_component T>
+    struct color<color_layout::rgb, T> {
         using component_type = T;
         using param_type     = meta::conditional<(sizeof(component_type) * 3) <= (sizeof(void*) * 2), color, const color&>;
 
-        static constexpr auto LAYOUT           = color_layout::RGB;
-        static constexpr auto COMPONENTS_COUNT = 3;
+        static constexpr auto layout          = color_layout::rgb;
+        static constexpr auto component_count = 3;
 
         component_type r;
         component_type g;
@@ -90,13 +90,13 @@ export namespace stormkit { inline namespace core {
         constexpr auto operator==(param_type other) const noexcept -> bool;
     };
 
-    template<meta::color_component_type T>
-    struct color<color_layout::RGBA, T> {
+    template<meta::color_component T>
+    struct color<color_layout::rgba, T> {
         using component_type = T;
         using param_type     = meta::conditional<(sizeof(component_type) * 4) <= (sizeof(void*) * 2), color, const color&>;
 
-        static constexpr auto LAYOUT           = color_layout::RGBA;
-        static constexpr auto COMPONENTS_COUNT = 4;
+        static constexpr auto layout          = color_layout::rgba;
+        static constexpr auto component_count = 4;
 
         component_type r;
         component_type g;
@@ -106,13 +106,13 @@ export namespace stormkit { inline namespace core {
         constexpr auto operator==(param_type other) const noexcept -> bool;
     };
 
-    template<meta::color_component_type T>
-    struct color<color_layout::ARGB, T> {
+    template<meta::color_component T>
+    struct color<color_layout::argb, T> {
         using component_type = T;
         using param_type     = meta::conditional<(sizeof(component_type) * 4) <= (sizeof(void*) * 2), color, const color&>;
 
-        static constexpr auto LAYOUT           = color_layout::ARGB;
-        static constexpr auto COMPONENTS_COUNT = 4;
+        static constexpr auto layout          = color_layout::argb;
+        static constexpr auto component_count = 4;
 
         component_type a;
         component_type r;
@@ -122,13 +122,13 @@ export namespace stormkit { inline namespace core {
         constexpr auto operator==(param_type other) const noexcept -> bool;
     };
 
-    template<meta::color_component_type T>
-    struct color<color_layout::BGR, T> {
+    template<meta::color_component T>
+    struct color<color_layout::bgr, T> {
         using component_type = T;
         using param_type     = meta::conditional<(sizeof(component_type) * 3) <= (sizeof(void*) * 2), color, const color&>;
 
-        static constexpr auto LAYOUT           = color_layout::BGR;
-        static constexpr auto COMPONENTS_COUNT = 3;
+        static constexpr auto layout          = color_layout::bgr;
+        static constexpr auto component_count = 3;
 
         component_type b;
         component_type g;
@@ -137,13 +137,13 @@ export namespace stormkit { inline namespace core {
         constexpr auto operator==(param_type other) const noexcept -> bool;
     };
 
-    template<meta::color_component_type T>
-    struct color<color_layout::BGRA, T> {
+    template<meta::color_component T>
+    struct color<color_layout::bgra, T> {
         using component_type = T;
         using param_type     = meta::conditional<(sizeof(component_type) * 4) <= (sizeof(void*) * 2), color, const color&>;
 
-        static constexpr auto LAYOUT           = color_layout::BGRA;
-        static constexpr auto COMPONENTS_COUNT = 4;
+        static constexpr auto layout          = color_layout::bgra;
+        static constexpr auto component_count = 4;
 
         component_type b;
         component_type g;
@@ -153,13 +153,13 @@ export namespace stormkit { inline namespace core {
         constexpr auto operator==(param_type other) const noexcept -> bool;
     };
 
-    template<meta::color_component_type T>
-    struct color<color_layout::ABGR, T> {
+    template<meta::color_component T>
+    struct color<color_layout::abgr, T> {
         using component_type = T;
         using param_type     = meta::conditional<(sizeof(component_type) * 4) <= (sizeof(void*) * 2), color, const color&>;
 
-        static constexpr auto LAYOUT           = color_layout::ABGR;
-        static constexpr auto COMPONENTS_COUNT = 4;
+        static constexpr auto layout          = color_layout::abgr;
+        static constexpr auto component_count = 4;
 
         component_type a;
         component_type b;
@@ -169,22 +169,22 @@ export namespace stormkit { inline namespace core {
         constexpr auto operator==(param_type other) const noexcept -> bool;
     };
 
-    template<meta::color_component_type T>
-    using color_r = color<color_layout::R, T>;
-    template<meta::color_component_type T>
-    using color_rg = color<color_layout::RG, T>;
-    template<meta::color_component_type T>
-    using color_rgb = color<color_layout::RGB, T>;
-    template<meta::color_component_type T>
-    using color_rgba = color<color_layout::RGBA, T>;
-    template<meta::color_component_type T>
-    using color_argb = color<color_layout::ARGB, T>;
-    template<meta::color_component_type T>
-    using color_bgr = color<color_layout::BGR, T>;
-    template<meta::color_component_type T>
-    using color_bgra = color<color_layout::BGRA, T>;
-    template<meta::color_component_type T>
-    using color_abgr = color<color_layout::ABGR, T>;
+    template<meta::color_component T>
+    using color_r = color<color_layout::r, T>;
+    template<meta::color_component T>
+    using color_rg = color<color_layout::rg, T>;
+    template<meta::color_component T>
+    using color_rgb = color<color_layout::rgb, T>;
+    template<meta::color_component T>
+    using color_rgba = color<color_layout::rgba, T>;
+    template<meta::color_component T>
+    using color_argb = color<color_layout::argb, T>;
+    template<meta::color_component T>
+    using color_bgr = color<color_layout::bgr, T>;
+    template<meta::color_component T>
+    using color_bgra = color<color_layout::bgra, T>;
+    template<meta::color_component T>
+    using color_abgr = color<color_layout::abgr, T>;
 
     using fcolor_r    = color_r<f32>;
     using fcolor_rg   = color_rg<f32>;
@@ -204,34 +204,34 @@ export namespace stormkit { inline namespace core {
     using ucolor_bgra = color_bgra<u8>;
     using ucolor_abgr = color_abgr<u8>;
 
-    template<color_layout TO_LAYOUT, meta::color_component_type T, color_layout FROM_LAYOUT, meta::color_component_type U>
+    template<color_layout To_layout, meta::color_component T, color_layout From_layout, meta::color_component U>
     [[nodiscard]]
-    constexpr auto tag_invoke(as_fn<color<TO_LAYOUT, T>>,
-                              const color<FROM_LAYOUT, U>& value,
-                              source_location_arg = std::source_location::current()) noexcept -> color<TO_LAYOUT, T>;
+    constexpr auto tag_invoke(as_fn<color<To_layout, T>>,
+                              const color<From_layout, U>& value,
+                              source_location_arg = std::source_location::current()) noexcept -> color<To_layout, T>;
 
     [[nodiscard]]
     constexpr auto tag_invoke(as_fn<string_view>,
                               color_layout value,
                               source_location_arg = std::source_location::current()) noexcept -> string_view;
 
-    template<color_layout LAYOUT, meta::color_component_type T>
+    template<color_layout Layout, meta::color_component T>
     [[nodiscard]]
     constexpr auto tag_invoke(as_fn<string>,
-                              const color<LAYOUT, T>& value,
+                              const color<Layout, T>& value,
                               source_location_arg = std::source_location::current()) noexcept -> string;
 
-    template<typename CharT, typename FormatContext, color_layout LAYOUT, meta::color_component_type T>
-    constexpr auto tag_invoke(format_as_fn<CharT>, const color<LAYOUT, T>& value, FormatContext& ctx) -> decltype(ctx.out());
+    template<typename CharT, typename FormatContext, color_layout Layout, meta::color_component T>
+    constexpr auto tag_invoke(format_as_fn<CharT>, const color<Layout, T>& value, FormatContext& ctx) -> decltype(ctx.out());
 }} // namespace stormkit::core
 
 namespace stormkit { inline namespace core { namespace details {
-    template<color_layout LAYOUT, meta::color_component_type T>
+    template<color_layout Layout, meta::color_component T>
     struct implicit_color_converter {
-        template<color_layout TO_LAYOUT, meta::color_component_type U>
-        constexpr operator color<TO_LAYOUT, U>() const noexcept;
+        template<color_layout To_layout, meta::color_component U>
+        constexpr operator color<To_layout, U>() const noexcept;
 
-        color<LAYOUT, T> c;
+        color<Layout, T> c;
     };
 }}} // namespace stormkit::core::details
 
@@ -261,106 +261,106 @@ export namespace stormkit { inline namespace core {
     ///```
 
     namespace colors {
-        template<meta::color_component_type T = u8>
-        inline constexpr auto BLACK = details::implicit_color_converter<color_layout::RGBA, T> {
-            .c = { .r = 0, .g = 0, .b = 0, .a = COLOR_COMPONENT_MAX<T> }
+        template<meta::color_component T = u8>
+        inline constexpr auto black = details::implicit_color_converter<color_layout::rgba, T> {
+            .c = { .r = 0, .g = 0, .b = 0, .a = color_component_max<T> }
         };
 
-        template<meta::color_component_type T = u8>
-        inline constexpr auto GRAY = details::implicit_color_converter<color_layout::RGBA, T> {
-            .c = { .r = COLOR_COMPONENT_MAX<T> / T { 2 },
-                  .g = COLOR_COMPONENT_MAX<T> / T { 2 },
-                  .b = COLOR_COMPONENT_MAX<T> / T { 2 },
-                  .a = COLOR_COMPONENT_MAX<T> }
+        template<meta::color_component T = u8>
+        inline constexpr auto gray = details::implicit_color_converter<color_layout::rgba, T> {
+            .c = { .r = color_component_max<T> / T { 2 },
+                  .g = color_component_max<T> / T { 2 },
+                  .b = color_component_max<T> / T { 2 },
+                  .a = color_component_max<T> }
         };
 
-        template<meta::color_component_type T = u8>
-        inline constexpr auto SILVER = details::implicit_color_converter<color_layout::RGBA, T> {
-            .c = { .r = COLOR_COMPONENT_MAX<T> / T { 2 } + COLOR_COMPONENT_MAX<T> / T { 4 },
-                  .g = COLOR_COMPONENT_MAX<T> / T { 2 } + COLOR_COMPONENT_MAX<T> / T { 4 },
-                  .b = COLOR_COMPONENT_MAX<T> / T { 2 } + COLOR_COMPONENT_MAX<T> / T { 4 },
-                  .a = COLOR_COMPONENT_MAX<T> }
+        template<meta::color_component T = u8>
+        inline constexpr auto silver = details::implicit_color_converter<color_layout::rgba, T> {
+            .c = { .r = color_component_max<T> / T { 2 } + color_component_max<T> / T { 4 },
+                  .g = color_component_max<T> / T { 2 } + color_component_max<T> / T { 4 },
+                  .b = color_component_max<T> / T { 2 } + color_component_max<T> / T { 4 },
+                  .a = color_component_max<T> }
         };
 
-        template<meta::color_component_type T = u8>
-        inline constexpr auto WHITE = details::implicit_color_converter<color_layout::RGBA, T> {
-            .c = { .r = COLOR_COMPONENT_MAX<T>,
-                  .g = COLOR_COMPONENT_MAX<T>,
-                  .b = COLOR_COMPONENT_MAX<T>,
-                  .a = COLOR_COMPONENT_MAX<T> }
+        template<meta::color_component T = u8>
+        inline constexpr auto white = details::implicit_color_converter<color_layout::rgba, T> {
+            .c = { .r = color_component_max<T>,
+                  .g = color_component_max<T>,
+                  .b = color_component_max<T>,
+                  .a = color_component_max<T> }
         };
 
-        template<meta::color_component_type T = u8>
-        inline constexpr auto MAROON = details::implicit_color_converter<color_layout::RGBA, T> {
-            .c = { .r = COLOR_COMPONENT_MAX<T> / T { 2 }, .g = T { 0 }, .b = T { 0 }, .a = COLOR_COMPONENT_MAX<T> }
+        template<meta::color_component T = u8>
+        inline constexpr auto maroon = details::implicit_color_converter<color_layout::rgba, T> {
+            .c = { .r = color_component_max<T> / T { 2 }, .g = T { 0 }, .b = T { 0 }, .a = color_component_max<T> }
         };
 
-        template<meta::color_component_type T = u8>
-        inline constexpr auto RED = details::implicit_color_converter<color_layout::RGBA, T> {
-            .c = { .r = COLOR_COMPONENT_MAX<T>, .g = 0, .b = 0, .a = COLOR_COMPONENT_MAX<T> }
+        template<meta::color_component T = u8>
+        inline constexpr auto red = details::implicit_color_converter<color_layout::rgba, T> {
+            .c = { .r = color_component_max<T>, .g = 0, .b = 0, .a = color_component_max<T> }
         };
 
-        template<meta::color_component_type T = u8>
-        inline constexpr auto OLIVE = details::implicit_color_converter<color_layout::RGBA, T> {
-            .c = { .r = COLOR_COMPONENT_MAX<T> / T { 2 },
-                  .g = COLOR_COMPONENT_MAX<T> / T { 2 },
+        template<meta::color_component T = u8>
+        inline constexpr auto olive = details::implicit_color_converter<color_layout::rgba, T> {
+            .c = { .r = color_component_max<T> / T { 2 },
+                  .g = color_component_max<T> / T { 2 },
                   .b = T { 0 },
-                  .a = COLOR_COMPONENT_MAX<T> }
+                  .a = color_component_max<T> }
         };
 
-        template<meta::color_component_type T = u8>
-        inline constexpr auto YELLOW = details::implicit_color_converter<color_layout::RGBA, T> {
-            .c = { .r = COLOR_COMPONENT_MAX<T>, .g = COLOR_COMPONENT_MAX<T>, .b = T { 0 }, .a = COLOR_COMPONENT_MAX<T> }
+        template<meta::color_component T = u8>
+        inline constexpr auto yellow = details::implicit_color_converter<color_layout::rgba, T> {
+            .c = { .r = color_component_max<T>, .g = color_component_max<T>, .b = T { 0 }, .a = color_component_max<T> }
         };
 
-        template<meta::color_component_type T = u8>
-        inline constexpr auto GREEN = details::implicit_color_converter<color_layout::RGBA, T> {
-            .c = { .r = 0, .g = COLOR_COMPONENT_MAX<T> / T { 2 }, .b = 0, .a = COLOR_COMPONENT_MAX<T> }
+        template<meta::color_component T = u8>
+        inline constexpr auto green = details::implicit_color_converter<color_layout::rgba, T> {
+            .c = { .r = 0, .g = color_component_max<T> / T { 2 }, .b = 0, .a = color_component_max<T> }
         };
 
-        template<meta::color_component_type T = u8>
-        inline constexpr auto LIME = details::implicit_color_converter<color_layout::RGBA, T> {
-            .c = { .r = 0, .g = COLOR_COMPONENT_MAX<T>, .b = 0, .a = COLOR_COMPONENT_MAX<T> }
+        template<meta::color_component T = u8>
+        inline constexpr auto lime = details::implicit_color_converter<color_layout::rgba, T> {
+            .c = { .r = 0, .g = color_component_max<T>, .b = 0, .a = color_component_max<T> }
         };
 
-        template<meta::color_component_type T = u8>
-        inline constexpr auto TEAL = details::implicit_color_converter<color_layout::RGBA, T> {
+        template<meta::color_component T = u8>
+        inline constexpr auto teal = details::implicit_color_converter<color_layout::rgba, T> {
             .c = { .r = 0,
-                  .g = COLOR_COMPONENT_MAX<T> / T { 2 },
-                  .b = COLOR_COMPONENT_MAX<T> / T { 2 },
-                  .a = COLOR_COMPONENT_MAX<T> }
+                  .g = color_component_max<T> / T { 2 },
+                  .b = color_component_max<T> / T { 2 },
+                  .a = color_component_max<T> }
         };
 
-        template<meta::color_component_type T = u8>
-        inline constexpr auto AQUA = details::implicit_color_converter<color_layout::RGBA, T> {
-            .c = { .r = 0, .g = COLOR_COMPONENT_MAX<T>, .b = COLOR_COMPONENT_MAX<T>, .a = COLOR_COMPONENT_MAX<T> }
+        template<meta::color_component T = u8>
+        inline constexpr auto aqua = details::implicit_color_converter<color_layout::rgba, T> {
+            .c = { .r = 0, .g = color_component_max<T>, .b = color_component_max<T>, .a = color_component_max<T> }
         };
 
-        template<meta::color_component_type T = u8>
-        inline constexpr auto NAVY = details::implicit_color_converter<color_layout::RGBA, T> {
-            .c = { .r = 0, .g = 0, .b = COLOR_COMPONENT_MAX<T> / T { 2 }, .a = COLOR_COMPONENT_MAX<T> }
+        template<meta::color_component T = u8>
+        inline constexpr auto navy = details::implicit_color_converter<color_layout::rgba, T> {
+            .c = { .r = 0, .g = 0, .b = color_component_max<T> / T { 2 }, .a = color_component_max<T> }
         };
 
-        template<meta::color_component_type T = u8>
-        inline constexpr auto BLUE = details::implicit_color_converter<color_layout::RGBA, T> {
-            .c = { .r = 0, .g = 0, .b = COLOR_COMPONENT_MAX<T>, .a = COLOR_COMPONENT_MAX<T> }
+        template<meta::color_component T = u8>
+        inline constexpr auto blue = details::implicit_color_converter<color_layout::rgba, T> {
+            .c = { .r = 0, .g = 0, .b = color_component_max<T>, .a = color_component_max<T> }
         };
 
-        template<meta::color_component_type T = u8>
-        inline constexpr auto PURPLE = details::implicit_color_converter<color_layout::RGBA, T> {
-            .c = { .r = COLOR_COMPONENT_MAX<T> / T { 2 },
+        template<meta::color_component T = u8>
+        inline constexpr auto purple = details::implicit_color_converter<color_layout::rgba, T> {
+            .c = { .r = color_component_max<T> / T { 2 },
                   .g = 0,
-                  .b = COLOR_COMPONENT_MAX<T> / T { 2 },
-                  .a = COLOR_COMPONENT_MAX<T> }
+                  .b = color_component_max<T> / T { 2 },
+                  .a = color_component_max<T> }
         };
 
-        template<meta::color_component_type T = u8>
-        inline constexpr auto FUSCHIA = details::implicit_color_converter<color_layout::RGBA, T> {
-            .c = { .r = COLOR_COMPONENT_MAX<T>, .g = 0, .b = COLOR_COMPONENT_MAX<T>, .a = COLOR_COMPONENT_MAX<T> }
+        template<meta::color_component T = u8>
+        inline constexpr auto fuschia = details::implicit_color_converter<color_layout::rgba, T> {
+            .c = { .r = color_component_max<T>, .g = 0, .b = color_component_max<T>, .a = color_component_max<T> }
         };
 
-        template<meta::color_component_type T = u8>
-        inline constexpr auto TRANSPARENT = details::implicit_color_converter<color_layout::RGBA, T> {
+        template<meta::color_component T = u8>
+        inline constexpr auto transparent = details::implicit_color_converter<color_layout::rgba, T> {
             .c = { .r = 0, .g = 0, .b = 0, .a = 0 }
         };
     } // namespace colors
@@ -373,87 +373,87 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<color_layout LAYOUT, meta::color_component_type T>
-    template<color_layout TO_LAYOUT, meta::color_component_type U>
-    constexpr details::implicit_color_converter<LAYOUT, T>::operator color<TO_LAYOUT, U>() const noexcept {
-        if constexpr (LAYOUT == TO_LAYOUT and meta::same_as<T, U>) return c;
+    template<color_layout Layout, meta::color_component T>
+    template<color_layout To_layout, meta::color_component U>
+    constexpr details::implicit_color_converter<Layout, T>::operator color<To_layout, U>() const noexcept {
+        if constexpr (Layout == To_layout and meta::same_as<T, U>) return c;
         else
-            return as<color<TO_LAYOUT, U>>(c);
+            return as<color<To_layout, U>>(c);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::color_component_type T>
+    template<meta::color_component T>
     STORMKIT_FORCE_INLINE
-    constexpr auto color<color_layout::R, T>::operator==(param_type other) const noexcept -> bool {
+    constexpr auto color<color_layout::r, T>::operator==(param_type other) const noexcept -> bool {
         return r == other.r;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::color_component_type T>
+    template<meta::color_component T>
     STORMKIT_FORCE_INLINE
-    constexpr auto color<color_layout::RG, T>::operator==(param_type other) const noexcept -> bool {
+    constexpr auto color<color_layout::rg, T>::operator==(param_type other) const noexcept -> bool {
         return r == other.r and g == other.g;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::color_component_type T>
+    template<meta::color_component T>
     STORMKIT_FORCE_INLINE
-    constexpr auto color<color_layout::RGB, T>::operator==(param_type other) const noexcept -> bool {
+    constexpr auto color<color_layout::rgb, T>::operator==(param_type other) const noexcept -> bool {
         return r == other.r and g == other.g and b == other.b;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::color_component_type T>
+    template<meta::color_component T>
     STORMKIT_FORCE_INLINE
-    constexpr auto color<color_layout::RGBA, T>::operator==(param_type other) const noexcept -> bool {
+    constexpr auto color<color_layout::rgba, T>::operator==(param_type other) const noexcept -> bool {
         return r == other.r and g == other.g and b == other.b and a == other.a;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::color_component_type T>
+    template<meta::color_component T>
     STORMKIT_FORCE_INLINE
-    constexpr auto color<color_layout::ARGB, T>::operator==(param_type other) const noexcept -> bool {
+    constexpr auto color<color_layout::argb, T>::operator==(param_type other) const noexcept -> bool {
         return r == other.r and g == other.g and b == other.b and a == other.a;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::color_component_type T>
+    template<meta::color_component T>
     STORMKIT_FORCE_INLINE
-    constexpr auto color<color_layout::BGR, T>::operator==(param_type other) const noexcept -> bool {
+    constexpr auto color<color_layout::bgr, T>::operator==(param_type other) const noexcept -> bool {
         return r == other.r and g == other.g and b == other.b;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::color_component_type T>
+    template<meta::color_component T>
     STORMKIT_FORCE_INLINE
-    constexpr auto color<color_layout::BGRA, T>::operator==(param_type other) const noexcept -> bool {
+    constexpr auto color<color_layout::bgra, T>::operator==(param_type other) const noexcept -> bool {
         return r == other.r and g == other.g and b == other.b and a == other.a;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::color_component_type T>
+    template<meta::color_component T>
     STORMKIT_FORCE_INLINE
-    constexpr auto color<color_layout::ABGR, T>::operator==(param_type other) const noexcept -> bool {
+    constexpr auto color<color_layout::abgr, T>::operator==(param_type other) const noexcept -> bool {
         return r == other.r and g == other.g and b == other.b and a == other.a;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<color_layout TO_LAYOUT, meta::color_component_type T, color_layout FROM_LAYOUT, meta::color_component_type U>
-    constexpr auto tag_invoke(as_fn<color<TO_LAYOUT, T>>, const color<FROM_LAYOUT, U>& value, source_location_arg) noexcept
-      -> color<TO_LAYOUT, T> {
-        static constexpr auto FROM_COMPONENT_COUNT = color<FROM_LAYOUT, U>::COMPONENTS_COUNT;
-        static constexpr auto TO_COMPONENT_COUNT   = color<TO_LAYOUT, T>::COMPONENTS_COUNT;
+    template<color_layout To_layout, meta::color_component T, color_layout From_layout, meta::color_component U>
+    constexpr auto tag_invoke(as_fn<color<To_layout, T>>, const color<From_layout, U>& value, source_location_arg) noexcept
+      -> color<To_layout, T> {
+        static constexpr auto from_component_count = color<From_layout, U>::component_count;
+        static constexpr auto to_component_count   = color<To_layout, T>::component_count;
 
-        static constexpr auto AS_COMPONENT_TYPE = [](U component) static noexcept {
+        static constexpr auto as_component_count = [](U component) static noexcept {
             if constexpr (meta::is<T, U>) return component;
             else if constexpr (meta::is<T, u8>)
                 return as<u8>(component * 255);
@@ -461,15 +461,15 @@ namespace stormkit { inline namespace core {
                 return as<T>(component) / T { 255 };
         };
 
-        auto out = color<TO_LAYOUT, T> {};
+        auto out = color<To_layout, T> {};
 
-        if constexpr (TO_COMPONENT_COUNT >= 1) out.r = AS_COMPONENT_TYPE(value.r);
-        if constexpr (TO_COMPONENT_COUNT >= 2 and FROM_COMPONENT_COUNT >= 2) out.g = AS_COMPONENT_TYPE(value.g);
-        if constexpr (TO_COMPONENT_COUNT >= 3 and FROM_COMPONENT_COUNT >= 3) out.b = AS_COMPONENT_TYPE(value.b);
-        if constexpr (TO_COMPONENT_COUNT == 4) {
-            if constexpr (FROM_COMPONENT_COUNT == 4) out.a = AS_COMPONENT_TYPE(value.a);
+        if constexpr (to_component_count >= 1) out.r = as_component_count(value.r);
+        if constexpr (to_component_count >= 2 and from_component_count >= 2) out.g = as_component_count(value.g);
+        if constexpr (to_component_count >= 3 and from_component_count >= 3) out.b = as_component_count(value.b);
+        if constexpr (to_component_count == 4) {
+            if constexpr (from_component_count == 4) out.a = as_component_count(value.a);
             else
-                out.a = COLOR_COMPONENT_MAX<T>;
+                out.a = color_component_max<T>;
         }
 
         return out;
@@ -480,14 +480,14 @@ namespace stormkit { inline namespace core {
     STORMKIT_CONST
     constexpr auto tag_invoke(as_fn<string_view>, color_layout layout, source_location_arg) noexcept -> string_view {
         switch (layout) {
-            case color_layout::R: return "R";
-            case color_layout::RG: return "RG";
-            case color_layout::RGB: return "RGB";
-            case color_layout::BGR: return "BGR";
-            case color_layout::RGBA: return "RGBA";
-            case color_layout::ARGB: return "ARGB";
-            case color_layout::BGRA: return "BGRA";
-            case color_layout::ABGR: return "ABGR";
+            case color_layout::r: return "color_layout::r";
+            case color_layout::rg: return "color_layout::rg";
+            case color_layout::rgb: return "color_layout::rgb";
+            case color_layout::bgr: return "color_layout::bgr";
+            case color_layout::rgba: return "color_layout::rgba";
+            case color_layout::argb: return "color_layout::argb";
+            case color_layout::bgra: return "color_layout::bgra";
+            case color_layout::abgr: return "color_layout::abgr";
             default: break;
         }
         std::unreachable();
@@ -495,21 +495,21 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<color_layout LAYOUT, meta::color_component_type T>
-    constexpr auto tag_invoke(as_fn<string>, const color<LAYOUT, T>& value, source_location_arg) noexcept -> string {
-        static constexpr auto COMPONENT_COUNT = color<LAYOUT, T>::COMPONENT_COUNT;
+    template<color_layout Layout, meta::color_component T>
+    constexpr auto tag_invoke(as_fn<string>, const color<Layout, T>& value, source_location_arg) noexcept -> string {
+        static constexpr auto component_count = color<Layout, T>::component_count;
 
         auto&& color_u8 = [&value] noexcept {
             if constexpr (meta::is<T, u8>) return value;
             else
-                return as<color<LAYOUT, u8>>(value);
+                return as<color<Layout, u8>>(value);
         }();
 
         auto color_as_int = 0xFF_u32;
-        if constexpr (COMPONENT_COUNT >= 1) color_as_int |= (as<u32>(color_u8.r) << 24);
-        if constexpr (COMPONENT_COUNT >= 2) color_as_int |= (as<u32>(color_u8.g) << 16);
-        if constexpr (COMPONENT_COUNT >= 3) color_as_int |= (as<u32>(color_u8.b) << 8);
-        if constexpr (COMPONENT_COUNT == 4) color_as_int |= (as<u32>(color_u8.a));
+        if constexpr (component_count >= 1) color_as_int |= (as<u32>(color_u8.r) << 24);
+        if constexpr (component_count >= 2) color_as_int |= (as<u32>(color_u8.g) << 16);
+        if constexpr (component_count >= 3) color_as_int |= (as<u32>(color_u8.b) << 8);
+        if constexpr (component_count == 4) color_as_int |= (as<u32>(color_u8.a));
 
         auto out = std::string {};
         out.reserve(10);
@@ -521,19 +521,19 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename CharT, typename FormatContext, color_layout LAYOUT, meta::color_component_type T>
+    template<typename CharT, typename FormatContext, color_layout Layout, meta::color_component T>
     STORMKIT_FORCE_INLINE
-    constexpr auto tag_invoke(format_as_fn<CharT>, const color<LAYOUT, T>& value, FormatContext& ctx) -> decltype(ctx.out()) {
-        static constexpr auto COMPONENT_COUNT = color<LAYOUT, T>::COMPONENT_COUNT;
+    constexpr auto tag_invoke(format_as_fn<CharT>, const color<Layout, T>& value, FormatContext& ctx) -> decltype(ctx.out()) {
+        static constexpr auto component_count = color<Layout, T>::component_count;
 
-        ctx.advance_to(std::format_to(ctx.out(), "[color layout: {}, ", LAYOUT));
+        ctx.advance_to(std::format_to(ctx.out(), "[color layout: {}, ", Layout));
 
-        if constexpr (COMPONENT_COUNT == 1) ctx.advance_to(std::format_to(ctx.out(), "red: {}", value.r));
-        else if constexpr (COMPONENT_COUNT == 2)
+        if constexpr (component_count == 1) ctx.advance_to(std::format_to(ctx.out(), "red: {}", value.r));
+        else if constexpr (component_count == 2)
             ctx.advance_to(std::format_to(ctx.out(), "red: {}, green: {}", value.r, value.g));
-        else if constexpr (COMPONENT_COUNT == 3)
+        else if constexpr (component_count == 3)
             ctx.advance_to(std::format_to(ctx.out(), "red: {}, green: {}, blue: {}", value.r, value.g, value.b));
-        else if constexpr (COMPONENT_COUNT == 4)
+        else if constexpr (component_count == 4)
             ctx.advance_to(std::
                              format_to(ctx.out(), "red: {}, green: {}, blue: {}, alpha: {}", value.r, value.g, value.b, value.a));
 

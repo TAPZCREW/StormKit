@@ -12,15 +12,15 @@ namespace stormkit {
     /////////////////////////////////////
     /////////////////////////////////////
     thread_pool::thread_pool(thread_pool&& other) noexcept
-        : m_worker_count { other.m_worker_count }, m_running_task_counter { m_worker_count } {
+        : worker_count_ { other.worker_count_ }, running_task_counter_ { worker_count_ } {
         wait_idle();
         other.wait_idle();
 
-        auto lock = std::scoped_lock { other.m_mutex };
+        auto lock = std::scoped_lock { other.mutex_ };
 
-        m_tasks = std::move(other.m_tasks);
+        tasks_ = std::move(other.tasks_);
 
-        m_workers.clear();
+        workers_.clear();
         spawn_workers();
     }
 
@@ -33,16 +33,13 @@ namespace stormkit {
         wait_idle();
         other.wait_idle();
 
-        auto lock1 = std::unique_lock { m_mutex, std::defer_lock };
-        auto lock2 = std::unique_lock { other.m_mutex, std::defer_lock };
-        std::lock(lock1, lock2);
-
+        auto lock = std::scoped_lock { mutex_, other.mutex_ };
         join_all();
 
-        m_worker_count = other.m_worker_count;
-        m_tasks        = std::move(other.m_tasks);
+        worker_count_ = other.worker_count_;
+        tasks_        = std::move(other.tasks_);
 
-        m_workers.clear();
+        workers_.clear();
         spawn_workers();
 
         return *this;
@@ -51,9 +48,9 @@ namespace stormkit {
     /////////////////////////////////////
     /////////////////////////////////////
     auto thread_pool::join_all() noexcept -> void {
-        for (const auto _ : range(m_worker_count)) post_task<void>(task_type::TERMINATE, [] {}, no_future);
+        for (const auto _ : range(worker_count_)) post_task<void>(task_type::terminate, [] {}, no_future);
 
-        for (auto& thread : m_workers)
+        for (auto& thread : workers_)
             if (thread.joinable()) thread.join();
     }
 
@@ -61,28 +58,28 @@ namespace stormkit {
     /////////////////////////////////////
     auto thread_pool::wait_idle(bool cancel_tasks) noexcept -> void {
         if (cancel_tasks) {
-            auto _ = std::unique_lock { m_mutex };
-            while (not stdr::empty(m_tasks)) m_tasks.pop();
+            auto _ = std::unique_lock { mutex_ };
+            while (not stdr::empty(tasks_)) tasks_.pop();
         }
 
         for (;;) {
             {
-                auto _ = std::unique_lock { m_mutex };
-                if (stdr::empty(m_tasks)) break;
+                auto _ = std::unique_lock { mutex_ };
+                if (stdr::empty(tasks_)) break;
             }
             std::this_thread::yield();
         }
 
         auto count = worker_count();
         for (;;) {
-            while (m_running_task_counter.try_acquire()) --count;
+            while (running_task_counter_.try_acquire()) --count;
 
             if (count == 0) break;
 
             std::this_thread::yield();
         }
 
-        for (auto _ : range(worker_count())) m_running_task_counter.release();
+        for (auto _ : range(worker_count())) running_task_counter_.release();
     }
 
     /////////////////////////////////////
@@ -93,25 +90,25 @@ namespace stormkit {
             auto task_ = task {};
 
             {
-                auto lock = std::unique_lock { m_mutex };
-                m_work_signal.wait(lock, [this] { return not std::empty(m_tasks); });
-                task_ = std::move(m_tasks.front());
-                m_tasks.pop();
+                auto lock = std::unique_lock { mutex_ };
+                work_signal_.wait(lock, [this] { return not std::empty(tasks_); });
+                task_ = std::move(tasks_.front());
+                tasks_.pop();
             }
 
-            m_running_task_counter.acquire();
+            running_task_counter_.acquire();
             task_.work();
-            m_running_task_counter.release();
+            running_task_counter_.release();
 
-            if (task_.type == task_type::TERMINATE) return;
+            if (task_.type == task_type::terminate) return;
         }
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     auto thread_pool::spawn_workers() noexcept -> void {
-        m_workers.reserve(m_worker_count);
+        workers_.reserve(worker_count_);
 
-        for (auto i : range(m_worker_count)) m_workers.emplace_back(bind_front(&thread_pool::worker_main, this, i));
+        for (auto i : range(worker_count_)) workers_.emplace_back(bind_front(&thread_pool::worker_main, this, i));
     }
 } // namespace stormkit

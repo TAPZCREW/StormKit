@@ -11,11 +11,11 @@ export module stormkit.core.at_scope_exit;
 import std;
 
 export namespace stormkit { inline namespace core {
-    template<auto DO>
+    template<auto Do>
     constexpr auto at_scope_exit_do() noexcept -> decltype(auto);
 
-    template<std::regular_invocable<> TDO>
-    constexpr auto at_scope_exit_do(TDO&& do_at_exit) noexcept -> decltype(auto);
+    template<std::regular_invocable<> T_do>
+    constexpr auto at_scope_exit_do(T_do&& do_at_exit) noexcept -> decltype(auto);
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -24,31 +24,31 @@ export namespace stormkit { inline namespace core {
 
 namespace stormkit { inline namespace core {
     namespace impl {
-        template<auto DO>
+        template<auto Do>
         struct at_scope_exit_nttp {
-            constexpr ~at_scope_exit_nttp() noexcept { DO(); }
+            constexpr ~at_scope_exit_nttp() noexcept { Do(); }
         };
 
-        template<typename TDO>
+        template<typename T_do>
         struct at_scope_exit {
-            constexpr at_scope_exit(TDO&& do_at_exit_) noexcept
-                : do_at_exit { std::forward<TDO>(do_at_exit_) }
+            constexpr at_scope_exit(T_do&& do_at_exit_) noexcept
+                : do_at_exit { std::forward<T_do>(do_at_exit_) }
 
             {}
 
-            constexpr ~at_scope_exit() noexcept(noexcept(std::declval<TDO>()())) { this->do_at_exit(); }
+            constexpr ~at_scope_exit() noexcept(noexcept(std::declval<T_do>()())) { this->do_at_exit(); }
 
-            TDO do_at_exit;
+            T_do do_at_exit;
         };
     } // namespace impl
 
-    template<auto DO>
+    template<auto Do>
     constexpr auto at_scope_exit_do() noexcept -> decltype(auto) {
-        return impl::at_scope_exit_nttp<DO> {};
+        return impl::at_scope_exit_nttp<Do> {};
     }
 
-    template<std::regular_invocable<> TDO>
-    constexpr auto at_scope_exit_do(TDO&& do_at_exit) noexcept -> decltype(auto) {
-        return impl::at_scope_exit<TDO> { std::forward<TDO>(do_at_exit) };
+    template<std::regular_invocable<> T_do>
+    constexpr auto at_scope_exit_do(T_do&& do_at_exit) noexcept -> decltype(auto) {
+        return impl::at_scope_exit<T_do> { std::forward<T_do>(do_at_exit) };
     }
 }} // namespace stormkit::core

@@ -32,25 +32,25 @@ auto update_pixels(stormkit::thread_pool& pool, dynarray<ucolor_rgb>& pixels, co
         .height = rect_height,
     };
 
-    pixels.resize(extent.height * extent.width, colors::RED<u8>);
+    pixels.resize(extent.height * extent.width, colors::red<u8>);
 
     auto data = mdarray_view { stdr::data(pixels), extent.height, extent.width };
     parallel_for(pool, range(extent.width * extent.height), [&rect, data, &extent](auto x_y) mutable noexcept {
         const auto x = as<u32>(x_y % extent.width);
         const auto y = as<u32>(x_y / extent.width);
 
-        if (math::AABB(math::uvec2 { as<u32>(x), as<u32>(y) }, rect)) data[y, x] = colors::BLACK<u8>;
+        if (math::AABB(math::uvec2 { as<u32>(x), as<u32>(y) }, rect)) data[y, x] = colors::black<u8>;
         else {
             const auto color_id = as<f32>(x) / as<f32>(extent.width);
-            if (color_id >= 0.8) data[y, x] = colors::BLUE<u8>;
+            if (color_id >= 0.8) data[y, x] = colors::blue<u8>;
             else if (color_id >= 0.6)
-                data[y, x] = colors::GREEN<u8>;
+                data[y, x] = colors::green<u8>;
             else if (color_id >= 0.4)
-                data[y, x] = colors::WHITE<u8>;
+                data[y, x] = colors::white<u8>;
             else if (color_id >= 0.2)
-                data[y, x] = colors::YELLOW<u8>;
+                data[y, x] = colors::yellow<u8>;
             else
-                data[y, x] = colors::RED<u8>;
+                data[y, x] = colors::red<u8>;
         }
     });
 }

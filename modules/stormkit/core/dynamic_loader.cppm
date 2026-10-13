@@ -58,8 +58,8 @@ export namespace stormkit { inline namespace core {
         auto do_load(const stdfs::path& filepath) -> system_result<void>;
         auto do_get_func(string_view name) const -> system_result<void*>;
 
-        stdfs::path m_filepath;
-        void*       m_library_handle = nullptr;
+        stdfs::path filepath_;
+        void*       library_handle_ = nullptr;
     };
 }} // namespace stormkit::core
 
@@ -77,7 +77,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline dynamic_loader::dynamic_loader(dynamic_loader&& other) noexcept
-        : m_filepath { std::move(other.m_filepath) }, m_library_handle { std::exchange(other.m_library_handle, nullptr) } {
+        : filepath_ { std::move(other.filepath_) }, library_handle_ { std::exchange(other.library_handle_, nullptr) } {
     }
 
     /////////////////////////////////////
@@ -87,8 +87,8 @@ namespace stormkit { inline namespace core {
         if (&other == this) [[unlikely]]
             return *this;
 
-        m_filepath       = std::move(other.m_filepath);
-        m_library_handle = std::exchange(other.m_library_handle, nullptr);
+        filepath_       = std::move(other.filepath_);
+        library_handle_ = std::exchange(other.library_handle_, nullptr);
 
         return *this;
     }
@@ -96,7 +96,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     inline auto dynamic_loader::load(const stdfs::path& filepath) noexcept -> system_result<dynamic_loader> {
-        auto loader = dynamic_loader { PRIVATE<dynamic_loader> };
+        auto loader = dynamic_loader { private_token<dynamic_loader> };
         Try(loader.do_load(filepath));
         return { std::move(loader) };
     }
@@ -105,7 +105,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     inline auto dynamic_loader::allocate_and_load(const stdfs::path& filepath) noexcept
       -> system_result<heap_ptr<dynamic_loader>> {
-        auto loader = allocate_unsafe<dynamic_loader>(PRIVATE<dynamic_loader>);
+        auto loader = allocate_unsafe<dynamic_loader>(private_token<dynamic_loader>);
         Try(loader->do_load(filepath));
         return { std::move(loader) };
     }
@@ -132,6 +132,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     inline auto dynamic_loader::filepath() const noexcept -> const stdfs::path& {
-        return m_filepath;
+        return filepath_;
     }
 }} // namespace stormkit::core

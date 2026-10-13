@@ -448,7 +448,7 @@ namespace stormkit::ecs {
     template<class Self>
     auto entity_manager::systems(this Self& self) noexcept -> dynarray<ref<cmeta::forward_const_to<Self, system>>> {
         constexpr auto as_refer = [] {
-            if constexpr (cmeta::const_type<Self>) return monadic::as_ref();
+            if constexpr (cmeta::const_qualified<Self>) return monadic::as_ref();
             else
                 return monadic::as_ref_mut();
         }();

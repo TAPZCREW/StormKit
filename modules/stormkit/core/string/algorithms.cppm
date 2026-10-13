@@ -19,13 +19,6 @@ namespace stdr = std::ranges;
 namespace stdv = std::views;
 
 export namespace stormkit { inline namespace core {
-    // namespace meta {
-    //     template<typename T>
-    //     concept has_as_string = requires(const T& value) {
-    //         { as_string(value) } -> is<string_view>;
-    //     };
-    // } // namespace meta
-
     [[nodiscard]]
     constexpr auto split(string_view str, string_view delim) noexcept -> dynarray<string_view>;
     [[nodiscard]]
@@ -40,7 +33,7 @@ export namespace stormkit { inline namespace core {
     [[nodiscard]]
     constexpr auto replace(string_view in, string_view pattern, string_view replacement) noexcept -> string;
 
-    template<meta::char_type T>
+    template<meta::character T>
     constexpr auto is_text(T c) noexcept -> bool;
 }} // namespace stormkit::core
 
@@ -51,7 +44,7 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto to_upper(char c) -> char {
         if (c >= 'a' && c <= 'z') return c - 32;
         return c;
@@ -59,7 +52,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    STORMKIT_FORCE_INLINE
+    STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto to_lower(char c) -> char {
         if (c >= 'A' && c <= 'Z') return c + 32;
         return c;
@@ -131,7 +124,7 @@ namespace stormkit { inline namespace core {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<meta::char_type T>
+    template<meta::character T>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto is_text(T c) noexcept -> bool {
         return (c >= 32 and c <= 126) or (c >= 128);

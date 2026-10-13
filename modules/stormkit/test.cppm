@@ -62,15 +62,15 @@ namespace test {
 
     namespace {
         constexpr auto STYLE_MAP = make_static_hash_map<status, console_style>({
-          { status::PASSED,     console_style { .fg = console_color::BLACK, .bg = console_color::GREEN } },
-          { status::NOT_PASSED, console_style { .fg = console_color::BLACK, .bg = console_color::RED }   },
+          { status::PASSED,     console_style { .fg = console_color::black, .bg = console_color::green } },
+          { status::NOT_PASSED, console_style { .fg = console_color::black, .bg = console_color::red }   },
           { status::CHECK_MARK,
            console_style {
-              .fg = console_color::GREEN,
+              .fg = console_color::green,
             }                                                                                            },
           { status::CROSS_MARK,
            console_style {
-              .fg = console_color::RED,
+              .fg = console_color::red,
             }                                                                                            },
         });
 

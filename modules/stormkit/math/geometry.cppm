@@ -70,10 +70,10 @@ export namespace stormkit::math {
     template<core::meta::arithmetic T>
     auto to_string(const bounding_rect<T>& value) noexcept -> string;
 
-    template<core::meta::hash_type Ret = hash32, core::meta::arithmetic T>
+    template<core::meta::hash Ret = hash32, core::meta::arithmetic T>
     constexpr auto hasher(const rect<T>& value) noexcept -> Ret;
 
-    template<core::meta::hash_type Ret = hash32, core::meta::arithmetic T>
+    template<core::meta::hash Ret = hash32, core::meta::arithmetic T>
     constexpr auto hasher(const bounding_rect<T>& value) noexcept -> Ret;
 
     template<core::meta::arithmetic T, typename FormatContext>
@@ -169,7 +169,7 @@ namespace stormkit::math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::hash_type Ret, core::meta::arithmetic T>
+    template<core::meta::hash Ret, core::meta::arithmetic T>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const rect<T>& value) noexcept -> Ret {
         return hash<Ret>(value.x, value.y, value.width, value.height);
@@ -177,7 +177,7 @@ namespace stormkit::math {
 
     ////////////////////////////////////////
     ////////////////////////////////////////
-    template<core::meta::hash_type Ret, core::meta::arithmetic T>
+    template<core::meta::hash Ret, core::meta::arithmetic T>
     STORMKIT_FORCE_INLINE
     constexpr auto hasher(const bounding_rect<T>& value) noexcept -> Ret {
         return hash(value.left, value.top, value.right, value.bottom);

@@ -55,7 +55,7 @@ export {
     } // namespace stormkit::wsi
 
     template<>
-    inline constexpr auto stormkit::core::meta::FLAG_TRAIT<stormkit::wsi::monitor::flag> = true;
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::wsi::monitor::flag> = true;
 } // namespace stormkit::wsi
 
 ////////////////////////////////////////////////////////////////////

@@ -28,10 +28,10 @@ namespace stdr = std::ranges;
 export namespace stormkit { inline namespace core {
     namespace meta {
         template<typename T>
-        inline constexpr auto DISABLE_AS_STRING_VIEW_FORMATTER = false;
+        inline constexpr auto disable_as_string_view_formatter = false;
 
         template<typename T>
-        concept format_as_string_view_enabled = has_as_string_view<T> and not DISABLE_AS_STRING_VIEW_FORMATTER<T>;
+        concept format_as_string_view_enabled = has_as_string_view<T> and not disable_as_string_view_formatter<T>;
 
         template<typename T>
         concept format_context = requires(meta::remove_const_of<T>& ctx) {
@@ -48,12 +48,12 @@ export namespace stormkit { inline namespace core {
     template<typename CharT>
     struct format_as_fn {
         template<typename T, meta::format_context FormatContext>
-        static constexpr auto TAG_INVOKABLE = meta::tag_invocable<format_as_fn<CharT>, const T&, FormatContext&>;
+        static constexpr auto tag_invokable = meta::tag_invocable<format_as_fn<CharT>, const T&, FormatContext&>;
 
         template<typename T, meta::format_context FormatContext>
         [[nodiscard]]
         static constexpr auto operator()(const T& value, FormatContext& ctx) noexcept -> decltype(ctx.out())
-            requires(TAG_INVOKABLE<T, FormatContext>);
+            requires(tag_invokable<T, FormatContext>);
     };
 
     namespace meta {
@@ -116,7 +116,7 @@ namespace stormkit { inline namespace core {
     template<typename T, meta::format_context FormatContext>
     STORMKIT_FORCE_INLINE
     constexpr auto format_as_fn<CharT>::operator()(const T& value, FormatContext& ctx) noexcept -> decltype(ctx.out())
-        requires(TAG_INVOKABLE<T, FormatContext>)
+        requires(tag_invokable<T, FormatContext>)
     {
         return tag_invoke(format_as_fn<CharT> {}, value, ctx);
     }

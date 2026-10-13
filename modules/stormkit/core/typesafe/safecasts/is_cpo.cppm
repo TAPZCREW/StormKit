@@ -22,7 +22,7 @@ export namespace stormkit { inline namespace core {
     template<typename T>
     struct is_fn final {
         template<typename... Ts>
-        static constexpr auto TAG_INVOKABLE = meta::tag_invocable<is_fn<T>, Ts...>;
+        static constexpr auto tag_invokable = meta::tag_invocable<is_fn<T>, Ts...>;
 
         template<typename U>
         [[nodiscard]]
@@ -65,7 +65,7 @@ namespace stormkit { inline namespace core {
     template<typename U>
     STORMKIT_FORCE_INLINE
     constexpr auto is_fn<T>::operator()(const U& value) noexcept -> bool {
-        static_assert(TAG_INVOKABLE<const U&>, "Is queryier not defined for these types!");
+        static_assert(tag_invokable<const U&>, "Is queryier not defined for these types!");
         return meta::tag_invoke(is_fn<T> {}, value);
     }
 
@@ -76,10 +76,10 @@ namespace stormkit { inline namespace core {
         requires(meta::same_as<T, equal>)
     STORMKIT_FORCE_INLINE
     constexpr auto is_fn<T>::operator()(const First& first, const Second& second) noexcept -> bool {
-        static_assert(TAG_INVOKABLE<const First&, const Second&> or meta::has_equality_operator<First, Second>,
+        static_assert(tag_invokable<const First&, const Second&> or meta::has_equality_operator<First, Second>,
                       "Is queryier not defined for these types!");
 
-        if constexpr (TAG_INVOKABLE<const First&, const Second&>) return meta::tag_invoke(is_fn<T> {}, first, second);
+        if constexpr (tag_invokable<const First&, const Second&>) return meta::tag_invoke(is_fn<T> {}, first, second);
         else
             return first == second;
     }

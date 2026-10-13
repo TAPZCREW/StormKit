@@ -146,9 +146,9 @@ namespace stormkit::gpu {
               -> expected<void>;
             auto end() noexcept -> expected<void>;
 
-            auto begin_debug_region(string_view name, const fcolor_rgb& color = colors::WHITE<f32>) const noexcept
+            auto begin_debug_region(string_view name, const fcolor_rgb& color = colors::white<f32>) const noexcept
               -> const CommandBufferInterface&;
-            auto insert_debug_label(string_view name, const fcolor_rgb& color = colors::WHITE<f32>) const noexcept
+            auto insert_debug_label(string_view name, const fcolor_rgb& color = colors::white<f32>) const noexcept
               -> const CommandBufferInterface&;
             auto end_debug_region() const noexcept -> const CommandBufferInterface&;
 
@@ -157,7 +157,7 @@ namespace stormkit::gpu {
             auto begin_render_pass(view::RenderPass             render_pass,
                                    view::FrameBuffer            framebuffer,
                                    array_view<const ClearValue> clear_values = array { ClearValue {
-                                     ClearColor { .color = colors::SILVER<f32> } } },
+                                     ClearColor { .color = colors::silver<f32> } } },
                                    bool secondary_commandbuffers = false) const noexcept -> const CommandBufferInterface&;
             auto next_subpass() const noexcept -> const CommandBufferInterface&;
             auto end_render_pass() const noexcept -> const CommandBufferInterface&;

@@ -21,40 +21,40 @@ import stormkit.core.typesafe.ref_ptr;
 namespace stdr = std::ranges;
 
 export namespace stormkit { inline namespace core {
-    template<meta::hash_type Ret>
+    template<meta::hash Ret>
     struct hash_fn final {
       private:
         template<typename T>
         using invoke_result = meta::tag_invoke_result<hash_fn<Ret>, const T&>;
 
         template<typename T>
-        static constexpr auto IS_TAG_INVOKABLE = meta::tag_invocable<hash_fn<Ret>, const T&>;
+        static constexpr auto IS_tag_invokable = meta::tag_invocable<hash_fn<Ret>, const T&>;
 
       public:
         template<typename T>
         static constexpr auto operator()(const T& value) noexcept
-            requires(not meta::has_unique_object_representations<T> and not IS_TAG_INVOKABLE<T>)
+            requires(not meta::has_unique_object_representations<T> and not IS_tag_invokable<T>)
         = delete ("No hasher defined for this type");
 
         template<typename T>
         [[nodiscard]]
         static constexpr auto operator()(const T& value) noexcept -> Ret
-            requires(meta::has_unique_object_representations<T> and not IS_TAG_INVOKABLE<T>);
+            requires(meta::has_unique_object_representations<T> and not IS_tag_invokable<T>);
 
         template<typename T>
         [[nodiscard]]
         static constexpr auto operator()(const T& value) noexcept -> invoke_result<T>
-            requires(IS_TAG_INVOKABLE<T>);
+            requires(IS_tag_invokable<T>);
     };
 
-    template<meta::hash_type Ret>
+    template<meta::hash Ret>
     inline constexpr auto hash_cpo = hash_fn<Ret> {};
 
-    template<meta::hash_type Ret = hash64, typename... Ts>
+    template<meta::hash Ret = hash64, typename... Ts>
     constexpr auto hash_of(const Ts&... values) noexcept -> Ret
         requires(sizeof...(Ts) >= 1);
 
-    template<meta::hash_type Ret = hash64, typename... Ts>
+    template<meta::hash Ret = hash64, typename... Ts>
     constexpr auto hash_combine(Ret hash, const Ts&... args) noexcept -> Ret
         requires(sizeof...(Ts) >= 1);
 
@@ -76,11 +76,11 @@ export namespace stormkit { inline namespace core {
 namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::hash_type Ret>
+    template<meta::hash Ret>
     template<typename T>
     STORMKIT_FORCE_INLINE
     constexpr auto hash_fn<Ret>::operator()(const T& value) noexcept -> Ret
-        requires(meta::has_unique_object_representations<T> and not IS_TAG_INVOKABLE<T>)
+        requires(meta::has_unique_object_representations<T> and not IS_tag_invokable<T>)
     {
         if constexpr (meta::is<Ret, hash32>) return hash::crc32(view_of(as_bytes, value));
         else
@@ -89,18 +89,18 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::hash_type Ret>
+    template<meta::hash Ret>
     template<typename T>
     STORMKIT_FORCE_INLINE
     constexpr auto hash_fn<Ret>::operator()(const T& value) noexcept -> invoke_result<T>
-        requires(IS_TAG_INVOKABLE<T>)
+        requires(IS_tag_invokable<T>)
     {
         return tag_invoke(hash_fn<Ret> {}, value);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::hash_type Ret = hash64, typename... Ts>
+    template<meta::hash Ret = hash64, typename... Ts>
     constexpr auto hash_of(const Ts&... values) noexcept -> Ret
         requires(sizeof...(Ts) >= 1)
     {
@@ -113,14 +113,14 @@ namespace stormkit { inline namespace core {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<meta::hash_type Ret, typename... Ts>
+    template<meta::hash Ret, typename... Ts>
     constexpr auto hash_combine(Ret with_, const Ts&... values) noexcept -> Ret
         requires(sizeof...(Ts) >= 1)
     {
         using type = meta::underlying_type<Ret>;
         auto with  = as<type>(with_);
 
-        auto COMBINE = [&with]<typename T>(const T& value) mutable noexcept {
+        auto combine = [&with]<typename T>(const T& value) mutable noexcept {
             if constexpr (stdr::input_range<T> and not meta::is_any_of<T, string, string_view>)
                 for (const auto& elem : value)
                     with = with ^= as<type>(hash_cpo<Ret>(elem)) + 0x9e3779b9 + (with << 6) + (with >> 2);
@@ -129,7 +129,7 @@ namespace stormkit { inline namespace core {
             return with;
         };
 
-        ((with = COMBINE(values)), ...);
+        ((with = combine(values)), ...);
 
         return as<Ret>(with);
     }

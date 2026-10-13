@@ -141,7 +141,7 @@ namespace stormkit::math {
     template<meta::arithmetic T>
     STORMKIT_CONST STORMKIT_FORCE_INLINE
     constexpr auto abs(T n) noexcept -> T {
-        if constexpr (not stormkit::meta::signed_type<T>) return n;
+        if constexpr (not stormkit::meta::signed_integer<T>) return n;
         else {
             if (n >= 0) return n;
             else
@@ -154,7 +154,7 @@ namespace stormkit::math {
     template<meta::arithmetic T>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto is_positive(T value) noexcept -> bool {
-        if constexpr (meta::unsigned_type<T>) return true;
+        if constexpr (meta::unsigned_integer<T>) return true;
         else
             return value >= 0;
     }
@@ -164,7 +164,7 @@ namespace stormkit::math {
     template<meta::arithmetic T>
     STORMKIT_FORCE_INLINE STORMKIT_CONST
     constexpr auto is_negative(T value) noexcept -> bool {
-        if constexpr (meta::signed_type<T>) return value < 0;
+        if constexpr (meta::signed_integer<T>) return value < 0;
         else
             return false;
     }
