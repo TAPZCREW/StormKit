@@ -31,6 +31,3 @@ export import stormkit.wsi;
 #if STORMKIT_LIB_GPU_ENABLED and defined(STORMKIT_IMPORT_GPU)
 export import stormkit.gpu;
 #endif
-#if STORMKIT_LIB_LUA_ENABLED and defined(STORMKIT_IMPORT_LUA)
-export import stormkit.lua;
-#endif

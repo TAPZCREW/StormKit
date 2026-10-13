@@ -20,9 +20,7 @@ import stormkit.wsi;
 
 import :vulkan;
 import :base;
-
 import :structs;
-import :objects;
 
 namespace cmonadic = stormkit::core::monadic;
 
@@ -45,33 +43,30 @@ namespace stormkit::gpu {
               -> std::optional<hash_set<string_view>>;
 
             [[nodiscard]]
-            auto info() const noexcept -> const PhysicalDeviceInfo&;
+            auto info() const noexcept -> const physical_device_info&;
             [[nodiscard]]
-            auto capabilities() const noexcept -> const RenderCapabilities&;
+            auto capabilities() const noexcept -> const render_capabilities&;
             [[nodiscard]]
             auto memory_types() const noexcept -> array_view<const MemoryPropertyFlag>;
             [[nodiscard]]
-            auto queue_families() const noexcept -> array_view<const QueueFamily>;
+            auto queue_families() const noexcept -> array_view<const queue_family>;
             [[nodiscard]]
             auto extensions() const noexcept -> array_view<const string>;
             [[nodiscard]]
-            auto formats_properties() const noexcept -> array_view<const std::pair<PixelFormat, FormatProperties>>;
-        };
-
-        struct InstanceInterfaceBase {
-            struct CreateInfo {
-                string_view application_name;
-                u32         application_version     = vk::make_version(0, 0, 0);
-                bool        enable_validation_layers = (config::build_type == "DEBUG");
-            };
+            auto formats_properties() const noexcept -> array_view<const std::pair<pixel_format, format_properties>>;
         };
 
         template<typename Base>
-        class InstanceInterface final: public Base, public InstanceInterfaceBase {
+        class instance_interface: public Base {
           public:
+            struct create_info {
+                string_view application_name;
+                u32         application_version      = vk::make_version(0, 0, 0);
+                bool        enable_validation_layers = (config::build_type == "DEBUG");
+            };
+
             using Base::Base;
             using Base::operator=;
-            using TagType = InstanceTag;
 
             [[nodiscard]]
             auto extensions() const noexcept -> array_view<const string>;
@@ -81,19 +76,18 @@ namespace stormkit::gpu {
         };
     }
 
-    class STORMKIT_GPU_API
-      InstanceImplementation: public GpuObjectImplementation<InstanceTag, const InstanceInterfaceBase::CreateInfo&> {
+    class STORMKIT_GPU_API instance: public instance_interface<instance> {
       public:
-        using CreateInfo = InstanceInterfaceBase::CreateInfo;
+        using create_info = instance_interface<instance>::create_info;
 
-        explicit InstanceImplementation(PrivateTag) noexcept;
-        ~InstanceImplementation() noexcept;
+        explicit instance() noexcept;
+        ~instance() noexcept;
 
-        InstanceImplementation(const InstanceImplementation&) noexcept                    = delete;
-        auto operator=(const InstanceImplementation&) noexcept -> InstanceImplementation& = delete;
+        instance(const instance&) noexcept                    = delete;
+        auto operator=(const instance&) noexcept -> instance& = delete;
 
-        InstanceImplementation(InstanceImplementation&&) noexcept;
-        auto operator=(InstanceImplementation&&) noexcept -> InstanceImplementation&;
+        instance(instance&&) noexcept;
+        auto operator=(instance&&) noexcept -> instance&;
 
         auto do_init(PrivateTag, const CreateInfo&) noexcept -> expected<void>;
 
@@ -101,7 +95,7 @@ namespace stormkit::gpu {
         dynarray<string>         m_extensions;
         dynarray<PhysicalDevice> m_physical_devices;
 
-        friend class view::InstanceImplementation;
+        friend class view::instance;
 
       private:
         auto do_load_instance() noexcept -> expected<void>;
@@ -109,19 +103,18 @@ namespace stormkit::gpu {
     };
 
     namespace view {
-        class InstanceImplementation: public GpuObjectViewImplementation<InstanceTag> {
+        class instance: public instance_interface<instance> {
           public:
-            InstanceImplementation(const gpu::Instance&) noexcept;
+            instance(const gpu::instance&) noexcept;
             template<cmeta::IsContainerOrPointerOf<gpu::Instance> TContainerOrPointer>
-            InstanceImplementation(const TContainerOrPointer&) noexcept;
-            InstanceImplementation(const gpu::InstanceImplementation&) noexcept;
-            ~InstanceImplementation() noexcept;
+            instance(const TContainerOrPointer&) noexcept;
+            ~instance() noexcept;
 
-            InstanceImplementation(const InstanceImplementation&) noexcept;
-            auto operator=(const InstanceImplementation&) noexcept -> InstanceImplementation&;
+            instance(const instance&) noexcept;
+            auto operator=(const instance&) noexcept -> instance&;
 
-            InstanceImplementation(InstanceImplementation&&) noexcept;
-            auto operator=(InstanceImplementation&&) noexcept -> InstanceImplementation&;
+            instance(instance&&) noexcept;
+            auto operator=(instance&&) noexcept -> instance&;
 
           protected:
             array_view<const string>              m_extensions;
@@ -132,8 +125,8 @@ namespace stormkit::gpu {
     class STORMKIT_GPU_API PhysicalDeviceImplementation: public GpuObjectImplementation<PhysicalDeviceTag, VkPhysicalDevice&&> {
       public:
         struct Data {
-            PhysicalDeviceInfo device_info;
-            RenderCapabilities capabilities;
+            physical_device_info device_info;
+            render_capabilities capabilities;
         };
 
         PhysicalDeviceImplementation(PrivateTag, view::Instance&&) noexcept;
@@ -148,11 +141,11 @@ namespace stormkit::gpu {
         auto do_init(PrivateTag, VkPhysicalDevice&&) noexcept -> void;
 
       protected:
-        heap_ptr<Data>                                          m_data;
+        heap_ptr<Data>                                     m_data;
         dynarray<MemoryPropertyFlag>                       m_memory_types;
-        dynarray<QueueFamily>                              m_queue_families;
+        dynarray<queue_family>                              m_queue_families;
         dynarray<string>                                   m_extensions;
-        dynarray<std::pair<PixelFormat, FormatProperties>> m_format_properties;
+        dynarray<std::pair<pixel_format, format_properties>> m_format_properties;
 
         friend class InstanceInterface<InstanceImplementation>;
         friend class view::PhysicalDeviceImplementation;
@@ -175,9 +168,9 @@ namespace stormkit::gpu {
           protected:
             ref<const gpu::PhysicalDeviceImplementation::Data>         m_data;
             array_view<const MemoryPropertyFlag>                       m_memory_types;
-            array_view<const QueueFamily>                              m_queue_families;
+            array_view<const queue_family>                              m_queue_families;
             array_view<const string>                                   m_extensions;
-            array_view<const std::pair<PixelFormat, FormatProperties>> m_format_properties;
+            array_view<const std::pair<pixel_format, format_properties>> m_format_properties;
         };
     } // namespace view
 
@@ -238,7 +231,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     STORMKIT_FORCE_INLINE
-    inline auto PhysicalDeviceInterface<Base>::info() const noexcept -> const PhysicalDeviceInfo& {
+    inline auto PhysicalDeviceInterface<Base>::info() const noexcept -> const physical_device_info& {
         return Base::m_data->device_info;
     }
 
@@ -246,7 +239,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     STORMKIT_FORCE_INLINE
-    inline auto PhysicalDeviceInterface<Base>::capabilities() const noexcept -> const RenderCapabilities& {
+    inline auto PhysicalDeviceInterface<Base>::capabilities() const noexcept -> const render_capabilities& {
         return Base::m_data->capabilities;
     }
 
@@ -262,7 +255,7 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     template<typename Base>
     STORMKIT_FORCE_INLINE
-    inline auto PhysicalDeviceInterface<Base>::queue_families() const noexcept -> array_view<const QueueFamily> {
+    inline auto PhysicalDeviceInterface<Base>::queue_families() const noexcept -> array_view<const queue_family> {
         return Base::m_queue_families;
     }
 
@@ -279,7 +272,7 @@ namespace stormkit::gpu {
     template<typename Base>
     STORMKIT_FORCE_INLINE
     inline auto PhysicalDeviceInterface<Base>::formats_properties() const noexcept
-      -> array_view<const std::pair<PixelFormat, FormatProperties>> {
+      -> array_view<const std::pair<pixel_format, format_properties>> {
         return Base::m_format_properties;
     }
 

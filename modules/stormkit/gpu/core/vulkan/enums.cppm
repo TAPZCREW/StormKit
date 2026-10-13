@@ -21,3375 +21,4410 @@ export {
     namespace stormkit::gpu {
         namespace details {
             template<meta::enumeration>
-            inline constexpr auto IS_VULKAN_ENUMERATION = false;
+            inline constexpr auto is_vulkan_enumeration = false;
         }
 
         namespace meta {
             template<typename T>
-            concept IsVulkanEnumeration = core::meta::enumeration<T> and details::IS_VULKAN_ENUMERATION<T>;
+            concept vulkan_enumeration = core::meta::enumeration<T> and details::is_vulkan_enumeration<T>;
         }
 
-        inline constexpr auto QUEUE_FAMILY_IGNORED = std::numeric_limits<u32>::max();
+        inline constexpr auto queue_family_ignored = std::numeric_limits<u32>::max();
 
-        enum class AccessFlag : u32 {
-            COLOR_ATTACHMENT_READ          = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
-            COLOR_ATTACHMENT_WRITE         = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-            DEPTH_STENCIL_ATTACHMENT_READ  = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
-            DEPTH_STENCIL_ATTACHMENT_WRITE = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-            HOST_READ                      = VK_ACCESS_HOST_READ_BIT,
-            HOST_WRITE                     = VK_ACCESS_HOST_WRITE_BIT,
-            INDIRECT_COMMAND_READ          = VK_ACCESS_INDIRECT_COMMAND_READ_BIT,
-            INPUT_ATTACHMENT_READ          = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
-            MEMORY_READ                    = VK_ACCESS_MEMORY_READ_BIT,
-            MEMORY_WRITE                   = VK_ACCESS_MEMORY_WRITE_BIT,
+        enum class access_flag : u32 {
+            color_attachment_read          = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
+            color_attachment_write         = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            depth_stencil_attachment_read  = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
+            depth_stencil_attachment_write = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+            host_read                      = VK_ACCESS_HOST_READ_BIT,
+            host_write                     = VK_ACCESS_HOST_WRITE_BIT,
+            indirect_command_read          = VK_ACCESS_INDIRECT_COMMAND_READ_BIT,
+            input_attachment_read          = VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
+            memory_read                    = VK_ACCESS_MEMORY_READ_BIT,
+            memory_write                   = VK_ACCESS_MEMORY_WRITE_BIT,
             NONE                           = 0,
-            SHADER_READ                    = VK_ACCESS_SHADER_READ_BIT,
-            SHADER_WRITE                   = VK_ACCESS_SHADER_WRITE_BIT,
-            TRANSFER_READ                  = VK_ACCESS_TRANSFER_READ_BIT,
-            TRANSFER_WRITE                 = VK_ACCESS_TRANSFER_WRITE_BIT,
-            UNIFORM_READ                   = VK_ACCESS_UNIFORM_READ_BIT,
-            VERTEX_ATTRIBUTE_READ          = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT,
+            shader_read                    = VK_ACCESS_SHADER_READ_BIT,
+            shader_write                   = VK_ACCESS_SHADER_WRITE_BIT,
+            transfer_read                  = VK_ACCESS_TRANSFER_READ_BIT,
+            transfer_write                 = VK_ACCESS_TRANSFER_WRITE_BIT,
+            uniform_read                   = VK_ACCESS_UNIFORM_READ_BIT,
+            vertex_attribute_read          = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<AccessFlag> = true;
+        inline constexpr auto details::is_vulkan_enumeration<access_flag> = true;
 
-        enum class AttachmentLoadOperation : u8 {
-            CLEAR     = VK_ATTACHMENT_LOAD_OP_CLEAR,
-            DONT_CARE = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-            LOAD      = VK_ATTACHMENT_LOAD_OP_LOAD,
+        enum class attachment_load_operation : u8 {
+            clear     = VK_ATTACHMENT_LOAD_OP_CLEAR,
+            dont_care = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+            load      = VK_ATTACHMENT_LOAD_OP_LOAD,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<AttachmentLoadOperation> = true;
+        inline constexpr auto details::is_vulkan_enumeration<attachment_load_operation> = true;
 
-        enum class AttachmentStoreOperation : u8 {
-            DONT_CARE = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            STORE     = VK_ATTACHMENT_STORE_OP_STORE,
+        enum class attachment_store_operation : u8 {
+            dont_care = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+            store     = VK_ATTACHMENT_STORE_OP_STORE,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<AttachmentStoreOperation> = true;
+        inline constexpr auto details::is_vulkan_enumeration<attachment_store_operation> = true;
 
-        enum class BlendFactor : u8 {
-            CONSTANT_ALPHA           = VK_BLEND_FACTOR_CONSTANT_ALPHA,
-            CONSTANT_COLOR           = VK_BLEND_FACTOR_CONSTANT_COLOR,
-            DST_ALPHA                = VK_BLEND_FACTOR_DST_ALPHA,
-            DST_COLOR                = VK_BLEND_FACTOR_DST_COLOR,
-            ONE                      = VK_BLEND_FACTOR_ONE,
-            ONE_MINUS_CONSTANT_ALPHA = VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA,
-            ONE_MINUS_CONSTANT_COLOR = VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR,
-            ONE_MINUS_DST_ALPHA      = VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA,
-            ONE_MINUS_DST_COLOR      = VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR,
-            ONE_MINUS_SRC1_ALPHA     = VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA,
-            ONE_MINUS_SRC1_COLOR     = VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR,
-            ONE_MINUS_SRC_ALPHA      = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
-            ONE_MINUS_SRC_COLOR      = VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR,
-            SRC1_ALPHA               = VK_BLEND_FACTOR_SRC1_ALPHA,
-            SRC1_COLOR               = VK_BLEND_FACTOR_SRC1_COLOR,
-            SRC_ALPHA                = VK_BLEND_FACTOR_SRC_ALPHA,
-            SRC_ALPHA_SATURATE       = VK_BLEND_FACTOR_SRC_ALPHA_SATURATE,
-            SRC_COLOR                = VK_BLEND_FACTOR_SRC_COLOR,
-            ZERO                     = VK_BLEND_FACTOR_ZERO,
+        enum class blend_factor : u8 {
+            constant_alpha           = VK_BLEND_FACTOR_CONSTANT_ALPHA,
+            constant_color           = VK_BLEND_FACTOR_CONSTANT_COLOR,
+            dst_alpha                = VK_BLEND_FACTOR_DST_ALPHA,
+            dst_color                = VK_BLEND_FACTOR_DST_COLOR,
+            one                      = VK_BLEND_FACTOR_ONE,
+            one_minus_constant_alpha = VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA,
+            one_minus_constant_color = VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR,
+            one_minus_dst_alpha      = VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA,
+            one_minus_dst_color      = VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR,
+            one_minus_src1_alpha     = VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA,
+            one_minus_src1_color     = VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR,
+            one_minus_src_alpha      = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+            one_minus_src_color      = VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR,
+            src1_alpha               = VK_BLEND_FACTOR_SRC1_ALPHA,
+            src1_color               = VK_BLEND_FACTOR_SRC1_COLOR,
+            src_alpha                = VK_BLEND_FACTOR_SRC_ALPHA,
+            src_alpha_saturate       = VK_BLEND_FACTOR_SRC_ALPHA_SATURATE,
+            src_color                = VK_BLEND_FACTOR_SRC_COLOR,
+            zero                     = VK_BLEND_FACTOR_ZERO,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<BlendFactor> = true;
+        inline constexpr auto details::is_vulkan_enumeration<blend_factor> = true;
 
-        enum class BlendOperation : u8 {
-            ADD              = VK_BLEND_OP_ADD,
-            MAX              = VK_BLEND_OP_MAX,
-            MIN              = VK_BLEND_OP_MIN,
-            REVERSE_SUBTRACT = VK_BLEND_OP_REVERSE_SUBTRACT,
-            SUBTRACT         = VK_BLEND_OP_SUBTRACT,
+        enum class blend_operation : u8 {
+            add              = VK_BLEND_OP_ADD,
+            max              = VK_BLEND_OP_MAX,
+            min              = VK_BLEND_OP_MIN,
+            reverse_subtract = VK_BLEND_OP_REVERSE_SUBTRACT,
+            subtract         = VK_BLEND_OP_SUBTRACT,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<BlendOperation> = true;
+        inline constexpr auto details::is_vulkan_enumeration<blend_operation> = true;
 
-        enum class BorderColor : u8 {
-            FLOAT_OPAQUE_BLACK      = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK,
-            FLOAT_OPAQUE_WHITE      = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
-            FLOAT_TRANSPARENT_BLACK = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK,
-            INT_OPAQUE_BLACK        = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
-            INT_OPAQUE_WHITE        = VK_BORDER_COLOR_INT_OPAQUE_WHITE,
-            INT_TRANSPARENT_BLACK   = VK_BORDER_COLOR_INT_TRANSPARENT_BLACK,
+        enum class border_color : u8 {
+            float_opaque_black      = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK,
+            float_opaque_white      = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
+            float_transparent_black = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK,
+            int_opaque_black        = VK_BORDER_COLOR_INT_OPAQUE_BLACK,
+            int_opaque_white        = VK_BORDER_COLOR_INT_OPAQUE_WHITE,
+            int_transparent_black   = VK_BORDER_COLOR_INT_TRANSPARENT_BLACK,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<BorderColor> = true;
+        inline constexpr auto details::is_vulkan_enumeration<border_color> = true;
 
-        enum class BufferUsageFlag : u16 {
-            INDEX         = VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-            INDIRECT      = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
-            STORAGE       = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-            STORAGE_TEXEL = VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT,
-            TRANSFER_DST  = VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-            TRANSFER_SRC  = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-            UNIFORM       = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-            UNIFORM_TEXEL = VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT,
-            VERTEX        = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+        enum class buffer_usage_flag : u16 {
+            index         = VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+            indirect      = VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT,
+            storage       = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+            storage_texel = VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT,
+            transfer_dst  = VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+            transfer_src  = VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            uniform       = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+            uniform_texel = VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT,
+            vertex        = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<BufferUsageFlag> = true;
+        inline constexpr auto details::is_vulkan_enumeration<buffer_usage_flag> = true;
 
-        enum class ColorComponentFlag : u8 {
-            A    = VK_COLOR_COMPONENT_A_BIT,
-            B    = VK_COLOR_COMPONENT_B_BIT,
-            G    = VK_COLOR_COMPONENT_G_BIT,
-            NONE = 0,
-            R    = VK_COLOR_COMPONENT_R_BIT,
-            RG   = R | G,
-            RGB  = RG | B,
-            RGBA = RGB | A,
+        enum class color_component_flag : u8 {
+            a    = VK_COLOR_COMPONENT_A_BIT,
+            b    = VK_COLOR_COMPONENT_B_BIT,
+            g    = VK_COLOR_COMPONENT_G_BIT,
+            none = 0,
+            r    = VK_COLOR_COMPONENT_R_BIT,
+            rg   = r | g,
+            rgb  = rg | b,
+            rgba = rgb | a,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<ColorComponentFlag> = true;
+        inline constexpr auto details::is_vulkan_enumeration<color_component_flag> = true;
 
-        enum class ColorSpace : u32 {
-            ADOBERGB_LINEAR         = VK_COLOR_SPACE_ADOBERGB_LINEAR_EXT,
-            ADOBERGB_NONLINEAR      = VK_COLOR_SPACE_ADOBERGB_NONLINEAR_EXT,
-            BT2020_LINEAR           = VK_COLOR_SPACE_BT2020_LINEAR_EXT,
-            BT709_LINEAR            = VK_COLOR_SPACE_BT709_LINEAR_EXT,
-            BT709_NONLINEAR         = VK_COLOR_SPACE_BT709_NONLINEAR_EXT,
-            DCI_P3_NONLINEAR        = VK_COLOR_SPACE_DCI_P3_NONLINEAR_EXT,
-            DISPLAY_NATIVE_AMD      = VK_COLOR_SPACE_DISPLAY_NATIVE_AMD,
-            DISPLAY_P3_LINEAR       = VK_COLOR_SPACE_DISPLAY_P3_LINEAR_EXT,
-            DISPLAY_P3_NONLINEAR    = VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT,
-            DOLBYVISION             = VK_COLOR_SPACE_DOLBYVISION_EXT,
-            EXTENDED_SRGB_LINEAR    = VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT,
-            EXTENDED_SRGB_NONLINEAR = VK_COLOR_SPACE_EXTENDED_SRGB_NONLINEAR_EXT,
-            HDR10_HLG               = VK_COLOR_SPACE_HDR10_HLG_EXT,
-            HDR10_ST2084            = VK_COLOR_SPACE_HDR10_ST2084_EXT,
-            PASS_THROUGH            = VK_COLOR_SPACE_PASS_THROUGH_EXT,
-            SRGB_NONLINEAR          = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
+        enum class color_space : u32 {
+            adobergb_linear         = VK_COLOR_SPACE_ADOBERGB_LINEAR_EXT,
+            adobergb_nonlinear      = VK_COLOR_SPACE_ADOBERGB_NONLINEAR_EXT,
+            bt2020_linear           = VK_COLOR_SPACE_BT2020_LINEAR_EXT,
+            bt709_linear            = VK_COLOR_SPACE_BT709_LINEAR_EXT,
+            bt709_nonlinear         = VK_COLOR_SPACE_BT709_NONLINEAR_EXT,
+            dci_p3_nonlinear        = VK_COLOR_SPACE_DCI_P3_NONLINEAR_EXT,
+            display_native_amd      = VK_COLOR_SPACE_DISPLAY_NATIVE_AMD,
+            display_p3_linear       = VK_COLOR_SPACE_DISPLAY_P3_LINEAR_EXT,
+            display_p3_nonlinear    = VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT,
+            dolbyvision             = VK_COLOR_SPACE_DOLBYVISION_EXT,
+            extended_srgb_linear    = VK_COLOR_SPACE_EXTENDED_SRGB_LINEAR_EXT,
+            extended_srgb_nonlinear = VK_COLOR_SPACE_EXTENDED_SRGB_NONLINEAR_EXT,
+            hdr10_hlg               = VK_COLOR_SPACE_HDR10_HLG_EXT,
+            hdr10_st2084            = VK_COLOR_SPACE_HDR10_ST2084_EXT,
+            pass_through            = VK_COLOR_SPACE_PASS_THROUGH_EXT,
+            srgb_nonlinear          = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<ColorSpace> = true;
+        inline constexpr auto details::is_vulkan_enumeration<color_space> = true;
 
-        enum class CommandBufferLevel : u8 {
-            PRIMARY   = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-            SECONDARY = VK_COMMAND_BUFFER_LEVEL_SECONDARY,
+        enum class command_buffer_level : u8 {
+            primary   = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+            secondary = VK_COMMAND_BUFFER_LEVEL_SECONDARY,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<CommandBufferLevel> = true;
+        inline constexpr auto details::is_vulkan_enumeration<command_buffer_level> = true;
 
-        enum class CompareOperation : u8 {
-            ALWAYS           = VK_COMPARE_OP_ALWAYS,
-            EQUAL            = VK_COMPARE_OP_EQUAL,
-            GREATER          = VK_COMPARE_OP_GREATER,
-            GREATER_OR_EQUAL = VK_COMPARE_OP_GREATER_OR_EQUAL,
-            LESS             = VK_COMPARE_OP_LESS,
-            LESS_OR_EQUAL    = VK_COMPARE_OP_LESS_OR_EQUAL,
-            NEVER            = VK_COMPARE_OP_NEVER,
-            NOT_EQUAL        = VK_COMPARE_OP_NOT_EQUAL,
+        enum class compare_operation : u8 {
+            always           = VK_COMPARE_OP_ALWAYS,
+            equal            = VK_COMPARE_OP_EQUAL,
+            greater          = VK_COMPARE_OP_GREATER,
+            greater_or_equal = VK_COMPARE_OP_GREATER_OR_EQUAL,
+            less             = VK_COMPARE_OP_LESS,
+            less_or_equal    = VK_COMPARE_OP_LESS_OR_EQUAL,
+            never            = VK_COMPARE_OP_NEVER,
+            not_equal        = VK_COMPARE_OP_NOT_EQUAL,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<CompareOperation> = true;
+        inline constexpr auto details::is_vulkan_enumeration<compare_operation> = true;
 
-        enum class CullModeFlag : u8 {
-            BACK       = VK_CULL_MODE_BACK_BIT,
-            FRONT      = VK_CULL_MODE_FRONT_BIT,
-            FRONT_BACK = FRONT | BACK,
-            NONE       = 0,
+        enum class cull_mode_flag : u8 {
+            back       = VK_CULL_MODE_BACK_BIT,
+            front      = VK_CULL_MODE_FRONT_BIT,
+            front_back = front | back,
+            none       = 0,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<CullModeFlag> = true;
+        inline constexpr auto details::is_vulkan_enumeration<cull_mode_flag> = true;
 
-        enum class DebugObjectType : u32 {
-            BUFFER                = VK_OBJECT_TYPE_BUFFER,
-            BUFFER_VIEW           = VK_OBJECT_TYPE_BUFFER_VIEW,
-            COMMAND_BUFFER        = VK_OBJECT_TYPE_COMMAND_BUFFER,
-            COMMAND_POOL          = VK_OBJECT_TYPE_COMMAND_POOL,
-            DEBUG_REPORT_CALLBACK = VK_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT,
-            DEBUG_UTILS_MESSENGER = VK_OBJECT_TYPE_DEBUG_UTILS_MESSENGER_EXT,
-            DESCRIPTOR_POOL       = VK_OBJECT_TYPE_DESCRIPTOR_POOL,
-            DESCRIPTOR_SET        = VK_OBJECT_TYPE_DESCRIPTOR_SET,
-            DESCRIPTOR_SET_LAYOUT = VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT,
-            DEVICE                = VK_OBJECT_TYPE_DEVICE,
-            DEVICE_MEMORY         = VK_OBJECT_TYPE_DEVICE_MEMORY,
-            DISPLAY               = VK_OBJECT_TYPE_DISPLAY_KHR,
-            EVENT                 = VK_OBJECT_TYPE_EVENT,
-            FENCE                 = VK_OBJECT_TYPE_FENCE,
-            FRAMEBUFFER           = VK_OBJECT_TYPE_FRAMEBUFFER,
-            IMAGE                 = VK_OBJECT_TYPE_IMAGE,
-            IMAGE_VIEW            = VK_OBJECT_TYPE_IMAGE_VIEW,
-            INSTANCE              = VK_OBJECT_TYPE_INSTANCE,
-            PHYSICAL_DEVICE       = VK_OBJECT_TYPE_PHYSICAL_DEVICE,
-            PIPELINE              = VK_OBJECT_TYPE_PIPELINE,
-            PIPELINE_CACHE        = VK_OBJECT_TYPE_PIPELINE_CACHE,
-            PIPELINE_LAYOUT       = VK_OBJECT_TYPE_PIPELINE_LAYOUT,
-            QUERY_POOL            = VK_OBJECT_TYPE_QUERY_POOL,
-            QUEUE                 = VK_OBJECT_TYPE_QUEUE,
-            RENDER_PASS           = VK_OBJECT_TYPE_RENDER_PASS,
-            SAMPLER               = VK_OBJECT_TYPE_SAMPLER,
-            SEMAPHORE             = VK_OBJECT_TYPE_SEMAPHORE,
-            SHADER_MODULE         = VK_OBJECT_TYPE_SHADER_MODULE,
-            SURFACE               = VK_OBJECT_TYPE_SURFACE_KHR,
-            SWAPCHAIN             = VK_OBJECT_TYPE_SWAPCHAIN_KHR,
-            UNKNOWN               = VK_OBJECT_TYPE_UNKNOWN,
+        enum class debug_object_type : u32 {
+            buffer                = VK_OBJECT_TYPE_BUFFER,
+            buffer_view           = VK_OBJECT_TYPE_BUFFER_VIEW,
+            command_buffer        = VK_OBJECT_TYPE_COMMAND_BUFFER,
+            command_pool          = VK_OBJECT_TYPE_COMMAND_POOL,
+            debug_report_callback = VK_OBJECT_TYPE_DEBUG_REPORT_CALLBACK_EXT,
+            debug_utils_messenger = VK_OBJECT_TYPE_DEBUG_UTILS_MESSENGER_EXT,
+            descriptor_pool       = VK_OBJECT_TYPE_DESCRIPTOR_POOL,
+            descriptor_set        = VK_OBJECT_TYPE_DESCRIPTOR_SET,
+            descriptor_set_layout = VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT,
+            device                = VK_OBJECT_TYPE_DEVICE,
+            device_memory         = VK_OBJECT_TYPE_DEVICE_MEMORY,
+            display               = VK_OBJECT_TYPE_DISPLAY_KHR,
+            event                 = VK_OBJECT_TYPE_EVENT,
+            fence                 = VK_OBJECT_TYPE_FENCE,
+            framebuffer           = VK_OBJECT_TYPE_FRAMEBUFFER,
+            image                 = VK_OBJECT_TYPE_IMAGE,
+            image_view            = VK_OBJECT_TYPE_IMAGE_VIEW,
+            instance              = VK_OBJECT_TYPE_INSTANCE,
+            physical_device       = VK_OBJECT_TYPE_PHYSICAL_DEVICE,
+            pipeline              = VK_OBJECT_TYPE_PIPELINE,
+            pipeline_cache        = VK_OBJECT_TYPE_PIPELINE_CACHE,
+            pipeline_layout       = VK_OBJECT_TYPE_PIPELINE_LAYOUT,
+            query_pool            = VK_OBJECT_TYPE_QUERY_POOL,
+            queue                 = VK_OBJECT_TYPE_QUEUE,
+            render_pass           = VK_OBJECT_TYPE_RENDER_PASS,
+            sampler               = VK_OBJECT_TYPE_SAMPLER,
+            semaphore             = VK_OBJECT_TYPE_SEMAPHORE,
+            shader_module         = VK_OBJECT_TYPE_SHADER_MODULE,
+            surface               = VK_OBJECT_TYPE_SURFACE_KHR,
+            swapchain             = VK_OBJECT_TYPE_SWAPCHAIN_KHR,
+            unknown               = VK_OBJECT_TYPE_UNKNOWN,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<DebugObjectType> = true;
+        inline constexpr auto details::is_vulkan_enumeration<debug_object_type> = true;
 
-        enum class DependencyFlag : u8 {
-            BY_REGION    = VK_DEPENDENCY_BY_REGION_BIT,
-            DEVICE_GROUP = VK_DEPENDENCY_DEVICE_GROUP_BIT,
-            NONE         = 0,
-            VIEW_LOCAL   = VK_DEPENDENCY_VIEW_LOCAL_BIT,
+        enum class dependency_flag : u8 {
+            by_region    = VK_DEPENDENCY_BY_REGION_BIT,
+            device_group = VK_DEPENDENCY_DEVICE_GROUP_BIT,
+            none         = 0,
+            view_local   = VK_DEPENDENCY_VIEW_LOCAL_BIT,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<DependencyFlag> = true;
+        inline constexpr auto details::is_vulkan_enumeration<dependency_flag> = true;
 
-        enum class DescriptorType : u8 {
-            COMBINED_IMAGE_SAMPLER = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-            INPUT_ATTACHMENT       = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,
-            SAMPLED_IMAGE          = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
-            SAMPLER                = VK_DESCRIPTOR_TYPE_SAMPLER,
-            STORAGE_BUFFER         = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-            STORAGE_BUFFER_DYNAMIC = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC,
-            STORAGE_IMAGE          = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
-            STORAGE_TEXEL_BUFFER   = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER,
-            UNIFORM_BUFFER         = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-            UNIFORM_BUFFER_DYNAMIC = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
-            UNIFORM_TEXEL_BUFFER   = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER,
+        enum class descriptor_type : u8 {
+            combined_image_sampler = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            input_attachment       = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,
+            sampled_image          = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+            sampler                = VK_DESCRIPTOR_TYPE_SAMPLER,
+            storage_buffer         = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+            storage_buffer_dynamic = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC,
+            storage_image          = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,
+            storage_texel_buffer   = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER,
+            uniform_buffer         = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            uniform_buffer_dynamic = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+            uniform_texel_buffer   = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<DescriptorType> = true;
+        inline constexpr auto details::is_vulkan_enumeration<descriptor_type> = true;
 
-        enum class DynamicState : u8 {
-            BLEND_CONSTANTS      = VK_DYNAMIC_STATE_BLEND_CONSTANTS,
-            DEPTH_BIAS           = VK_DYNAMIC_STATE_DEPTH_BIAS,
-            DEPTH_BOUNDS         = VK_DYNAMIC_STATE_DEPTH_BOUNDS,
-            LINE_WIDTH           = VK_DYNAMIC_STATE_LINE_WIDTH,
-            SCISSOR              = VK_DYNAMIC_STATE_SCISSOR,
-            STENCIL_COMPARE_MASK = VK_DYNAMIC_STATE_STENCIL_COMPARE_MASK,
-            STENCIL_REFERENCE    = VK_DYNAMIC_STATE_STENCIL_REFERENCE,
-            STENCIL_WRITE_MASK   = VK_DYNAMIC_STATE_STENCIL_WRITE_MASK,
-            VIEWPORT             = VK_DYNAMIC_STATE_VIEWPORT,
+        enum class dynamic_state : u8 {
+            blend_constants      = VK_DYNAMIC_STATE_BLEND_CONSTANTS,
+            depth_bias           = VK_DYNAMIC_STATE_DEPTH_BIAS,
+            depth_bounds         = VK_DYNAMIC_STATE_DEPTH_BOUNDS,
+            line_width           = VK_DYNAMIC_STATE_LINE_WIDTH,
+            scissor              = VK_DYNAMIC_STATE_SCISSOR,
+            stencil_compare_mask = VK_DYNAMIC_STATE_STENCIL_COMPARE_MASK,
+            stencil_reference    = VK_DYNAMIC_STATE_STENCIL_REFERENCE,
+            stencil_write_mask   = VK_DYNAMIC_STATE_STENCIL_WRITE_MASK,
+            viewport             = VK_DYNAMIC_STATE_VIEWPORT,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<DynamicState> = true;
+        inline constexpr auto details::is_vulkan_enumeration<dynamic_state> = true;
 
-        enum class Filter : u32 {
-            CUBIC_IMG = VK_FILTER_CUBIC_IMG,
-            LINEAR    = VK_FILTER_LINEAR,
-            NEAREST   = VK_FILTER_NEAREST,
+        enum class filter : u32 {
+            cubic_img = VK_FILTER_CUBIC_IMG,
+            linear    = VK_FILTER_LINEAR,
+            nearest   = VK_FILTER_NEAREST,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<Filter> = true;
+        inline constexpr auto details::is_vulkan_enumeration<filter> = true;
 
-        enum class FormatFeatureFlag : u32 {
-            BLIT_DST                    = VK_FORMAT_FEATURE_BLIT_DST_BIT,
-            BLIT_SRC                    = VK_FORMAT_FEATURE_BLIT_SRC_BIT,
-            COLOR_ATTACHMENT            = VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT,
-            COLOR_ATTACHMENT_BLEND      = VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT,
-            COSITED_CHROMA_SAMPLES      = VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT,
-            DEPTH_STENCIL_ATTACHMENT    = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT,
-            DISJOINT                    = VK_FORMAT_FEATURE_DISJOINT_BIT,
-            MIDPOINT_CHROMA_SAMPLES     = VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT,
-            SAMPLED_IMAGE               = VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT,
-            SAMPLED_IMAGE_FILTER_LINEAR = VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT,
-            SAMPLED_IMAGE_FILTER_MINMAX = VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_MINMAX_BIT,
-            SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT = VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT,
-            SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE = VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT,
-            SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER = VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT,
-            SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER = VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT,
-            STORAGE_IMAGE               = VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT,
-            STORAGE_IMAGE_ATOMIC        = VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT,
-            STORAGE_TEXEL_BUFFER        = VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT,
-            STORAGE_TEXEL_BUFFER_ATOMIC = VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_ATOMIC_BIT,
-            TRANSFER_DST                = VK_FORMAT_FEATURE_TRANSFER_DST_BIT,
-            TRANSFER_SRC                = VK_FORMAT_FEATURE_TRANSFER_SRC_BIT,
-            UNIFORM_TEXEL_BUFFER        = VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT,
-            VERTEX_BUFFER               = VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT,
+        enum class format_feature_flag : u32 {
+            blit_dst                    = VK_FORMAT_FEATURE_BLIT_DST_BIT,
+            blit_src                    = VK_FORMAT_FEATURE_BLIT_SRC_BIT,
+            color_attachment            = VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT,
+            color_attachment_blend      = VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT,
+            cosited_chroma_samples      = VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT,
+            depth_stencil_attachment    = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT,
+            disjoint                    = VK_FORMAT_FEATURE_DISJOINT_BIT,
+            midpoint_chroma_samples     = VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT,
+            sampled_image               = VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT,
+            sampled_image_filter_linear = VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT,
+            sampled_image_filter_minmax = VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_MINMAX_BIT,
+            sampled_image_ycbcr_conversion_chroma_reconstruction_explicit = VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT,
+            sampled_image_ycbcr_conversion_chroma_reconstruction_explicit_forceable = VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE_BIT,
+            sampled_image_ycbcr_conversion_linear_filter = VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT,
+            sampled_image_ycbcr_conversion_separate_reconstruction_filter = VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT,
+            storage_image               = VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT,
+            storage_image_atomic        = VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT,
+            storage_texel_buffer        = VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT,
+            storage_texel_buffer_atomic = VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_ATOMIC_BIT,
+            transfer_dst                = VK_FORMAT_FEATURE_TRANSFER_DST_BIT,
+            transfer_src                = VK_FORMAT_FEATURE_TRANSFER_SRC_BIT,
+            uniform_texel_buffer        = VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT,
+            vertex_buffer               = VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<FormatFeatureFlag> = true;
+        inline constexpr auto details::is_vulkan_enumeration<format_feature_flag> = true;
 
-        enum class FrontFace : u8 {
-            CLOCKWISE         = VK_FRONT_FACE_CLOCKWISE,
-            COUNTER_CLOCKWISE = VK_FRONT_FACE_COUNTER_CLOCKWISE,
+        enum class front_face : u8 {
+            clockwise         = VK_FRONT_FACE_CLOCKWISE,
+            counter_clockwise = VK_FRONT_FACE_COUNTER_CLOCKWISE,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<FrontFace> = true;
+        inline constexpr auto details::is_vulkan_enumeration<front_face> = true;
 
-        enum class GeometryFlag : u8 {
-            NO_DUPLICATE_ANY_HIT_INVOCATION = VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_KHR,
-            OPAQUE                          = VK_GEOMETRY_OPAQUE_BIT_KHR,
+        enum class geometry_flag : u8 {
+            no_duplicate_any_hit_invocation = VK_GEOMETRY_NO_DUPLICATE_ANY_HIT_INVOCATION_BIT_KHR,
+            opaque                          = VK_GEOMETRY_OPAQUE_BIT_KHR,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<GeometryFlag> = true;
+        inline constexpr auto details::is_vulkan_enumeration<geometry_flag> = true;
 
-        enum class GeometryType : u8 {
-            AABBS     = VK_GEOMETRY_TYPE_AABBS_KHR,
-            INSTANCES = VK_GEOMETRY_TYPE_INSTANCES_KHR,
-            TRIANGLES = VK_GEOMETRY_TYPE_TRIANGLES_KHR,
+        enum class geometry_type : u8 {
+            aabbs     = VK_GEOMETRY_TYPE_AABBS_KHR,
+            instances = VK_GEOMETRY_TYPE_INSTANCES_KHR,
+            triangles = VK_GEOMETRY_TYPE_TRIANGLES_KHR,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<GeometryType> = true;
+        inline constexpr auto details::is_vulkan_enumeration<geometry_type> = true;
 
-        enum class ImageAspectFlag : u8 {
-            COLOR   = VK_IMAGE_ASPECT_COLOR_BIT,
-            DEPTH   = VK_IMAGE_ASPECT_DEPTH_BIT,
-            NONE    = VK_IMAGE_ASPECT_NONE_KHR,
-            STENCIL = VK_IMAGE_ASPECT_STENCIL_BIT,
+        enum class image_aspect_flag : u8 {
+            color   = VK_IMAGE_ASPECT_COLOR_BIT,
+            depth   = VK_IMAGE_ASPECT_DEPTH_BIT,
+            none    = VK_IMAGE_ASPECT_NONE_KHR,
+            stencil = VK_IMAGE_ASPECT_STENCIL_BIT,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<ImageAspectFlag> = true;
+        inline constexpr auto details::is_vulkan_enumeration<image_aspect_flag> = true;
 
-        enum class ImageCreateFlag : u16 {
-            ALIAS                       = VK_IMAGE_CREATE_ALIAS_BIT,
-            ARRAY_2D_COMPATIBLE         = VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT,
-            BLOCK_TEXEL_VIEW_COMPATIBLE = VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT,
-            CUBE_COMPATIBLE             = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
-            DISJOINT                    = VK_IMAGE_CREATE_DISJOINT_BIT,
-            EXTENDED_USAGE              = VK_IMAGE_CREATE_EXTENDED_USAGE_BIT,
-            MUTABLE_FORMAT              = VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT,
-            NONE                        = 0,
-            PROTECTED                   = VK_IMAGE_CREATE_PROTECTED_BIT,
-            SPARSE_ALIASED              = VK_IMAGE_CREATE_SPARSE_ALIASED_BIT,
-            SPARSE_BINDING              = VK_IMAGE_CREATE_SPARSE_BINDING_BIT,
-            SPARSE_RESIDENCY            = VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT,
-            SPLIT_INSTANCE_BIND_REGIONS = VK_IMAGE_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT,
+        enum class image_create_flag : u16 {
+            alias                       = VK_IMAGE_CREATE_ALIAS_BIT,
+            array_2d_compatible         = VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT,
+            block_texel_view_compatible = VK_IMAGE_CREATE_BLOCK_TEXEL_VIEW_COMPATIBLE_BIT,
+            cube_compatible             = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
+            disjoint                    = VK_IMAGE_CREATE_DISJOINT_BIT,
+            extended_usage              = VK_IMAGE_CREATE_EXTENDED_USAGE_BIT,
+            mutable_format              = VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT,
+            none                        = 0,
+            protected_                  = VK_IMAGE_CREATE_PROTECTED_BIT,
+            sparse_aliased              = VK_IMAGE_CREATE_SPARSE_ALIASED_BIT,
+            sparse_binding              = VK_IMAGE_CREATE_SPARSE_BINDING_BIT,
+            sparse_residency            = VK_IMAGE_CREATE_SPARSE_RESIDENCY_BIT,
+            split_instance_bind_regions = VK_IMAGE_CREATE_SPLIT_INSTANCE_BIND_REGIONS_BIT,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<ImageCreateFlag> = true;
+        inline constexpr auto details::is_vulkan_enumeration<image_create_flag> = true;
 
-        enum class ImageLayout : u32 {
-            ATTACHMENT_OPTIMAL                         = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
-            COLOR_ATTACHMENT_OPTIMAL                   = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL,
-            DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL,
-            DEPTH_STENCIL_ATTACHMENT_OPTIMAL           = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-            DEPTH_STENCIL_READ_ONLY_OPTIMAL            = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
-            GENERAL                                    = VK_IMAGE_LAYOUT_GENERAL,
-            PREINITIALIZED                             = VK_IMAGE_LAYOUT_PREINITIALIZED,
-            PRESENT_SRC                                = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-            SHADER_READ_ONLY_OPTIMAL                   = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            SHARED_PRESENT                             = VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR,
-            TRANSFER_DST_OPTIMAL                       = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            TRANSFER_SRC_OPTIMAL                       = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-            UNDEFINED                                  = VK_IMAGE_LAYOUT_UNDEFINED,
+        enum class image_layout : u32 {
+            attachment_optimal                         = VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL,
+            color_attachment_optimal                   = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            depth_attachment_stencil_read_only_optimal = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL,
+            depth_read_only_stencil_attachment_optimal = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL,
+            depth_stencil_attachment_optimal           = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            depth_stencil_read_only_optimal            = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
+            general                                    = VK_IMAGE_LAYOUT_GENERAL,
+            preinitialized                             = VK_IMAGE_LAYOUT_PREINITIALIZED,
+            present_src                                = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+            shader_read_only_optimal                   = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            shared_present                             = VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR,
+            transfer_dst_optimal                       = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            transfer_src_optimal                       = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            undefined                                  = VK_IMAGE_LAYOUT_UNDEFINED,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<ImageLayout> = true;
+        inline constexpr auto details::is_vulkan_enumeration<image_layout> = true;
 
-        enum class ImageTiling : u8 {
-            LINEAR  = VK_IMAGE_TILING_LINEAR,
-            OPTIMAL = VK_IMAGE_TILING_OPTIMAL,
+        enum class image_tiling : u8 {
+            linear  = VK_IMAGE_TILING_LINEAR,
+            optimal = VK_IMAGE_TILING_OPTIMAL,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<ImageTiling> = true;
+        inline constexpr auto details::is_vulkan_enumeration<image_tiling> = true;
 
-        enum class ImageType : u8 {
-            T1D = VK_IMAGE_TYPE_1D,
-            T2D = VK_IMAGE_TYPE_2D,
-            T3D = VK_IMAGE_TYPE_3D,
+        enum class image_type : u8 {
+            t1d = VK_IMAGE_TYPE_1D,
+            t2d = VK_IMAGE_TYPE_2D,
+            t3d = VK_IMAGE_TYPE_3D,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<ImageType> = true;
+        inline constexpr auto details::is_vulkan_enumeration<image_type> = true;
 
-        enum class ImageUsageFlag : u16 {
-            COLOR_ATTACHMENT         = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-            DEPTH_STENCIL_ATTACHMENT = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-            INPUT_ATTACHMENT         = VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
-            SAMPLED                  = VK_IMAGE_USAGE_SAMPLED_BIT,
-            STORAGE                  = VK_IMAGE_USAGE_STORAGE_BIT,
-            TRANSFER_DST             = VK_IMAGE_USAGE_TRANSFER_DST_BIT,
-            TRANSFER_SRC             = VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
-            TRANSIENT_ATTACHMENT     = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
+        enum class image_usage_flag : u16 {
+            color_attachment         = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+            depth_stencil_attachment = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+            input_attachment         = VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT,
+            sampled                  = VK_IMAGE_USAGE_SAMPLED_BIT,
+            storage                  = VK_IMAGE_USAGE_STORAGE_BIT,
+            transfer_dst             = VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+            transfer_src             = VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+            transient_attachment     = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<ImageUsageFlag> = true;
+        inline constexpr auto details::is_vulkan_enumeration<image_usage_flag> = true;
 
-        enum class ImageViewType : u8 {
-            CUBE       = VK_IMAGE_VIEW_TYPE_CUBE,
-            CUBE_ARRAY = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY,
-            T1D        = VK_IMAGE_VIEW_TYPE_1D,
-            T1D_ARRAY  = VK_IMAGE_VIEW_TYPE_1D_ARRAY,
-            T2D        = VK_IMAGE_VIEW_TYPE_2D,
-            T2D_ARRAY  = VK_IMAGE_VIEW_TYPE_2D_ARRAY,
-            T3D        = VK_IMAGE_VIEW_TYPE_3D,
+        enum class image_view_type : u8 {
+            cube       = VK_IMAGE_VIEW_TYPE_CUBE,
+            cube_array = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY,
+            t1d        = VK_IMAGE_VIEW_TYPE_1D,
+            t1d_array  = VK_IMAGE_VIEW_TYPE_1D_ARRAY,
+            t2d        = VK_IMAGE_VIEW_TYPE_2D,
+            t2d_array  = VK_IMAGE_VIEW_TYPE_2D_ARRAY,
+            t3d        = VK_IMAGE_VIEW_TYPE_3D,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<ImageViewType> = true;
+        inline constexpr auto details::is_vulkan_enumeration<image_view_type> = true;
 
-        enum class LogicOperation : u8 {
-            AND           = VK_LOGIC_OP_AND,
-            AND_INVERTED  = VK_LOGIC_OP_AND_INVERTED,
-            AND_REVERSE   = VK_LOGIC_OP_AND_REVERSE,
-            CLEAR         = VK_LOGIC_OP_CLEAR,
-            COPY          = VK_LOGIC_OP_COPY,
-            COPY_INVERTED = VK_LOGIC_OP_COPY_INVERTED,
-            EQUIVALENT    = VK_LOGIC_OP_EQUIVALENT,
-            INVERT        = VK_LOGIC_OP_INVERT,
-            NAND          = VK_LOGIC_OP_NAND,
-            NO_OP         = VK_LOGIC_OP_NO_OP,
-            NOR           = VK_LOGIC_OP_NOR,
-            OR            = VK_LOGIC_OP_OR,
-            OR_INVERTED   = VK_LOGIC_OP_OR_INVERTED,
-            OR_REVERSE    = VK_LOGIC_OP_OR_REVERSE,
-            SET           = VK_LOGIC_OP_SET,
-            XOR           = VK_LOGIC_OP_XOR,
+        enum class logic_operation : u8 {
+            and_          = VK_LOGIC_OP_AND,
+            and_inverted  = VK_LOGIC_OP_AND_INVERTED,
+            and_reverse   = VK_LOGIC_OP_AND_REVERSE,
+            clear         = VK_LOGIC_OP_CLEAR,
+            copy          = VK_LOGIC_OP_COPY,
+            copy_inverted = VK_LOGIC_OP_COPY_INVERTED,
+            equivalent    = VK_LOGIC_OP_EQUIVALENT,
+            invert        = VK_LOGIC_OP_INVERT,
+            nand          = VK_LOGIC_OP_NAND,
+            no_op         = VK_LOGIC_OP_NO_OP,
+            nor           = VK_LOGIC_OP_NOR,
+            or_           = VK_LOGIC_OP_OR,
+            or_inverted   = VK_LOGIC_OP_OR_INVERTED,
+            or_reverse    = VK_LOGIC_OP_OR_REVERSE,
+            set           = VK_LOGIC_OP_SET,
+            xor_          = VK_LOGIC_OP_XOR,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<LogicOperation> = true;
+        inline constexpr auto details::is_vulkan_enumeration<logic_operation> = true;
 
-        enum class MemoryPropertyFlag : u8 {
-            DEVICE_LOCAL  = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            HOST_CACHED   = VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
-            HOST_COHERENT = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            HOST_VISIBLE  = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+        enum class memory_property_flag : u8 {
+            device_local  = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            host_cached   = VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
+            host_coherent = VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            host_visible  = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<MemoryPropertyFlag> = true;
+        inline constexpr auto details::is_vulkan_enumeration<memory_property_flag> = true;
 
-        enum class PhysicalDeviceType : u8 {
-            CPU            = VK_PHYSICAL_DEVICE_TYPE_CPU,
-            DISCRETE_GPU   = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU,
-            INTEGRATED_GPU = VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU,
-            OTHER          = VK_PHYSICAL_DEVICE_TYPE_OTHER,
-            VIRTUAL_GPU    = VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU,
+        enum class physical_device_type : u8 {
+            cpu            = VK_PHYSICAL_DEVICE_TYPE_CPU,
+            discrete_gpu   = VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU,
+            integrated_gpu = VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU,
+            other          = VK_PHYSICAL_DEVICE_TYPE_OTHER,
+            virtual_gpu    = VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<PhysicalDeviceType> = true;
+        inline constexpr auto details::is_vulkan_enumeration<physical_device_type> = true;
 
-        enum class PipelineBindPoint : u8 {
-            COMPUTE  = VK_PIPELINE_BIND_POINT_COMPUTE,
-            GRAPHICS = VK_PIPELINE_BIND_POINT_GRAPHICS,
+        enum class pipeline_bind_point : u8 {
+            compute  = VK_PIPELINE_BIND_POINT_COMPUTE,
+            graphics = VK_PIPELINE_BIND_POINT_GRAPHICS,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<PipelineBindPoint> = true;
+        inline constexpr auto details::is_vulkan_enumeration<pipeline_bind_point> = true;
 
-        enum class PipelineStageFlag : u32 {
-            ALL_COMMANDS                   = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-            ALL_GRAPHICS                   = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT,
-            BOTTOM_OF_PIPE                 = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-            COLOR_ATTACHMENT_OUTPUT        = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-            COMPUTE_SHADER                 = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-            DRAW_INDIRECT                  = VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
-            EARLY_FRAGMENT_TESTS           = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-            FRAGMENT_SHADER                = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-            GEOMETRY_SHADER                = VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT,
-            HOST                           = VK_PIPELINE_STAGE_HOST_BIT,
-            LATE_FRAGMENT_TESTS            = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-            TESSELLATION_CONTROL_SHADER    = VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT,
-            TESSELLATION_EVALUATION_SHADER = VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT,
-            TOP_OF_PIPE                    = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-            TRANSFER                       = VK_PIPELINE_STAGE_TRANSFER_BIT,
-            VERTEX_INPUT                   = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
-            VERTEX_SHADER                  = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
+        enum class pipeline_stage_flag : u32 {
+            all_commands                   = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+            all_graphics                   = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT,
+            bottom_of_pipe                 = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+            color_attachment_output        = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            compute_shader                 = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+            draw_indirect                  = VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT,
+            early_fragment_tests           = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+            fragment_shader                = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            geometry_shader                = VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT,
+            host                           = VK_PIPELINE_STAGE_HOST_BIT,
+            late_fragment_tests            = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+            tessellation_control_shader    = VK_PIPELINE_STAGE_TESSELLATION_CONTROL_SHADER_BIT,
+            tessellation_evaluation_shader = VK_PIPELINE_STAGE_TESSELLATION_EVALUATION_SHADER_BIT,
+            top_of_pipe                    = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+            transfer                       = VK_PIPELINE_STAGE_TRANSFER_BIT,
+            vertex_input                   = VK_PIPELINE_STAGE_VERTEX_INPUT_BIT,
+            vertex_shader                  = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<PipelineStageFlag> = true;
+        inline constexpr auto details::is_vulkan_enumeration<pipeline_stage_flag> = true;
 
-        enum class PixelFormat : u32 {
-            A1_RGB5_UNORM_PACK16    = VK_FORMAT_A1R5G5B5_UNORM_PACK16,
-            A2_RGB10I_PACK32        = VK_FORMAT_A2R10G10B10_SINT_PACK32,
-            A2_RGB10_SNORM_PACK32   = VK_FORMAT_A2R10G10B10_SNORM_PACK32,
-            A2_RGB10_UNORM_PACK32   = VK_FORMAT_A2R10G10B10_UNORM_PACK32,
-            A2_RGB10U_PACK32        = VK_FORMAT_A2R10G10B10_UINT_PACK32,
-            B10_GR11UF_PACK32       = VK_FORMAT_B10G11R11_UFLOAT_PACK32,
-            BGR8_UNORM              = VK_FORMAT_B8G8R8_UNORM,
-            BGRA8_UNORM             = VK_FORMAT_B8G8R8A8_UNORM,
-            DEPTH16_UNORM           = VK_FORMAT_D16_UNORM,
-            DEPTH16_UNORM_STENCIL8U = VK_FORMAT_D16_UNORM_S8_UINT,
-            DEPTH24_UNORM_PACK32    = VK_FORMAT_X8_D24_UNORM_PACK32,
-            DEPTH24_UNORM_STENCIL8U = VK_FORMAT_D24_UNORM_S8_UINT,
-            DEPTH32F                = VK_FORMAT_D32_SFLOAT,
-            DEPTH32F_STENCIL8U      = VK_FORMAT_D32_SFLOAT_S8_UINT,
-            R16F                    = VK_FORMAT_R16_SFLOAT,
-            R16I                    = VK_FORMAT_R16_SINT,
-            R16_SNORM               = VK_FORMAT_R16_SNORM,
-            R16U                    = VK_FORMAT_R16_UINT,
-            R16_UNORM               = VK_FORMAT_R16_UNORM,
-            R32F                    = VK_FORMAT_R32_SFLOAT,
-            R32I                    = VK_FORMAT_R32_SINT,
-            R32U                    = VK_FORMAT_R32_UINT,
-            R5_G6_B5_UNORM_PACK16   = VK_FORMAT_R5G6B5_UNORM_PACK16,
-            R8I                     = VK_FORMAT_R8_SINT,
-            R8_SNORM                = VK_FORMAT_R8_SNORM,
-            R8U                     = VK_FORMAT_R8_UINT,
-            R8_UNORM                = VK_FORMAT_R8_UNORM,
-            RG16F                   = VK_FORMAT_R16G16_SFLOAT,
-            RG16I                   = VK_FORMAT_R16G16_SINT,
-            RG16_SNORM              = VK_FORMAT_R16G16_SNORM,
-            RG16U                   = VK_FORMAT_R16G16_UINT,
-            RG16_UNORM              = VK_FORMAT_R16G16_UNORM,
-            RG32F                   = VK_FORMAT_R32G32_SFLOAT,
-            RG32I                   = VK_FORMAT_R32G32_SINT,
-            RG32U                   = VK_FORMAT_R32G32_UINT,
-            RG8I                    = VK_FORMAT_R8G8_SINT,
-            RG8_SNORM               = VK_FORMAT_R8G8_SNORM,
-            RG8U                    = VK_FORMAT_R8G8_UINT,
-            RG8_UNORM               = VK_FORMAT_R8G8_UNORM,
-            RGB16F                  = VK_FORMAT_R16G16B16_SFLOAT,
-            RGB16I                  = VK_FORMAT_R16G16B16_SINT,
-            RGB16_SNORM             = VK_FORMAT_R16G16B16_SNORM,
-            RGB16U                  = VK_FORMAT_R16G16B16_UINT,
-            RGB16_UNORM             = VK_FORMAT_R16G16B16_UNORM,
-            RGB32F                  = VK_FORMAT_R32G32B32_SFLOAT,
-            RGB32I                  = VK_FORMAT_R32G32B32_SINT,
-            RGB32U                  = VK_FORMAT_R32G32B32_UINT,
-            RGB8I                   = VK_FORMAT_R8G8B8_SINT,
-            RGB8_SNORM              = VK_FORMAT_R8G8B8_SNORM,
-            RGB8U                   = VK_FORMAT_R8G8B8_UINT,
-            RGB8_UNORM              = VK_FORMAT_R8G8B8_UNORM,
-            RGBA16F                 = VK_FORMAT_R16G16B16A16_SFLOAT,
-            RGBA16I                 = VK_FORMAT_R16G16B16A16_SINT,
-            RGBA16_SNORM            = VK_FORMAT_R16G16B16A16_SNORM,
-            RGBA16U                 = VK_FORMAT_R16G16B16A16_UINT,
-            RGBA16_UNORM            = VK_FORMAT_R16G16B16A16_UNORM,
-            RGBA32F                 = VK_FORMAT_R32G32B32A32_SFLOAT,
-            RGBA32I                 = VK_FORMAT_R32G32B32A32_SINT,
-            RGBA32U                 = VK_FORMAT_R32G32B32A32_UINT,
-            RGBA4_UNORM_PACK16      = VK_FORMAT_R4G4B4A4_UNORM_PACK16,
-            RGBA8I                  = VK_FORMAT_R8G8B8A8_SINT,
-            RGBA8_SNORM             = VK_FORMAT_R8G8B8A8_SNORM,
-            RGBA8U                  = VK_FORMAT_R8G8B8A8_UINT,
-            RGBA8_UNORM             = VK_FORMAT_R8G8B8A8_UNORM,
-            S8U                     = VK_FORMAT_S8_UINT,
-            SBGR8                   = VK_FORMAT_B8G8R8_SRGB,
-            SBGRA8                  = VK_FORMAT_B8G8R8A8_SRGB,
-            SR8                     = VK_FORMAT_R8_SRGB,
-            SRG8                    = VK_FORMAT_R8G8_SRGB,
-            SRGB8                   = VK_FORMAT_R8G8B8_SRGB,
-            SRGBA8                  = VK_FORMAT_R8G8B8A8_SRGB,
-            UNDEFINED               = VK_FORMAT_UNDEFINED,
+        enum class pixel_format : u32 {
+            a1_rgb5_unorm_pack16    = VK_FORMAT_A1R5G5B5_UNORM_PACK16,
+            a2_rgb10i_pack32        = VK_FORMAT_A2R10G10B10_SINT_PACK32,
+            a2_rgb10_snorm_pack32   = VK_FORMAT_A2R10G10B10_SNORM_PACK32,
+            a2_rgb10_unorm_pack32   = VK_FORMAT_A2R10G10B10_UNORM_PACK32,
+            a2_rgb10u_pack32        = VK_FORMAT_A2R10G10B10_UINT_PACK32,
+            b10_gr11uf_pack32       = VK_FORMAT_B10G11R11_UFLOAT_PACK32,
+            bgr8_unorm              = VK_FORMAT_B8G8R8_UNORM,
+            bgra8_unorm             = VK_FORMAT_B8G8R8A8_UNORM,
+            depth16_unorm           = VK_FORMAT_D16_UNORM,
+            depth16_unorm_stencil8u = VK_FORMAT_D16_UNORM_S8_UINT,
+            depth24_unorm_pack32    = VK_FORMAT_X8_D24_UNORM_PACK32,
+            depth24_unorm_stencil8u = VK_FORMAT_D24_UNORM_S8_UINT,
+            depth32f                = VK_FORMAT_D32_SFLOAT,
+            depth32f_stencil8u      = VK_FORMAT_D32_SFLOAT_S8_UINT,
+            r16f                    = VK_FORMAT_R16_SFLOAT,
+            r16i                    = VK_FORMAT_R16_SINT,
+            r16_snorm               = VK_FORMAT_R16_SNORM,
+            r16u                    = VK_FORMAT_R16_UINT,
+            r16_unorm               = VK_FORMAT_R16_UNORM,
+            r32f                    = VK_FORMAT_R32_SFLOAT,
+            r32i                    = VK_FORMAT_R32_SINT,
+            r32u                    = VK_FORMAT_R32_UINT,
+            r5_g6_b5_unorm_pack16   = VK_FORMAT_R5G6B5_UNORM_PACK16,
+            r8i                     = VK_FORMAT_R8_SINT,
+            r8_snorm                = VK_FORMAT_R8_SNORM,
+            r8u                     = VK_FORMAT_R8_UINT,
+            r8_unorm                = VK_FORMAT_R8_UNORM,
+            rg16f                   = VK_FORMAT_R16G16_SFLOAT,
+            rg16i                   = VK_FORMAT_R16G16_SINT,
+            rg16_snorm              = VK_FORMAT_R16G16_SNORM,
+            rg16u                   = VK_FORMAT_R16G16_UINT,
+            rg16_unorm              = VK_FORMAT_R16G16_UNORM,
+            rg32f                   = VK_FORMAT_R32G32_SFLOAT,
+            rg32i                   = VK_FORMAT_R32G32_SINT,
+            rg32u                   = VK_FORMAT_R32G32_UINT,
+            rg8i                    = VK_FORMAT_R8G8_SINT,
+            rg8_snorm               = VK_FORMAT_R8G8_SNORM,
+            rg8u                    = VK_FORMAT_R8G8_UINT,
+            rg8_unorm               = VK_FORMAT_R8G8_UNORM,
+            rgb16f                  = VK_FORMAT_R16G16B16_SFLOAT,
+            rgb16i                  = VK_FORMAT_R16G16B16_SINT,
+            rgb16_snorm             = VK_FORMAT_R16G16B16_SNORM,
+            rgb16u                  = VK_FORMAT_R16G16B16_UINT,
+            rgb16_unorm             = VK_FORMAT_R16G16B16_UNORM,
+            rgb32f                  = VK_FORMAT_R32G32B32_SFLOAT,
+            rgb32i                  = VK_FORMAT_R32G32B32_SINT,
+            rgb32u                  = VK_FORMAT_R32G32B32_UINT,
+            rgb8i                   = VK_FORMAT_R8G8B8_SINT,
+            rgb8_snorm              = VK_FORMAT_R8G8B8_SNORM,
+            rgb8u                   = VK_FORMAT_R8G8B8_UINT,
+            rgb8_unorm              = VK_FORMAT_R8G8B8_UNORM,
+            rgba16f                 = VK_FORMAT_R16G16B16A16_SFLOAT,
+            rgba16i                 = VK_FORMAT_R16G16B16A16_SINT,
+            rgba16_snorm            = VK_FORMAT_R16G16B16A16_SNORM,
+            rgba16u                 = VK_FORMAT_R16G16B16A16_UINT,
+            rgba16_unorm            = VK_FORMAT_R16G16B16A16_UNORM,
+            rgba32f                 = VK_FORMAT_R32G32B32A32_SFLOAT,
+            rgba32i                 = VK_FORMAT_R32G32B32A32_SINT,
+            rgba32u                 = VK_FORMAT_R32G32B32A32_UINT,
+            rgba4_unorm_pack16      = VK_FORMAT_R4G4B4A4_UNORM_PACK16,
+            rgba8i                  = VK_FORMAT_R8G8B8A8_SINT,
+            rgba8_snorm             = VK_FORMAT_R8G8B8A8_SNORM,
+            rgba8u                  = VK_FORMAT_R8G8B8A8_UINT,
+            rgba8_unorm             = VK_FORMAT_R8G8B8A8_UNORM,
+            s8u                     = VK_FORMAT_S8_UINT,
+            sbgr8                   = VK_FORMAT_B8G8R8_SRGB,
+            sbgra8                  = VK_FORMAT_B8G8R8A8_SRGB,
+            sr8                     = VK_FORMAT_R8_SRGB,
+            srg8                    = VK_FORMAT_R8G8_SRGB,
+            srgb8                   = VK_FORMAT_R8G8B8_SRGB,
+            srgba8                  = VK_FORMAT_R8G8B8A8_SRGB,
+            undefined               = VK_FORMAT_UNDEFINED,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<PixelFormat> = true;
+        inline constexpr auto details::is_vulkan_enumeration<pixel_format> = true;
 
-        enum class PolygonMode : u8 {
-            FILL  = VK_POLYGON_MODE_FILL,
-            LINE  = VK_POLYGON_MODE_LINE,
-            POINT = VK_POLYGON_MODE_POINT,
+        enum class polygon_mode : u8 {
+            fill  = VK_POLYGON_MODE_FILL,
+            line  = VK_POLYGON_MODE_LINE,
+            point = VK_POLYGON_MODE_POINT,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<PolygonMode> = true;
+        inline constexpr auto details::is_vulkan_enumeration<polygon_mode> = true;
 
-        enum class PresentMode : u32 {
-            FIFO                      = VK_PRESENT_MODE_FIFO_KHR,
-            FIFO_RELAXED              = VK_PRESENT_MODE_FIFO_RELAXED_KHR,
-            IMMEDIATE                 = VK_PRESENT_MODE_IMMEDIATE_KHR,
-            MAILBOX                   = VK_PRESENT_MODE_MAILBOX_KHR,
-            SHARED_CONTINUOUS_REFRESH = VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR,
-            SHARED_DEMAND_REFRESH     = VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR,
+        enum class present_mode : u32 {
+            fifo                      = VK_PRESENT_MODE_FIFO_KHR,
+            fifo_relaxed              = VK_PRESENT_MODE_FIFO_RELAXED_KHR,
+            immediate                 = VK_PRESENT_MODE_IMMEDIATE_KHR,
+            mailbox                   = VK_PRESENT_MODE_MAILBOX_KHR,
+            shared_continuous_refresh = VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR,
+            shared_demand_refresh     = VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<PresentMode> = true;
+        inline constexpr auto details::is_vulkan_enumeration<present_mode> = true;
 
-        enum class PrimitiveTopology : u8 {
-            LINE_LIST      = VK_PRIMITIVE_TOPOLOGY_LINE_LIST,
-            LINE_STRIP     = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP,
-            POINT_LIST     = VK_PRIMITIVE_TOPOLOGY_POINT_LIST,
-            TRIANGLE_FAN   = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN,
-            TRIANGLE_LIST  = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-            TRIANGLE_STRIP = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
+        enum class primitive_topology : u8 {
+            line_list      = VK_PRIMITIVE_TOPOLOGY_LINE_LIST,
+            line_strip     = VK_PRIMITIVE_TOPOLOGY_LINE_STRIP,
+            point_list     = VK_PRIMITIVE_TOPOLOGY_POINT_LIST,
+            triangle_fan   = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN,
+            triangle_list  = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+            triangle_strip = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<PrimitiveTopology> = true;
+        inline constexpr auto details::is_vulkan_enumeration<primitive_topology> = true;
 
-        enum class QueueFlag : u8 {
-            COMPUTE        = VK_QUEUE_COMPUTE_BIT,
-            GRAPHICS       = VK_QUEUE_GRAPHICS_BIT,
-            NONE           = 0,
-            PROTECTED      = VK_QUEUE_PROTECTED_BIT,
-            SPARSE_BINDING = VK_QUEUE_SPARSE_BINDING_BIT,
-            TRANSFER       = VK_QUEUE_TRANSFER_BIT,
+        enum class queue_flag : u8 {
+            compute        = VK_QUEUE_COMPUTE_BIT,
+            graphics       = VK_QUEUE_GRAPHICS_BIT,
+            none           = 0,
+            protected_     = VK_QUEUE_PROTECTED_BIT,
+            sparse_binding = VK_QUEUE_SPARSE_BINDING_BIT,
+            transfer       = VK_QUEUE_TRANSFER_BIT,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<QueueFlag> = true;
+        inline constexpr auto details::is_vulkan_enumeration<queue_flag> = true;
 
-        enum class ResolveModeFlag : u8 {
-            AVERAGE                            = VK_RESOLVE_MODE_AVERAGE_BIT,
-            EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID = VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID,
-            MAX                                = VK_RESOLVE_MODE_MAX_BIT,
-            MIN                                = VK_RESOLVE_MODE_MIN_BIT,
-            NONE                               = VK_RESOLVE_MODE_NONE,
-            SAMPLE_ZERO                        = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT,
+        enum class resolve_mode_flag : u8 {
+            average                            = VK_RESOLVE_MODE_AVERAGE_BIT,
+            external_format_downsample_android = VK_RESOLVE_MODE_EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID,
+            max                                = VK_RESOLVE_MODE_MAX_BIT,
+            min                                = VK_RESOLVE_MODE_MIN_BIT,
+            none                               = VK_RESOLVE_MODE_NONE,
+            sample_zero                        = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<ResolveModeFlag> = true;
+        inline constexpr auto details::is_vulkan_enumeration<resolve_mode_flag> = true;
 
-        enum class Result : i32 {
-            ERROR_DEVICE_LOST                    = VK_ERROR_DEVICE_LOST,
-            ERROR_EXTENSION_NOT_PRESENT          = VK_ERROR_EXTENSION_NOT_PRESENT,
-            ERROR_FEATURE_NOT_PRESENT            = VK_ERROR_FEATURE_NOT_PRESENT,
-            ERROR_FORMAT_NOT_SUPPORTED           = VK_ERROR_FORMAT_NOT_SUPPORTED,
-            ERROR_FRAGMENTATION                  = VK_ERROR_FRAGMENTATION,
-            ERROR_FRAGMENTED_POOL                = VK_ERROR_FRAGMENTED_POOL,
-            ERROR_FULLSCREEN_EXCLUSIVE_MODE_LOST = VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT,
-            ERROR_INCOMPATIBLE_DISPLAY           = VK_ERROR_INCOMPATIBLE_DISPLAY_KHR,
-            ERROR_INCOMPATIBLE_DRIVER            = VK_ERROR_INCOMPATIBLE_DRIVER,
-            ERROR_INITIALIZATION_FAILED          = VK_ERROR_INITIALIZATION_FAILED,
-            ERROR_INVALID_EXTERNAL_HANDLE        = VK_ERROR_INVALID_EXTERNAL_HANDLE,
-            ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS = VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS,
-            ERROR_LAYER_NOT_PRESENT              = VK_ERROR_LAYER_NOT_PRESENT,
-            ERROR_MEMORY_MAP_FAILED              = VK_ERROR_MEMORY_MAP_FAILED,
-            ERROR_NATIVE_WINDOW_IN_USE           = VK_ERROR_NATIVE_WINDOW_IN_USE_KHR,
-            ERROR_NOT_PERMITTED                  = VK_ERROR_NOT_PERMITTED,
-            ERROR_OUT_OF_DATE                    = VK_ERROR_OUT_OF_DATE_KHR,
-            ERROR_OUT_OF_DEVICE_MEMORY           = VK_ERROR_OUT_OF_DEVICE_MEMORY,
-            ERROR_OUT_OF_HOST_MEMORY             = VK_ERROR_OUT_OF_HOST_MEMORY,
-            ERROR_OUT_OF_POOL_MEMORY             = VK_ERROR_OUT_OF_POOL_MEMORY,
-            ERROR_SURFACE_LOST                   = VK_ERROR_SURFACE_LOST_KHR,
-            ERROR_TOO_MANY_OBJECTS               = VK_ERROR_TOO_MANY_OBJECTS,
-            ERROR_UNKNOWN                        = VK_ERROR_UNKNOWN,
-            ERROR_VALIDATION_FAILED              = VK_ERROR_VALIDATION_FAILED_EXT,
-            EVENT_RESET                          = VK_EVENT_RESET,
-            EVENT_SET                            = VK_EVENT_SET,
-            INCOMPLETE                           = VK_INCOMPLETE,
-            NOT_READY                            = VK_NOT_READY,
-            OPERATION_DEFERRED                   = VK_OPERATION_DEFERRED_KHR,
-            OPERATION_NOT_DEFERRED               = VK_OPERATION_NOT_DEFERRED_KHR,
-            PIPELINE_COMPILE_REQUIRED            = VK_PIPELINE_COMPILE_REQUIRED,
-            SUBOPTIMAL                           = VK_SUBOPTIMAL_KHR,
-            SUCCESS                              = VK_SUCCESS,
-            THREAD_DONE                          = VK_THREAD_DONE_KHR,
-            THREAD_IDLE                          = VK_THREAD_IDLE_KHR,
-            TIMEOUT                              = VK_TIMEOUT,
+        enum class result : i32 {
+            error_device_lost                    = VK_ERROR_DEVICE_LOST,
+            error_extension_not_present          = VK_ERROR_EXTENSION_NOT_PRESENT,
+            error_feature_not_present            = VK_ERROR_FEATURE_NOT_PRESENT,
+            error_format_not_supported           = VK_ERROR_FORMAT_NOT_SUPPORTED,
+            error_fragmentation                  = VK_ERROR_FRAGMENTATION,
+            error_fragmented_pool                = VK_ERROR_FRAGMENTED_POOL,
+            error_fullscreen_exclusive_mode_lost = VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT,
+            error_incompatible_display           = VK_ERROR_INCOMPATIBLE_DISPLAY_KHR,
+            error_incompatible_driver            = VK_ERROR_INCOMPATIBLE_DRIVER,
+            error_initialization_failed          = VK_ERROR_INITIALIZATION_FAILED,
+            error_invalid_external_handle        = VK_ERROR_INVALID_EXTERNAL_HANDLE,
+            error_invalid_opaque_capture_address = VK_ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS,
+            error_layer_not_present              = VK_ERROR_LAYER_NOT_PRESENT,
+            error_memory_map_failed              = VK_ERROR_MEMORY_MAP_FAILED,
+            error_native_window_in_use           = VK_ERROR_NATIVE_WINDOW_IN_USE_KHR,
+            error_not_permitted                  = VK_ERROR_NOT_PERMITTED,
+            error_out_of_date                    = VK_ERROR_OUT_OF_DATE_KHR,
+            error_out_of_device_memory           = VK_ERROR_OUT_OF_DEVICE_MEMORY,
+            error_out_of_host_memory             = VK_ERROR_OUT_OF_HOST_MEMORY,
+            error_out_of_pool_memory             = VK_ERROR_OUT_OF_POOL_MEMORY,
+            error_surface_lost                   = VK_ERROR_SURFACE_LOST_KHR,
+            error_too_many_objects               = VK_ERROR_TOO_MANY_OBJECTS,
+            error_unknown                        = VK_ERROR_UNKNOWN,
+            error_validation_failed              = VK_ERROR_VALIDATION_FAILED_EXT,
+            event_reset                          = VK_EVENT_RESET,
+            event_set                            = VK_EVENT_SET,
+            incomplete                           = VK_INCOMPLETE,
+            not_ready                            = VK_NOT_READY,
+            operation_deferred                   = VK_OPERATION_DEFERRED_KHR,
+            operation_not_deferred               = VK_OPERATION_NOT_DEFERRED_KHR,
+            pipeline_compile_required            = VK_PIPELINE_COMPILE_REQUIRED,
+            suboptimal                           = VK_SUBOPTIMAL_KHR,
+            success                              = VK_SUCCESS,
+            thread_done                          = VK_THREAD_DONE_KHR,
+            thread_idle                          = VK_THREAD_IDLE_KHR,
+            timeout                              = VK_TIMEOUT,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<Result> = true;
+        inline constexpr auto details::is_vulkan_enumeration<result> = true;
 
-        enum class SampleCountFlag : u8 {
-            C1  = VK_SAMPLE_COUNT_1_BIT,
-            C16 = VK_SAMPLE_COUNT_16_BIT,
-            C2  = VK_SAMPLE_COUNT_2_BIT,
-            C32 = VK_SAMPLE_COUNT_32_BIT,
-            C4  = VK_SAMPLE_COUNT_4_BIT,
-            C64 = VK_SAMPLE_COUNT_64_BIT,
-            C8  = VK_SAMPLE_COUNT_8_BIT,
+        enum class sample_count_flag : u8 {
+            c1  = VK_SAMPLE_COUNT_1_BIT,
+            c16 = VK_SAMPLE_COUNT_16_BIT,
+            c2  = VK_SAMPLE_COUNT_2_BIT,
+            c32 = VK_SAMPLE_COUNT_32_BIT,
+            c4  = VK_SAMPLE_COUNT_4_BIT,
+            c64 = VK_SAMPLE_COUNT_64_BIT,
+            c8  = VK_SAMPLE_COUNT_8_BIT,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<SampleCountFlag> = true;
+        inline constexpr auto details::is_vulkan_enumeration<sample_count_flag> = true;
 
-        enum class SamplerAddressMode : u8 {
-            CLAMP_TO_BORDER      = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER,
-            CLAMP_TO_EDGE        = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-            MIRROR_CLAMP_TO_EDGE = VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE,
-            MIRRORED_REPEAT      = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT,
-            REPEAT               = VK_SAMPLER_ADDRESS_MODE_REPEAT,
+        enum class sampler_address_mode : u8 {
+            clamp_to_border      = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER,
+            clamp_to_edge        = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+            mirror_clamp_to_edge = VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE,
+            mirrored_repeat      = VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT,
+            repeat               = VK_SAMPLER_ADDRESS_MODE_REPEAT,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<SamplerAddressMode> = true;
+        inline constexpr auto details::is_vulkan_enumeration<sampler_address_mode> = true;
 
-        enum class SamplerMipmapMode : u8 {
-            LINEAR  = VK_SAMPLER_MIPMAP_MODE_LINEAR,
-            NEAREST = VK_SAMPLER_MIPMAP_MODE_NEAREST,
+        enum class sampler_mipmap_mode : u8 {
+            linear  = VK_SAMPLER_MIPMAP_MODE_LINEAR,
+            nearest = VK_SAMPLER_MIPMAP_MODE_NEAREST,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<SamplerMipmapMode> = true;
+        inline constexpr auto details::is_vulkan_enumeration<sampler_mipmap_mode> = true;
 
-        enum class ShaderStageFlag : u8 {
-            COMPUTE  = VK_SHADER_STAGE_COMPUTE_BIT,
-            FRAGMENT = VK_SHADER_STAGE_FRAGMENT_BIT,
-            GEOMETRY = VK_SHADER_STAGE_GEOMETRY_BIT,
-            NONE     = 0,
-            VERTEX   = VK_SHADER_STAGE_VERTEX_BIT,
+        enum class shader_stage_flag : u8 {
+            compute  = VK_SHADER_STAGE_COMPUTE_BIT,
+            fragment = VK_SHADER_STAGE_FRAGMENT_BIT,
+            geometry = VK_SHADER_STAGE_GEOMETRY_BIT,
+            none     = 0,
+            vertex   = VK_SHADER_STAGE_VERTEX_BIT,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<ShaderStageFlag> = true;
+        inline constexpr auto details::is_vulkan_enumeration<shader_stage_flag> = true;
 
-        enum class StencilFaceFlag : u8 {
-            BACK           = VK_STENCIL_FACE_BACK_BIT,
-            FRONT          = VK_STENCIL_FACE_FRONT_BIT,
-            FRONT_AND_BACK = FRONT | BACK,
+        enum class stencil_face_flag : u8 {
+            back           = VK_STENCIL_FACE_BACK_BIT,
+            front          = VK_STENCIL_FACE_FRONT_BIT,
+            front_and_back = front | back,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<StencilFaceFlag> = true;
+        inline constexpr auto details::is_vulkan_enumeration<stencil_face_flag> = true;
 
-        enum class VertexInputRate : u8 {
-            INSTANCE = VK_VERTEX_INPUT_RATE_INSTANCE,
-            VERTEX   = VK_VERTEX_INPUT_RATE_VERTEX,
+        enum class vertex_input_rate : u8 {
+            instance = VK_VERTEX_INPUT_RATE_INSTANCE,
+            vertex   = VK_VERTEX_INPUT_RATE_VERTEX,
         };
 
         template<>
-        inline constexpr auto details::IS_VULKAN_ENUMERATION<VertexInputRate> = true;
-
-        namespace vk {
-            template<typename T = VkFlags, meta::IsVulkanEnumeration U>
-                requires(core::meta::c_enum<T> or core::meta::is<T, VkFlags>)
-            [[nodiscard]]
-            constexpr auto to_vk(U value) noexcept -> T;
-
-            template<meta::IsVulkanEnumeration T, typename U>
-                requires(core::meta::c_enum<U> or core::meta::is<U, VkFlags>)
-            [[nodiscard]]
-            constexpr auto from_vk(U value) noexcept -> T;
-        } // namespace vk
+        inline constexpr auto details::is_vulkan_enumeration<vertex_input_rate> = true;
 
         [[nodiscard]]
-        constexpr auto from_image(image::image::Format format) -> PixelFormat;
+        constexpr auto from_image(image::image_format format) -> pixel_format;
 
         [[nodiscard]]
-        constexpr auto is_depth_only_format(PixelFormat format) noexcept -> bool;
+        constexpr auto is_depth_only_format(pixel_format format) noexcept -> bool;
         [[nodiscard]]
-        constexpr auto is_stencil_only_format(PixelFormat format) noexcept -> bool;
+        constexpr auto is_stencil_only_format(pixel_format format) noexcept -> bool;
         [[nodiscard]]
-        constexpr auto is_depth_stencil_format(PixelFormat format) noexcept -> bool;
+        constexpr auto is_depth_stencil_format(pixel_format format) noexcept -> bool;
         [[nodiscard]]
-        constexpr auto is_depth_format(PixelFormat format) noexcept -> bool;
+        constexpr auto is_depth_format(pixel_format format) noexcept -> bool;
         [[nodiscard]]
-        constexpr auto is_stencil_format(PixelFormat format) noexcept -> bool;
+        constexpr auto is_stencil_format(pixel_format format) noexcept -> bool;
 
         [[nodiscard]]
-        constexpr auto get_format_channel_count(PixelFormat format) noexcept -> u8;
+        constexpr auto get_format_channel_count(pixel_format format) noexcept -> u8;
         [[nodiscard]]
-        constexpr auto get_format_element_count(PixelFormat format) noexcept -> u8;
+        constexpr auto get_format_element_count(pixel_format format) noexcept -> u8;
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<access_flag>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::access_flag::color_attachment_read,
+                stormkit::gpu::access_flag::color_attachment_write,
+                stormkit::gpu::access_flag::depth_stencil_attachment_read,
+                stormkit::gpu::access_flag::depth_stencil_attachment_write,
+                stormkit::gpu::access_flag::host_read,
+                stormkit::gpu::access_flag::host_write,
+                stormkit::gpu::access_flag::indirect_command_read,
+                stormkit::gpu::access_flag::input_attachment_read,
+                stormkit::gpu::access_flag::memory_read,
+                stormkit::gpu::access_flag::memory_write,
+                stormkit::gpu::access_flag::NONE,
+                stormkit::gpu::access_flag::shader_read,
+                stormkit::gpu::access_flag::shader_write,
+                stormkit::gpu::access_flag::transfer_read,
+                stormkit::gpu::access_flag::transfer_write,
+                stormkit::gpu::access_flag::uniform_read,
+                stormkit::gpu::access_flag::vertex_attribute_read,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<access_flag>>, VkAccessFlagBits value, source_location_arg) noexcept
+          -> access_flag {
+            return static_cast<access_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkAccessFlagBits>>, access_flag value, source_location_arg) noexcept
+          -> u32 {
+            return static_cast<VkAccessFlagBits>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<access_flag>>, VkFlags value, source_location_arg) noexcept
+          -> access_flag {
+            return static_cast<access_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFlags>>, access_flag value, source_location_arg) noexcept
+          -> VkFlags {
+            return static_cast<VkFlags>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, access_flag value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::access_flag::color_attachment_read: return "access_flag::color_attachment_read";
+                case stormkit::gpu::access_flag::color_attachment_write: return "access_flag::color_attachment_write";
+                case stormkit::gpu::access_flag::depth_stencil_attachment_read:
+                    return "access_flag::depth_stencil_attachment_read";
+                case stormkit::gpu::access_flag::depth_stencil_attachment_write:
+                    return "access_flag::depth_stencil_attachment_write";
+                case stormkit::gpu::access_flag::host_read: return "access_flag::host_read";
+                case stormkit::gpu::access_flag::host_write: return "access_flag::host_write";
+                case stormkit::gpu::access_flag::indirect_command_read: return "access_flag::indirect_command_read";
+                case stormkit::gpu::access_flag::input_attachment_read: return "access_flag::input_attachment_read";
+                case stormkit::gpu::access_flag::memory_read: return "access_flag::memory_read";
+                case stormkit::gpu::access_flag::memory_write: return "access_flag::memory_write";
+                case stormkit::gpu::access_flag::NONE: return "access_flag::NONE";
+                case stormkit::gpu::access_flag::shader_read: return "access_flag::shader_read";
+                case stormkit::gpu::access_flag::shader_write: return "access_flag::shader_write";
+                case stormkit::gpu::access_flag::transfer_read: return "access_flag::transfer_read";
+                case stormkit::gpu::access_flag::transfer_write: return "access_flag::transfer_write";
+                case stormkit::gpu::access_flag::uniform_read: return "access_flag::uniform_read";
+                case stormkit::gpu::access_flag::vertex_attribute_read: return "access_flag::vertex_attribute_read";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, access_flag value, source_location_arg) noexcept -> string {
+            switch (value) {
+                case stormkit::gpu::access_flag::color_attachment_read: return "access_flag::color_attachment_read";
+                case stormkit::gpu::access_flag::color_attachment_write: return "access_flag::color_attachment_write";
+                case stormkit::gpu::access_flag::depth_stencil_attachment_read:
+                    return "access_flag::depth_stencil_attachment_read";
+                case stormkit::gpu::access_flag::depth_stencil_attachment_write:
+                    return "access_flag::depth_stencil_attachment_write";
+                case stormkit::gpu::access_flag::host_read: return "access_flag::host_read";
+                case stormkit::gpu::access_flag::host_write: return "access_flag::host_write";
+                case stormkit::gpu::access_flag::indirect_command_read: return "access_flag::indirect_command_read";
+                case stormkit::gpu::access_flag::input_attachment_read: return "access_flag::input_attachment_read";
+                case stormkit::gpu::access_flag::memory_read: return "access_flag::memory_read";
+                case stormkit::gpu::access_flag::memory_write: return "access_flag::memory_write";
+                case stormkit::gpu::access_flag::NONE: return "access_flag::NONE";
+                case stormkit::gpu::access_flag::shader_read: return "access_flag::shader_read";
+                case stormkit::gpu::access_flag::shader_write: return "access_flag::shader_write";
+                case stormkit::gpu::access_flag::transfer_read: return "access_flag::transfer_read";
+                case stormkit::gpu::access_flag::transfer_write: return "access_flag::transfer_write";
+                case stormkit::gpu::access_flag::uniform_read: return "access_flag::uniform_read";
+                case stormkit::gpu::access_flag::vertex_attribute_read: return "access_flag::vertex_attribute_read";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<attachment_load_operation>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::attachment_load_operation::clear,
+                stormkit::gpu::attachment_load_operation::dont_care,
+                stormkit::gpu::attachment_load_operation::load,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<attachment_load_operation>>,
+                                  VkAttachmentLoadOp value,
+                                  source_location_arg) noexcept -> attachment_load_operation {
+            return static_cast<attachment_load_operation>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkAttachmentLoadOp>>,
+                                  attachment_load_operation value,
+                                  source_location_arg) noexcept -> u8 {
+            return static_cast<VkAttachmentLoadOp>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>,
+                                  attachment_load_operation value,
+                                  source_location_arg) noexcept -> string_view {
+            switch (value) {
+                case stormkit::gpu::attachment_load_operation::clear: return "attachment_load_operation::clear";
+                case stormkit::gpu::attachment_load_operation::dont_care: return "attachment_load_operation::dont_care";
+                case stormkit::gpu::attachment_load_operation::load: return "attachment_load_operation::load";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>,
+                                  attachment_load_operation value,
+                                  source_location_arg) noexcept -> string {
+            switch (value) {
+                case stormkit::gpu::attachment_load_operation::clear: return "attachment_load_operation::clear";
+                case stormkit::gpu::attachment_load_operation::dont_care: return "attachment_load_operation::dont_care";
+                case stormkit::gpu::attachment_load_operation::load: return "attachment_load_operation::load";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<attachment_store_operation>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::attachment_store_operation::dont_care,
+                stormkit::gpu::attachment_store_operation::store,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<attachment_store_operation>>,
+                                  VkAttachmentStoreOp value,
+                                  source_location_arg) noexcept -> attachment_store_operation {
+            return static_cast<attachment_store_operation>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkAttachmentStoreOp>>,
+                                  attachment_store_operation value,
+                                  source_location_arg) noexcept -> u8 {
+            return static_cast<VkAttachmentStoreOp>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>,
+                                  attachment_store_operation value,
+                                  source_location_arg) noexcept -> string_view {
+            switch (value) {
+                case stormkit::gpu::attachment_store_operation::dont_care: return "attachment_store_operation::dont_care";
+                case stormkit::gpu::attachment_store_operation::store: return "attachment_store_operation::store";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>,
+                                  attachment_store_operation value,
+                                  source_location_arg) noexcept -> string {
+            switch (value) {
+                case stormkit::gpu::attachment_store_operation::dont_care: return "attachment_store_operation::dont_care";
+                case stormkit::gpu::attachment_store_operation::store: return "attachment_store_operation::store";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<blend_factor>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::blend_factor::constant_alpha,
+                stormkit::gpu::blend_factor::constant_color,
+                stormkit::gpu::blend_factor::dst_alpha,
+                stormkit::gpu::blend_factor::dst_color,
+                stormkit::gpu::blend_factor::one,
+                stormkit::gpu::blend_factor::one_minus_constant_alpha,
+                stormkit::gpu::blend_factor::one_minus_constant_color,
+                stormkit::gpu::blend_factor::one_minus_dst_alpha,
+                stormkit::gpu::blend_factor::one_minus_dst_color,
+                stormkit::gpu::blend_factor::one_minus_src1_alpha,
+                stormkit::gpu::blend_factor::one_minus_src1_color,
+                stormkit::gpu::blend_factor::one_minus_src_alpha,
+                stormkit::gpu::blend_factor::one_minus_src_color,
+                stormkit::gpu::blend_factor::src1_alpha,
+                stormkit::gpu::blend_factor::src1_color,
+                stormkit::gpu::blend_factor::src_alpha,
+                stormkit::gpu::blend_factor::src_alpha_saturate,
+                stormkit::gpu::blend_factor::src_color,
+                stormkit::gpu::blend_factor::zero,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<blend_factor>>, VkBlendFactor value, source_location_arg) noexcept
+          -> blend_factor {
+            return static_cast<blend_factor>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkBlendFactor>>, blend_factor value, source_location_arg) noexcept
+          -> u8 {
+            return static_cast<VkBlendFactor>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, blend_factor value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::blend_factor::constant_alpha: return "blend_factor::constant_alpha";
+                case stormkit::gpu::blend_factor::constant_color: return "blend_factor::constant_color";
+                case stormkit::gpu::blend_factor::dst_alpha: return "blend_factor::dst_alpha";
+                case stormkit::gpu::blend_factor::dst_color: return "blend_factor::dst_color";
+                case stormkit::gpu::blend_factor::one: return "blend_factor::one";
+                case stormkit::gpu::blend_factor::one_minus_constant_alpha: return "blend_factor::one_minus_constant_alpha";
+                case stormkit::gpu::blend_factor::one_minus_constant_color: return "blend_factor::one_minus_constant_color";
+                case stormkit::gpu::blend_factor::one_minus_dst_alpha: return "blend_factor::one_minus_dst_alpha";
+                case stormkit::gpu::blend_factor::one_minus_dst_color: return "blend_factor::one_minus_dst_color";
+                case stormkit::gpu::blend_factor::one_minus_src1_alpha: return "blend_factor::one_minus_src1_alpha";
+                case stormkit::gpu::blend_factor::one_minus_src1_color: return "blend_factor::one_minus_src1_color";
+                case stormkit::gpu::blend_factor::one_minus_src_alpha: return "blend_factor::one_minus_src_alpha";
+                case stormkit::gpu::blend_factor::one_minus_src_color: return "blend_factor::one_minus_src_color";
+                case stormkit::gpu::blend_factor::src1_alpha: return "blend_factor::src1_alpha";
+                case stormkit::gpu::blend_factor::src1_color: return "blend_factor::src1_color";
+                case stormkit::gpu::blend_factor::src_alpha: return "blend_factor::src_alpha";
+                case stormkit::gpu::blend_factor::src_alpha_saturate: return "blend_factor::src_alpha_saturate";
+                case stormkit::gpu::blend_factor::src_color: return "blend_factor::src_color";
+                case stormkit::gpu::blend_factor::zero: return "blend_factor::zero";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, blend_factor value, source_location_arg) noexcept -> string {
+            switch (value) {
+                case stormkit::gpu::blend_factor::constant_alpha: return "blend_factor::constant_alpha";
+                case stormkit::gpu::blend_factor::constant_color: return "blend_factor::constant_color";
+                case stormkit::gpu::blend_factor::dst_alpha: return "blend_factor::dst_alpha";
+                case stormkit::gpu::blend_factor::dst_color: return "blend_factor::dst_color";
+                case stormkit::gpu::blend_factor::one: return "blend_factor::one";
+                case stormkit::gpu::blend_factor::one_minus_constant_alpha: return "blend_factor::one_minus_constant_alpha";
+                case stormkit::gpu::blend_factor::one_minus_constant_color: return "blend_factor::one_minus_constant_color";
+                case stormkit::gpu::blend_factor::one_minus_dst_alpha: return "blend_factor::one_minus_dst_alpha";
+                case stormkit::gpu::blend_factor::one_minus_dst_color: return "blend_factor::one_minus_dst_color";
+                case stormkit::gpu::blend_factor::one_minus_src1_alpha: return "blend_factor::one_minus_src1_alpha";
+                case stormkit::gpu::blend_factor::one_minus_src1_color: return "blend_factor::one_minus_src1_color";
+                case stormkit::gpu::blend_factor::one_minus_src_alpha: return "blend_factor::one_minus_src_alpha";
+                case stormkit::gpu::blend_factor::one_minus_src_color: return "blend_factor::one_minus_src_color";
+                case stormkit::gpu::blend_factor::src1_alpha: return "blend_factor::src1_alpha";
+                case stormkit::gpu::blend_factor::src1_color: return "blend_factor::src1_color";
+                case stormkit::gpu::blend_factor::src_alpha: return "blend_factor::src_alpha";
+                case stormkit::gpu::blend_factor::src_alpha_saturate: return "blend_factor::src_alpha_saturate";
+                case stormkit::gpu::blend_factor::src_color: return "blend_factor::src_color";
+                case stormkit::gpu::blend_factor::zero: return "blend_factor::zero";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<blend_operation>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::blend_operation::add,      stormkit::gpu::blend_operation::max,
+                stormkit::gpu::blend_operation::min,      stormkit::gpu::blend_operation::reverse_subtract,
+                stormkit::gpu::blend_operation::subtract,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<blend_operation>>, VkBlendOp value, source_location_arg) noexcept
+          -> blend_operation {
+            return static_cast<blend_operation>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkBlendOp>>, blend_operation value, source_location_arg) noexcept
+          -> u8 {
+            return static_cast<VkBlendOp>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, blend_operation value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::blend_operation::add: return "blend_operation::add";
+                case stormkit::gpu::blend_operation::max: return "blend_operation::max";
+                case stormkit::gpu::blend_operation::min: return "blend_operation::min";
+                case stormkit::gpu::blend_operation::reverse_subtract: return "blend_operation::reverse_subtract";
+                case stormkit::gpu::blend_operation::subtract: return "blend_operation::subtract";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, blend_operation value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::blend_operation::add: return "blend_operation::add";
+                case stormkit::gpu::blend_operation::max: return "blend_operation::max";
+                case stormkit::gpu::blend_operation::min: return "blend_operation::min";
+                case stormkit::gpu::blend_operation::reverse_subtract: return "blend_operation::reverse_subtract";
+                case stormkit::gpu::blend_operation::subtract: return "blend_operation::subtract";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<border_color>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::border_color::float_opaque_black,      stormkit::gpu::border_color::float_opaque_white,
+                stormkit::gpu::border_color::float_transparent_black, stormkit::gpu::border_color::int_opaque_black,
+                stormkit::gpu::border_color::int_opaque_white,        stormkit::gpu::border_color::int_transparent_black,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<border_color>>, VkBorderColor value, source_location_arg) noexcept
+          -> border_color {
+            return static_cast<border_color>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkBorderColor>>, border_color value, source_location_arg) noexcept
+          -> u8 {
+            return static_cast<VkBorderColor>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, border_color value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::border_color::float_opaque_black: return "border_color::float_opaque_black";
+                case stormkit::gpu::border_color::float_opaque_white: return "border_color::float_opaque_white";
+                case stormkit::gpu::border_color::float_transparent_black: return "border_color::float_transparent_black";
+                case stormkit::gpu::border_color::int_opaque_black: return "border_color::int_opaque_black";
+                case stormkit::gpu::border_color::int_opaque_white: return "border_color::int_opaque_white";
+                case stormkit::gpu::border_color::int_transparent_black: return "border_color::int_transparent_black";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, border_color value, source_location_arg) noexcept -> string {
+            switch (value) {
+                case stormkit::gpu::border_color::float_opaque_black: return "border_color::float_opaque_black";
+                case stormkit::gpu::border_color::float_opaque_white: return "border_color::float_opaque_white";
+                case stormkit::gpu::border_color::float_transparent_black: return "border_color::float_transparent_black";
+                case stormkit::gpu::border_color::int_opaque_black: return "border_color::int_opaque_black";
+                case stormkit::gpu::border_color::int_opaque_white: return "border_color::int_opaque_white";
+                case stormkit::gpu::border_color::int_transparent_black: return "border_color::int_transparent_black";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<buffer_usage_flag>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::buffer_usage_flag::index,        stormkit::gpu::buffer_usage_flag::indirect,
+                stormkit::gpu::buffer_usage_flag::storage,      stormkit::gpu::buffer_usage_flag::storage_texel,
+                stormkit::gpu::buffer_usage_flag::transfer_dst, stormkit::gpu::buffer_usage_flag::transfer_src,
+                stormkit::gpu::buffer_usage_flag::uniform,      stormkit::gpu::buffer_usage_flag::uniform_texel,
+                stormkit::gpu::buffer_usage_flag::vertex,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<buffer_usage_flag>>,
+                                  VkBufferUsageFlagBits value,
+                                  source_location_arg) noexcept -> buffer_usage_flag {
+            return static_cast<buffer_usage_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkBufferUsageFlagBits>>,
+                                  buffer_usage_flag value,
+                                  source_location_arg) noexcept -> u16 {
+            return static_cast<VkBufferUsageFlagBits>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<buffer_usage_flag>>, VkFlags value, source_location_arg) noexcept
+          -> buffer_usage_flag {
+            return static_cast<buffer_usage_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFlags>>, buffer_usage_flag value, source_location_arg) noexcept
+          -> VkFlags {
+            return static_cast<VkFlags>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, buffer_usage_flag value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::buffer_usage_flag::index: return "buffer_usage_flag::index";
+                case stormkit::gpu::buffer_usage_flag::indirect: return "buffer_usage_flag::indirect";
+                case stormkit::gpu::buffer_usage_flag::storage: return "buffer_usage_flag::storage";
+                case stormkit::gpu::buffer_usage_flag::storage_texel: return "buffer_usage_flag::storage_texel";
+                case stormkit::gpu::buffer_usage_flag::transfer_dst: return "buffer_usage_flag::transfer_dst";
+                case stormkit::gpu::buffer_usage_flag::transfer_src: return "buffer_usage_flag::transfer_src";
+                case stormkit::gpu::buffer_usage_flag::uniform: return "buffer_usage_flag::uniform";
+                case stormkit::gpu::buffer_usage_flag::uniform_texel: return "buffer_usage_flag::uniform_texel";
+                case stormkit::gpu::buffer_usage_flag::vertex: return "buffer_usage_flag::vertex";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, buffer_usage_flag value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::buffer_usage_flag::index: return "buffer_usage_flag::index";
+                case stormkit::gpu::buffer_usage_flag::indirect: return "buffer_usage_flag::indirect";
+                case stormkit::gpu::buffer_usage_flag::storage: return "buffer_usage_flag::storage";
+                case stormkit::gpu::buffer_usage_flag::storage_texel: return "buffer_usage_flag::storage_texel";
+                case stormkit::gpu::buffer_usage_flag::transfer_dst: return "buffer_usage_flag::transfer_dst";
+                case stormkit::gpu::buffer_usage_flag::transfer_src: return "buffer_usage_flag::transfer_src";
+                case stormkit::gpu::buffer_usage_flag::uniform: return "buffer_usage_flag::uniform";
+                case stormkit::gpu::buffer_usage_flag::uniform_texel: return "buffer_usage_flag::uniform_texel";
+                case stormkit::gpu::buffer_usage_flag::vertex: return "buffer_usage_flag::vertex";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<color_component_flag>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::color_component_flag::a,   stormkit::gpu::color_component_flag::b,
+                stormkit::gpu::color_component_flag::g,   stormkit::gpu::color_component_flag::none,
+                stormkit::gpu::color_component_flag::r,   stormkit::gpu::color_component_flag::rg,
+                stormkit::gpu::color_component_flag::rgb, stormkit::gpu::color_component_flag::rgba,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<color_component_flag>>,
+                                  VkColorComponentFlagBits value,
+                                  source_location_arg) noexcept -> color_component_flag {
+            return static_cast<color_component_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkColorComponentFlagBits>>,
+                                  color_component_flag value,
+                                  source_location_arg) noexcept -> u8 {
+            return static_cast<VkColorComponentFlagBits>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<color_component_flag>>, VkFlags value, source_location_arg) noexcept
+          -> color_component_flag {
+            return static_cast<color_component_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFlags>>, color_component_flag value, source_location_arg) noexcept
+          -> VkFlags {
+            return static_cast<VkFlags>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>,
+                                  color_component_flag value,
+                                  source_location_arg) noexcept -> string_view {
+            switch (value) {
+                case stormkit::gpu::color_component_flag::a: return "color_component_flag::a";
+                case stormkit::gpu::color_component_flag::b: return "color_component_flag::b";
+                case stormkit::gpu::color_component_flag::g: return "color_component_flag::g";
+                case stormkit::gpu::color_component_flag::none: return "color_component_flag::none";
+                case stormkit::gpu::color_component_flag::r: return "color_component_flag::r";
+                case stormkit::gpu::color_component_flag::rg: return "color_component_flag::rg";
+                case stormkit::gpu::color_component_flag::rgb: return "color_component_flag::rgb";
+                case stormkit::gpu::color_component_flag::rgba: return "color_component_flag::rgba";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, color_component_flag value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::color_component_flag::a: return "color_component_flag::a";
+                case stormkit::gpu::color_component_flag::b: return "color_component_flag::b";
+                case stormkit::gpu::color_component_flag::g: return "color_component_flag::g";
+                case stormkit::gpu::color_component_flag::none: return "color_component_flag::none";
+                case stormkit::gpu::color_component_flag::r: return "color_component_flag::r";
+                case stormkit::gpu::color_component_flag::rg: return "color_component_flag::rg";
+                case stormkit::gpu::color_component_flag::rgb: return "color_component_flag::rgb";
+                case stormkit::gpu::color_component_flag::rgba: return "color_component_flag::rgba";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<color_space>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::color_space::adobergb_linear,
+                stormkit::gpu::color_space::adobergb_nonlinear,
+                stormkit::gpu::color_space::bt2020_linear,
+                stormkit::gpu::color_space::bt709_linear,
+                stormkit::gpu::color_space::bt709_nonlinear,
+                stormkit::gpu::color_space::dci_p3_nonlinear,
+                stormkit::gpu::color_space::display_native_amd,
+                stormkit::gpu::color_space::display_p3_linear,
+                stormkit::gpu::color_space::display_p3_nonlinear,
+                stormkit::gpu::color_space::dolbyvision,
+                stormkit::gpu::color_space::extended_srgb_linear,
+                stormkit::gpu::color_space::extended_srgb_nonlinear,
+                stormkit::gpu::color_space::hdr10_hlg,
+                stormkit::gpu::color_space::hdr10_st2084,
+                stormkit::gpu::color_space::pass_through,
+                stormkit::gpu::color_space::srgb_nonlinear,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<color_space>>, VkColorSpaceKHR value, source_location_arg) noexcept
+          -> color_space {
+            return static_cast<color_space>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkColorSpaceKHR>>, color_space value, source_location_arg) noexcept
+          -> u32 {
+            return static_cast<VkColorSpaceKHR>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, color_space value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::color_space::adobergb_linear: return "color_space::adobergb_linear";
+                case stormkit::gpu::color_space::adobergb_nonlinear: return "color_space::adobergb_nonlinear";
+                case stormkit::gpu::color_space::bt2020_linear: return "color_space::bt2020_linear";
+                case stormkit::gpu::color_space::bt709_linear: return "color_space::bt709_linear";
+                case stormkit::gpu::color_space::bt709_nonlinear: return "color_space::bt709_nonlinear";
+                case stormkit::gpu::color_space::dci_p3_nonlinear: return "color_space::dci_p3_nonlinear";
+                case stormkit::gpu::color_space::display_native_amd: return "color_space::display_native_amd";
+                case stormkit::gpu::color_space::display_p3_linear: return "color_space::display_p3_linear";
+                case stormkit::gpu::color_space::display_p3_nonlinear: return "color_space::display_p3_nonlinear";
+                case stormkit::gpu::color_space::dolbyvision: return "color_space::dolbyvision";
+                case stormkit::gpu::color_space::extended_srgb_linear: return "color_space::extended_srgb_linear";
+                case stormkit::gpu::color_space::extended_srgb_nonlinear: return "color_space::extended_srgb_nonlinear";
+                case stormkit::gpu::color_space::hdr10_hlg: return "color_space::hdr10_hlg";
+                case stormkit::gpu::color_space::hdr10_st2084: return "color_space::hdr10_st2084";
+                case stormkit::gpu::color_space::pass_through: return "color_space::pass_through";
+                case stormkit::gpu::color_space::srgb_nonlinear: return "color_space::srgb_nonlinear";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, color_space value, source_location_arg) noexcept -> string {
+            switch (value) {
+                case stormkit::gpu::color_space::adobergb_linear: return "color_space::adobergb_linear";
+                case stormkit::gpu::color_space::adobergb_nonlinear: return "color_space::adobergb_nonlinear";
+                case stormkit::gpu::color_space::bt2020_linear: return "color_space::bt2020_linear";
+                case stormkit::gpu::color_space::bt709_linear: return "color_space::bt709_linear";
+                case stormkit::gpu::color_space::bt709_nonlinear: return "color_space::bt709_nonlinear";
+                case stormkit::gpu::color_space::dci_p3_nonlinear: return "color_space::dci_p3_nonlinear";
+                case stormkit::gpu::color_space::display_native_amd: return "color_space::display_native_amd";
+                case stormkit::gpu::color_space::display_p3_linear: return "color_space::display_p3_linear";
+                case stormkit::gpu::color_space::display_p3_nonlinear: return "color_space::display_p3_nonlinear";
+                case stormkit::gpu::color_space::dolbyvision: return "color_space::dolbyvision";
+                case stormkit::gpu::color_space::extended_srgb_linear: return "color_space::extended_srgb_linear";
+                case stormkit::gpu::color_space::extended_srgb_nonlinear: return "color_space::extended_srgb_nonlinear";
+                case stormkit::gpu::color_space::hdr10_hlg: return "color_space::hdr10_hlg";
+                case stormkit::gpu::color_space::hdr10_st2084: return "color_space::hdr10_st2084";
+                case stormkit::gpu::color_space::pass_through: return "color_space::pass_through";
+                case stormkit::gpu::color_space::srgb_nonlinear: return "color_space::srgb_nonlinear";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<command_buffer_level>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::command_buffer_level::primary,
+                stormkit::gpu::command_buffer_level::secondary,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<command_buffer_level>>,
+                                  VkCommandBufferLevel value,
+                                  source_location_arg) noexcept -> command_buffer_level {
+            return static_cast<command_buffer_level>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkCommandBufferLevel>>,
+                                  command_buffer_level value,
+                                  source_location_arg) noexcept -> u8 {
+            return static_cast<VkCommandBufferLevel>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>,
+                                  command_buffer_level value,
+                                  source_location_arg) noexcept -> string_view {
+            switch (value) {
+                case stormkit::gpu::command_buffer_level::primary: return "command_buffer_level::primary";
+                case stormkit::gpu::command_buffer_level::secondary: return "command_buffer_level::secondary";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, command_buffer_level value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::command_buffer_level::primary: return "command_buffer_level::primary";
+                case stormkit::gpu::command_buffer_level::secondary: return "command_buffer_level::secondary";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<compare_operation>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::compare_operation::always,  stormkit::gpu::compare_operation::equal,
+                stormkit::gpu::compare_operation::greater, stormkit::gpu::compare_operation::greater_or_equal,
+                stormkit::gpu::compare_operation::less,    stormkit::gpu::compare_operation::less_or_equal,
+                stormkit::gpu::compare_operation::never,   stormkit::gpu::compare_operation::not_equal,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<compare_operation>>, VkCompareOp value, source_location_arg) noexcept
+          -> compare_operation {
+            return static_cast<compare_operation>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkCompareOp>>, compare_operation value, source_location_arg) noexcept
+          -> u8 {
+            return static_cast<VkCompareOp>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, compare_operation value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::compare_operation::always: return "compare_operation::always";
+                case stormkit::gpu::compare_operation::equal: return "compare_operation::equal";
+                case stormkit::gpu::compare_operation::greater: return "compare_operation::greater";
+                case stormkit::gpu::compare_operation::greater_or_equal: return "compare_operation::greater_or_equal";
+                case stormkit::gpu::compare_operation::less: return "compare_operation::less";
+                case stormkit::gpu::compare_operation::less_or_equal: return "compare_operation::less_or_equal";
+                case stormkit::gpu::compare_operation::never: return "compare_operation::never";
+                case stormkit::gpu::compare_operation::not_equal: return "compare_operation::not_equal";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, compare_operation value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::compare_operation::always: return "compare_operation::always";
+                case stormkit::gpu::compare_operation::equal: return "compare_operation::equal";
+                case stormkit::gpu::compare_operation::greater: return "compare_operation::greater";
+                case stormkit::gpu::compare_operation::greater_or_equal: return "compare_operation::greater_or_equal";
+                case stormkit::gpu::compare_operation::less: return "compare_operation::less";
+                case stormkit::gpu::compare_operation::less_or_equal: return "compare_operation::less_or_equal";
+                case stormkit::gpu::compare_operation::never: return "compare_operation::never";
+                case stormkit::gpu::compare_operation::not_equal: return "compare_operation::not_equal";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<cull_mode_flag>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::cull_mode_flag::back,
+                stormkit::gpu::cull_mode_flag::front,
+                stormkit::gpu::cull_mode_flag::front_back,
+                stormkit::gpu::cull_mode_flag::none,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<cull_mode_flag>>,
+                                  VkCullModeFlagBits value,
+                                  source_location_arg) noexcept -> cull_mode_flag {
+            return static_cast<cull_mode_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkCullModeFlagBits>>,
+                                  cull_mode_flag value,
+                                  source_location_arg) noexcept -> u8 {
+            return static_cast<VkCullModeFlagBits>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<cull_mode_flag>>, VkFlags value, source_location_arg) noexcept
+          -> cull_mode_flag {
+            return static_cast<cull_mode_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFlags>>, cull_mode_flag value, source_location_arg) noexcept
+          -> VkFlags {
+            return static_cast<VkFlags>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, cull_mode_flag value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::cull_mode_flag::back: return "cull_mode_flag::back";
+                case stormkit::gpu::cull_mode_flag::front: return "cull_mode_flag::front";
+                case stormkit::gpu::cull_mode_flag::front_back: return "cull_mode_flag::front_back";
+                case stormkit::gpu::cull_mode_flag::none: return "cull_mode_flag::none";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, cull_mode_flag value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::cull_mode_flag::back: return "cull_mode_flag::back";
+                case stormkit::gpu::cull_mode_flag::front: return "cull_mode_flag::front";
+                case stormkit::gpu::cull_mode_flag::front_back: return "cull_mode_flag::front_back";
+                case stormkit::gpu::cull_mode_flag::none: return "cull_mode_flag::none";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<debug_object_type>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::debug_object_type::buffer,
+                stormkit::gpu::debug_object_type::buffer_view,
+                stormkit::gpu::debug_object_type::command_buffer,
+                stormkit::gpu::debug_object_type::command_pool,
+                stormkit::gpu::debug_object_type::debug_report_callback,
+                stormkit::gpu::debug_object_type::debug_utils_messenger,
+                stormkit::gpu::debug_object_type::descriptor_pool,
+                stormkit::gpu::debug_object_type::descriptor_set,
+                stormkit::gpu::debug_object_type::descriptor_set_layout,
+                stormkit::gpu::debug_object_type::device,
+                stormkit::gpu::debug_object_type::device_memory,
+                stormkit::gpu::debug_object_type::display,
+                stormkit::gpu::debug_object_type::event,
+                stormkit::gpu::debug_object_type::fence,
+                stormkit::gpu::debug_object_type::framebuffer,
+                stormkit::gpu::debug_object_type::image,
+                stormkit::gpu::debug_object_type::image_view,
+                stormkit::gpu::debug_object_type::instance,
+                stormkit::gpu::debug_object_type::physical_device,
+                stormkit::gpu::debug_object_type::pipeline,
+                stormkit::gpu::debug_object_type::pipeline_cache,
+                stormkit::gpu::debug_object_type::pipeline_layout,
+                stormkit::gpu::debug_object_type::query_pool,
+                stormkit::gpu::debug_object_type::queue,
+                stormkit::gpu::debug_object_type::render_pass,
+                stormkit::gpu::debug_object_type::sampler,
+                stormkit::gpu::debug_object_type::semaphore,
+                stormkit::gpu::debug_object_type::shader_module,
+                stormkit::gpu::debug_object_type::surface,
+                stormkit::gpu::debug_object_type::swapchain,
+                stormkit::gpu::debug_object_type::unknown,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<debug_object_type>>, VkObjectType value, source_location_arg) noexcept
+          -> debug_object_type {
+            return static_cast<debug_object_type>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkObjectType>>, debug_object_type value, source_location_arg) noexcept
+          -> u32 {
+            return static_cast<VkObjectType>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, debug_object_type value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::debug_object_type::buffer: return "debug_object_type::buffer";
+                case stormkit::gpu::debug_object_type::buffer_view: return "debug_object_type::buffer_view";
+                case stormkit::gpu::debug_object_type::command_buffer: return "debug_object_type::command_buffer";
+                case stormkit::gpu::debug_object_type::command_pool: return "debug_object_type::command_pool";
+                case stormkit::gpu::debug_object_type::debug_report_callback: return "debug_object_type::debug_report_callback";
+                case stormkit::gpu::debug_object_type::debug_utils_messenger: return "debug_object_type::debug_utils_messenger";
+                case stormkit::gpu::debug_object_type::descriptor_pool: return "debug_object_type::descriptor_pool";
+                case stormkit::gpu::debug_object_type::descriptor_set: return "debug_object_type::descriptor_set";
+                case stormkit::gpu::debug_object_type::descriptor_set_layout: return "debug_object_type::descriptor_set_layout";
+                case stormkit::gpu::debug_object_type::device: return "debug_object_type::device";
+                case stormkit::gpu::debug_object_type::device_memory: return "debug_object_type::device_memory";
+                case stormkit::gpu::debug_object_type::display: return "debug_object_type::display";
+                case stormkit::gpu::debug_object_type::event: return "debug_object_type::event";
+                case stormkit::gpu::debug_object_type::fence: return "debug_object_type::fence";
+                case stormkit::gpu::debug_object_type::framebuffer: return "debug_object_type::framebuffer";
+                case stormkit::gpu::debug_object_type::image: return "debug_object_type::image";
+                case stormkit::gpu::debug_object_type::image_view: return "debug_object_type::image_view";
+                case stormkit::gpu::debug_object_type::instance: return "debug_object_type::instance";
+                case stormkit::gpu::debug_object_type::physical_device: return "debug_object_type::physical_device";
+                case stormkit::gpu::debug_object_type::pipeline: return "debug_object_type::pipeline";
+                case stormkit::gpu::debug_object_type::pipeline_cache: return "debug_object_type::pipeline_cache";
+                case stormkit::gpu::debug_object_type::pipeline_layout: return "debug_object_type::pipeline_layout";
+                case stormkit::gpu::debug_object_type::query_pool: return "debug_object_type::query_pool";
+                case stormkit::gpu::debug_object_type::queue: return "debug_object_type::queue";
+                case stormkit::gpu::debug_object_type::render_pass: return "debug_object_type::render_pass";
+                case stormkit::gpu::debug_object_type::sampler: return "debug_object_type::sampler";
+                case stormkit::gpu::debug_object_type::semaphore: return "debug_object_type::semaphore";
+                case stormkit::gpu::debug_object_type::shader_module: return "debug_object_type::shader_module";
+                case stormkit::gpu::debug_object_type::surface: return "debug_object_type::surface";
+                case stormkit::gpu::debug_object_type::swapchain: return "debug_object_type::swapchain";
+                case stormkit::gpu::debug_object_type::unknown: return "debug_object_type::unknown";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, debug_object_type value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::debug_object_type::buffer: return "debug_object_type::buffer";
+                case stormkit::gpu::debug_object_type::buffer_view: return "debug_object_type::buffer_view";
+                case stormkit::gpu::debug_object_type::command_buffer: return "debug_object_type::command_buffer";
+                case stormkit::gpu::debug_object_type::command_pool: return "debug_object_type::command_pool";
+                case stormkit::gpu::debug_object_type::debug_report_callback: return "debug_object_type::debug_report_callback";
+                case stormkit::gpu::debug_object_type::debug_utils_messenger: return "debug_object_type::debug_utils_messenger";
+                case stormkit::gpu::debug_object_type::descriptor_pool: return "debug_object_type::descriptor_pool";
+                case stormkit::gpu::debug_object_type::descriptor_set: return "debug_object_type::descriptor_set";
+                case stormkit::gpu::debug_object_type::descriptor_set_layout: return "debug_object_type::descriptor_set_layout";
+                case stormkit::gpu::debug_object_type::device: return "debug_object_type::device";
+                case stormkit::gpu::debug_object_type::device_memory: return "debug_object_type::device_memory";
+                case stormkit::gpu::debug_object_type::display: return "debug_object_type::display";
+                case stormkit::gpu::debug_object_type::event: return "debug_object_type::event";
+                case stormkit::gpu::debug_object_type::fence: return "debug_object_type::fence";
+                case stormkit::gpu::debug_object_type::framebuffer: return "debug_object_type::framebuffer";
+                case stormkit::gpu::debug_object_type::image: return "debug_object_type::image";
+                case stormkit::gpu::debug_object_type::image_view: return "debug_object_type::image_view";
+                case stormkit::gpu::debug_object_type::instance: return "debug_object_type::instance";
+                case stormkit::gpu::debug_object_type::physical_device: return "debug_object_type::physical_device";
+                case stormkit::gpu::debug_object_type::pipeline: return "debug_object_type::pipeline";
+                case stormkit::gpu::debug_object_type::pipeline_cache: return "debug_object_type::pipeline_cache";
+                case stormkit::gpu::debug_object_type::pipeline_layout: return "debug_object_type::pipeline_layout";
+                case stormkit::gpu::debug_object_type::query_pool: return "debug_object_type::query_pool";
+                case stormkit::gpu::debug_object_type::queue: return "debug_object_type::queue";
+                case stormkit::gpu::debug_object_type::render_pass: return "debug_object_type::render_pass";
+                case stormkit::gpu::debug_object_type::sampler: return "debug_object_type::sampler";
+                case stormkit::gpu::debug_object_type::semaphore: return "debug_object_type::semaphore";
+                case stormkit::gpu::debug_object_type::shader_module: return "debug_object_type::shader_module";
+                case stormkit::gpu::debug_object_type::surface: return "debug_object_type::surface";
+                case stormkit::gpu::debug_object_type::swapchain: return "debug_object_type::swapchain";
+                case stormkit::gpu::debug_object_type::unknown: return "debug_object_type::unknown";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<dependency_flag>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::dependency_flag::by_region,
+                stormkit::gpu::dependency_flag::device_group,
+                stormkit::gpu::dependency_flag::none,
+                stormkit::gpu::dependency_flag::view_local,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<dependency_flag>>,
+                                  VkDependencyFlagBits value,
+                                  source_location_arg) noexcept -> dependency_flag {
+            return static_cast<dependency_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkDependencyFlagBits>>,
+                                  dependency_flag value,
+                                  source_location_arg) noexcept -> u8 {
+            return static_cast<VkDependencyFlagBits>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<dependency_flag>>, VkFlags value, source_location_arg) noexcept
+          -> dependency_flag {
+            return static_cast<dependency_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFlags>>, dependency_flag value, source_location_arg) noexcept
+          -> VkFlags {
+            return static_cast<VkFlags>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, dependency_flag value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::dependency_flag::by_region: return "dependency_flag::by_region";
+                case stormkit::gpu::dependency_flag::device_group: return "dependency_flag::device_group";
+                case stormkit::gpu::dependency_flag::none: return "dependency_flag::none";
+                case stormkit::gpu::dependency_flag::view_local: return "dependency_flag::view_local";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, dependency_flag value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::dependency_flag::by_region: return "dependency_flag::by_region";
+                case stormkit::gpu::dependency_flag::device_group: return "dependency_flag::device_group";
+                case stormkit::gpu::dependency_flag::none: return "dependency_flag::none";
+                case stormkit::gpu::dependency_flag::view_local: return "dependency_flag::view_local";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<descriptor_type>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::descriptor_type::combined_image_sampler, stormkit::gpu::descriptor_type::input_attachment,
+                stormkit::gpu::descriptor_type::sampled_image,          stormkit::gpu::descriptor_type::sampler,
+                stormkit::gpu::descriptor_type::storage_buffer,         stormkit::gpu::descriptor_type::storage_buffer_dynamic,
+                stormkit::gpu::descriptor_type::storage_image,          stormkit::gpu::descriptor_type::storage_texel_buffer,
+                stormkit::gpu::descriptor_type::uniform_buffer,         stormkit::gpu::descriptor_type::uniform_buffer_dynamic,
+                stormkit::gpu::descriptor_type::uniform_texel_buffer,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<descriptor_type>>,
+                                  VkDescriptorType value,
+                                  source_location_arg) noexcept -> descriptor_type {
+            return static_cast<descriptor_type>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkDescriptorType>>,
+                                  descriptor_type value,
+                                  source_location_arg) noexcept -> u8 {
+            return static_cast<VkDescriptorType>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, descriptor_type value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::descriptor_type::combined_image_sampler: return "descriptor_type::combined_image_sampler";
+                case stormkit::gpu::descriptor_type::input_attachment: return "descriptor_type::input_attachment";
+                case stormkit::gpu::descriptor_type::sampled_image: return "descriptor_type::sampled_image";
+                case stormkit::gpu::descriptor_type::sampler: return "descriptor_type::sampler";
+                case stormkit::gpu::descriptor_type::storage_buffer: return "descriptor_type::storage_buffer";
+                case stormkit::gpu::descriptor_type::storage_buffer_dynamic: return "descriptor_type::storage_buffer_dynamic";
+                case stormkit::gpu::descriptor_type::storage_image: return "descriptor_type::storage_image";
+                case stormkit::gpu::descriptor_type::storage_texel_buffer: return "descriptor_type::storage_texel_buffer";
+                case stormkit::gpu::descriptor_type::uniform_buffer: return "descriptor_type::uniform_buffer";
+                case stormkit::gpu::descriptor_type::uniform_buffer_dynamic: return "descriptor_type::uniform_buffer_dynamic";
+                case stormkit::gpu::descriptor_type::uniform_texel_buffer: return "descriptor_type::uniform_texel_buffer";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, descriptor_type value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::descriptor_type::combined_image_sampler: return "descriptor_type::combined_image_sampler";
+                case stormkit::gpu::descriptor_type::input_attachment: return "descriptor_type::input_attachment";
+                case stormkit::gpu::descriptor_type::sampled_image: return "descriptor_type::sampled_image";
+                case stormkit::gpu::descriptor_type::sampler: return "descriptor_type::sampler";
+                case stormkit::gpu::descriptor_type::storage_buffer: return "descriptor_type::storage_buffer";
+                case stormkit::gpu::descriptor_type::storage_buffer_dynamic: return "descriptor_type::storage_buffer_dynamic";
+                case stormkit::gpu::descriptor_type::storage_image: return "descriptor_type::storage_image";
+                case stormkit::gpu::descriptor_type::storage_texel_buffer: return "descriptor_type::storage_texel_buffer";
+                case stormkit::gpu::descriptor_type::uniform_buffer: return "descriptor_type::uniform_buffer";
+                case stormkit::gpu::descriptor_type::uniform_buffer_dynamic: return "descriptor_type::uniform_buffer_dynamic";
+                case stormkit::gpu::descriptor_type::uniform_texel_buffer: return "descriptor_type::uniform_texel_buffer";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<dynamic_state>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::dynamic_state::blend_constants,   stormkit::gpu::dynamic_state::depth_bias,
+                stormkit::gpu::dynamic_state::depth_bounds,      stormkit::gpu::dynamic_state::line_width,
+                stormkit::gpu::dynamic_state::scissor,           stormkit::gpu::dynamic_state::stencil_compare_mask,
+                stormkit::gpu::dynamic_state::stencil_reference, stormkit::gpu::dynamic_state::stencil_write_mask,
+                stormkit::gpu::dynamic_state::viewport,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<dynamic_state>>, VkDynamicState value, source_location_arg) noexcept
+          -> dynamic_state {
+            return static_cast<dynamic_state>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkDynamicState>>, dynamic_state value, source_location_arg) noexcept
+          -> u8 {
+            return static_cast<VkDynamicState>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, dynamic_state value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::dynamic_state::blend_constants: return "dynamic_state::blend_constants";
+                case stormkit::gpu::dynamic_state::depth_bias: return "dynamic_state::depth_bias";
+                case stormkit::gpu::dynamic_state::depth_bounds: return "dynamic_state::depth_bounds";
+                case stormkit::gpu::dynamic_state::line_width: return "dynamic_state::line_width";
+                case stormkit::gpu::dynamic_state::scissor: return "dynamic_state::scissor";
+                case stormkit::gpu::dynamic_state::stencil_compare_mask: return "dynamic_state::stencil_compare_mask";
+                case stormkit::gpu::dynamic_state::stencil_reference: return "dynamic_state::stencil_reference";
+                case stormkit::gpu::dynamic_state::stencil_write_mask: return "dynamic_state::stencil_write_mask";
+                case stormkit::gpu::dynamic_state::viewport: return "dynamic_state::viewport";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, dynamic_state value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::dynamic_state::blend_constants: return "dynamic_state::blend_constants";
+                case stormkit::gpu::dynamic_state::depth_bias: return "dynamic_state::depth_bias";
+                case stormkit::gpu::dynamic_state::depth_bounds: return "dynamic_state::depth_bounds";
+                case stormkit::gpu::dynamic_state::line_width: return "dynamic_state::line_width";
+                case stormkit::gpu::dynamic_state::scissor: return "dynamic_state::scissor";
+                case stormkit::gpu::dynamic_state::stencil_compare_mask: return "dynamic_state::stencil_compare_mask";
+                case stormkit::gpu::dynamic_state::stencil_reference: return "dynamic_state::stencil_reference";
+                case stormkit::gpu::dynamic_state::stencil_write_mask: return "dynamic_state::stencil_write_mask";
+                case stormkit::gpu::dynamic_state::viewport: return "dynamic_state::viewport";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<filter>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::filter::cubic_img,
+                stormkit::gpu::filter::linear,
+                stormkit::gpu::filter::nearest,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<filter>>, VkFilter value, source_location_arg) noexcept -> filter {
+            return static_cast<filter>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFilter>>, filter value, source_location_arg) noexcept -> u32 {
+            return static_cast<VkFilter>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, filter value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::filter::cubic_img: return "filter::cubic_img";
+                case stormkit::gpu::filter::linear: return "filter::linear";
+                case stormkit::gpu::filter::nearest: return "filter::nearest";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, filter value, source_location_arg) noexcept -> string {
+            switch (value) {
+                case stormkit::gpu::filter::cubic_img: return "filter::cubic_img";
+                case stormkit::gpu::filter::linear: return "filter::linear";
+                case stormkit::gpu::filter::nearest: return "filter::nearest";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<format_feature_flag>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::format_feature_flag::blit_dst,
+                stormkit::gpu::format_feature_flag::blit_src,
+                stormkit::gpu::format_feature_flag::color_attachment,
+                stormkit::gpu::format_feature_flag::color_attachment_blend,
+                stormkit::gpu::format_feature_flag::cosited_chroma_samples,
+                stormkit::gpu::format_feature_flag::depth_stencil_attachment,
+                stormkit::gpu::format_feature_flag::disjoint,
+                stormkit::gpu::format_feature_flag::midpoint_chroma_samples,
+                stormkit::gpu::format_feature_flag::sampled_image,
+                stormkit::gpu::format_feature_flag::sampled_image_filter_linear,
+                stormkit::gpu::format_feature_flag::sampled_image_filter_minmax,
+                stormkit::gpu::format_feature_flag::sampled_image_ycbcr_conversion_chroma_reconstruction_explicit,
+                stormkit::gpu::format_feature_flag::sampled_image_ycbcr_conversion_chroma_reconstruction_explicit_forceable,
+                stormkit::gpu::format_feature_flag::sampled_image_ycbcr_conversion_linear_filter,
+                stormkit::gpu::format_feature_flag::sampled_image_ycbcr_conversion_separate_reconstruction_filter,
+                stormkit::gpu::format_feature_flag::storage_image,
+                stormkit::gpu::format_feature_flag::storage_image_atomic,
+                stormkit::gpu::format_feature_flag::storage_texel_buffer,
+                stormkit::gpu::format_feature_flag::storage_texel_buffer_atomic,
+                stormkit::gpu::format_feature_flag::transfer_dst,
+                stormkit::gpu::format_feature_flag::transfer_src,
+                stormkit::gpu::format_feature_flag::uniform_texel_buffer,
+                stormkit::gpu::format_feature_flag::vertex_buffer,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<format_feature_flag>>,
+                                  VkFormatFeatureFlagBits value,
+                                  source_location_arg) noexcept -> format_feature_flag {
+            return static_cast<format_feature_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFormatFeatureFlagBits>>,
+                                  format_feature_flag value,
+                                  source_location_arg) noexcept -> u32 {
+            return static_cast<VkFormatFeatureFlagBits>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<format_feature_flag>>, VkFlags value, source_location_arg) noexcept
+          -> format_feature_flag {
+            return static_cast<format_feature_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFlags>>, format_feature_flag value, source_location_arg) noexcept
+          -> VkFlags {
+            return static_cast<VkFlags>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, format_feature_flag value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::format_feature_flag::blit_dst: return "format_feature_flag::blit_dst";
+                case stormkit::gpu::format_feature_flag::blit_src: return "format_feature_flag::blit_src";
+                case stormkit::gpu::format_feature_flag::color_attachment: return "format_feature_flag::color_attachment";
+                case stormkit::gpu::format_feature_flag::color_attachment_blend:
+                    return "format_feature_flag::color_attachment_blend";
+                case stormkit::gpu::format_feature_flag::cosited_chroma_samples:
+                    return "format_feature_flag::cosited_chroma_samples";
+                case stormkit::gpu::format_feature_flag::depth_stencil_attachment:
+                    return "format_feature_flag::depth_stencil_attachment";
+                case stormkit::gpu::format_feature_flag::disjoint: return "format_feature_flag::disjoint";
+                case stormkit::gpu::format_feature_flag::midpoint_chroma_samples:
+                    return "format_feature_flag::midpoint_chroma_samples";
+                case stormkit::gpu::format_feature_flag::sampled_image: return "format_feature_flag::sampled_image";
+                case stormkit::gpu::format_feature_flag::sampled_image_filter_linear:
+                    return "format_feature_flag::sampled_image_filter_linear";
+                case stormkit::gpu::format_feature_flag::sampled_image_filter_minmax:
+                    return "format_feature_flag::sampled_image_filter_minmax";
+                case stormkit::gpu::format_feature_flag::sampled_image_ycbcr_conversion_chroma_reconstruction_explicit:
+                    return "format_feature_flag::sampled_image_ycbcr_conversion_chroma_reconstruction_explicit";
+                case stormkit::gpu::format_feature_flag::sampled_image_ycbcr_conversion_chroma_reconstruction_explicit_forceable:
+                    return "format_feature_flag::sampled_image_ycbcr_conversion_chroma_reconstruction_explicit_forceable";
+                case stormkit::gpu::format_feature_flag::sampled_image_ycbcr_conversion_linear_filter:
+                    return "format_feature_flag::sampled_image_ycbcr_conversion_linear_filter";
+                case stormkit::gpu::format_feature_flag::sampled_image_ycbcr_conversion_separate_reconstruction_filter:
+                    return "format_feature_flag::sampled_image_ycbcr_conversion_separate_reconstruction_filter";
+                case stormkit::gpu::format_feature_flag::storage_image: return "format_feature_flag::storage_image";
+                case stormkit::gpu::format_feature_flag::storage_image_atomic: return "format_feature_flag::storage_image_atomic";
+                case stormkit::gpu::format_feature_flag::storage_texel_buffer: return "format_feature_flag::storage_texel_buffer";
+                case stormkit::gpu::format_feature_flag::storage_texel_buffer_atomic:
+                    return "format_feature_flag::storage_texel_buffer_atomic";
+                case stormkit::gpu::format_feature_flag::transfer_dst: return "format_feature_flag::transfer_dst";
+                case stormkit::gpu::format_feature_flag::transfer_src: return "format_feature_flag::transfer_src";
+                case stormkit::gpu::format_feature_flag::uniform_texel_buffer: return "format_feature_flag::uniform_texel_buffer";
+                case stormkit::gpu::format_feature_flag::vertex_buffer: return "format_feature_flag::vertex_buffer";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, format_feature_flag value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::format_feature_flag::blit_dst: return "format_feature_flag::blit_dst";
+                case stormkit::gpu::format_feature_flag::blit_src: return "format_feature_flag::blit_src";
+                case stormkit::gpu::format_feature_flag::color_attachment: return "format_feature_flag::color_attachment";
+                case stormkit::gpu::format_feature_flag::color_attachment_blend:
+                    return "format_feature_flag::color_attachment_blend";
+                case stormkit::gpu::format_feature_flag::cosited_chroma_samples:
+                    return "format_feature_flag::cosited_chroma_samples";
+                case stormkit::gpu::format_feature_flag::depth_stencil_attachment:
+                    return "format_feature_flag::depth_stencil_attachment";
+                case stormkit::gpu::format_feature_flag::disjoint: return "format_feature_flag::disjoint";
+                case stormkit::gpu::format_feature_flag::midpoint_chroma_samples:
+                    return "format_feature_flag::midpoint_chroma_samples";
+                case stormkit::gpu::format_feature_flag::sampled_image: return "format_feature_flag::sampled_image";
+                case stormkit::gpu::format_feature_flag::sampled_image_filter_linear:
+                    return "format_feature_flag::sampled_image_filter_linear";
+                case stormkit::gpu::format_feature_flag::sampled_image_filter_minmax:
+                    return "format_feature_flag::sampled_image_filter_minmax";
+                case stormkit::gpu::format_feature_flag::sampled_image_ycbcr_conversion_chroma_reconstruction_explicit:
+                    return "format_feature_flag::sampled_image_ycbcr_conversion_chroma_reconstruction_explicit";
+                case stormkit::gpu::format_feature_flag::sampled_image_ycbcr_conversion_chroma_reconstruction_explicit_forceable:
+                    return "format_feature_flag::sampled_image_ycbcr_conversion_chroma_reconstruction_explicit_forceable";
+                case stormkit::gpu::format_feature_flag::sampled_image_ycbcr_conversion_linear_filter:
+                    return "format_feature_flag::sampled_image_ycbcr_conversion_linear_filter";
+                case stormkit::gpu::format_feature_flag::sampled_image_ycbcr_conversion_separate_reconstruction_filter:
+                    return "format_feature_flag::sampled_image_ycbcr_conversion_separate_reconstruction_filter";
+                case stormkit::gpu::format_feature_flag::storage_image: return "format_feature_flag::storage_image";
+                case stormkit::gpu::format_feature_flag::storage_image_atomic: return "format_feature_flag::storage_image_atomic";
+                case stormkit::gpu::format_feature_flag::storage_texel_buffer: return "format_feature_flag::storage_texel_buffer";
+                case stormkit::gpu::format_feature_flag::storage_texel_buffer_atomic:
+                    return "format_feature_flag::storage_texel_buffer_atomic";
+                case stormkit::gpu::format_feature_flag::transfer_dst: return "format_feature_flag::transfer_dst";
+                case stormkit::gpu::format_feature_flag::transfer_src: return "format_feature_flag::transfer_src";
+                case stormkit::gpu::format_feature_flag::uniform_texel_buffer: return "format_feature_flag::uniform_texel_buffer";
+                case stormkit::gpu::format_feature_flag::vertex_buffer: return "format_feature_flag::vertex_buffer";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<front_face>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::front_face::clockwise,
+                stormkit::gpu::front_face::counter_clockwise,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<front_face>>, VkFrontFace value, source_location_arg) noexcept
+          -> front_face {
+            return static_cast<front_face>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFrontFace>>, front_face value, source_location_arg) noexcept -> u8 {
+            return static_cast<VkFrontFace>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, front_face value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::front_face::clockwise: return "front_face::clockwise";
+                case stormkit::gpu::front_face::counter_clockwise: return "front_face::counter_clockwise";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, front_face value, source_location_arg) noexcept -> string {
+            switch (value) {
+                case stormkit::gpu::front_face::clockwise: return "front_face::clockwise";
+                case stormkit::gpu::front_face::counter_clockwise: return "front_face::counter_clockwise";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<geometry_flag>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::geometry_flag::no_duplicate_any_hit_invocation,
+                stormkit::gpu::geometry_flag::opaque,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<geometry_flag>>,
+                                  VkGeometryFlagBitsKHR value,
+                                  source_location_arg) noexcept -> geometry_flag {
+            return static_cast<geometry_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkGeometryFlagBitsKHR>>,
+                                  geometry_flag value,
+                                  source_location_arg) noexcept -> u8 {
+            return static_cast<VkGeometryFlagBitsKHR>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<geometry_flag>>, VkFlags value, source_location_arg) noexcept
+          -> geometry_flag {
+            return static_cast<geometry_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFlags>>, geometry_flag value, source_location_arg) noexcept
+          -> VkFlags {
+            return static_cast<VkFlags>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, geometry_flag value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::geometry_flag::no_duplicate_any_hit_invocation:
+                    return "geometry_flag::no_duplicate_any_hit_invocation";
+                case stormkit::gpu::geometry_flag::opaque: return "geometry_flag::opaque";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, geometry_flag value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::geometry_flag::no_duplicate_any_hit_invocation:
+                    return "geometry_flag::no_duplicate_any_hit_invocation";
+                case stormkit::gpu::geometry_flag::opaque: return "geometry_flag::opaque";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<geometry_type>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::geometry_type::aabbs,
+                stormkit::gpu::geometry_type::instances,
+                stormkit::gpu::geometry_type::triangles,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<geometry_type>>, VkGeometryTypeKHR value, source_location_arg) noexcept
+          -> geometry_type {
+            return static_cast<geometry_type>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkGeometryTypeKHR>>, geometry_type value, source_location_arg) noexcept
+          -> u8 {
+            return static_cast<VkGeometryTypeKHR>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, geometry_type value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::geometry_type::aabbs: return "geometry_type::aabbs";
+                case stormkit::gpu::geometry_type::instances: return "geometry_type::instances";
+                case stormkit::gpu::geometry_type::triangles: return "geometry_type::triangles";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, geometry_type value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::geometry_type::aabbs: return "geometry_type::aabbs";
+                case stormkit::gpu::geometry_type::instances: return "geometry_type::instances";
+                case stormkit::gpu::geometry_type::triangles: return "geometry_type::triangles";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<image_aspect_flag>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::image_aspect_flag::color,
+                stormkit::gpu::image_aspect_flag::depth,
+                stormkit::gpu::image_aspect_flag::none,
+                stormkit::gpu::image_aspect_flag::stencil,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<image_aspect_flag>>,
+                                  VkImageAspectFlagBits value,
+                                  source_location_arg) noexcept -> image_aspect_flag {
+            return static_cast<image_aspect_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkImageAspectFlagBits>>,
+                                  image_aspect_flag value,
+                                  source_location_arg) noexcept -> u8 {
+            return static_cast<VkImageAspectFlagBits>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<image_aspect_flag>>, VkFlags value, source_location_arg) noexcept
+          -> image_aspect_flag {
+            return static_cast<image_aspect_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFlags>>, image_aspect_flag value, source_location_arg) noexcept
+          -> VkFlags {
+            return static_cast<VkFlags>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, image_aspect_flag value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::image_aspect_flag::color: return "image_aspect_flag::color";
+                case stormkit::gpu::image_aspect_flag::depth: return "image_aspect_flag::depth";
+                case stormkit::gpu::image_aspect_flag::none: return "image_aspect_flag::none";
+                case stormkit::gpu::image_aspect_flag::stencil: return "image_aspect_flag::stencil";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, image_aspect_flag value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::image_aspect_flag::color: return "image_aspect_flag::color";
+                case stormkit::gpu::image_aspect_flag::depth: return "image_aspect_flag::depth";
+                case stormkit::gpu::image_aspect_flag::none: return "image_aspect_flag::none";
+                case stormkit::gpu::image_aspect_flag::stencil: return "image_aspect_flag::stencil";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<image_create_flag>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::image_create_flag::alias,
+                stormkit::gpu::image_create_flag::array_2d_compatible,
+                stormkit::gpu::image_create_flag::block_texel_view_compatible,
+                stormkit::gpu::image_create_flag::cube_compatible,
+                stormkit::gpu::image_create_flag::disjoint,
+                stormkit::gpu::image_create_flag::extended_usage,
+                stormkit::gpu::image_create_flag::mutable_format,
+                stormkit::gpu::image_create_flag::none,
+                stormkit::gpu::image_create_flag::protected_,
+                stormkit::gpu::image_create_flag::sparse_aliased,
+                stormkit::gpu::image_create_flag::sparse_binding,
+                stormkit::gpu::image_create_flag::sparse_residency,
+                stormkit::gpu::image_create_flag::split_instance_bind_regions,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<image_create_flag>>,
+                                  VkImageCreateFlagBits value,
+                                  source_location_arg) noexcept -> image_create_flag {
+            return static_cast<image_create_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkImageCreateFlagBits>>,
+                                  image_create_flag value,
+                                  source_location_arg) noexcept -> u16 {
+            return static_cast<VkImageCreateFlagBits>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<image_create_flag>>, VkFlags value, source_location_arg) noexcept
+          -> image_create_flag {
+            return static_cast<image_create_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFlags>>, image_create_flag value, source_location_arg) noexcept
+          -> VkFlags {
+            return static_cast<VkFlags>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, image_create_flag value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::image_create_flag::alias: return "image_create_flag::alias";
+                case stormkit::gpu::image_create_flag::array_2d_compatible: return "image_create_flag::array_2d_compatible";
+                case stormkit::gpu::image_create_flag::block_texel_view_compatible:
+                    return "image_create_flag::block_texel_view_compatible";
+                case stormkit::gpu::image_create_flag::cube_compatible: return "image_create_flag::cube_compatible";
+                case stormkit::gpu::image_create_flag::disjoint: return "image_create_flag::disjoint";
+                case stormkit::gpu::image_create_flag::extended_usage: return "image_create_flag::extended_usage";
+                case stormkit::gpu::image_create_flag::mutable_format: return "image_create_flag::mutable_format";
+                case stormkit::gpu::image_create_flag::none: return "image_create_flag::none";
+                case stormkit::gpu::image_create_flag::protected_: return "image_create_flag::protected_";
+                case stormkit::gpu::image_create_flag::sparse_aliased: return "image_create_flag::sparse_aliased";
+                case stormkit::gpu::image_create_flag::sparse_binding: return "image_create_flag::sparse_binding";
+                case stormkit::gpu::image_create_flag::sparse_residency: return "image_create_flag::sparse_residency";
+                case stormkit::gpu::image_create_flag::split_instance_bind_regions:
+                    return "image_create_flag::split_instance_bind_regions";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, image_create_flag value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::image_create_flag::alias: return "image_create_flag::alias";
+                case stormkit::gpu::image_create_flag::array_2d_compatible: return "image_create_flag::array_2d_compatible";
+                case stormkit::gpu::image_create_flag::block_texel_view_compatible:
+                    return "image_create_flag::block_texel_view_compatible";
+                case stormkit::gpu::image_create_flag::cube_compatible: return "image_create_flag::cube_compatible";
+                case stormkit::gpu::image_create_flag::disjoint: return "image_create_flag::disjoint";
+                case stormkit::gpu::image_create_flag::extended_usage: return "image_create_flag::extended_usage";
+                case stormkit::gpu::image_create_flag::mutable_format: return "image_create_flag::mutable_format";
+                case stormkit::gpu::image_create_flag::none: return "image_create_flag::none";
+                case stormkit::gpu::image_create_flag::protected_: return "image_create_flag::protected_";
+                case stormkit::gpu::image_create_flag::sparse_aliased: return "image_create_flag::sparse_aliased";
+                case stormkit::gpu::image_create_flag::sparse_binding: return "image_create_flag::sparse_binding";
+                case stormkit::gpu::image_create_flag::sparse_residency: return "image_create_flag::sparse_residency";
+                case stormkit::gpu::image_create_flag::split_instance_bind_regions:
+                    return "image_create_flag::split_instance_bind_regions";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<image_layout>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::image_layout::attachment_optimal,
+                stormkit::gpu::image_layout::color_attachment_optimal,
+                stormkit::gpu::image_layout::depth_attachment_stencil_read_only_optimal,
+                stormkit::gpu::image_layout::depth_read_only_stencil_attachment_optimal,
+                stormkit::gpu::image_layout::depth_stencil_attachment_optimal,
+                stormkit::gpu::image_layout::depth_stencil_read_only_optimal,
+                stormkit::gpu::image_layout::general,
+                stormkit::gpu::image_layout::preinitialized,
+                stormkit::gpu::image_layout::present_src,
+                stormkit::gpu::image_layout::shader_read_only_optimal,
+                stormkit::gpu::image_layout::shared_present,
+                stormkit::gpu::image_layout::transfer_dst_optimal,
+                stormkit::gpu::image_layout::transfer_src_optimal,
+                stormkit::gpu::image_layout::undefined,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<image_layout>>, VkImageLayout value, source_location_arg) noexcept
+          -> image_layout {
+            return static_cast<image_layout>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkImageLayout>>, image_layout value, source_location_arg) noexcept
+          -> u32 {
+            return static_cast<VkImageLayout>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, image_layout value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::image_layout::attachment_optimal: return "image_layout::attachment_optimal";
+                case stormkit::gpu::image_layout::color_attachment_optimal: return "image_layout::color_attachment_optimal";
+                case stormkit::gpu::image_layout::depth_attachment_stencil_read_only_optimal:
+                    return "image_layout::depth_attachment_stencil_read_only_optimal";
+                case stormkit::gpu::image_layout::depth_read_only_stencil_attachment_optimal:
+                    return "image_layout::depth_read_only_stencil_attachment_optimal";
+                case stormkit::gpu::image_layout::depth_stencil_attachment_optimal:
+                    return "image_layout::depth_stencil_attachment_optimal";
+                case stormkit::gpu::image_layout::depth_stencil_read_only_optimal:
+                    return "image_layout::depth_stencil_read_only_optimal";
+                case stormkit::gpu::image_layout::general: return "image_layout::general";
+                case stormkit::gpu::image_layout::preinitialized: return "image_layout::preinitialized";
+                case stormkit::gpu::image_layout::present_src: return "image_layout::present_src";
+                case stormkit::gpu::image_layout::shader_read_only_optimal: return "image_layout::shader_read_only_optimal";
+                case stormkit::gpu::image_layout::shared_present: return "image_layout::shared_present";
+                case stormkit::gpu::image_layout::transfer_dst_optimal: return "image_layout::transfer_dst_optimal";
+                case stormkit::gpu::image_layout::transfer_src_optimal: return "image_layout::transfer_src_optimal";
+                case stormkit::gpu::image_layout::undefined: return "image_layout::undefined";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, image_layout value, source_location_arg) noexcept -> string {
+            switch (value) {
+                case stormkit::gpu::image_layout::attachment_optimal: return "image_layout::attachment_optimal";
+                case stormkit::gpu::image_layout::color_attachment_optimal: return "image_layout::color_attachment_optimal";
+                case stormkit::gpu::image_layout::depth_attachment_stencil_read_only_optimal:
+                    return "image_layout::depth_attachment_stencil_read_only_optimal";
+                case stormkit::gpu::image_layout::depth_read_only_stencil_attachment_optimal:
+                    return "image_layout::depth_read_only_stencil_attachment_optimal";
+                case stormkit::gpu::image_layout::depth_stencil_attachment_optimal:
+                    return "image_layout::depth_stencil_attachment_optimal";
+                case stormkit::gpu::image_layout::depth_stencil_read_only_optimal:
+                    return "image_layout::depth_stencil_read_only_optimal";
+                case stormkit::gpu::image_layout::general: return "image_layout::general";
+                case stormkit::gpu::image_layout::preinitialized: return "image_layout::preinitialized";
+                case stormkit::gpu::image_layout::present_src: return "image_layout::present_src";
+                case stormkit::gpu::image_layout::shader_read_only_optimal: return "image_layout::shader_read_only_optimal";
+                case stormkit::gpu::image_layout::shared_present: return "image_layout::shared_present";
+                case stormkit::gpu::image_layout::transfer_dst_optimal: return "image_layout::transfer_dst_optimal";
+                case stormkit::gpu::image_layout::transfer_src_optimal: return "image_layout::transfer_src_optimal";
+                case stormkit::gpu::image_layout::undefined: return "image_layout::undefined";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<image_tiling>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::image_tiling::linear,
+                stormkit::gpu::image_tiling::optimal,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<image_tiling>>, VkImageTiling value, source_location_arg) noexcept
+          -> image_tiling {
+            return static_cast<image_tiling>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkImageTiling>>, image_tiling value, source_location_arg) noexcept
+          -> u8 {
+            return static_cast<VkImageTiling>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, image_tiling value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::image_tiling::linear: return "image_tiling::linear";
+                case stormkit::gpu::image_tiling::optimal: return "image_tiling::optimal";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, image_tiling value, source_location_arg) noexcept -> string {
+            switch (value) {
+                case stormkit::gpu::image_tiling::linear: return "image_tiling::linear";
+                case stormkit::gpu::image_tiling::optimal: return "image_tiling::optimal";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<image_type>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::image_type::t1d,
+                stormkit::gpu::image_type::t2d,
+                stormkit::gpu::image_type::t3d,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<image_type>>, VkImageType value, source_location_arg) noexcept
+          -> image_type {
+            return static_cast<image_type>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkImageType>>, image_type value, source_location_arg) noexcept -> u8 {
+            return static_cast<VkImageType>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, image_type value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::image_type::t1d: return "image_type::t1d";
+                case stormkit::gpu::image_type::t2d: return "image_type::t2d";
+                case stormkit::gpu::image_type::t3d: return "image_type::t3d";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, image_type value, source_location_arg) noexcept -> string {
+            switch (value) {
+                case stormkit::gpu::image_type::t1d: return "image_type::t1d";
+                case stormkit::gpu::image_type::t2d: return "image_type::t2d";
+                case stormkit::gpu::image_type::t3d: return "image_type::t3d";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<image_usage_flag>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::image_usage_flag::color_attachment, stormkit::gpu::image_usage_flag::depth_stencil_attachment,
+                stormkit::gpu::image_usage_flag::input_attachment, stormkit::gpu::image_usage_flag::sampled,
+                stormkit::gpu::image_usage_flag::storage,          stormkit::gpu::image_usage_flag::transfer_dst,
+                stormkit::gpu::image_usage_flag::transfer_src,     stormkit::gpu::image_usage_flag::transient_attachment,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<image_usage_flag>>,
+                                  VkImageUsageFlagBits value,
+                                  source_location_arg) noexcept -> image_usage_flag {
+            return static_cast<image_usage_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkImageUsageFlagBits>>,
+                                  image_usage_flag value,
+                                  source_location_arg) noexcept -> u16 {
+            return static_cast<VkImageUsageFlagBits>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<image_usage_flag>>, VkFlags value, source_location_arg) noexcept
+          -> image_usage_flag {
+            return static_cast<image_usage_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFlags>>, image_usage_flag value, source_location_arg) noexcept
+          -> VkFlags {
+            return static_cast<VkFlags>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, image_usage_flag value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::image_usage_flag::color_attachment: return "image_usage_flag::color_attachment";
+                case stormkit::gpu::image_usage_flag::depth_stencil_attachment:
+                    return "image_usage_flag::depth_stencil_attachment";
+                case stormkit::gpu::image_usage_flag::input_attachment: return "image_usage_flag::input_attachment";
+                case stormkit::gpu::image_usage_flag::sampled: return "image_usage_flag::sampled";
+                case stormkit::gpu::image_usage_flag::storage: return "image_usage_flag::storage";
+                case stormkit::gpu::image_usage_flag::transfer_dst: return "image_usage_flag::transfer_dst";
+                case stormkit::gpu::image_usage_flag::transfer_src: return "image_usage_flag::transfer_src";
+                case stormkit::gpu::image_usage_flag::transient_attachment: return "image_usage_flag::transient_attachment";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, image_usage_flag value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::image_usage_flag::color_attachment: return "image_usage_flag::color_attachment";
+                case stormkit::gpu::image_usage_flag::depth_stencil_attachment:
+                    return "image_usage_flag::depth_stencil_attachment";
+                case stormkit::gpu::image_usage_flag::input_attachment: return "image_usage_flag::input_attachment";
+                case stormkit::gpu::image_usage_flag::sampled: return "image_usage_flag::sampled";
+                case stormkit::gpu::image_usage_flag::storage: return "image_usage_flag::storage";
+                case stormkit::gpu::image_usage_flag::transfer_dst: return "image_usage_flag::transfer_dst";
+                case stormkit::gpu::image_usage_flag::transfer_src: return "image_usage_flag::transfer_src";
+                case stormkit::gpu::image_usage_flag::transient_attachment: return "image_usage_flag::transient_attachment";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<image_view_type>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::image_view_type::cube, stormkit::gpu::image_view_type::cube_array,
+                stormkit::gpu::image_view_type::t1d,  stormkit::gpu::image_view_type::t1d_array,
+                stormkit::gpu::image_view_type::t2d,  stormkit::gpu::image_view_type::t2d_array,
+                stormkit::gpu::image_view_type::t3d,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<image_view_type>>, VkImageViewType value, source_location_arg) noexcept
+          -> image_view_type {
+            return static_cast<image_view_type>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkImageViewType>>, image_view_type value, source_location_arg) noexcept
+          -> u8 {
+            return static_cast<VkImageViewType>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, image_view_type value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::image_view_type::cube: return "image_view_type::cube";
+                case stormkit::gpu::image_view_type::cube_array: return "image_view_type::cube_array";
+                case stormkit::gpu::image_view_type::t1d: return "image_view_type::t1d";
+                case stormkit::gpu::image_view_type::t1d_array: return "image_view_type::t1d_array";
+                case stormkit::gpu::image_view_type::t2d: return "image_view_type::t2d";
+                case stormkit::gpu::image_view_type::t2d_array: return "image_view_type::t2d_array";
+                case stormkit::gpu::image_view_type::t3d: return "image_view_type::t3d";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, image_view_type value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::image_view_type::cube: return "image_view_type::cube";
+                case stormkit::gpu::image_view_type::cube_array: return "image_view_type::cube_array";
+                case stormkit::gpu::image_view_type::t1d: return "image_view_type::t1d";
+                case stormkit::gpu::image_view_type::t1d_array: return "image_view_type::t1d_array";
+                case stormkit::gpu::image_view_type::t2d: return "image_view_type::t2d";
+                case stormkit::gpu::image_view_type::t2d_array: return "image_view_type::t2d_array";
+                case stormkit::gpu::image_view_type::t3d: return "image_view_type::t3d";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<logic_operation>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::logic_operation::and_,        stormkit::gpu::logic_operation::and_inverted,
+                stormkit::gpu::logic_operation::and_reverse, stormkit::gpu::logic_operation::clear,
+                stormkit::gpu::logic_operation::copy,        stormkit::gpu::logic_operation::copy_inverted,
+                stormkit::gpu::logic_operation::equivalent,  stormkit::gpu::logic_operation::invert,
+                stormkit::gpu::logic_operation::nand,        stormkit::gpu::logic_operation::no_op,
+                stormkit::gpu::logic_operation::nor,         stormkit::gpu::logic_operation::or_,
+                stormkit::gpu::logic_operation::or_inverted, stormkit::gpu::logic_operation::or_reverse,
+                stormkit::gpu::logic_operation::set,         stormkit::gpu::logic_operation::xor_,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<logic_operation>>, VkLogicOp value, source_location_arg) noexcept
+          -> logic_operation {
+            return static_cast<logic_operation>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkLogicOp>>, logic_operation value, source_location_arg) noexcept
+          -> u8 {
+            return static_cast<VkLogicOp>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, logic_operation value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::logic_operation::and_: return "logic_operation::and_";
+                case stormkit::gpu::logic_operation::and_inverted: return "logic_operation::and_inverted";
+                case stormkit::gpu::logic_operation::and_reverse: return "logic_operation::and_reverse";
+                case stormkit::gpu::logic_operation::clear: return "logic_operation::clear";
+                case stormkit::gpu::logic_operation::copy: return "logic_operation::copy";
+                case stormkit::gpu::logic_operation::copy_inverted: return "logic_operation::copy_inverted";
+                case stormkit::gpu::logic_operation::equivalent: return "logic_operation::equivalent";
+                case stormkit::gpu::logic_operation::invert: return "logic_operation::invert";
+                case stormkit::gpu::logic_operation::nand: return "logic_operation::nand";
+                case stormkit::gpu::logic_operation::no_op: return "logic_operation::no_op";
+                case stormkit::gpu::logic_operation::nor: return "logic_operation::nor";
+                case stormkit::gpu::logic_operation::or_: return "logic_operation::or_";
+                case stormkit::gpu::logic_operation::or_inverted: return "logic_operation::or_inverted";
+                case stormkit::gpu::logic_operation::or_reverse: return "logic_operation::or_reverse";
+                case stormkit::gpu::logic_operation::set: return "logic_operation::set";
+                case stormkit::gpu::logic_operation::xor_: return "logic_operation::xor_";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, logic_operation value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::logic_operation::and_: return "logic_operation::and_";
+                case stormkit::gpu::logic_operation::and_inverted: return "logic_operation::and_inverted";
+                case stormkit::gpu::logic_operation::and_reverse: return "logic_operation::and_reverse";
+                case stormkit::gpu::logic_operation::clear: return "logic_operation::clear";
+                case stormkit::gpu::logic_operation::copy: return "logic_operation::copy";
+                case stormkit::gpu::logic_operation::copy_inverted: return "logic_operation::copy_inverted";
+                case stormkit::gpu::logic_operation::equivalent: return "logic_operation::equivalent";
+                case stormkit::gpu::logic_operation::invert: return "logic_operation::invert";
+                case stormkit::gpu::logic_operation::nand: return "logic_operation::nand";
+                case stormkit::gpu::logic_operation::no_op: return "logic_operation::no_op";
+                case stormkit::gpu::logic_operation::nor: return "logic_operation::nor";
+                case stormkit::gpu::logic_operation::or_: return "logic_operation::or_";
+                case stormkit::gpu::logic_operation::or_inverted: return "logic_operation::or_inverted";
+                case stormkit::gpu::logic_operation::or_reverse: return "logic_operation::or_reverse";
+                case stormkit::gpu::logic_operation::set: return "logic_operation::set";
+                case stormkit::gpu::logic_operation::xor_: return "logic_operation::xor_";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<memory_property_flag>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::memory_property_flag::device_local,
+                stormkit::gpu::memory_property_flag::host_cached,
+                stormkit::gpu::memory_property_flag::host_coherent,
+                stormkit::gpu::memory_property_flag::host_visible,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<memory_property_flag>>,
+                                  VkMemoryPropertyFlagBits value,
+                                  source_location_arg) noexcept -> memory_property_flag {
+            return static_cast<memory_property_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkMemoryPropertyFlagBits>>,
+                                  memory_property_flag value,
+                                  source_location_arg) noexcept -> u8 {
+            return static_cast<VkMemoryPropertyFlagBits>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<memory_property_flag>>, VkFlags value, source_location_arg) noexcept
+          -> memory_property_flag {
+            return static_cast<memory_property_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFlags>>, memory_property_flag value, source_location_arg) noexcept
+          -> VkFlags {
+            return static_cast<VkFlags>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>,
+                                  memory_property_flag value,
+                                  source_location_arg) noexcept -> string_view {
+            switch (value) {
+                case stormkit::gpu::memory_property_flag::device_local: return "memory_property_flag::device_local";
+                case stormkit::gpu::memory_property_flag::host_cached: return "memory_property_flag::host_cached";
+                case stormkit::gpu::memory_property_flag::host_coherent: return "memory_property_flag::host_coherent";
+                case stormkit::gpu::memory_property_flag::host_visible: return "memory_property_flag::host_visible";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, memory_property_flag value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::memory_property_flag::device_local: return "memory_property_flag::device_local";
+                case stormkit::gpu::memory_property_flag::host_cached: return "memory_property_flag::host_cached";
+                case stormkit::gpu::memory_property_flag::host_coherent: return "memory_property_flag::host_coherent";
+                case stormkit::gpu::memory_property_flag::host_visible: return "memory_property_flag::host_visible";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<physical_device_type>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::physical_device_type::cpu,
+                stormkit::gpu::physical_device_type::discrete_gpu,
+                stormkit::gpu::physical_device_type::integrated_gpu,
+                stormkit::gpu::physical_device_type::other,
+                stormkit::gpu::physical_device_type::virtual_gpu,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<physical_device_type>>,
+                                  VkPhysicalDeviceType value,
+                                  source_location_arg) noexcept -> physical_device_type {
+            return static_cast<physical_device_type>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkPhysicalDeviceType>>,
+                                  physical_device_type value,
+                                  source_location_arg) noexcept -> u8 {
+            return static_cast<VkPhysicalDeviceType>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>,
+                                  physical_device_type value,
+                                  source_location_arg) noexcept -> string_view {
+            switch (value) {
+                case stormkit::gpu::physical_device_type::cpu: return "physical_device_type::cpu";
+                case stormkit::gpu::physical_device_type::discrete_gpu: return "physical_device_type::discrete_gpu";
+                case stormkit::gpu::physical_device_type::integrated_gpu: return "physical_device_type::integrated_gpu";
+                case stormkit::gpu::physical_device_type::other: return "physical_device_type::other";
+                case stormkit::gpu::physical_device_type::virtual_gpu: return "physical_device_type::virtual_gpu";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, physical_device_type value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::physical_device_type::cpu: return "physical_device_type::cpu";
+                case stormkit::gpu::physical_device_type::discrete_gpu: return "physical_device_type::discrete_gpu";
+                case stormkit::gpu::physical_device_type::integrated_gpu: return "physical_device_type::integrated_gpu";
+                case stormkit::gpu::physical_device_type::other: return "physical_device_type::other";
+                case stormkit::gpu::physical_device_type::virtual_gpu: return "physical_device_type::virtual_gpu";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<pipeline_bind_point>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::pipeline_bind_point::compute,
+                stormkit::gpu::pipeline_bind_point::graphics,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<pipeline_bind_point>>,
+                                  VkPipelineBindPoint value,
+                                  source_location_arg) noexcept -> pipeline_bind_point {
+            return static_cast<pipeline_bind_point>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkPipelineBindPoint>>,
+                                  pipeline_bind_point value,
+                                  source_location_arg) noexcept -> u8 {
+            return static_cast<VkPipelineBindPoint>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, pipeline_bind_point value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::pipeline_bind_point::compute: return "pipeline_bind_point::compute";
+                case stormkit::gpu::pipeline_bind_point::graphics: return "pipeline_bind_point::graphics";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, pipeline_bind_point value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::pipeline_bind_point::compute: return "pipeline_bind_point::compute";
+                case stormkit::gpu::pipeline_bind_point::graphics: return "pipeline_bind_point::graphics";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<pipeline_stage_flag>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::pipeline_stage_flag::all_commands,
+                stormkit::gpu::pipeline_stage_flag::all_graphics,
+                stormkit::gpu::pipeline_stage_flag::bottom_of_pipe,
+                stormkit::gpu::pipeline_stage_flag::color_attachment_output,
+                stormkit::gpu::pipeline_stage_flag::compute_shader,
+                stormkit::gpu::pipeline_stage_flag::draw_indirect,
+                stormkit::gpu::pipeline_stage_flag::early_fragment_tests,
+                stormkit::gpu::pipeline_stage_flag::fragment_shader,
+                stormkit::gpu::pipeline_stage_flag::geometry_shader,
+                stormkit::gpu::pipeline_stage_flag::host,
+                stormkit::gpu::pipeline_stage_flag::late_fragment_tests,
+                stormkit::gpu::pipeline_stage_flag::tessellation_control_shader,
+                stormkit::gpu::pipeline_stage_flag::tessellation_evaluation_shader,
+                stormkit::gpu::pipeline_stage_flag::top_of_pipe,
+                stormkit::gpu::pipeline_stage_flag::transfer,
+                stormkit::gpu::pipeline_stage_flag::vertex_input,
+                stormkit::gpu::pipeline_stage_flag::vertex_shader,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<pipeline_stage_flag>>,
+                                  VkPipelineStageFlagBits value,
+                                  source_location_arg) noexcept -> pipeline_stage_flag {
+            return static_cast<pipeline_stage_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkPipelineStageFlagBits>>,
+                                  pipeline_stage_flag value,
+                                  source_location_arg) noexcept -> u32 {
+            return static_cast<VkPipelineStageFlagBits>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<pipeline_stage_flag>>, VkFlags value, source_location_arg) noexcept
+          -> pipeline_stage_flag {
+            return static_cast<pipeline_stage_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFlags>>, pipeline_stage_flag value, source_location_arg) noexcept
+          -> VkFlags {
+            return static_cast<VkFlags>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, pipeline_stage_flag value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::pipeline_stage_flag::all_commands: return "pipeline_stage_flag::all_commands";
+                case stormkit::gpu::pipeline_stage_flag::all_graphics: return "pipeline_stage_flag::all_graphics";
+                case stormkit::gpu::pipeline_stage_flag::bottom_of_pipe: return "pipeline_stage_flag::bottom_of_pipe";
+                case stormkit::gpu::pipeline_stage_flag::color_attachment_output:
+                    return "pipeline_stage_flag::color_attachment_output";
+                case stormkit::gpu::pipeline_stage_flag::compute_shader: return "pipeline_stage_flag::compute_shader";
+                case stormkit::gpu::pipeline_stage_flag::draw_indirect: return "pipeline_stage_flag::draw_indirect";
+                case stormkit::gpu::pipeline_stage_flag::early_fragment_tests: return "pipeline_stage_flag::early_fragment_tests";
+                case stormkit::gpu::pipeline_stage_flag::fragment_shader: return "pipeline_stage_flag::fragment_shader";
+                case stormkit::gpu::pipeline_stage_flag::geometry_shader: return "pipeline_stage_flag::geometry_shader";
+                case stormkit::gpu::pipeline_stage_flag::host: return "pipeline_stage_flag::host";
+                case stormkit::gpu::pipeline_stage_flag::late_fragment_tests: return "pipeline_stage_flag::late_fragment_tests";
+                case stormkit::gpu::pipeline_stage_flag::tessellation_control_shader:
+                    return "pipeline_stage_flag::tessellation_control_shader";
+                case stormkit::gpu::pipeline_stage_flag::tessellation_evaluation_shader:
+                    return "pipeline_stage_flag::tessellation_evaluation_shader";
+                case stormkit::gpu::pipeline_stage_flag::top_of_pipe: return "pipeline_stage_flag::top_of_pipe";
+                case stormkit::gpu::pipeline_stage_flag::transfer: return "pipeline_stage_flag::transfer";
+                case stormkit::gpu::pipeline_stage_flag::vertex_input: return "pipeline_stage_flag::vertex_input";
+                case stormkit::gpu::pipeline_stage_flag::vertex_shader: return "pipeline_stage_flag::vertex_shader";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, pipeline_stage_flag value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::pipeline_stage_flag::all_commands: return "pipeline_stage_flag::all_commands";
+                case stormkit::gpu::pipeline_stage_flag::all_graphics: return "pipeline_stage_flag::all_graphics";
+                case stormkit::gpu::pipeline_stage_flag::bottom_of_pipe: return "pipeline_stage_flag::bottom_of_pipe";
+                case stormkit::gpu::pipeline_stage_flag::color_attachment_output:
+                    return "pipeline_stage_flag::color_attachment_output";
+                case stormkit::gpu::pipeline_stage_flag::compute_shader: return "pipeline_stage_flag::compute_shader";
+                case stormkit::gpu::pipeline_stage_flag::draw_indirect: return "pipeline_stage_flag::draw_indirect";
+                case stormkit::gpu::pipeline_stage_flag::early_fragment_tests: return "pipeline_stage_flag::early_fragment_tests";
+                case stormkit::gpu::pipeline_stage_flag::fragment_shader: return "pipeline_stage_flag::fragment_shader";
+                case stormkit::gpu::pipeline_stage_flag::geometry_shader: return "pipeline_stage_flag::geometry_shader";
+                case stormkit::gpu::pipeline_stage_flag::host: return "pipeline_stage_flag::host";
+                case stormkit::gpu::pipeline_stage_flag::late_fragment_tests: return "pipeline_stage_flag::late_fragment_tests";
+                case stormkit::gpu::pipeline_stage_flag::tessellation_control_shader:
+                    return "pipeline_stage_flag::tessellation_control_shader";
+                case stormkit::gpu::pipeline_stage_flag::tessellation_evaluation_shader:
+                    return "pipeline_stage_flag::tessellation_evaluation_shader";
+                case stormkit::gpu::pipeline_stage_flag::top_of_pipe: return "pipeline_stage_flag::top_of_pipe";
+                case stormkit::gpu::pipeline_stage_flag::transfer: return "pipeline_stage_flag::transfer";
+                case stormkit::gpu::pipeline_stage_flag::vertex_input: return "pipeline_stage_flag::vertex_input";
+                case stormkit::gpu::pipeline_stage_flag::vertex_shader: return "pipeline_stage_flag::vertex_shader";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<pixel_format>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::pixel_format::a1_rgb5_unorm_pack16,
+                stormkit::gpu::pixel_format::a2_rgb10i_pack32,
+                stormkit::gpu::pixel_format::a2_rgb10_snorm_pack32,
+                stormkit::gpu::pixel_format::a2_rgb10_unorm_pack32,
+                stormkit::gpu::pixel_format::a2_rgb10u_pack32,
+                stormkit::gpu::pixel_format::b10_gr11uf_pack32,
+                stormkit::gpu::pixel_format::bgr8_unorm,
+                stormkit::gpu::pixel_format::bgra8_unorm,
+                stormkit::gpu::pixel_format::depth16_unorm,
+                stormkit::gpu::pixel_format::depth16_unorm_stencil8u,
+                stormkit::gpu::pixel_format::depth24_unorm_pack32,
+                stormkit::gpu::pixel_format::depth24_unorm_stencil8u,
+                stormkit::gpu::pixel_format::depth32f,
+                stormkit::gpu::pixel_format::depth32f_stencil8u,
+                stormkit::gpu::pixel_format::r16f,
+                stormkit::gpu::pixel_format::r16i,
+                stormkit::gpu::pixel_format::r16_snorm,
+                stormkit::gpu::pixel_format::r16u,
+                stormkit::gpu::pixel_format::r16_unorm,
+                stormkit::gpu::pixel_format::r32f,
+                stormkit::gpu::pixel_format::r32i,
+                stormkit::gpu::pixel_format::r32u,
+                stormkit::gpu::pixel_format::r5_g6_b5_unorm_pack16,
+                stormkit::gpu::pixel_format::r8i,
+                stormkit::gpu::pixel_format::r8_snorm,
+                stormkit::gpu::pixel_format::r8u,
+                stormkit::gpu::pixel_format::r8_unorm,
+                stormkit::gpu::pixel_format::rg16f,
+                stormkit::gpu::pixel_format::rg16i,
+                stormkit::gpu::pixel_format::rg16_snorm,
+                stormkit::gpu::pixel_format::rg16u,
+                stormkit::gpu::pixel_format::rg16_unorm,
+                stormkit::gpu::pixel_format::rg32f,
+                stormkit::gpu::pixel_format::rg32i,
+                stormkit::gpu::pixel_format::rg32u,
+                stormkit::gpu::pixel_format::rg8i,
+                stormkit::gpu::pixel_format::rg8_snorm,
+                stormkit::gpu::pixel_format::rg8u,
+                stormkit::gpu::pixel_format::rg8_unorm,
+                stormkit::gpu::pixel_format::rgb16f,
+                stormkit::gpu::pixel_format::rgb16i,
+                stormkit::gpu::pixel_format::rgb16_snorm,
+                stormkit::gpu::pixel_format::rgb16u,
+                stormkit::gpu::pixel_format::rgb16_unorm,
+                stormkit::gpu::pixel_format::rgb32f,
+                stormkit::gpu::pixel_format::rgb32i,
+                stormkit::gpu::pixel_format::rgb32u,
+                stormkit::gpu::pixel_format::rgb8i,
+                stormkit::gpu::pixel_format::rgb8_snorm,
+                stormkit::gpu::pixel_format::rgb8u,
+                stormkit::gpu::pixel_format::rgb8_unorm,
+                stormkit::gpu::pixel_format::rgba16f,
+                stormkit::gpu::pixel_format::rgba16i,
+                stormkit::gpu::pixel_format::rgba16_snorm,
+                stormkit::gpu::pixel_format::rgba16u,
+                stormkit::gpu::pixel_format::rgba16_unorm,
+                stormkit::gpu::pixel_format::rgba32f,
+                stormkit::gpu::pixel_format::rgba32i,
+                stormkit::gpu::pixel_format::rgba32u,
+                stormkit::gpu::pixel_format::rgba4_unorm_pack16,
+                stormkit::gpu::pixel_format::rgba8i,
+                stormkit::gpu::pixel_format::rgba8_snorm,
+                stormkit::gpu::pixel_format::rgba8u,
+                stormkit::gpu::pixel_format::rgba8_unorm,
+                stormkit::gpu::pixel_format::s8u,
+                stormkit::gpu::pixel_format::sbgr8,
+                stormkit::gpu::pixel_format::sbgra8,
+                stormkit::gpu::pixel_format::sr8,
+                stormkit::gpu::pixel_format::srg8,
+                stormkit::gpu::pixel_format::srgb8,
+                stormkit::gpu::pixel_format::srgba8,
+                stormkit::gpu::pixel_format::undefined,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<pixel_format>>, VkFormat value, source_location_arg) noexcept
+          -> pixel_format {
+            return static_cast<pixel_format>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFormat>>, pixel_format value, source_location_arg) noexcept -> u32 {
+            return static_cast<VkFormat>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, pixel_format value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::pixel_format::a1_rgb5_unorm_pack16: return "pixel_format::a1_rgb5_unorm_pack16";
+                case stormkit::gpu::pixel_format::a2_rgb10i_pack32: return "pixel_format::a2_rgb10i_pack32";
+                case stormkit::gpu::pixel_format::a2_rgb10_snorm_pack32: return "pixel_format::a2_rgb10_snorm_pack32";
+                case stormkit::gpu::pixel_format::a2_rgb10_unorm_pack32: return "pixel_format::a2_rgb10_unorm_pack32";
+                case stormkit::gpu::pixel_format::a2_rgb10u_pack32: return "pixel_format::a2_rgb10u_pack32";
+                case stormkit::gpu::pixel_format::b10_gr11uf_pack32: return "pixel_format::b10_gr11uf_pack32";
+                case stormkit::gpu::pixel_format::bgr8_unorm: return "pixel_format::bgr8_unorm";
+                case stormkit::gpu::pixel_format::bgra8_unorm: return "pixel_format::bgra8_unorm";
+                case stormkit::gpu::pixel_format::depth16_unorm: return "pixel_format::depth16_unorm";
+                case stormkit::gpu::pixel_format::depth16_unorm_stencil8u: return "pixel_format::depth16_unorm_stencil8u";
+                case stormkit::gpu::pixel_format::depth24_unorm_pack32: return "pixel_format::depth24_unorm_pack32";
+                case stormkit::gpu::pixel_format::depth24_unorm_stencil8u: return "pixel_format::depth24_unorm_stencil8u";
+                case stormkit::gpu::pixel_format::depth32f: return "pixel_format::depth32f";
+                case stormkit::gpu::pixel_format::depth32f_stencil8u: return "pixel_format::depth32f_stencil8u";
+                case stormkit::gpu::pixel_format::r16f: return "pixel_format::r16f";
+                case stormkit::gpu::pixel_format::r16i: return "pixel_format::r16i";
+                case stormkit::gpu::pixel_format::r16_snorm: return "pixel_format::r16_snorm";
+                case stormkit::gpu::pixel_format::r16u: return "pixel_format::r16u";
+                case stormkit::gpu::pixel_format::r16_unorm: return "pixel_format::r16_unorm";
+                case stormkit::gpu::pixel_format::r32f: return "pixel_format::r32f";
+                case stormkit::gpu::pixel_format::r32i: return "pixel_format::r32i";
+                case stormkit::gpu::pixel_format::r32u: return "pixel_format::r32u";
+                case stormkit::gpu::pixel_format::r5_g6_b5_unorm_pack16: return "pixel_format::r5_g6_b5_unorm_pack16";
+                case stormkit::gpu::pixel_format::r8i: return "pixel_format::r8i";
+                case stormkit::gpu::pixel_format::r8_snorm: return "pixel_format::r8_snorm";
+                case stormkit::gpu::pixel_format::r8u: return "pixel_format::r8u";
+                case stormkit::gpu::pixel_format::r8_unorm: return "pixel_format::r8_unorm";
+                case stormkit::gpu::pixel_format::rg16f: return "pixel_format::rg16f";
+                case stormkit::gpu::pixel_format::rg16i: return "pixel_format::rg16i";
+                case stormkit::gpu::pixel_format::rg16_snorm: return "pixel_format::rg16_snorm";
+                case stormkit::gpu::pixel_format::rg16u: return "pixel_format::rg16u";
+                case stormkit::gpu::pixel_format::rg16_unorm: return "pixel_format::rg16_unorm";
+                case stormkit::gpu::pixel_format::rg32f: return "pixel_format::rg32f";
+                case stormkit::gpu::pixel_format::rg32i: return "pixel_format::rg32i";
+                case stormkit::gpu::pixel_format::rg32u: return "pixel_format::rg32u";
+                case stormkit::gpu::pixel_format::rg8i: return "pixel_format::rg8i";
+                case stormkit::gpu::pixel_format::rg8_snorm: return "pixel_format::rg8_snorm";
+                case stormkit::gpu::pixel_format::rg8u: return "pixel_format::rg8u";
+                case stormkit::gpu::pixel_format::rg8_unorm: return "pixel_format::rg8_unorm";
+                case stormkit::gpu::pixel_format::rgb16f: return "pixel_format::rgb16f";
+                case stormkit::gpu::pixel_format::rgb16i: return "pixel_format::rgb16i";
+                case stormkit::gpu::pixel_format::rgb16_snorm: return "pixel_format::rgb16_snorm";
+                case stormkit::gpu::pixel_format::rgb16u: return "pixel_format::rgb16u";
+                case stormkit::gpu::pixel_format::rgb16_unorm: return "pixel_format::rgb16_unorm";
+                case stormkit::gpu::pixel_format::rgb32f: return "pixel_format::rgb32f";
+                case stormkit::gpu::pixel_format::rgb32i: return "pixel_format::rgb32i";
+                case stormkit::gpu::pixel_format::rgb32u: return "pixel_format::rgb32u";
+                case stormkit::gpu::pixel_format::rgb8i: return "pixel_format::rgb8i";
+                case stormkit::gpu::pixel_format::rgb8_snorm: return "pixel_format::rgb8_snorm";
+                case stormkit::gpu::pixel_format::rgb8u: return "pixel_format::rgb8u";
+                case stormkit::gpu::pixel_format::rgb8_unorm: return "pixel_format::rgb8_unorm";
+                case stormkit::gpu::pixel_format::rgba16f: return "pixel_format::rgba16f";
+                case stormkit::gpu::pixel_format::rgba16i: return "pixel_format::rgba16i";
+                case stormkit::gpu::pixel_format::rgba16_snorm: return "pixel_format::rgba16_snorm";
+                case stormkit::gpu::pixel_format::rgba16u: return "pixel_format::rgba16u";
+                case stormkit::gpu::pixel_format::rgba16_unorm: return "pixel_format::rgba16_unorm";
+                case stormkit::gpu::pixel_format::rgba32f: return "pixel_format::rgba32f";
+                case stormkit::gpu::pixel_format::rgba32i: return "pixel_format::rgba32i";
+                case stormkit::gpu::pixel_format::rgba32u: return "pixel_format::rgba32u";
+                case stormkit::gpu::pixel_format::rgba4_unorm_pack16: return "pixel_format::rgba4_unorm_pack16";
+                case stormkit::gpu::pixel_format::rgba8i: return "pixel_format::rgba8i";
+                case stormkit::gpu::pixel_format::rgba8_snorm: return "pixel_format::rgba8_snorm";
+                case stormkit::gpu::pixel_format::rgba8u: return "pixel_format::rgba8u";
+                case stormkit::gpu::pixel_format::rgba8_unorm: return "pixel_format::rgba8_unorm";
+                case stormkit::gpu::pixel_format::s8u: return "pixel_format::s8u";
+                case stormkit::gpu::pixel_format::sbgr8: return "pixel_format::sbgr8";
+                case stormkit::gpu::pixel_format::sbgra8: return "pixel_format::sbgra8";
+                case stormkit::gpu::pixel_format::sr8: return "pixel_format::sr8";
+                case stormkit::gpu::pixel_format::srg8: return "pixel_format::srg8";
+                case stormkit::gpu::pixel_format::srgb8: return "pixel_format::srgb8";
+                case stormkit::gpu::pixel_format::srgba8: return "pixel_format::srgba8";
+                case stormkit::gpu::pixel_format::undefined: return "pixel_format::undefined";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, pixel_format value, source_location_arg) noexcept -> string {
+            switch (value) {
+                case stormkit::gpu::pixel_format::a1_rgb5_unorm_pack16: return "pixel_format::a1_rgb5_unorm_pack16";
+                case stormkit::gpu::pixel_format::a2_rgb10i_pack32: return "pixel_format::a2_rgb10i_pack32";
+                case stormkit::gpu::pixel_format::a2_rgb10_snorm_pack32: return "pixel_format::a2_rgb10_snorm_pack32";
+                case stormkit::gpu::pixel_format::a2_rgb10_unorm_pack32: return "pixel_format::a2_rgb10_unorm_pack32";
+                case stormkit::gpu::pixel_format::a2_rgb10u_pack32: return "pixel_format::a2_rgb10u_pack32";
+                case stormkit::gpu::pixel_format::b10_gr11uf_pack32: return "pixel_format::b10_gr11uf_pack32";
+                case stormkit::gpu::pixel_format::bgr8_unorm: return "pixel_format::bgr8_unorm";
+                case stormkit::gpu::pixel_format::bgra8_unorm: return "pixel_format::bgra8_unorm";
+                case stormkit::gpu::pixel_format::depth16_unorm: return "pixel_format::depth16_unorm";
+                case stormkit::gpu::pixel_format::depth16_unorm_stencil8u: return "pixel_format::depth16_unorm_stencil8u";
+                case stormkit::gpu::pixel_format::depth24_unorm_pack32: return "pixel_format::depth24_unorm_pack32";
+                case stormkit::gpu::pixel_format::depth24_unorm_stencil8u: return "pixel_format::depth24_unorm_stencil8u";
+                case stormkit::gpu::pixel_format::depth32f: return "pixel_format::depth32f";
+                case stormkit::gpu::pixel_format::depth32f_stencil8u: return "pixel_format::depth32f_stencil8u";
+                case stormkit::gpu::pixel_format::r16f: return "pixel_format::r16f";
+                case stormkit::gpu::pixel_format::r16i: return "pixel_format::r16i";
+                case stormkit::gpu::pixel_format::r16_snorm: return "pixel_format::r16_snorm";
+                case stormkit::gpu::pixel_format::r16u: return "pixel_format::r16u";
+                case stormkit::gpu::pixel_format::r16_unorm: return "pixel_format::r16_unorm";
+                case stormkit::gpu::pixel_format::r32f: return "pixel_format::r32f";
+                case stormkit::gpu::pixel_format::r32i: return "pixel_format::r32i";
+                case stormkit::gpu::pixel_format::r32u: return "pixel_format::r32u";
+                case stormkit::gpu::pixel_format::r5_g6_b5_unorm_pack16: return "pixel_format::r5_g6_b5_unorm_pack16";
+                case stormkit::gpu::pixel_format::r8i: return "pixel_format::r8i";
+                case stormkit::gpu::pixel_format::r8_snorm: return "pixel_format::r8_snorm";
+                case stormkit::gpu::pixel_format::r8u: return "pixel_format::r8u";
+                case stormkit::gpu::pixel_format::r8_unorm: return "pixel_format::r8_unorm";
+                case stormkit::gpu::pixel_format::rg16f: return "pixel_format::rg16f";
+                case stormkit::gpu::pixel_format::rg16i: return "pixel_format::rg16i";
+                case stormkit::gpu::pixel_format::rg16_snorm: return "pixel_format::rg16_snorm";
+                case stormkit::gpu::pixel_format::rg16u: return "pixel_format::rg16u";
+                case stormkit::gpu::pixel_format::rg16_unorm: return "pixel_format::rg16_unorm";
+                case stormkit::gpu::pixel_format::rg32f: return "pixel_format::rg32f";
+                case stormkit::gpu::pixel_format::rg32i: return "pixel_format::rg32i";
+                case stormkit::gpu::pixel_format::rg32u: return "pixel_format::rg32u";
+                case stormkit::gpu::pixel_format::rg8i: return "pixel_format::rg8i";
+                case stormkit::gpu::pixel_format::rg8_snorm: return "pixel_format::rg8_snorm";
+                case stormkit::gpu::pixel_format::rg8u: return "pixel_format::rg8u";
+                case stormkit::gpu::pixel_format::rg8_unorm: return "pixel_format::rg8_unorm";
+                case stormkit::gpu::pixel_format::rgb16f: return "pixel_format::rgb16f";
+                case stormkit::gpu::pixel_format::rgb16i: return "pixel_format::rgb16i";
+                case stormkit::gpu::pixel_format::rgb16_snorm: return "pixel_format::rgb16_snorm";
+                case stormkit::gpu::pixel_format::rgb16u: return "pixel_format::rgb16u";
+                case stormkit::gpu::pixel_format::rgb16_unorm: return "pixel_format::rgb16_unorm";
+                case stormkit::gpu::pixel_format::rgb32f: return "pixel_format::rgb32f";
+                case stormkit::gpu::pixel_format::rgb32i: return "pixel_format::rgb32i";
+                case stormkit::gpu::pixel_format::rgb32u: return "pixel_format::rgb32u";
+                case stormkit::gpu::pixel_format::rgb8i: return "pixel_format::rgb8i";
+                case stormkit::gpu::pixel_format::rgb8_snorm: return "pixel_format::rgb8_snorm";
+                case stormkit::gpu::pixel_format::rgb8u: return "pixel_format::rgb8u";
+                case stormkit::gpu::pixel_format::rgb8_unorm: return "pixel_format::rgb8_unorm";
+                case stormkit::gpu::pixel_format::rgba16f: return "pixel_format::rgba16f";
+                case stormkit::gpu::pixel_format::rgba16i: return "pixel_format::rgba16i";
+                case stormkit::gpu::pixel_format::rgba16_snorm: return "pixel_format::rgba16_snorm";
+                case stormkit::gpu::pixel_format::rgba16u: return "pixel_format::rgba16u";
+                case stormkit::gpu::pixel_format::rgba16_unorm: return "pixel_format::rgba16_unorm";
+                case stormkit::gpu::pixel_format::rgba32f: return "pixel_format::rgba32f";
+                case stormkit::gpu::pixel_format::rgba32i: return "pixel_format::rgba32i";
+                case stormkit::gpu::pixel_format::rgba32u: return "pixel_format::rgba32u";
+                case stormkit::gpu::pixel_format::rgba4_unorm_pack16: return "pixel_format::rgba4_unorm_pack16";
+                case stormkit::gpu::pixel_format::rgba8i: return "pixel_format::rgba8i";
+                case stormkit::gpu::pixel_format::rgba8_snorm: return "pixel_format::rgba8_snorm";
+                case stormkit::gpu::pixel_format::rgba8u: return "pixel_format::rgba8u";
+                case stormkit::gpu::pixel_format::rgba8_unorm: return "pixel_format::rgba8_unorm";
+                case stormkit::gpu::pixel_format::s8u: return "pixel_format::s8u";
+                case stormkit::gpu::pixel_format::sbgr8: return "pixel_format::sbgr8";
+                case stormkit::gpu::pixel_format::sbgra8: return "pixel_format::sbgra8";
+                case stormkit::gpu::pixel_format::sr8: return "pixel_format::sr8";
+                case stormkit::gpu::pixel_format::srg8: return "pixel_format::srg8";
+                case stormkit::gpu::pixel_format::srgb8: return "pixel_format::srgb8";
+                case stormkit::gpu::pixel_format::srgba8: return "pixel_format::srgba8";
+                case stormkit::gpu::pixel_format::undefined: return "pixel_format::undefined";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<polygon_mode>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::polygon_mode::fill,
+                stormkit::gpu::polygon_mode::line,
+                stormkit::gpu::polygon_mode::point,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<polygon_mode>>, VkPolygonMode value, source_location_arg) noexcept
+          -> polygon_mode {
+            return static_cast<polygon_mode>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkPolygonMode>>, polygon_mode value, source_location_arg) noexcept
+          -> u8 {
+            return static_cast<VkPolygonMode>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, polygon_mode value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::polygon_mode::fill: return "polygon_mode::fill";
+                case stormkit::gpu::polygon_mode::line: return "polygon_mode::line";
+                case stormkit::gpu::polygon_mode::point: return "polygon_mode::point";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, polygon_mode value, source_location_arg) noexcept -> string {
+            switch (value) {
+                case stormkit::gpu::polygon_mode::fill: return "polygon_mode::fill";
+                case stormkit::gpu::polygon_mode::line: return "polygon_mode::line";
+                case stormkit::gpu::polygon_mode::point: return "polygon_mode::point";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<present_mode>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::present_mode::fifo,
+                stormkit::gpu::present_mode::fifo_relaxed,
+                stormkit::gpu::present_mode::immediate,
+                stormkit::gpu::present_mode::mailbox,
+                stormkit::gpu::present_mode::shared_continuous_refresh,
+                stormkit::gpu::present_mode::shared_demand_refresh,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<present_mode>>, VkPresentModeKHR value, source_location_arg) noexcept
+          -> present_mode {
+            return static_cast<present_mode>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkPresentModeKHR>>, present_mode value, source_location_arg) noexcept
+          -> u32 {
+            return static_cast<VkPresentModeKHR>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, present_mode value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::present_mode::fifo: return "present_mode::fifo";
+                case stormkit::gpu::present_mode::fifo_relaxed: return "present_mode::fifo_relaxed";
+                case stormkit::gpu::present_mode::immediate: return "present_mode::immediate";
+                case stormkit::gpu::present_mode::mailbox: return "present_mode::mailbox";
+                case stormkit::gpu::present_mode::shared_continuous_refresh: return "present_mode::shared_continuous_refresh";
+                case stormkit::gpu::present_mode::shared_demand_refresh: return "present_mode::shared_demand_refresh";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, present_mode value, source_location_arg) noexcept -> string {
+            switch (value) {
+                case stormkit::gpu::present_mode::fifo: return "present_mode::fifo";
+                case stormkit::gpu::present_mode::fifo_relaxed: return "present_mode::fifo_relaxed";
+                case stormkit::gpu::present_mode::immediate: return "present_mode::immediate";
+                case stormkit::gpu::present_mode::mailbox: return "present_mode::mailbox";
+                case stormkit::gpu::present_mode::shared_continuous_refresh: return "present_mode::shared_continuous_refresh";
+                case stormkit::gpu::present_mode::shared_demand_refresh: return "present_mode::shared_demand_refresh";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<primitive_topology>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::primitive_topology::line_list,     stormkit::gpu::primitive_topology::line_strip,
+                stormkit::gpu::primitive_topology::point_list,    stormkit::gpu::primitive_topology::triangle_fan,
+                stormkit::gpu::primitive_topology::triangle_list, stormkit::gpu::primitive_topology::triangle_strip,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<primitive_topology>>,
+                                  VkPrimitiveTopology value,
+                                  source_location_arg) noexcept -> primitive_topology {
+            return static_cast<primitive_topology>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkPrimitiveTopology>>,
+                                  primitive_topology value,
+                                  source_location_arg) noexcept -> u8 {
+            return static_cast<VkPrimitiveTopology>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, primitive_topology value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::primitive_topology::line_list: return "primitive_topology::line_list";
+                case stormkit::gpu::primitive_topology::line_strip: return "primitive_topology::line_strip";
+                case stormkit::gpu::primitive_topology::point_list: return "primitive_topology::point_list";
+                case stormkit::gpu::primitive_topology::triangle_fan: return "primitive_topology::triangle_fan";
+                case stormkit::gpu::primitive_topology::triangle_list: return "primitive_topology::triangle_list";
+                case stormkit::gpu::primitive_topology::triangle_strip: return "primitive_topology::triangle_strip";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, primitive_topology value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::primitive_topology::line_list: return "primitive_topology::line_list";
+                case stormkit::gpu::primitive_topology::line_strip: return "primitive_topology::line_strip";
+                case stormkit::gpu::primitive_topology::point_list: return "primitive_topology::point_list";
+                case stormkit::gpu::primitive_topology::triangle_fan: return "primitive_topology::triangle_fan";
+                case stormkit::gpu::primitive_topology::triangle_list: return "primitive_topology::triangle_list";
+                case stormkit::gpu::primitive_topology::triangle_strip: return "primitive_topology::triangle_strip";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<queue_flag>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::queue_flag::compute,        stormkit::gpu::queue_flag::graphics,
+                stormkit::gpu::queue_flag::none,           stormkit::gpu::queue_flag::protected_,
+                stormkit::gpu::queue_flag::sparse_binding, stormkit::gpu::queue_flag::transfer,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<queue_flag>>, VkQueueFlagBits value, source_location_arg) noexcept
+          -> queue_flag {
+            return static_cast<queue_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkQueueFlagBits>>, queue_flag value, source_location_arg) noexcept
+          -> u8 {
+            return static_cast<VkQueueFlagBits>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<queue_flag>>, VkFlags value, source_location_arg) noexcept
+          -> queue_flag {
+            return static_cast<queue_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFlags>>, queue_flag value, source_location_arg) noexcept -> VkFlags {
+            return static_cast<VkFlags>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, queue_flag value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::queue_flag::compute: return "queue_flag::compute";
+                case stormkit::gpu::queue_flag::graphics: return "queue_flag::graphics";
+                case stormkit::gpu::queue_flag::none: return "queue_flag::none";
+                case stormkit::gpu::queue_flag::protected_: return "queue_flag::protected_";
+                case stormkit::gpu::queue_flag::sparse_binding: return "queue_flag::sparse_binding";
+                case stormkit::gpu::queue_flag::transfer: return "queue_flag::transfer";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, queue_flag value, source_location_arg) noexcept -> string {
+            switch (value) {
+                case stormkit::gpu::queue_flag::compute: return "queue_flag::compute";
+                case stormkit::gpu::queue_flag::graphics: return "queue_flag::graphics";
+                case stormkit::gpu::queue_flag::none: return "queue_flag::none";
+                case stormkit::gpu::queue_flag::protected_: return "queue_flag::protected_";
+                case stormkit::gpu::queue_flag::sparse_binding: return "queue_flag::sparse_binding";
+                case stormkit::gpu::queue_flag::transfer: return "queue_flag::transfer";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<resolve_mode_flag>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::resolve_mode_flag::average, stormkit::gpu::resolve_mode_flag::external_format_downsample_android,
+                stormkit::gpu::resolve_mode_flag::max,     stormkit::gpu::resolve_mode_flag::min,
+                stormkit::gpu::resolve_mode_flag::none,    stormkit::gpu::resolve_mode_flag::sample_zero,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<resolve_mode_flag>>,
+                                  VkResolveModeFlagBits value,
+                                  source_location_arg) noexcept -> resolve_mode_flag {
+            return static_cast<resolve_mode_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkResolveModeFlagBits>>,
+                                  resolve_mode_flag value,
+                                  source_location_arg) noexcept -> u8 {
+            return static_cast<VkResolveModeFlagBits>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<resolve_mode_flag>>, VkFlags value, source_location_arg) noexcept
+          -> resolve_mode_flag {
+            return static_cast<resolve_mode_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFlags>>, resolve_mode_flag value, source_location_arg) noexcept
+          -> VkFlags {
+            return static_cast<VkFlags>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, resolve_mode_flag value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::resolve_mode_flag::average: return "resolve_mode_flag::average";
+                case stormkit::gpu::resolve_mode_flag::external_format_downsample_android:
+                    return "resolve_mode_flag::external_format_downsample_android";
+                case stormkit::gpu::resolve_mode_flag::max: return "resolve_mode_flag::max";
+                case stormkit::gpu::resolve_mode_flag::min: return "resolve_mode_flag::min";
+                case stormkit::gpu::resolve_mode_flag::none: return "resolve_mode_flag::none";
+                case stormkit::gpu::resolve_mode_flag::sample_zero: return "resolve_mode_flag::sample_zero";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, resolve_mode_flag value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::resolve_mode_flag::average: return "resolve_mode_flag::average";
+                case stormkit::gpu::resolve_mode_flag::external_format_downsample_android:
+                    return "resolve_mode_flag::external_format_downsample_android";
+                case stormkit::gpu::resolve_mode_flag::max: return "resolve_mode_flag::max";
+                case stormkit::gpu::resolve_mode_flag::min: return "resolve_mode_flag::min";
+                case stormkit::gpu::resolve_mode_flag::none: return "resolve_mode_flag::none";
+                case stormkit::gpu::resolve_mode_flag::sample_zero: return "resolve_mode_flag::sample_zero";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<result>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::result::error_device_lost,
+                stormkit::gpu::result::error_extension_not_present,
+                stormkit::gpu::result::error_feature_not_present,
+                stormkit::gpu::result::error_format_not_supported,
+                stormkit::gpu::result::error_fragmentation,
+                stormkit::gpu::result::error_fragmented_pool,
+                stormkit::gpu::result::error_fullscreen_exclusive_mode_lost,
+                stormkit::gpu::result::error_incompatible_display,
+                stormkit::gpu::result::error_incompatible_driver,
+                stormkit::gpu::result::error_initialization_failed,
+                stormkit::gpu::result::error_invalid_external_handle,
+                stormkit::gpu::result::error_invalid_opaque_capture_address,
+                stormkit::gpu::result::error_layer_not_present,
+                stormkit::gpu::result::error_memory_map_failed,
+                stormkit::gpu::result::error_native_window_in_use,
+                stormkit::gpu::result::error_not_permitted,
+                stormkit::gpu::result::error_out_of_date,
+                stormkit::gpu::result::error_out_of_device_memory,
+                stormkit::gpu::result::error_out_of_host_memory,
+                stormkit::gpu::result::error_out_of_pool_memory,
+                stormkit::gpu::result::error_surface_lost,
+                stormkit::gpu::result::error_too_many_objects,
+                stormkit::gpu::result::error_unknown,
+                stormkit::gpu::result::error_validation_failed,
+                stormkit::gpu::result::event_reset,
+                stormkit::gpu::result::event_set,
+                stormkit::gpu::result::incomplete,
+                stormkit::gpu::result::not_ready,
+                stormkit::gpu::result::operation_deferred,
+                stormkit::gpu::result::operation_not_deferred,
+                stormkit::gpu::result::pipeline_compile_required,
+                stormkit::gpu::result::suboptimal,
+                stormkit::gpu::result::success,
+                stormkit::gpu::result::thread_done,
+                stormkit::gpu::result::thread_idle,
+                stormkit::gpu::result::timeout,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<result>>, VkResult value, source_location_arg) noexcept -> result {
+            return static_cast<result>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkResult>>, result value, source_location_arg) noexcept -> i32 {
+            return static_cast<VkResult>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, result value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::result::error_device_lost: return "result::error_device_lost";
+                case stormkit::gpu::result::error_extension_not_present: return "result::error_extension_not_present";
+                case stormkit::gpu::result::error_feature_not_present: return "result::error_feature_not_present";
+                case stormkit::gpu::result::error_format_not_supported: return "result::error_format_not_supported";
+                case stormkit::gpu::result::error_fragmentation: return "result::error_fragmentation";
+                case stormkit::gpu::result::error_fragmented_pool: return "result::error_fragmented_pool";
+                case stormkit::gpu::result::error_fullscreen_exclusive_mode_lost:
+                    return "result::error_fullscreen_exclusive_mode_lost";
+                case stormkit::gpu::result::error_incompatible_display: return "result::error_incompatible_display";
+                case stormkit::gpu::result::error_incompatible_driver: return "result::error_incompatible_driver";
+                case stormkit::gpu::result::error_initialization_failed: return "result::error_initialization_failed";
+                case stormkit::gpu::result::error_invalid_external_handle: return "result::error_invalid_external_handle";
+                case stormkit::gpu::result::error_invalid_opaque_capture_address:
+                    return "result::error_invalid_opaque_capture_address";
+                case stormkit::gpu::result::error_layer_not_present: return "result::error_layer_not_present";
+                case stormkit::gpu::result::error_memory_map_failed: return "result::error_memory_map_failed";
+                case stormkit::gpu::result::error_native_window_in_use: return "result::error_native_window_in_use";
+                case stormkit::gpu::result::error_not_permitted: return "result::error_not_permitted";
+                case stormkit::gpu::result::error_out_of_date: return "result::error_out_of_date";
+                case stormkit::gpu::result::error_out_of_device_memory: return "result::error_out_of_device_memory";
+                case stormkit::gpu::result::error_out_of_host_memory: return "result::error_out_of_host_memory";
+                case stormkit::gpu::result::error_out_of_pool_memory: return "result::error_out_of_pool_memory";
+                case stormkit::gpu::result::error_surface_lost: return "result::error_surface_lost";
+                case stormkit::gpu::result::error_too_many_objects: return "result::error_too_many_objects";
+                case stormkit::gpu::result::error_unknown: return "result::error_unknown";
+                case stormkit::gpu::result::error_validation_failed: return "result::error_validation_failed";
+                case stormkit::gpu::result::event_reset: return "result::event_reset";
+                case stormkit::gpu::result::event_set: return "result::event_set";
+                case stormkit::gpu::result::incomplete: return "result::incomplete";
+                case stormkit::gpu::result::not_ready: return "result::not_ready";
+                case stormkit::gpu::result::operation_deferred: return "result::operation_deferred";
+                case stormkit::gpu::result::operation_not_deferred: return "result::operation_not_deferred";
+                case stormkit::gpu::result::pipeline_compile_required: return "result::pipeline_compile_required";
+                case stormkit::gpu::result::suboptimal: return "result::suboptimal";
+                case stormkit::gpu::result::success: return "result::success";
+                case stormkit::gpu::result::thread_done: return "result::thread_done";
+                case stormkit::gpu::result::thread_idle: return "result::thread_idle";
+                case stormkit::gpu::result::timeout: return "result::timeout";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, result value, source_location_arg) noexcept -> string {
+            switch (value) {
+                case stormkit::gpu::result::error_device_lost: return "result::error_device_lost";
+                case stormkit::gpu::result::error_extension_not_present: return "result::error_extension_not_present";
+                case stormkit::gpu::result::error_feature_not_present: return "result::error_feature_not_present";
+                case stormkit::gpu::result::error_format_not_supported: return "result::error_format_not_supported";
+                case stormkit::gpu::result::error_fragmentation: return "result::error_fragmentation";
+                case stormkit::gpu::result::error_fragmented_pool: return "result::error_fragmented_pool";
+                case stormkit::gpu::result::error_fullscreen_exclusive_mode_lost:
+                    return "result::error_fullscreen_exclusive_mode_lost";
+                case stormkit::gpu::result::error_incompatible_display: return "result::error_incompatible_display";
+                case stormkit::gpu::result::error_incompatible_driver: return "result::error_incompatible_driver";
+                case stormkit::gpu::result::error_initialization_failed: return "result::error_initialization_failed";
+                case stormkit::gpu::result::error_invalid_external_handle: return "result::error_invalid_external_handle";
+                case stormkit::gpu::result::error_invalid_opaque_capture_address:
+                    return "result::error_invalid_opaque_capture_address";
+                case stormkit::gpu::result::error_layer_not_present: return "result::error_layer_not_present";
+                case stormkit::gpu::result::error_memory_map_failed: return "result::error_memory_map_failed";
+                case stormkit::gpu::result::error_native_window_in_use: return "result::error_native_window_in_use";
+                case stormkit::gpu::result::error_not_permitted: return "result::error_not_permitted";
+                case stormkit::gpu::result::error_out_of_date: return "result::error_out_of_date";
+                case stormkit::gpu::result::error_out_of_device_memory: return "result::error_out_of_device_memory";
+                case stormkit::gpu::result::error_out_of_host_memory: return "result::error_out_of_host_memory";
+                case stormkit::gpu::result::error_out_of_pool_memory: return "result::error_out_of_pool_memory";
+                case stormkit::gpu::result::error_surface_lost: return "result::error_surface_lost";
+                case stormkit::gpu::result::error_too_many_objects: return "result::error_too_many_objects";
+                case stormkit::gpu::result::error_unknown: return "result::error_unknown";
+                case stormkit::gpu::result::error_validation_failed: return "result::error_validation_failed";
+                case stormkit::gpu::result::event_reset: return "result::event_reset";
+                case stormkit::gpu::result::event_set: return "result::event_set";
+                case stormkit::gpu::result::incomplete: return "result::incomplete";
+                case stormkit::gpu::result::not_ready: return "result::not_ready";
+                case stormkit::gpu::result::operation_deferred: return "result::operation_deferred";
+                case stormkit::gpu::result::operation_not_deferred: return "result::operation_not_deferred";
+                case stormkit::gpu::result::pipeline_compile_required: return "result::pipeline_compile_required";
+                case stormkit::gpu::result::suboptimal: return "result::suboptimal";
+                case stormkit::gpu::result::success: return "result::success";
+                case stormkit::gpu::result::thread_done: return "result::thread_done";
+                case stormkit::gpu::result::thread_idle: return "result::thread_idle";
+                case stormkit::gpu::result::timeout: return "result::timeout";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<sample_count_flag>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::sample_count_flag::c1, stormkit::gpu::sample_count_flag::c16,
+                stormkit::gpu::sample_count_flag::c2, stormkit::gpu::sample_count_flag::c32,
+                stormkit::gpu::sample_count_flag::c4, stormkit::gpu::sample_count_flag::c64,
+                stormkit::gpu::sample_count_flag::c8,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<sample_count_flag>>,
+                                  VkSampleCountFlagBits value,
+                                  source_location_arg) noexcept -> sample_count_flag {
+            return static_cast<sample_count_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkSampleCountFlagBits>>,
+                                  sample_count_flag value,
+                                  source_location_arg) noexcept -> u8 {
+            return static_cast<VkSampleCountFlagBits>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<sample_count_flag>>, VkFlags value, source_location_arg) noexcept
+          -> sample_count_flag {
+            return static_cast<sample_count_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFlags>>, sample_count_flag value, source_location_arg) noexcept
+          -> VkFlags {
+            return static_cast<VkFlags>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, sample_count_flag value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::sample_count_flag::c1: return "sample_count_flag::c1";
+                case stormkit::gpu::sample_count_flag::c16: return "sample_count_flag::c16";
+                case stormkit::gpu::sample_count_flag::c2: return "sample_count_flag::c2";
+                case stormkit::gpu::sample_count_flag::c32: return "sample_count_flag::c32";
+                case stormkit::gpu::sample_count_flag::c4: return "sample_count_flag::c4";
+                case stormkit::gpu::sample_count_flag::c64: return "sample_count_flag::c64";
+                case stormkit::gpu::sample_count_flag::c8: return "sample_count_flag::c8";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, sample_count_flag value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::sample_count_flag::c1: return "sample_count_flag::c1";
+                case stormkit::gpu::sample_count_flag::c16: return "sample_count_flag::c16";
+                case stormkit::gpu::sample_count_flag::c2: return "sample_count_flag::c2";
+                case stormkit::gpu::sample_count_flag::c32: return "sample_count_flag::c32";
+                case stormkit::gpu::sample_count_flag::c4: return "sample_count_flag::c4";
+                case stormkit::gpu::sample_count_flag::c64: return "sample_count_flag::c64";
+                case stormkit::gpu::sample_count_flag::c8: return "sample_count_flag::c8";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<sampler_address_mode>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::sampler_address_mode::clamp_to_border,
+                stormkit::gpu::sampler_address_mode::clamp_to_edge,
+                stormkit::gpu::sampler_address_mode::mirror_clamp_to_edge,
+                stormkit::gpu::sampler_address_mode::mirrored_repeat,
+                stormkit::gpu::sampler_address_mode::repeat,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<sampler_address_mode>>,
+                                  VkSamplerAddressMode value,
+                                  source_location_arg) noexcept -> sampler_address_mode {
+            return static_cast<sampler_address_mode>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkSamplerAddressMode>>,
+                                  sampler_address_mode value,
+                                  source_location_arg) noexcept -> u8 {
+            return static_cast<VkSamplerAddressMode>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>,
+                                  sampler_address_mode value,
+                                  source_location_arg) noexcept -> string_view {
+            switch (value) {
+                case stormkit::gpu::sampler_address_mode::clamp_to_border: return "sampler_address_mode::clamp_to_border";
+                case stormkit::gpu::sampler_address_mode::clamp_to_edge: return "sampler_address_mode::clamp_to_edge";
+                case stormkit::gpu::sampler_address_mode::mirror_clamp_to_edge:
+                    return "sampler_address_mode::mirror_clamp_to_edge";
+                case stormkit::gpu::sampler_address_mode::mirrored_repeat: return "sampler_address_mode::mirrored_repeat";
+                case stormkit::gpu::sampler_address_mode::repeat: return "sampler_address_mode::repeat";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, sampler_address_mode value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::sampler_address_mode::clamp_to_border: return "sampler_address_mode::clamp_to_border";
+                case stormkit::gpu::sampler_address_mode::clamp_to_edge: return "sampler_address_mode::clamp_to_edge";
+                case stormkit::gpu::sampler_address_mode::mirror_clamp_to_edge:
+                    return "sampler_address_mode::mirror_clamp_to_edge";
+                case stormkit::gpu::sampler_address_mode::mirrored_repeat: return "sampler_address_mode::mirrored_repeat";
+                case stormkit::gpu::sampler_address_mode::repeat: return "sampler_address_mode::repeat";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<sampler_mipmap_mode>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::sampler_mipmap_mode::linear,
+                stormkit::gpu::sampler_mipmap_mode::nearest,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<sampler_mipmap_mode>>,
+                                  VkSamplerMipmapMode value,
+                                  source_location_arg) noexcept -> sampler_mipmap_mode {
+            return static_cast<sampler_mipmap_mode>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkSamplerMipmapMode>>,
+                                  sampler_mipmap_mode value,
+                                  source_location_arg) noexcept -> u8 {
+            return static_cast<VkSamplerMipmapMode>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, sampler_mipmap_mode value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::sampler_mipmap_mode::linear: return "sampler_mipmap_mode::linear";
+                case stormkit::gpu::sampler_mipmap_mode::nearest: return "sampler_mipmap_mode::nearest";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, sampler_mipmap_mode value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::sampler_mipmap_mode::linear: return "sampler_mipmap_mode::linear";
+                case stormkit::gpu::sampler_mipmap_mode::nearest: return "sampler_mipmap_mode::nearest";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<shader_stage_flag>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::shader_stage_flag::compute,  stormkit::gpu::shader_stage_flag::fragment,
+                stormkit::gpu::shader_stage_flag::geometry, stormkit::gpu::shader_stage_flag::none,
+                stormkit::gpu::shader_stage_flag::vertex,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<shader_stage_flag>>,
+                                  VkShaderStageFlagBits value,
+                                  source_location_arg) noexcept -> shader_stage_flag {
+            return static_cast<shader_stage_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkShaderStageFlagBits>>,
+                                  shader_stage_flag value,
+                                  source_location_arg) noexcept -> u8 {
+            return static_cast<VkShaderStageFlagBits>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<shader_stage_flag>>, VkFlags value, source_location_arg) noexcept
+          -> shader_stage_flag {
+            return static_cast<shader_stage_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFlags>>, shader_stage_flag value, source_location_arg) noexcept
+          -> VkFlags {
+            return static_cast<VkFlags>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, shader_stage_flag value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::shader_stage_flag::compute: return "shader_stage_flag::compute";
+                case stormkit::gpu::shader_stage_flag::fragment: return "shader_stage_flag::fragment";
+                case stormkit::gpu::shader_stage_flag::geometry: return "shader_stage_flag::geometry";
+                case stormkit::gpu::shader_stage_flag::none: return "shader_stage_flag::none";
+                case stormkit::gpu::shader_stage_flag::vertex: return "shader_stage_flag::vertex";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, shader_stage_flag value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::shader_stage_flag::compute: return "shader_stage_flag::compute";
+                case stormkit::gpu::shader_stage_flag::fragment: return "shader_stage_flag::fragment";
+                case stormkit::gpu::shader_stage_flag::geometry: return "shader_stage_flag::geometry";
+                case stormkit::gpu::shader_stage_flag::none: return "shader_stage_flag::none";
+                case stormkit::gpu::shader_stage_flag::vertex: return "shader_stage_flag::vertex";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<stencil_face_flag>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::stencil_face_flag::back,
+                stormkit::gpu::stencil_face_flag::front,
+                stormkit::gpu::stencil_face_flag::front_and_back,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<stencil_face_flag>>,
+                                  VkStencilFaceFlagBits value,
+                                  source_location_arg) noexcept -> stencil_face_flag {
+            return static_cast<stencil_face_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkStencilFaceFlagBits>>,
+                                  stencil_face_flag value,
+                                  source_location_arg) noexcept -> u8 {
+            return static_cast<VkStencilFaceFlagBits>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<stencil_face_flag>>, VkFlags value, source_location_arg) noexcept
+          -> stencil_face_flag {
+            return static_cast<stencil_face_flag>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkFlags>>, stencil_face_flag value, source_location_arg) noexcept
+          -> VkFlags {
+            return static_cast<VkFlags>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, stencil_face_flag value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::stencil_face_flag::back: return "stencil_face_flag::back";
+                case stormkit::gpu::stencil_face_flag::front: return "stencil_face_flag::front";
+                case stormkit::gpu::stencil_face_flag::front_and_back: return "stencil_face_flag::front_and_back";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, stencil_face_flag value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::stencil_face_flag::back: return "stencil_face_flag::back";
+                case stormkit::gpu::stencil_face_flag::front: return "stencil_face_flag::front";
+                case stormkit::gpu::stencil_face_flag::front_and_back: return "stencil_face_flag::front_and_back";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::meta::enumerate<vertex_input_rate>>) noexcept -> decltype(auto) {
+            return array {
+                stormkit::gpu::vertex_input_rate::instance,
+                stormkit::gpu::vertex_input_rate::vertex,
+            };
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<vertex_input_rate>>,
+                                  VkVertexInputRate value,
+                                  source_location_arg) noexcept -> vertex_input_rate {
+            return static_cast<vertex_input_rate>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        STORMKIT_INTRINSIC
+        constexpr auto tag_invoke(core::meta::tag<core::as<VkVertexInputRate>>,
+                                  vertex_input_rate value,
+                                  source_location_arg) noexcept -> u8 {
+            return static_cast<VkVertexInputRate>(value);
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string_view>>, vertex_input_rate value, source_location_arg) noexcept
+          -> string_view {
+            switch (value) {
+                case stormkit::gpu::vertex_input_rate::instance: return "vertex_input_rate::instance";
+                case stormkit::gpu::vertex_input_rate::vertex: return "vertex_input_rate::vertex";
+            }
+            std::unreachable();
+        }
+
+        STORMKIT_FORCE_INLINE
+        STORMKIT_CONST
+        constexpr auto tag_invoke(core::meta::tag<core::as<string>>, vertex_input_rate value, source_location_arg) noexcept
+          -> string {
+            switch (value) {
+                case stormkit::gpu::vertex_input_rate::instance: return "vertex_input_rate::instance";
+                case stormkit::gpu::vertex_input_rate::vertex: return "vertex_input_rate::vertex";
+            }
+            std::unreachable();
+        }
+
     } // namespace stormkit::gpu
-    FLAG_ENUM(stormkit::gpu::AccessFlag)
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::AccessFlag>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::AccessFlag::COLOR_ATTACHMENT_READ,
-            stormkit::gpu::AccessFlag::COLOR_ATTACHMENT_WRITE,
-            stormkit::gpu::AccessFlag::DEPTH_STENCIL_ATTACHMENT_READ,
-            stormkit::gpu::AccessFlag::DEPTH_STENCIL_ATTACHMENT_WRITE,
-            stormkit::gpu::AccessFlag::HOST_READ,
-            stormkit::gpu::AccessFlag::HOST_WRITE,
-            stormkit::gpu::AccessFlag::INDIRECT_COMMAND_READ,
-            stormkit::gpu::AccessFlag::INPUT_ATTACHMENT_READ,
-            stormkit::gpu::AccessFlag::MEMORY_READ,
-            stormkit::gpu::AccessFlag::MEMORY_WRITE,
-            stormkit::gpu::AccessFlag::NONE,
-            stormkit::gpu::AccessFlag::SHADER_READ,
-            stormkit::gpu::AccessFlag::SHADER_WRITE,
-            stormkit::gpu::AccessFlag::TRANSFER_READ,
-            stormkit::gpu::AccessFlag::TRANSFER_WRITE,
-            stormkit::gpu::AccessFlag::UNIFORM_READ,
-            stormkit::gpu::AccessFlag::VERTEX_ATTRIBUTE_READ,
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::access_flag> = true;
 
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::AccessFlag>(stormkit::gpu::AccessFlag value) noexcept -> string_view {
-        switch (value) {
-            case stormkit::gpu::AccessFlag::COLOR_ATTACHMENT_READ: return "AccessFlag::COLOR_ATTACHMENT_READ";
-            case stormkit::gpu::AccessFlag::COLOR_ATTACHMENT_WRITE: return "AccessFlag::COLOR_ATTACHMENT_WRITE";
-            case stormkit::gpu::AccessFlag::DEPTH_STENCIL_ATTACHMENT_READ: return "AccessFlag::DEPTH_STENCIL_ATTACHMENT_READ";
-            case stormkit::gpu::AccessFlag::DEPTH_STENCIL_ATTACHMENT_WRITE: return "AccessFlag::DEPTH_STENCIL_ATTACHMENT_WRITE";
-            case stormkit::gpu::AccessFlag::HOST_READ: return "AccessFlag::HOST_READ";
-            case stormkit::gpu::AccessFlag::HOST_WRITE: return "AccessFlag::HOST_WRITE";
-            case stormkit::gpu::AccessFlag::INDIRECT_COMMAND_READ: return "AccessFlag::INDIRECT_COMMAND_READ";
-            case stormkit::gpu::AccessFlag::INPUT_ATTACHMENT_READ: return "AccessFlag::INPUT_ATTACHMENT_READ";
-            case stormkit::gpu::AccessFlag::MEMORY_READ: return "AccessFlag::MEMORY_READ";
-            case stormkit::gpu::AccessFlag::MEMORY_WRITE: return "AccessFlag::MEMORY_WRITE";
-            case stormkit::gpu::AccessFlag::NONE: return "AccessFlag::NONE";
-            case stormkit::gpu::AccessFlag::SHADER_READ: return "AccessFlag::SHADER_READ";
-            case stormkit::gpu::AccessFlag::SHADER_WRITE: return "AccessFlag::SHADER_WRITE";
-            case stormkit::gpu::AccessFlag::TRANSFER_READ: return "AccessFlag::TRANSFER_READ";
-            case stormkit::gpu::AccessFlag::TRANSFER_WRITE: return "AccessFlag::TRANSFER_WRITE";
-            case stormkit::gpu::AccessFlag::UNIFORM_READ: return "AccessFlag::UNIFORM_READ";
-            case stormkit::gpu::AccessFlag::VERTEX_ATTRIBUTE_READ: return "AccessFlag::VERTEX_ATTRIBUTE_READ";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::AccessFlag>(stormkit::gpu::AccessFlag value) noexcept -> string {
-        switch (value) {
-            case stormkit::gpu::AccessFlag::COLOR_ATTACHMENT_READ: return "AccessFlag::COLOR_ATTACHMENT_READ";
-            case stormkit::gpu::AccessFlag::COLOR_ATTACHMENT_WRITE: return "AccessFlag::COLOR_ATTACHMENT_WRITE";
-            case stormkit::gpu::AccessFlag::DEPTH_STENCIL_ATTACHMENT_READ: return "AccessFlag::DEPTH_STENCIL_ATTACHMENT_READ";
-            case stormkit::gpu::AccessFlag::DEPTH_STENCIL_ATTACHMENT_WRITE: return "AccessFlag::DEPTH_STENCIL_ATTACHMENT_WRITE";
-            case stormkit::gpu::AccessFlag::HOST_READ: return "AccessFlag::HOST_READ";
-            case stormkit::gpu::AccessFlag::HOST_WRITE: return "AccessFlag::HOST_WRITE";
-            case stormkit::gpu::AccessFlag::INDIRECT_COMMAND_READ: return "AccessFlag::INDIRECT_COMMAND_READ";
-            case stormkit::gpu::AccessFlag::INPUT_ATTACHMENT_READ: return "AccessFlag::INPUT_ATTACHMENT_READ";
-            case stormkit::gpu::AccessFlag::MEMORY_READ: return "AccessFlag::MEMORY_READ";
-            case stormkit::gpu::AccessFlag::MEMORY_WRITE: return "AccessFlag::MEMORY_WRITE";
-            case stormkit::gpu::AccessFlag::NONE: return "AccessFlag::NONE";
-            case stormkit::gpu::AccessFlag::SHADER_READ: return "AccessFlag::SHADER_READ";
-            case stormkit::gpu::AccessFlag::SHADER_WRITE: return "AccessFlag::SHADER_WRITE";
-            case stormkit::gpu::AccessFlag::TRANSFER_READ: return "AccessFlag::TRANSFER_READ";
-            case stormkit::gpu::AccessFlag::TRANSFER_WRITE: return "AccessFlag::TRANSFER_WRITE";
-            case stormkit::gpu::AccessFlag::UNIFORM_READ: return "AccessFlag::UNIFORM_READ";
-            case stormkit::gpu::AccessFlag::VERTEX_ATTRIBUTE_READ: return "AccessFlag::VERTEX_ATTRIBUTE_READ";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::AttachmentLoadOperation)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::AttachmentLoadOperation>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::AttachmentLoadOperation::CLEAR,
-            stormkit::gpu::AttachmentLoadOperation::DONT_CARE,
-            stormkit::gpu::AttachmentLoadOperation::LOAD,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<
-      stormkit::gpu::AttachmentLoadOperation>(stormkit::gpu::AttachmentLoadOperation value) noexcept -> string_view {
-        switch (value) {
-            case stormkit::gpu::AttachmentLoadOperation::CLEAR: return "AttachmentLoadOperation::CLEAR";
-            case stormkit::gpu::AttachmentLoadOperation::DONT_CARE: return "AttachmentLoadOperation::DONT_CARE";
-            case stormkit::gpu::AttachmentLoadOperation::LOAD: return "AttachmentLoadOperation::LOAD";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<
-      stormkit::gpu::AttachmentLoadOperation>(stormkit::gpu::AttachmentLoadOperation value) noexcept -> string {
-        switch (value) {
-            case stormkit::gpu::AttachmentLoadOperation::CLEAR: return "AttachmentLoadOperation::CLEAR";
-            case stormkit::gpu::AttachmentLoadOperation::DONT_CARE: return "AttachmentLoadOperation::DONT_CARE";
-            case stormkit::gpu::AttachmentLoadOperation::LOAD: return "AttachmentLoadOperation::LOAD";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::AttachmentStoreOperation)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::AttachmentStoreOperation>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::AttachmentStoreOperation::DONT_CARE,
-            stormkit::gpu::AttachmentStoreOperation::STORE,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<
-      stormkit::gpu::AttachmentStoreOperation>(stormkit::gpu::AttachmentStoreOperation value) noexcept -> string_view {
-        switch (value) {
-            case stormkit::gpu::AttachmentStoreOperation::DONT_CARE: return "AttachmentStoreOperation::DONT_CARE";
-            case stormkit::gpu::AttachmentStoreOperation::STORE: return "AttachmentStoreOperation::STORE";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<
-      stormkit::gpu::AttachmentStoreOperation>(stormkit::gpu::AttachmentStoreOperation value) noexcept -> string {
-        switch (value) {
-            case stormkit::gpu::AttachmentStoreOperation::DONT_CARE: return "AttachmentStoreOperation::DONT_CARE";
-            case stormkit::gpu::AttachmentStoreOperation::STORE: return "AttachmentStoreOperation::STORE";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::BlendFactor)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::BlendFactor>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::BlendFactor::CONSTANT_ALPHA,
-            stormkit::gpu::BlendFactor::CONSTANT_COLOR,
-            stormkit::gpu::BlendFactor::DST_ALPHA,
-            stormkit::gpu::BlendFactor::DST_COLOR,
-            stormkit::gpu::BlendFactor::ONE,
-            stormkit::gpu::BlendFactor::ONE_MINUS_CONSTANT_ALPHA,
-            stormkit::gpu::BlendFactor::ONE_MINUS_CONSTANT_COLOR,
-            stormkit::gpu::BlendFactor::ONE_MINUS_DST_ALPHA,
-            stormkit::gpu::BlendFactor::ONE_MINUS_DST_COLOR,
-            stormkit::gpu::BlendFactor::ONE_MINUS_SRC1_ALPHA,
-            stormkit::gpu::BlendFactor::ONE_MINUS_SRC1_COLOR,
-            stormkit::gpu::BlendFactor::ONE_MINUS_SRC_ALPHA,
-            stormkit::gpu::BlendFactor::ONE_MINUS_SRC_COLOR,
-            stormkit::gpu::BlendFactor::SRC1_ALPHA,
-            stormkit::gpu::BlendFactor::SRC1_COLOR,
-            stormkit::gpu::BlendFactor::SRC_ALPHA,
-            stormkit::gpu::BlendFactor::SRC_ALPHA_SATURATE,
-            stormkit::gpu::BlendFactor::SRC_COLOR,
-            stormkit::gpu::BlendFactor::ZERO,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::BlendFactor>(stormkit::gpu::BlendFactor value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::BlendFactor::CONSTANT_ALPHA: return "BlendFactor::CONSTANT_ALPHA";
-            case stormkit::gpu::BlendFactor::CONSTANT_COLOR: return "BlendFactor::CONSTANT_COLOR";
-            case stormkit::gpu::BlendFactor::DST_ALPHA: return "BlendFactor::DST_ALPHA";
-            case stormkit::gpu::BlendFactor::DST_COLOR: return "BlendFactor::DST_COLOR";
-            case stormkit::gpu::BlendFactor::ONE: return "BlendFactor::ONE";
-            case stormkit::gpu::BlendFactor::ONE_MINUS_CONSTANT_ALPHA: return "BlendFactor::ONE_MINUS_CONSTANT_ALPHA";
-            case stormkit::gpu::BlendFactor::ONE_MINUS_CONSTANT_COLOR: return "BlendFactor::ONE_MINUS_CONSTANT_COLOR";
-            case stormkit::gpu::BlendFactor::ONE_MINUS_DST_ALPHA: return "BlendFactor::ONE_MINUS_DST_ALPHA";
-            case stormkit::gpu::BlendFactor::ONE_MINUS_DST_COLOR: return "BlendFactor::ONE_MINUS_DST_COLOR";
-            case stormkit::gpu::BlendFactor::ONE_MINUS_SRC1_ALPHA: return "BlendFactor::ONE_MINUS_SRC1_ALPHA";
-            case stormkit::gpu::BlendFactor::ONE_MINUS_SRC1_COLOR: return "BlendFactor::ONE_MINUS_SRC1_COLOR";
-            case stormkit::gpu::BlendFactor::ONE_MINUS_SRC_ALPHA: return "BlendFactor::ONE_MINUS_SRC_ALPHA";
-            case stormkit::gpu::BlendFactor::ONE_MINUS_SRC_COLOR: return "BlendFactor::ONE_MINUS_SRC_COLOR";
-            case stormkit::gpu::BlendFactor::SRC1_ALPHA: return "BlendFactor::SRC1_ALPHA";
-            case stormkit::gpu::BlendFactor::SRC1_COLOR: return "BlendFactor::SRC1_COLOR";
-            case stormkit::gpu::BlendFactor::SRC_ALPHA: return "BlendFactor::SRC_ALPHA";
-            case stormkit::gpu::BlendFactor::SRC_ALPHA_SATURATE: return "BlendFactor::SRC_ALPHA_SATURATE";
-            case stormkit::gpu::BlendFactor::SRC_COLOR: return "BlendFactor::SRC_COLOR";
-            case stormkit::gpu::BlendFactor::ZERO: return "BlendFactor::ZERO";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::BlendFactor>(stormkit::gpu::BlendFactor value) noexcept -> string {
-        switch (value) {
-            case stormkit::gpu::BlendFactor::CONSTANT_ALPHA: return "BlendFactor::CONSTANT_ALPHA";
-            case stormkit::gpu::BlendFactor::CONSTANT_COLOR: return "BlendFactor::CONSTANT_COLOR";
-            case stormkit::gpu::BlendFactor::DST_ALPHA: return "BlendFactor::DST_ALPHA";
-            case stormkit::gpu::BlendFactor::DST_COLOR: return "BlendFactor::DST_COLOR";
-            case stormkit::gpu::BlendFactor::ONE: return "BlendFactor::ONE";
-            case stormkit::gpu::BlendFactor::ONE_MINUS_CONSTANT_ALPHA: return "BlendFactor::ONE_MINUS_CONSTANT_ALPHA";
-            case stormkit::gpu::BlendFactor::ONE_MINUS_CONSTANT_COLOR: return "BlendFactor::ONE_MINUS_CONSTANT_COLOR";
-            case stormkit::gpu::BlendFactor::ONE_MINUS_DST_ALPHA: return "BlendFactor::ONE_MINUS_DST_ALPHA";
-            case stormkit::gpu::BlendFactor::ONE_MINUS_DST_COLOR: return "BlendFactor::ONE_MINUS_DST_COLOR";
-            case stormkit::gpu::BlendFactor::ONE_MINUS_SRC1_ALPHA: return "BlendFactor::ONE_MINUS_SRC1_ALPHA";
-            case stormkit::gpu::BlendFactor::ONE_MINUS_SRC1_COLOR: return "BlendFactor::ONE_MINUS_SRC1_COLOR";
-            case stormkit::gpu::BlendFactor::ONE_MINUS_SRC_ALPHA: return "BlendFactor::ONE_MINUS_SRC_ALPHA";
-            case stormkit::gpu::BlendFactor::ONE_MINUS_SRC_COLOR: return "BlendFactor::ONE_MINUS_SRC_COLOR";
-            case stormkit::gpu::BlendFactor::SRC1_ALPHA: return "BlendFactor::SRC1_ALPHA";
-            case stormkit::gpu::BlendFactor::SRC1_COLOR: return "BlendFactor::SRC1_COLOR";
-            case stormkit::gpu::BlendFactor::SRC_ALPHA: return "BlendFactor::SRC_ALPHA";
-            case stormkit::gpu::BlendFactor::SRC_ALPHA_SATURATE: return "BlendFactor::SRC_ALPHA_SATURATE";
-            case stormkit::gpu::BlendFactor::SRC_COLOR: return "BlendFactor::SRC_COLOR";
-            case stormkit::gpu::BlendFactor::ZERO: return "BlendFactor::ZERO";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::BlendOperation)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::BlendOperation>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::BlendOperation::ADD,      stormkit::gpu::BlendOperation::MAX,
-            stormkit::gpu::BlendOperation::MIN,      stormkit::gpu::BlendOperation::REVERSE_SUBTRACT,
-            stormkit::gpu::BlendOperation::SUBTRACT,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::BlendOperation>(stormkit::gpu::BlendOperation value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::BlendOperation::ADD: return "BlendOperation::ADD";
-            case stormkit::gpu::BlendOperation::MAX: return "BlendOperation::MAX";
-            case stormkit::gpu::BlendOperation::MIN: return "BlendOperation::MIN";
-            case stormkit::gpu::BlendOperation::REVERSE_SUBTRACT: return "BlendOperation::REVERSE_SUBTRACT";
-            case stormkit::gpu::BlendOperation::SUBTRACT: return "BlendOperation::SUBTRACT";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::BlendOperation>(stormkit::gpu::BlendOperation value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::BlendOperation::ADD: return "BlendOperation::ADD";
-            case stormkit::gpu::BlendOperation::MAX: return "BlendOperation::MAX";
-            case stormkit::gpu::BlendOperation::MIN: return "BlendOperation::MIN";
-            case stormkit::gpu::BlendOperation::REVERSE_SUBTRACT: return "BlendOperation::REVERSE_SUBTRACT";
-            case stormkit::gpu::BlendOperation::SUBTRACT: return "BlendOperation::SUBTRACT";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::BorderColor)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::BorderColor>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::BorderColor::FLOAT_OPAQUE_BLACK,      stormkit::gpu::BorderColor::FLOAT_OPAQUE_WHITE,
-            stormkit::gpu::BorderColor::FLOAT_TRANSPARENT_BLACK, stormkit::gpu::BorderColor::INT_OPAQUE_BLACK,
-            stormkit::gpu::BorderColor::INT_OPAQUE_WHITE,        stormkit::gpu::BorderColor::INT_TRANSPARENT_BLACK,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::BorderColor>(stormkit::gpu::BorderColor value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::BorderColor::FLOAT_OPAQUE_BLACK: return "BorderColor::FLOAT_OPAQUE_BLACK";
-            case stormkit::gpu::BorderColor::FLOAT_OPAQUE_WHITE: return "BorderColor::FLOAT_OPAQUE_WHITE";
-            case stormkit::gpu::BorderColor::FLOAT_TRANSPARENT_BLACK: return "BorderColor::FLOAT_TRANSPARENT_BLACK";
-            case stormkit::gpu::BorderColor::INT_OPAQUE_BLACK: return "BorderColor::INT_OPAQUE_BLACK";
-            case stormkit::gpu::BorderColor::INT_OPAQUE_WHITE: return "BorderColor::INT_OPAQUE_WHITE";
-            case stormkit::gpu::BorderColor::INT_TRANSPARENT_BLACK: return "BorderColor::INT_TRANSPARENT_BLACK";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::BorderColor>(stormkit::gpu::BorderColor value) noexcept -> string {
-        switch (value) {
-            case stormkit::gpu::BorderColor::FLOAT_OPAQUE_BLACK: return "BorderColor::FLOAT_OPAQUE_BLACK";
-            case stormkit::gpu::BorderColor::FLOAT_OPAQUE_WHITE: return "BorderColor::FLOAT_OPAQUE_WHITE";
-            case stormkit::gpu::BorderColor::FLOAT_TRANSPARENT_BLACK: return "BorderColor::FLOAT_TRANSPARENT_BLACK";
-            case stormkit::gpu::BorderColor::INT_OPAQUE_BLACK: return "BorderColor::INT_OPAQUE_BLACK";
-            case stormkit::gpu::BorderColor::INT_OPAQUE_WHITE: return "BorderColor::INT_OPAQUE_WHITE";
-            case stormkit::gpu::BorderColor::INT_TRANSPARENT_BLACK: return "BorderColor::INT_TRANSPARENT_BLACK";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::BufferUsageFlag)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::BufferUsageFlag>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::BufferUsageFlag::INDEX,        stormkit::gpu::BufferUsageFlag::INDIRECT,
-            stormkit::gpu::BufferUsageFlag::STORAGE,      stormkit::gpu::BufferUsageFlag::STORAGE_TEXEL,
-            stormkit::gpu::BufferUsageFlag::TRANSFER_DST, stormkit::gpu::BufferUsageFlag::TRANSFER_SRC,
-            stormkit::gpu::BufferUsageFlag::UNIFORM,      stormkit::gpu::BufferUsageFlag::UNIFORM_TEXEL,
-            stormkit::gpu::BufferUsageFlag::VERTEX,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::BufferUsageFlag>(stormkit::gpu::BufferUsageFlag value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::BufferUsageFlag::INDEX: return "BufferUsageFlag::INDEX";
-            case stormkit::gpu::BufferUsageFlag::INDIRECT: return "BufferUsageFlag::INDIRECT";
-            case stormkit::gpu::BufferUsageFlag::STORAGE: return "BufferUsageFlag::STORAGE";
-            case stormkit::gpu::BufferUsageFlag::STORAGE_TEXEL: return "BufferUsageFlag::STORAGE_TEXEL";
-            case stormkit::gpu::BufferUsageFlag::TRANSFER_DST: return "BufferUsageFlag::TRANSFER_DST";
-            case stormkit::gpu::BufferUsageFlag::TRANSFER_SRC: return "BufferUsageFlag::TRANSFER_SRC";
-            case stormkit::gpu::BufferUsageFlag::UNIFORM: return "BufferUsageFlag::UNIFORM";
-            case stormkit::gpu::BufferUsageFlag::UNIFORM_TEXEL: return "BufferUsageFlag::UNIFORM_TEXEL";
-            case stormkit::gpu::BufferUsageFlag::VERTEX: return "BufferUsageFlag::VERTEX";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::BufferUsageFlag>(stormkit::gpu::BufferUsageFlag value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::BufferUsageFlag::INDEX: return "BufferUsageFlag::INDEX";
-            case stormkit::gpu::BufferUsageFlag::INDIRECT: return "BufferUsageFlag::INDIRECT";
-            case stormkit::gpu::BufferUsageFlag::STORAGE: return "BufferUsageFlag::STORAGE";
-            case stormkit::gpu::BufferUsageFlag::STORAGE_TEXEL: return "BufferUsageFlag::STORAGE_TEXEL";
-            case stormkit::gpu::BufferUsageFlag::TRANSFER_DST: return "BufferUsageFlag::TRANSFER_DST";
-            case stormkit::gpu::BufferUsageFlag::TRANSFER_SRC: return "BufferUsageFlag::TRANSFER_SRC";
-            case stormkit::gpu::BufferUsageFlag::UNIFORM: return "BufferUsageFlag::UNIFORM";
-            case stormkit::gpu::BufferUsageFlag::UNIFORM_TEXEL: return "BufferUsageFlag::UNIFORM_TEXEL";
-            case stormkit::gpu::BufferUsageFlag::VERTEX: return "BufferUsageFlag::VERTEX";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::ColorComponentFlag)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ColorComponentFlag>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::ColorComponentFlag::A,   stormkit::gpu::ColorComponentFlag::B,
-            stormkit::gpu::ColorComponentFlag::G,   stormkit::gpu::ColorComponentFlag::NONE,
-            stormkit::gpu::ColorComponentFlag::R,   stormkit::gpu::ColorComponentFlag::RG,
-            stormkit::gpu::ColorComponentFlag::RGB, stormkit::gpu::ColorComponentFlag::RGBA,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::ColorComponentFlag>(stormkit::gpu::ColorComponentFlag value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::ColorComponentFlag::A: return "ColorComponentFlag::A";
-            case stormkit::gpu::ColorComponentFlag::B: return "ColorComponentFlag::B";
-            case stormkit::gpu::ColorComponentFlag::G: return "ColorComponentFlag::G";
-            case stormkit::gpu::ColorComponentFlag::NONE: return "ColorComponentFlag::NONE";
-            case stormkit::gpu::ColorComponentFlag::R: return "ColorComponentFlag::R";
-            case stormkit::gpu::ColorComponentFlag::RG: return "ColorComponentFlag::RG";
-            case stormkit::gpu::ColorComponentFlag::RGB: return "ColorComponentFlag::RGB";
-            case stormkit::gpu::ColorComponentFlag::RGBA: return "ColorComponentFlag::RGBA";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::ColorComponentFlag>(stormkit::gpu::ColorComponentFlag value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::ColorComponentFlag::A: return "ColorComponentFlag::A";
-            case stormkit::gpu::ColorComponentFlag::B: return "ColorComponentFlag::B";
-            case stormkit::gpu::ColorComponentFlag::G: return "ColorComponentFlag::G";
-            case stormkit::gpu::ColorComponentFlag::NONE: return "ColorComponentFlag::NONE";
-            case stormkit::gpu::ColorComponentFlag::R: return "ColorComponentFlag::R";
-            case stormkit::gpu::ColorComponentFlag::RG: return "ColorComponentFlag::RG";
-            case stormkit::gpu::ColorComponentFlag::RGB: return "ColorComponentFlag::RGB";
-            case stormkit::gpu::ColorComponentFlag::RGBA: return "ColorComponentFlag::RGBA";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::ColorSpace)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ColorSpace>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::ColorSpace::ADOBERGB_LINEAR,
-            stormkit::gpu::ColorSpace::ADOBERGB_NONLINEAR,
-            stormkit::gpu::ColorSpace::BT2020_LINEAR,
-            stormkit::gpu::ColorSpace::BT709_LINEAR,
-            stormkit::gpu::ColorSpace::BT709_NONLINEAR,
-            stormkit::gpu::ColorSpace::DCI_P3_NONLINEAR,
-            stormkit::gpu::ColorSpace::DISPLAY_NATIVE_AMD,
-            stormkit::gpu::ColorSpace::DISPLAY_P3_LINEAR,
-            stormkit::gpu::ColorSpace::DISPLAY_P3_NONLINEAR,
-            stormkit::gpu::ColorSpace::DOLBYVISION,
-            stormkit::gpu::ColorSpace::EXTENDED_SRGB_LINEAR,
-            stormkit::gpu::ColorSpace::EXTENDED_SRGB_NONLINEAR,
-            stormkit::gpu::ColorSpace::HDR10_HLG,
-            stormkit::gpu::ColorSpace::HDR10_ST2084,
-            stormkit::gpu::ColorSpace::PASS_THROUGH,
-            stormkit::gpu::ColorSpace::SRGB_NONLINEAR,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::ColorSpace>(stormkit::gpu::ColorSpace value) noexcept -> string_view {
-        switch (value) {
-            case stormkit::gpu::ColorSpace::ADOBERGB_LINEAR: return "ColorSpace::ADOBERGB_LINEAR";
-            case stormkit::gpu::ColorSpace::ADOBERGB_NONLINEAR: return "ColorSpace::ADOBERGB_NONLINEAR";
-            case stormkit::gpu::ColorSpace::BT2020_LINEAR: return "ColorSpace::BT2020_LINEAR";
-            case stormkit::gpu::ColorSpace::BT709_LINEAR: return "ColorSpace::BT709_LINEAR";
-            case stormkit::gpu::ColorSpace::BT709_NONLINEAR: return "ColorSpace::BT709_NONLINEAR";
-            case stormkit::gpu::ColorSpace::DCI_P3_NONLINEAR: return "ColorSpace::DCI_P3_NONLINEAR";
-            case stormkit::gpu::ColorSpace::DISPLAY_NATIVE_AMD: return "ColorSpace::DISPLAY_NATIVE_AMD";
-            case stormkit::gpu::ColorSpace::DISPLAY_P3_LINEAR: return "ColorSpace::DISPLAY_P3_LINEAR";
-            case stormkit::gpu::ColorSpace::DISPLAY_P3_NONLINEAR: return "ColorSpace::DISPLAY_P3_NONLINEAR";
-            case stormkit::gpu::ColorSpace::DOLBYVISION: return "ColorSpace::DOLBYVISION";
-            case stormkit::gpu::ColorSpace::EXTENDED_SRGB_LINEAR: return "ColorSpace::EXTENDED_SRGB_LINEAR";
-            case stormkit::gpu::ColorSpace::EXTENDED_SRGB_NONLINEAR: return "ColorSpace::EXTENDED_SRGB_NONLINEAR";
-            case stormkit::gpu::ColorSpace::HDR10_HLG: return "ColorSpace::HDR10_HLG";
-            case stormkit::gpu::ColorSpace::HDR10_ST2084: return "ColorSpace::HDR10_ST2084";
-            case stormkit::gpu::ColorSpace::PASS_THROUGH: return "ColorSpace::PASS_THROUGH";
-            case stormkit::gpu::ColorSpace::SRGB_NONLINEAR: return "ColorSpace::SRGB_NONLINEAR";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::ColorSpace>(stormkit::gpu::ColorSpace value) noexcept -> string {
-        switch (value) {
-            case stormkit::gpu::ColorSpace::ADOBERGB_LINEAR: return "ColorSpace::ADOBERGB_LINEAR";
-            case stormkit::gpu::ColorSpace::ADOBERGB_NONLINEAR: return "ColorSpace::ADOBERGB_NONLINEAR";
-            case stormkit::gpu::ColorSpace::BT2020_LINEAR: return "ColorSpace::BT2020_LINEAR";
-            case stormkit::gpu::ColorSpace::BT709_LINEAR: return "ColorSpace::BT709_LINEAR";
-            case stormkit::gpu::ColorSpace::BT709_NONLINEAR: return "ColorSpace::BT709_NONLINEAR";
-            case stormkit::gpu::ColorSpace::DCI_P3_NONLINEAR: return "ColorSpace::DCI_P3_NONLINEAR";
-            case stormkit::gpu::ColorSpace::DISPLAY_NATIVE_AMD: return "ColorSpace::DISPLAY_NATIVE_AMD";
-            case stormkit::gpu::ColorSpace::DISPLAY_P3_LINEAR: return "ColorSpace::DISPLAY_P3_LINEAR";
-            case stormkit::gpu::ColorSpace::DISPLAY_P3_NONLINEAR: return "ColorSpace::DISPLAY_P3_NONLINEAR";
-            case stormkit::gpu::ColorSpace::DOLBYVISION: return "ColorSpace::DOLBYVISION";
-            case stormkit::gpu::ColorSpace::EXTENDED_SRGB_LINEAR: return "ColorSpace::EXTENDED_SRGB_LINEAR";
-            case stormkit::gpu::ColorSpace::EXTENDED_SRGB_NONLINEAR: return "ColorSpace::EXTENDED_SRGB_NONLINEAR";
-            case stormkit::gpu::ColorSpace::HDR10_HLG: return "ColorSpace::HDR10_HLG";
-            case stormkit::gpu::ColorSpace::HDR10_ST2084: return "ColorSpace::HDR10_ST2084";
-            case stormkit::gpu::ColorSpace::PASS_THROUGH: return "ColorSpace::PASS_THROUGH";
-            case stormkit::gpu::ColorSpace::SRGB_NONLINEAR: return "ColorSpace::SRGB_NONLINEAR";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::CommandBufferLevel)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::CommandBufferLevel>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::CommandBufferLevel::PRIMARY,
-            stormkit::gpu::CommandBufferLevel::SECONDARY,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::CommandBufferLevel>(stormkit::gpu::CommandBufferLevel value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::CommandBufferLevel::PRIMARY: return "CommandBufferLevel::PRIMARY";
-            case stormkit::gpu::CommandBufferLevel::SECONDARY: return "CommandBufferLevel::SECONDARY";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::CommandBufferLevel>(stormkit::gpu::CommandBufferLevel value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::CommandBufferLevel::PRIMARY: return "CommandBufferLevel::PRIMARY";
-            case stormkit::gpu::CommandBufferLevel::SECONDARY: return "CommandBufferLevel::SECONDARY";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::CompareOperation)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::CompareOperation>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::CompareOperation::ALWAYS,  stormkit::gpu::CompareOperation::EQUAL,
-            stormkit::gpu::CompareOperation::GREATER, stormkit::gpu::CompareOperation::GREATER_OR_EQUAL,
-            stormkit::gpu::CompareOperation::LESS,    stormkit::gpu::CompareOperation::LESS_OR_EQUAL,
-            stormkit::gpu::CompareOperation::NEVER,   stormkit::gpu::CompareOperation::NOT_EQUAL,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::CompareOperation>(stormkit::gpu::CompareOperation value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::CompareOperation::ALWAYS: return "CompareOperation::ALWAYS";
-            case stormkit::gpu::CompareOperation::EQUAL: return "CompareOperation::EQUAL";
-            case stormkit::gpu::CompareOperation::GREATER: return "CompareOperation::GREATER";
-            case stormkit::gpu::CompareOperation::GREATER_OR_EQUAL: return "CompareOperation::GREATER_OR_EQUAL";
-            case stormkit::gpu::CompareOperation::LESS: return "CompareOperation::LESS";
-            case stormkit::gpu::CompareOperation::LESS_OR_EQUAL: return "CompareOperation::LESS_OR_EQUAL";
-            case stormkit::gpu::CompareOperation::NEVER: return "CompareOperation::NEVER";
-            case stormkit::gpu::CompareOperation::NOT_EQUAL: return "CompareOperation::NOT_EQUAL";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::CompareOperation>(stormkit::gpu::CompareOperation value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::CompareOperation::ALWAYS: return "CompareOperation::ALWAYS";
-            case stormkit::gpu::CompareOperation::EQUAL: return "CompareOperation::EQUAL";
-            case stormkit::gpu::CompareOperation::GREATER: return "CompareOperation::GREATER";
-            case stormkit::gpu::CompareOperation::GREATER_OR_EQUAL: return "CompareOperation::GREATER_OR_EQUAL";
-            case stormkit::gpu::CompareOperation::LESS: return "CompareOperation::LESS";
-            case stormkit::gpu::CompareOperation::LESS_OR_EQUAL: return "CompareOperation::LESS_OR_EQUAL";
-            case stormkit::gpu::CompareOperation::NEVER: return "CompareOperation::NEVER";
-            case stormkit::gpu::CompareOperation::NOT_EQUAL: return "CompareOperation::NOT_EQUAL";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::CullModeFlag)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::CullModeFlag>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::CullModeFlag::BACK,
-            stormkit::gpu::CullModeFlag::FRONT,
-            stormkit::gpu::CullModeFlag::FRONT_BACK,
-            stormkit::gpu::CullModeFlag::NONE,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::CullModeFlag>(stormkit::gpu::CullModeFlag value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::CullModeFlag::BACK: return "CullModeFlag::BACK";
-            case stormkit::gpu::CullModeFlag::FRONT: return "CullModeFlag::FRONT";
-            case stormkit::gpu::CullModeFlag::FRONT_BACK: return "CullModeFlag::FRONT_BACK";
-            case stormkit::gpu::CullModeFlag::NONE: return "CullModeFlag::NONE";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::CullModeFlag>(stormkit::gpu::CullModeFlag value) noexcept -> string {
-        switch (value) {
-            case stormkit::gpu::CullModeFlag::BACK: return "CullModeFlag::BACK";
-            case stormkit::gpu::CullModeFlag::FRONT: return "CullModeFlag::FRONT";
-            case stormkit::gpu::CullModeFlag::FRONT_BACK: return "CullModeFlag::FRONT_BACK";
-            case stormkit::gpu::CullModeFlag::NONE: return "CullModeFlag::NONE";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::DebugObjectType)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::DebugObjectType>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::DebugObjectType::BUFFER,
-            stormkit::gpu::DebugObjectType::BUFFER_VIEW,
-            stormkit::gpu::DebugObjectType::COMMAND_BUFFER,
-            stormkit::gpu::DebugObjectType::COMMAND_POOL,
-            stormkit::gpu::DebugObjectType::DEBUG_REPORT_CALLBACK,
-            stormkit::gpu::DebugObjectType::DEBUG_UTILS_MESSENGER,
-            stormkit::gpu::DebugObjectType::DESCRIPTOR_POOL,
-            stormkit::gpu::DebugObjectType::DESCRIPTOR_SET,
-            stormkit::gpu::DebugObjectType::DESCRIPTOR_SET_LAYOUT,
-            stormkit::gpu::DebugObjectType::DEVICE,
-            stormkit::gpu::DebugObjectType::DEVICE_MEMORY,
-            stormkit::gpu::DebugObjectType::DISPLAY,
-            stormkit::gpu::DebugObjectType::EVENT,
-            stormkit::gpu::DebugObjectType::FENCE,
-            stormkit::gpu::DebugObjectType::FRAMEBUFFER,
-            stormkit::gpu::DebugObjectType::IMAGE,
-            stormkit::gpu::DebugObjectType::IMAGE_VIEW,
-            stormkit::gpu::DebugObjectType::INSTANCE,
-            stormkit::gpu::DebugObjectType::PHYSICAL_DEVICE,
-            stormkit::gpu::DebugObjectType::PIPELINE,
-            stormkit::gpu::DebugObjectType::PIPELINE_CACHE,
-            stormkit::gpu::DebugObjectType::PIPELINE_LAYOUT,
-            stormkit::gpu::DebugObjectType::QUERY_POOL,
-            stormkit::gpu::DebugObjectType::QUEUE,
-            stormkit::gpu::DebugObjectType::RENDER_PASS,
-            stormkit::gpu::DebugObjectType::SAMPLER,
-            stormkit::gpu::DebugObjectType::SEMAPHORE,
-            stormkit::gpu::DebugObjectType::SHADER_MODULE,
-            stormkit::gpu::DebugObjectType::SURFACE,
-            stormkit::gpu::DebugObjectType::SWAPCHAIN,
-            stormkit::gpu::DebugObjectType::UNKNOWN,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::DebugObjectType>(stormkit::gpu::DebugObjectType value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::DebugObjectType::BUFFER: return "DebugObjectType::BUFFER";
-            case stormkit::gpu::DebugObjectType::BUFFER_VIEW: return "DebugObjectType::BUFFER_VIEW";
-            case stormkit::gpu::DebugObjectType::COMMAND_BUFFER: return "DebugObjectType::COMMAND_BUFFER";
-            case stormkit::gpu::DebugObjectType::COMMAND_POOL: return "DebugObjectType::COMMAND_POOL";
-            case stormkit::gpu::DebugObjectType::DEBUG_REPORT_CALLBACK: return "DebugObjectType::DEBUG_REPORT_CALLBACK";
-            case stormkit::gpu::DebugObjectType::DEBUG_UTILS_MESSENGER: return "DebugObjectType::DEBUG_UTILS_MESSENGER";
-            case stormkit::gpu::DebugObjectType::DESCRIPTOR_POOL: return "DebugObjectType::DESCRIPTOR_POOL";
-            case stormkit::gpu::DebugObjectType::DESCRIPTOR_SET: return "DebugObjectType::DESCRIPTOR_SET";
-            case stormkit::gpu::DebugObjectType::DESCRIPTOR_SET_LAYOUT: return "DebugObjectType::DESCRIPTOR_SET_LAYOUT";
-            case stormkit::gpu::DebugObjectType::DEVICE: return "DebugObjectType::DEVICE";
-            case stormkit::gpu::DebugObjectType::DEVICE_MEMORY: return "DebugObjectType::DEVICE_MEMORY";
-            case stormkit::gpu::DebugObjectType::DISPLAY: return "DebugObjectType::DISPLAY";
-            case stormkit::gpu::DebugObjectType::EVENT: return "DebugObjectType::EVENT";
-            case stormkit::gpu::DebugObjectType::FENCE: return "DebugObjectType::FENCE";
-            case stormkit::gpu::DebugObjectType::FRAMEBUFFER: return "DebugObjectType::FRAMEBUFFER";
-            case stormkit::gpu::DebugObjectType::IMAGE: return "DebugObjectType::IMAGE";
-            case stormkit::gpu::DebugObjectType::IMAGE_VIEW: return "DebugObjectType::IMAGE_VIEW";
-            case stormkit::gpu::DebugObjectType::INSTANCE: return "DebugObjectType::INSTANCE";
-            case stormkit::gpu::DebugObjectType::PHYSICAL_DEVICE: return "DebugObjectType::PHYSICAL_DEVICE";
-            case stormkit::gpu::DebugObjectType::PIPELINE: return "DebugObjectType::PIPELINE";
-            case stormkit::gpu::DebugObjectType::PIPELINE_CACHE: return "DebugObjectType::PIPELINE_CACHE";
-            case stormkit::gpu::DebugObjectType::PIPELINE_LAYOUT: return "DebugObjectType::PIPELINE_LAYOUT";
-            case stormkit::gpu::DebugObjectType::QUERY_POOL: return "DebugObjectType::QUERY_POOL";
-            case stormkit::gpu::DebugObjectType::QUEUE: return "DebugObjectType::QUEUE";
-            case stormkit::gpu::DebugObjectType::RENDER_PASS: return "DebugObjectType::RENDER_PASS";
-            case stormkit::gpu::DebugObjectType::SAMPLER: return "DebugObjectType::SAMPLER";
-            case stormkit::gpu::DebugObjectType::SEMAPHORE: return "DebugObjectType::SEMAPHORE";
-            case stormkit::gpu::DebugObjectType::SHADER_MODULE: return "DebugObjectType::SHADER_MODULE";
-            case stormkit::gpu::DebugObjectType::SURFACE: return "DebugObjectType::SURFACE";
-            case stormkit::gpu::DebugObjectType::SWAPCHAIN: return "DebugObjectType::SWAPCHAIN";
-            case stormkit::gpu::DebugObjectType::UNKNOWN: return "DebugObjectType::UNKNOWN";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::DebugObjectType>(stormkit::gpu::DebugObjectType value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::DebugObjectType::BUFFER: return "DebugObjectType::BUFFER";
-            case stormkit::gpu::DebugObjectType::BUFFER_VIEW: return "DebugObjectType::BUFFER_VIEW";
-            case stormkit::gpu::DebugObjectType::COMMAND_BUFFER: return "DebugObjectType::COMMAND_BUFFER";
-            case stormkit::gpu::DebugObjectType::COMMAND_POOL: return "DebugObjectType::COMMAND_POOL";
-            case stormkit::gpu::DebugObjectType::DEBUG_REPORT_CALLBACK: return "DebugObjectType::DEBUG_REPORT_CALLBACK";
-            case stormkit::gpu::DebugObjectType::DEBUG_UTILS_MESSENGER: return "DebugObjectType::DEBUG_UTILS_MESSENGER";
-            case stormkit::gpu::DebugObjectType::DESCRIPTOR_POOL: return "DebugObjectType::DESCRIPTOR_POOL";
-            case stormkit::gpu::DebugObjectType::DESCRIPTOR_SET: return "DebugObjectType::DESCRIPTOR_SET";
-            case stormkit::gpu::DebugObjectType::DESCRIPTOR_SET_LAYOUT: return "DebugObjectType::DESCRIPTOR_SET_LAYOUT";
-            case stormkit::gpu::DebugObjectType::DEVICE: return "DebugObjectType::DEVICE";
-            case stormkit::gpu::DebugObjectType::DEVICE_MEMORY: return "DebugObjectType::DEVICE_MEMORY";
-            case stormkit::gpu::DebugObjectType::DISPLAY: return "DebugObjectType::DISPLAY";
-            case stormkit::gpu::DebugObjectType::EVENT: return "DebugObjectType::EVENT";
-            case stormkit::gpu::DebugObjectType::FENCE: return "DebugObjectType::FENCE";
-            case stormkit::gpu::DebugObjectType::FRAMEBUFFER: return "DebugObjectType::FRAMEBUFFER";
-            case stormkit::gpu::DebugObjectType::IMAGE: return "DebugObjectType::IMAGE";
-            case stormkit::gpu::DebugObjectType::IMAGE_VIEW: return "DebugObjectType::IMAGE_VIEW";
-            case stormkit::gpu::DebugObjectType::INSTANCE: return "DebugObjectType::INSTANCE";
-            case stormkit::gpu::DebugObjectType::PHYSICAL_DEVICE: return "DebugObjectType::PHYSICAL_DEVICE";
-            case stormkit::gpu::DebugObjectType::PIPELINE: return "DebugObjectType::PIPELINE";
-            case stormkit::gpu::DebugObjectType::PIPELINE_CACHE: return "DebugObjectType::PIPELINE_CACHE";
-            case stormkit::gpu::DebugObjectType::PIPELINE_LAYOUT: return "DebugObjectType::PIPELINE_LAYOUT";
-            case stormkit::gpu::DebugObjectType::QUERY_POOL: return "DebugObjectType::QUERY_POOL";
-            case stormkit::gpu::DebugObjectType::QUEUE: return "DebugObjectType::QUEUE";
-            case stormkit::gpu::DebugObjectType::RENDER_PASS: return "DebugObjectType::RENDER_PASS";
-            case stormkit::gpu::DebugObjectType::SAMPLER: return "DebugObjectType::SAMPLER";
-            case stormkit::gpu::DebugObjectType::SEMAPHORE: return "DebugObjectType::SEMAPHORE";
-            case stormkit::gpu::DebugObjectType::SHADER_MODULE: return "DebugObjectType::SHADER_MODULE";
-            case stormkit::gpu::DebugObjectType::SURFACE: return "DebugObjectType::SURFACE";
-            case stormkit::gpu::DebugObjectType::SWAPCHAIN: return "DebugObjectType::SWAPCHAIN";
-            case stormkit::gpu::DebugObjectType::UNKNOWN: return "DebugObjectType::UNKNOWN";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::DependencyFlag)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::DependencyFlag>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::DependencyFlag::BY_REGION,
-            stormkit::gpu::DependencyFlag::DEVICE_GROUP,
-            stormkit::gpu::DependencyFlag::NONE,
-            stormkit::gpu::DependencyFlag::VIEW_LOCAL,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::DependencyFlag>(stormkit::gpu::DependencyFlag value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::DependencyFlag::BY_REGION: return "DependencyFlag::BY_REGION";
-            case stormkit::gpu::DependencyFlag::DEVICE_GROUP: return "DependencyFlag::DEVICE_GROUP";
-            case stormkit::gpu::DependencyFlag::NONE: return "DependencyFlag::NONE";
-            case stormkit::gpu::DependencyFlag::VIEW_LOCAL: return "DependencyFlag::VIEW_LOCAL";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::DependencyFlag>(stormkit::gpu::DependencyFlag value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::DependencyFlag::BY_REGION: return "DependencyFlag::BY_REGION";
-            case stormkit::gpu::DependencyFlag::DEVICE_GROUP: return "DependencyFlag::DEVICE_GROUP";
-            case stormkit::gpu::DependencyFlag::NONE: return "DependencyFlag::NONE";
-            case stormkit::gpu::DependencyFlag::VIEW_LOCAL: return "DependencyFlag::VIEW_LOCAL";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::DescriptorType)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::DescriptorType>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::DescriptorType::COMBINED_IMAGE_SAMPLER, stormkit::gpu::DescriptorType::INPUT_ATTACHMENT,
-            stormkit::gpu::DescriptorType::SAMPLED_IMAGE,          stormkit::gpu::DescriptorType::SAMPLER,
-            stormkit::gpu::DescriptorType::STORAGE_BUFFER,         stormkit::gpu::DescriptorType::STORAGE_BUFFER_DYNAMIC,
-            stormkit::gpu::DescriptorType::STORAGE_IMAGE,          stormkit::gpu::DescriptorType::STORAGE_TEXEL_BUFFER,
-            stormkit::gpu::DescriptorType::UNIFORM_BUFFER,         stormkit::gpu::DescriptorType::UNIFORM_BUFFER_DYNAMIC,
-            stormkit::gpu::DescriptorType::UNIFORM_TEXEL_BUFFER,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::DescriptorType>(stormkit::gpu::DescriptorType value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::DescriptorType::COMBINED_IMAGE_SAMPLER: return "DescriptorType::COMBINED_IMAGE_SAMPLER";
-            case stormkit::gpu::DescriptorType::INPUT_ATTACHMENT: return "DescriptorType::INPUT_ATTACHMENT";
-            case stormkit::gpu::DescriptorType::SAMPLED_IMAGE: return "DescriptorType::SAMPLED_IMAGE";
-            case stormkit::gpu::DescriptorType::SAMPLER: return "DescriptorType::SAMPLER";
-            case stormkit::gpu::DescriptorType::STORAGE_BUFFER: return "DescriptorType::STORAGE_BUFFER";
-            case stormkit::gpu::DescriptorType::STORAGE_BUFFER_DYNAMIC: return "DescriptorType::STORAGE_BUFFER_DYNAMIC";
-            case stormkit::gpu::DescriptorType::STORAGE_IMAGE: return "DescriptorType::STORAGE_IMAGE";
-            case stormkit::gpu::DescriptorType::STORAGE_TEXEL_BUFFER: return "DescriptorType::STORAGE_TEXEL_BUFFER";
-            case stormkit::gpu::DescriptorType::UNIFORM_BUFFER: return "DescriptorType::UNIFORM_BUFFER";
-            case stormkit::gpu::DescriptorType::UNIFORM_BUFFER_DYNAMIC: return "DescriptorType::UNIFORM_BUFFER_DYNAMIC";
-            case stormkit::gpu::DescriptorType::UNIFORM_TEXEL_BUFFER: return "DescriptorType::UNIFORM_TEXEL_BUFFER";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::DescriptorType>(stormkit::gpu::DescriptorType value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::DescriptorType::COMBINED_IMAGE_SAMPLER: return "DescriptorType::COMBINED_IMAGE_SAMPLER";
-            case stormkit::gpu::DescriptorType::INPUT_ATTACHMENT: return "DescriptorType::INPUT_ATTACHMENT";
-            case stormkit::gpu::DescriptorType::SAMPLED_IMAGE: return "DescriptorType::SAMPLED_IMAGE";
-            case stormkit::gpu::DescriptorType::SAMPLER: return "DescriptorType::SAMPLER";
-            case stormkit::gpu::DescriptorType::STORAGE_BUFFER: return "DescriptorType::STORAGE_BUFFER";
-            case stormkit::gpu::DescriptorType::STORAGE_BUFFER_DYNAMIC: return "DescriptorType::STORAGE_BUFFER_DYNAMIC";
-            case stormkit::gpu::DescriptorType::STORAGE_IMAGE: return "DescriptorType::STORAGE_IMAGE";
-            case stormkit::gpu::DescriptorType::STORAGE_TEXEL_BUFFER: return "DescriptorType::STORAGE_TEXEL_BUFFER";
-            case stormkit::gpu::DescriptorType::UNIFORM_BUFFER: return "DescriptorType::UNIFORM_BUFFER";
-            case stormkit::gpu::DescriptorType::UNIFORM_BUFFER_DYNAMIC: return "DescriptorType::UNIFORM_BUFFER_DYNAMIC";
-            case stormkit::gpu::DescriptorType::UNIFORM_TEXEL_BUFFER: return "DescriptorType::UNIFORM_TEXEL_BUFFER";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::DynamicState)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::DynamicState>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::DynamicState::BLEND_CONSTANTS,   stormkit::gpu::DynamicState::DEPTH_BIAS,
-            stormkit::gpu::DynamicState::DEPTH_BOUNDS,      stormkit::gpu::DynamicState::LINE_WIDTH,
-            stormkit::gpu::DynamicState::SCISSOR,           stormkit::gpu::DynamicState::STENCIL_COMPARE_MASK,
-            stormkit::gpu::DynamicState::STENCIL_REFERENCE, stormkit::gpu::DynamicState::STENCIL_WRITE_MASK,
-            stormkit::gpu::DynamicState::VIEWPORT,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::DynamicState>(stormkit::gpu::DynamicState value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::DynamicState::BLEND_CONSTANTS: return "DynamicState::BLEND_CONSTANTS";
-            case stormkit::gpu::DynamicState::DEPTH_BIAS: return "DynamicState::DEPTH_BIAS";
-            case stormkit::gpu::DynamicState::DEPTH_BOUNDS: return "DynamicState::DEPTH_BOUNDS";
-            case stormkit::gpu::DynamicState::LINE_WIDTH: return "DynamicState::LINE_WIDTH";
-            case stormkit::gpu::DynamicState::SCISSOR: return "DynamicState::SCISSOR";
-            case stormkit::gpu::DynamicState::STENCIL_COMPARE_MASK: return "DynamicState::STENCIL_COMPARE_MASK";
-            case stormkit::gpu::DynamicState::STENCIL_REFERENCE: return "DynamicState::STENCIL_REFERENCE";
-            case stormkit::gpu::DynamicState::STENCIL_WRITE_MASK: return "DynamicState::STENCIL_WRITE_MASK";
-            case stormkit::gpu::DynamicState::VIEWPORT: return "DynamicState::VIEWPORT";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::DynamicState>(stormkit::gpu::DynamicState value) noexcept -> string {
-        switch (value) {
-            case stormkit::gpu::DynamicState::BLEND_CONSTANTS: return "DynamicState::BLEND_CONSTANTS";
-            case stormkit::gpu::DynamicState::DEPTH_BIAS: return "DynamicState::DEPTH_BIAS";
-            case stormkit::gpu::DynamicState::DEPTH_BOUNDS: return "DynamicState::DEPTH_BOUNDS";
-            case stormkit::gpu::DynamicState::LINE_WIDTH: return "DynamicState::LINE_WIDTH";
-            case stormkit::gpu::DynamicState::SCISSOR: return "DynamicState::SCISSOR";
-            case stormkit::gpu::DynamicState::STENCIL_COMPARE_MASK: return "DynamicState::STENCIL_COMPARE_MASK";
-            case stormkit::gpu::DynamicState::STENCIL_REFERENCE: return "DynamicState::STENCIL_REFERENCE";
-            case stormkit::gpu::DynamicState::STENCIL_WRITE_MASK: return "DynamicState::STENCIL_WRITE_MASK";
-            case stormkit::gpu::DynamicState::VIEWPORT: return "DynamicState::VIEWPORT";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::Filter)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::Filter>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::Filter::CUBIC_IMG,
-            stormkit::gpu::Filter::LINEAR,
-            stormkit::gpu::Filter::NEAREST,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::Filter>(stormkit::gpu::Filter value) noexcept -> string_view {
-        switch (value) {
-            case stormkit::gpu::Filter::CUBIC_IMG: return "Filter::CUBIC_IMG";
-            case stormkit::gpu::Filter::LINEAR: return "Filter::LINEAR";
-            case stormkit::gpu::Filter::NEAREST: return "Filter::NEAREST";
-        }
-        std::unreachable();
-    }
-
     template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::Filter>(stormkit::gpu::Filter value) noexcept -> string {
-        switch (value) {
-            case stormkit::gpu::Filter::CUBIC_IMG: return "Filter::CUBIC_IMG";
-            case stormkit::gpu::Filter::LINEAR: return "Filter::LINEAR";
-            case stormkit::gpu::Filter::NEAREST: return "Filter::NEAREST";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::FormatFeatureFlag)
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::attachment_load_operation> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::FormatFeatureFlag>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::FormatFeatureFlag::BLIT_DST,
-            stormkit::gpu::FormatFeatureFlag::BLIT_SRC,
-            stormkit::gpu::FormatFeatureFlag::COLOR_ATTACHMENT,
-            stormkit::gpu::FormatFeatureFlag::COLOR_ATTACHMENT_BLEND,
-            stormkit::gpu::FormatFeatureFlag::COSITED_CHROMA_SAMPLES,
-            stormkit::gpu::FormatFeatureFlag::DEPTH_STENCIL_ATTACHMENT,
-            stormkit::gpu::FormatFeatureFlag::DISJOINT,
-            stormkit::gpu::FormatFeatureFlag::MIDPOINT_CHROMA_SAMPLES,
-            stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE,
-            stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE_FILTER_LINEAR,
-            stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE_FILTER_MINMAX,
-            stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT,
-            stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE,
-            stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER,
-            stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER,
-            stormkit::gpu::FormatFeatureFlag::STORAGE_IMAGE,
-            stormkit::gpu::FormatFeatureFlag::STORAGE_IMAGE_ATOMIC,
-            stormkit::gpu::FormatFeatureFlag::STORAGE_TEXEL_BUFFER,
-            stormkit::gpu::FormatFeatureFlag::STORAGE_TEXEL_BUFFER_ATOMIC,
-            stormkit::gpu::FormatFeatureFlag::TRANSFER_DST,
-            stormkit::gpu::FormatFeatureFlag::TRANSFER_SRC,
-            stormkit::gpu::FormatFeatureFlag::UNIFORM_TEXEL_BUFFER,
-            stormkit::gpu::FormatFeatureFlag::VERTEX_BUFFER,
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::attachment_store_operation> = true;
 
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::FormatFeatureFlag>(stormkit::gpu::FormatFeatureFlag value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::FormatFeatureFlag::BLIT_DST: return "FormatFeatureFlag::BLIT_DST";
-            case stormkit::gpu::FormatFeatureFlag::BLIT_SRC: return "FormatFeatureFlag::BLIT_SRC";
-            case stormkit::gpu::FormatFeatureFlag::COLOR_ATTACHMENT: return "FormatFeatureFlag::COLOR_ATTACHMENT";
-            case stormkit::gpu::FormatFeatureFlag::COLOR_ATTACHMENT_BLEND: return "FormatFeatureFlag::COLOR_ATTACHMENT_BLEND";
-            case stormkit::gpu::FormatFeatureFlag::COSITED_CHROMA_SAMPLES: return "FormatFeatureFlag::COSITED_CHROMA_SAMPLES";
-            case stormkit::gpu::FormatFeatureFlag::DEPTH_STENCIL_ATTACHMENT: return "FormatFeatureFlag::DEPTH_STENCIL_ATTACHMENT";
-            case stormkit::gpu::FormatFeatureFlag::DISJOINT: return "FormatFeatureFlag::DISJOINT";
-            case stormkit::gpu::FormatFeatureFlag::MIDPOINT_CHROMA_SAMPLES: return "FormatFeatureFlag::MIDPOINT_CHROMA_SAMPLES";
-            case stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE: return "FormatFeatureFlag::SAMPLED_IMAGE";
-            case stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE_FILTER_LINEAR:
-                return "FormatFeatureFlag::SAMPLED_IMAGE_FILTER_LINEAR";
-            case stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE_FILTER_MINMAX:
-                return "FormatFeatureFlag::SAMPLED_IMAGE_FILTER_MINMAX";
-            case stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT:
-                return "FormatFeatureFlag::SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT";
-            case stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE:
-                return "FormatFeatureFlag::SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE";
-            case stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER:
-                return "FormatFeatureFlag::SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER";
-            case stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER:
-                return "FormatFeatureFlag::SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER";
-            case stormkit::gpu::FormatFeatureFlag::STORAGE_IMAGE: return "FormatFeatureFlag::STORAGE_IMAGE";
-            case stormkit::gpu::FormatFeatureFlag::STORAGE_IMAGE_ATOMIC: return "FormatFeatureFlag::STORAGE_IMAGE_ATOMIC";
-            case stormkit::gpu::FormatFeatureFlag::STORAGE_TEXEL_BUFFER: return "FormatFeatureFlag::STORAGE_TEXEL_BUFFER";
-            case stormkit::gpu::FormatFeatureFlag::STORAGE_TEXEL_BUFFER_ATOMIC:
-                return "FormatFeatureFlag::STORAGE_TEXEL_BUFFER_ATOMIC";
-            case stormkit::gpu::FormatFeatureFlag::TRANSFER_DST: return "FormatFeatureFlag::TRANSFER_DST";
-            case stormkit::gpu::FormatFeatureFlag::TRANSFER_SRC: return "FormatFeatureFlag::TRANSFER_SRC";
-            case stormkit::gpu::FormatFeatureFlag::UNIFORM_TEXEL_BUFFER: return "FormatFeatureFlag::UNIFORM_TEXEL_BUFFER";
-            case stormkit::gpu::FormatFeatureFlag::VERTEX_BUFFER: return "FormatFeatureFlag::VERTEX_BUFFER";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::FormatFeatureFlag>(stormkit::gpu::FormatFeatureFlag value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::FormatFeatureFlag::BLIT_DST: return "FormatFeatureFlag::BLIT_DST";
-            case stormkit::gpu::FormatFeatureFlag::BLIT_SRC: return "FormatFeatureFlag::BLIT_SRC";
-            case stormkit::gpu::FormatFeatureFlag::COLOR_ATTACHMENT: return "FormatFeatureFlag::COLOR_ATTACHMENT";
-            case stormkit::gpu::FormatFeatureFlag::COLOR_ATTACHMENT_BLEND: return "FormatFeatureFlag::COLOR_ATTACHMENT_BLEND";
-            case stormkit::gpu::FormatFeatureFlag::COSITED_CHROMA_SAMPLES: return "FormatFeatureFlag::COSITED_CHROMA_SAMPLES";
-            case stormkit::gpu::FormatFeatureFlag::DEPTH_STENCIL_ATTACHMENT: return "FormatFeatureFlag::DEPTH_STENCIL_ATTACHMENT";
-            case stormkit::gpu::FormatFeatureFlag::DISJOINT: return "FormatFeatureFlag::DISJOINT";
-            case stormkit::gpu::FormatFeatureFlag::MIDPOINT_CHROMA_SAMPLES: return "FormatFeatureFlag::MIDPOINT_CHROMA_SAMPLES";
-            case stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE: return "FormatFeatureFlag::SAMPLED_IMAGE";
-            case stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE_FILTER_LINEAR:
-                return "FormatFeatureFlag::SAMPLED_IMAGE_FILTER_LINEAR";
-            case stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE_FILTER_MINMAX:
-                return "FormatFeatureFlag::SAMPLED_IMAGE_FILTER_MINMAX";
-            case stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT:
-                return "FormatFeatureFlag::SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT";
-            case stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE:
-                return "FormatFeatureFlag::SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_FORCEABLE";
-            case stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER:
-                return "FormatFeatureFlag::SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER";
-            case stormkit::gpu::FormatFeatureFlag::SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER:
-                return "FormatFeatureFlag::SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER";
-            case stormkit::gpu::FormatFeatureFlag::STORAGE_IMAGE: return "FormatFeatureFlag::STORAGE_IMAGE";
-            case stormkit::gpu::FormatFeatureFlag::STORAGE_IMAGE_ATOMIC: return "FormatFeatureFlag::STORAGE_IMAGE_ATOMIC";
-            case stormkit::gpu::FormatFeatureFlag::STORAGE_TEXEL_BUFFER: return "FormatFeatureFlag::STORAGE_TEXEL_BUFFER";
-            case stormkit::gpu::FormatFeatureFlag::STORAGE_TEXEL_BUFFER_ATOMIC:
-                return "FormatFeatureFlag::STORAGE_TEXEL_BUFFER_ATOMIC";
-            case stormkit::gpu::FormatFeatureFlag::TRANSFER_DST: return "FormatFeatureFlag::TRANSFER_DST";
-            case stormkit::gpu::FormatFeatureFlag::TRANSFER_SRC: return "FormatFeatureFlag::TRANSFER_SRC";
-            case stormkit::gpu::FormatFeatureFlag::UNIFORM_TEXEL_BUFFER: return "FormatFeatureFlag::UNIFORM_TEXEL_BUFFER";
-            case stormkit::gpu::FormatFeatureFlag::VERTEX_BUFFER: return "FormatFeatureFlag::VERTEX_BUFFER";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::FrontFace)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::FrontFace>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::FrontFace::CLOCKWISE,
-            stormkit::gpu::FrontFace::COUNTER_CLOCKWISE,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::FrontFace>(stormkit::gpu::FrontFace value) noexcept -> string_view {
-        switch (value) {
-            case stormkit::gpu::FrontFace::CLOCKWISE: return "FrontFace::CLOCKWISE";
-            case stormkit::gpu::FrontFace::COUNTER_CLOCKWISE: return "FrontFace::COUNTER_CLOCKWISE";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::FrontFace>(stormkit::gpu::FrontFace value) noexcept -> string {
-        switch (value) {
-            case stormkit::gpu::FrontFace::CLOCKWISE: return "FrontFace::CLOCKWISE";
-            case stormkit::gpu::FrontFace::COUNTER_CLOCKWISE: return "FrontFace::COUNTER_CLOCKWISE";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::GeometryFlag)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::GeometryFlag>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::GeometryFlag::NO_DUPLICATE_ANY_HIT_INVOCATION,
-            stormkit::gpu::GeometryFlag::OPAQUE,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::GeometryFlag>(stormkit::gpu::GeometryFlag value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::GeometryFlag::NO_DUPLICATE_ANY_HIT_INVOCATION:
-                return "GeometryFlag::NO_DUPLICATE_ANY_HIT_INVOCATION";
-            case stormkit::gpu::GeometryFlag::OPAQUE: return "GeometryFlag::OPAQUE";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::GeometryFlag>(stormkit::gpu::GeometryFlag value) noexcept -> string {
-        switch (value) {
-            case stormkit::gpu::GeometryFlag::NO_DUPLICATE_ANY_HIT_INVOCATION:
-                return "GeometryFlag::NO_DUPLICATE_ANY_HIT_INVOCATION";
-            case stormkit::gpu::GeometryFlag::OPAQUE: return "GeometryFlag::OPAQUE";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::GeometryType)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::GeometryType>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::GeometryType::AABBS,
-            stormkit::gpu::GeometryType::INSTANCES,
-            stormkit::gpu::GeometryType::TRIANGLES,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::GeometryType>(stormkit::gpu::GeometryType value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::GeometryType::AABBS: return "GeometryType::AABBS";
-            case stormkit::gpu::GeometryType::INSTANCES: return "GeometryType::INSTANCES";
-            case stormkit::gpu::GeometryType::TRIANGLES: return "GeometryType::TRIANGLES";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::GeometryType>(stormkit::gpu::GeometryType value) noexcept -> string {
-        switch (value) {
-            case stormkit::gpu::GeometryType::AABBS: return "GeometryType::AABBS";
-            case stormkit::gpu::GeometryType::INSTANCES: return "GeometryType::INSTANCES";
-            case stormkit::gpu::GeometryType::TRIANGLES: return "GeometryType::TRIANGLES";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::ImageAspectFlag)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ImageAspectFlag>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::ImageAspectFlag::COLOR,
-            stormkit::gpu::ImageAspectFlag::DEPTH,
-            stormkit::gpu::ImageAspectFlag::NONE,
-            stormkit::gpu::ImageAspectFlag::STENCIL,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::ImageAspectFlag>(stormkit::gpu::ImageAspectFlag value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::ImageAspectFlag::COLOR: return "ImageAspectFlag::COLOR";
-            case stormkit::gpu::ImageAspectFlag::DEPTH: return "ImageAspectFlag::DEPTH";
-            case stormkit::gpu::ImageAspectFlag::NONE: return "ImageAspectFlag::NONE";
-            case stormkit::gpu::ImageAspectFlag::STENCIL: return "ImageAspectFlag::STENCIL";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::ImageAspectFlag>(stormkit::gpu::ImageAspectFlag value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::ImageAspectFlag::COLOR: return "ImageAspectFlag::COLOR";
-            case stormkit::gpu::ImageAspectFlag::DEPTH: return "ImageAspectFlag::DEPTH";
-            case stormkit::gpu::ImageAspectFlag::NONE: return "ImageAspectFlag::NONE";
-            case stormkit::gpu::ImageAspectFlag::STENCIL: return "ImageAspectFlag::STENCIL";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::ImageCreateFlag)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ImageCreateFlag>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::ImageCreateFlag::ALIAS,
-            stormkit::gpu::ImageCreateFlag::ARRAY_2D_COMPATIBLE,
-            stormkit::gpu::ImageCreateFlag::BLOCK_TEXEL_VIEW_COMPATIBLE,
-            stormkit::gpu::ImageCreateFlag::CUBE_COMPATIBLE,
-            stormkit::gpu::ImageCreateFlag::DISJOINT,
-            stormkit::gpu::ImageCreateFlag::EXTENDED_USAGE,
-            stormkit::gpu::ImageCreateFlag::MUTABLE_FORMAT,
-            stormkit::gpu::ImageCreateFlag::NONE,
-            stormkit::gpu::ImageCreateFlag::PROTECTED,
-            stormkit::gpu::ImageCreateFlag::SPARSE_ALIASED,
-            stormkit::gpu::ImageCreateFlag::SPARSE_BINDING,
-            stormkit::gpu::ImageCreateFlag::SPARSE_RESIDENCY,
-            stormkit::gpu::ImageCreateFlag::SPLIT_INSTANCE_BIND_REGIONS,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::ImageCreateFlag>(stormkit::gpu::ImageCreateFlag value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::ImageCreateFlag::ALIAS: return "ImageCreateFlag::ALIAS";
-            case stormkit::gpu::ImageCreateFlag::ARRAY_2D_COMPATIBLE: return "ImageCreateFlag::ARRAY_2D_COMPATIBLE";
-            case stormkit::gpu::ImageCreateFlag::BLOCK_TEXEL_VIEW_COMPATIBLE:
-                return "ImageCreateFlag::BLOCK_TEXEL_VIEW_COMPATIBLE";
-            case stormkit::gpu::ImageCreateFlag::CUBE_COMPATIBLE: return "ImageCreateFlag::CUBE_COMPATIBLE";
-            case stormkit::gpu::ImageCreateFlag::DISJOINT: return "ImageCreateFlag::DISJOINT";
-            case stormkit::gpu::ImageCreateFlag::EXTENDED_USAGE: return "ImageCreateFlag::EXTENDED_USAGE";
-            case stormkit::gpu::ImageCreateFlag::MUTABLE_FORMAT: return "ImageCreateFlag::MUTABLE_FORMAT";
-            case stormkit::gpu::ImageCreateFlag::NONE: return "ImageCreateFlag::NONE";
-            case stormkit::gpu::ImageCreateFlag::PROTECTED: return "ImageCreateFlag::PROTECTED";
-            case stormkit::gpu::ImageCreateFlag::SPARSE_ALIASED: return "ImageCreateFlag::SPARSE_ALIASED";
-            case stormkit::gpu::ImageCreateFlag::SPARSE_BINDING: return "ImageCreateFlag::SPARSE_BINDING";
-            case stormkit::gpu::ImageCreateFlag::SPARSE_RESIDENCY: return "ImageCreateFlag::SPARSE_RESIDENCY";
-            case stormkit::gpu::ImageCreateFlag::SPLIT_INSTANCE_BIND_REGIONS:
-                return "ImageCreateFlag::SPLIT_INSTANCE_BIND_REGIONS";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::ImageCreateFlag>(stormkit::gpu::ImageCreateFlag value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::ImageCreateFlag::ALIAS: return "ImageCreateFlag::ALIAS";
-            case stormkit::gpu::ImageCreateFlag::ARRAY_2D_COMPATIBLE: return "ImageCreateFlag::ARRAY_2D_COMPATIBLE";
-            case stormkit::gpu::ImageCreateFlag::BLOCK_TEXEL_VIEW_COMPATIBLE:
-                return "ImageCreateFlag::BLOCK_TEXEL_VIEW_COMPATIBLE";
-            case stormkit::gpu::ImageCreateFlag::CUBE_COMPATIBLE: return "ImageCreateFlag::CUBE_COMPATIBLE";
-            case stormkit::gpu::ImageCreateFlag::DISJOINT: return "ImageCreateFlag::DISJOINT";
-            case stormkit::gpu::ImageCreateFlag::EXTENDED_USAGE: return "ImageCreateFlag::EXTENDED_USAGE";
-            case stormkit::gpu::ImageCreateFlag::MUTABLE_FORMAT: return "ImageCreateFlag::MUTABLE_FORMAT";
-            case stormkit::gpu::ImageCreateFlag::NONE: return "ImageCreateFlag::NONE";
-            case stormkit::gpu::ImageCreateFlag::PROTECTED: return "ImageCreateFlag::PROTECTED";
-            case stormkit::gpu::ImageCreateFlag::SPARSE_ALIASED: return "ImageCreateFlag::SPARSE_ALIASED";
-            case stormkit::gpu::ImageCreateFlag::SPARSE_BINDING: return "ImageCreateFlag::SPARSE_BINDING";
-            case stormkit::gpu::ImageCreateFlag::SPARSE_RESIDENCY: return "ImageCreateFlag::SPARSE_RESIDENCY";
-            case stormkit::gpu::ImageCreateFlag::SPLIT_INSTANCE_BIND_REGIONS:
-                return "ImageCreateFlag::SPLIT_INSTANCE_BIND_REGIONS";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::ImageLayout)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ImageLayout>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::ImageLayout::ATTACHMENT_OPTIMAL,
-            stormkit::gpu::ImageLayout::COLOR_ATTACHMENT_OPTIMAL,
-            stormkit::gpu::ImageLayout::DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL,
-            stormkit::gpu::ImageLayout::DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL,
-            stormkit::gpu::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-            stormkit::gpu::ImageLayout::DEPTH_STENCIL_READ_ONLY_OPTIMAL,
-            stormkit::gpu::ImageLayout::GENERAL,
-            stormkit::gpu::ImageLayout::PREINITIALIZED,
-            stormkit::gpu::ImageLayout::PRESENT_SRC,
-            stormkit::gpu::ImageLayout::SHADER_READ_ONLY_OPTIMAL,
-            stormkit::gpu::ImageLayout::SHARED_PRESENT,
-            stormkit::gpu::ImageLayout::TRANSFER_DST_OPTIMAL,
-            stormkit::gpu::ImageLayout::TRANSFER_SRC_OPTIMAL,
-            stormkit::gpu::ImageLayout::UNDEFINED,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::ImageLayout>(stormkit::gpu::ImageLayout value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::ImageLayout::ATTACHMENT_OPTIMAL: return "ImageLayout::ATTACHMENT_OPTIMAL";
-            case stormkit::gpu::ImageLayout::COLOR_ATTACHMENT_OPTIMAL: return "ImageLayout::COLOR_ATTACHMENT_OPTIMAL";
-            case stormkit::gpu::ImageLayout::DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL:
-                return "ImageLayout::DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL";
-            case stormkit::gpu::ImageLayout::DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL:
-                return "ImageLayout::DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL";
-            case stormkit::gpu::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-                return "ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL";
-            case stormkit::gpu::ImageLayout::DEPTH_STENCIL_READ_ONLY_OPTIMAL:
-                return "ImageLayout::DEPTH_STENCIL_READ_ONLY_OPTIMAL";
-            case stormkit::gpu::ImageLayout::GENERAL: return "ImageLayout::GENERAL";
-            case stormkit::gpu::ImageLayout::PREINITIALIZED: return "ImageLayout::PREINITIALIZED";
-            case stormkit::gpu::ImageLayout::PRESENT_SRC: return "ImageLayout::PRESENT_SRC";
-            case stormkit::gpu::ImageLayout::SHADER_READ_ONLY_OPTIMAL: return "ImageLayout::SHADER_READ_ONLY_OPTIMAL";
-            case stormkit::gpu::ImageLayout::SHARED_PRESENT: return "ImageLayout::SHARED_PRESENT";
-            case stormkit::gpu::ImageLayout::TRANSFER_DST_OPTIMAL: return "ImageLayout::TRANSFER_DST_OPTIMAL";
-            case stormkit::gpu::ImageLayout::TRANSFER_SRC_OPTIMAL: return "ImageLayout::TRANSFER_SRC_OPTIMAL";
-            case stormkit::gpu::ImageLayout::UNDEFINED: return "ImageLayout::UNDEFINED";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::ImageLayout>(stormkit::gpu::ImageLayout value) noexcept -> string {
-        switch (value) {
-            case stormkit::gpu::ImageLayout::ATTACHMENT_OPTIMAL: return "ImageLayout::ATTACHMENT_OPTIMAL";
-            case stormkit::gpu::ImageLayout::COLOR_ATTACHMENT_OPTIMAL: return "ImageLayout::COLOR_ATTACHMENT_OPTIMAL";
-            case stormkit::gpu::ImageLayout::DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL:
-                return "ImageLayout::DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL";
-            case stormkit::gpu::ImageLayout::DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL:
-                return "ImageLayout::DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL";
-            case stormkit::gpu::ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-                return "ImageLayout::DEPTH_STENCIL_ATTACHMENT_OPTIMAL";
-            case stormkit::gpu::ImageLayout::DEPTH_STENCIL_READ_ONLY_OPTIMAL:
-                return "ImageLayout::DEPTH_STENCIL_READ_ONLY_OPTIMAL";
-            case stormkit::gpu::ImageLayout::GENERAL: return "ImageLayout::GENERAL";
-            case stormkit::gpu::ImageLayout::PREINITIALIZED: return "ImageLayout::PREINITIALIZED";
-            case stormkit::gpu::ImageLayout::PRESENT_SRC: return "ImageLayout::PRESENT_SRC";
-            case stormkit::gpu::ImageLayout::SHADER_READ_ONLY_OPTIMAL: return "ImageLayout::SHADER_READ_ONLY_OPTIMAL";
-            case stormkit::gpu::ImageLayout::SHARED_PRESENT: return "ImageLayout::SHARED_PRESENT";
-            case stormkit::gpu::ImageLayout::TRANSFER_DST_OPTIMAL: return "ImageLayout::TRANSFER_DST_OPTIMAL";
-            case stormkit::gpu::ImageLayout::TRANSFER_SRC_OPTIMAL: return "ImageLayout::TRANSFER_SRC_OPTIMAL";
-            case stormkit::gpu::ImageLayout::UNDEFINED: return "ImageLayout::UNDEFINED";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::ImageTiling)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ImageTiling>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::ImageTiling::LINEAR,
-            stormkit::gpu::ImageTiling::OPTIMAL,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::ImageTiling>(stormkit::gpu::ImageTiling value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::ImageTiling::LINEAR: return "ImageTiling::LINEAR";
-            case stormkit::gpu::ImageTiling::OPTIMAL: return "ImageTiling::OPTIMAL";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::ImageTiling>(stormkit::gpu::ImageTiling value) noexcept -> string {
-        switch (value) {
-            case stormkit::gpu::ImageTiling::LINEAR: return "ImageTiling::LINEAR";
-            case stormkit::gpu::ImageTiling::OPTIMAL: return "ImageTiling::OPTIMAL";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::ImageType)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ImageType>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::ImageType::T1D,
-            stormkit::gpu::ImageType::T2D,
-            stormkit::gpu::ImageType::T3D,
-
-        };
-    }
-
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::ImageType>(stormkit::gpu::ImageType value) noexcept -> string_view {
-        switch (value) {
-            case stormkit::gpu::ImageType::T1D: return "ImageType::T1D";
-            case stormkit::gpu::ImageType::T2D: return "ImageType::T2D";
-            case stormkit::gpu::ImageType::T3D: return "ImageType::T3D";
-        }
-        std::unreachable();
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::blend_factor> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::ImageType>(stormkit::gpu::ImageType value) noexcept -> string {
-        switch (value) {
-            case stormkit::gpu::ImageType::T1D: return "ImageType::T1D";
-            case stormkit::gpu::ImageType::T2D: return "ImageType::T2D";
-            case stormkit::gpu::ImageType::T3D: return "ImageType::T3D";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::ImageUsageFlag)
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::blend_operation> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ImageUsageFlag>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::ImageUsageFlag::COLOR_ATTACHMENT, stormkit::gpu::ImageUsageFlag::DEPTH_STENCIL_ATTACHMENT,
-            stormkit::gpu::ImageUsageFlag::INPUT_ATTACHMENT, stormkit::gpu::ImageUsageFlag::SAMPLED,
-            stormkit::gpu::ImageUsageFlag::STORAGE,          stormkit::gpu::ImageUsageFlag::TRANSFER_DST,
-            stormkit::gpu::ImageUsageFlag::TRANSFER_SRC,     stormkit::gpu::ImageUsageFlag::TRANSIENT_ATTACHMENT,
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::border_color> = true;
 
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::ImageUsageFlag>(stormkit::gpu::ImageUsageFlag value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::ImageUsageFlag::COLOR_ATTACHMENT: return "ImageUsageFlag::COLOR_ATTACHMENT";
-            case stormkit::gpu::ImageUsageFlag::DEPTH_STENCIL_ATTACHMENT: return "ImageUsageFlag::DEPTH_STENCIL_ATTACHMENT";
-            case stormkit::gpu::ImageUsageFlag::INPUT_ATTACHMENT: return "ImageUsageFlag::INPUT_ATTACHMENT";
-            case stormkit::gpu::ImageUsageFlag::SAMPLED: return "ImageUsageFlag::SAMPLED";
-            case stormkit::gpu::ImageUsageFlag::STORAGE: return "ImageUsageFlag::STORAGE";
-            case stormkit::gpu::ImageUsageFlag::TRANSFER_DST: return "ImageUsageFlag::TRANSFER_DST";
-            case stormkit::gpu::ImageUsageFlag::TRANSFER_SRC: return "ImageUsageFlag::TRANSFER_SRC";
-            case stormkit::gpu::ImageUsageFlag::TRANSIENT_ATTACHMENT: return "ImageUsageFlag::TRANSIENT_ATTACHMENT";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::ImageUsageFlag>(stormkit::gpu::ImageUsageFlag value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::ImageUsageFlag::COLOR_ATTACHMENT: return "ImageUsageFlag::COLOR_ATTACHMENT";
-            case stormkit::gpu::ImageUsageFlag::DEPTH_STENCIL_ATTACHMENT: return "ImageUsageFlag::DEPTH_STENCIL_ATTACHMENT";
-            case stormkit::gpu::ImageUsageFlag::INPUT_ATTACHMENT: return "ImageUsageFlag::INPUT_ATTACHMENT";
-            case stormkit::gpu::ImageUsageFlag::SAMPLED: return "ImageUsageFlag::SAMPLED";
-            case stormkit::gpu::ImageUsageFlag::STORAGE: return "ImageUsageFlag::STORAGE";
-            case stormkit::gpu::ImageUsageFlag::TRANSFER_DST: return "ImageUsageFlag::TRANSFER_DST";
-            case stormkit::gpu::ImageUsageFlag::TRANSFER_SRC: return "ImageUsageFlag::TRANSFER_SRC";
-            case stormkit::gpu::ImageUsageFlag::TRANSIENT_ATTACHMENT: return "ImageUsageFlag::TRANSIENT_ATTACHMENT";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::ImageViewType)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ImageViewType>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::ImageViewType::CUBE, stormkit::gpu::ImageViewType::CUBE_ARRAY,
-            stormkit::gpu::ImageViewType::T1D,  stormkit::gpu::ImageViewType::T1D_ARRAY,
-            stormkit::gpu::ImageViewType::T2D,  stormkit::gpu::ImageViewType::T2D_ARRAY,
-            stormkit::gpu::ImageViewType::T3D,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::ImageViewType>(stormkit::gpu::ImageViewType value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::ImageViewType::CUBE: return "ImageViewType::CUBE";
-            case stormkit::gpu::ImageViewType::CUBE_ARRAY: return "ImageViewType::CUBE_ARRAY";
-            case stormkit::gpu::ImageViewType::T1D: return "ImageViewType::T1D";
-            case stormkit::gpu::ImageViewType::T1D_ARRAY: return "ImageViewType::T1D_ARRAY";
-            case stormkit::gpu::ImageViewType::T2D: return "ImageViewType::T2D";
-            case stormkit::gpu::ImageViewType::T2D_ARRAY: return "ImageViewType::T2D_ARRAY";
-            case stormkit::gpu::ImageViewType::T3D: return "ImageViewType::T3D";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::ImageViewType>(stormkit::gpu::ImageViewType value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::ImageViewType::CUBE: return "ImageViewType::CUBE";
-            case stormkit::gpu::ImageViewType::CUBE_ARRAY: return "ImageViewType::CUBE_ARRAY";
-            case stormkit::gpu::ImageViewType::T1D: return "ImageViewType::T1D";
-            case stormkit::gpu::ImageViewType::T1D_ARRAY: return "ImageViewType::T1D_ARRAY";
-            case stormkit::gpu::ImageViewType::T2D: return "ImageViewType::T2D";
-            case stormkit::gpu::ImageViewType::T2D_ARRAY: return "ImageViewType::T2D_ARRAY";
-            case stormkit::gpu::ImageViewType::T3D: return "ImageViewType::T3D";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::LogicOperation)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::LogicOperation>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::LogicOperation::AND,         stormkit::gpu::LogicOperation::AND_INVERTED,
-            stormkit::gpu::LogicOperation::AND_REVERSE, stormkit::gpu::LogicOperation::CLEAR,
-            stormkit::gpu::LogicOperation::COPY,        stormkit::gpu::LogicOperation::COPY_INVERTED,
-            stormkit::gpu::LogicOperation::EQUIVALENT,  stormkit::gpu::LogicOperation::INVERT,
-            stormkit::gpu::LogicOperation::NAND,        stormkit::gpu::LogicOperation::NO_OP,
-            stormkit::gpu::LogicOperation::NOR,         stormkit::gpu::LogicOperation::OR,
-            stormkit::gpu::LogicOperation::OR_INVERTED, stormkit::gpu::LogicOperation::OR_REVERSE,
-            stormkit::gpu::LogicOperation::SET,         stormkit::gpu::LogicOperation::XOR,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::LogicOperation>(stormkit::gpu::LogicOperation value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::LogicOperation::AND: return "LogicOperation::AND";
-            case stormkit::gpu::LogicOperation::AND_INVERTED: return "LogicOperation::AND_INVERTED";
-            case stormkit::gpu::LogicOperation::AND_REVERSE: return "LogicOperation::AND_REVERSE";
-            case stormkit::gpu::LogicOperation::CLEAR: return "LogicOperation::CLEAR";
-            case stormkit::gpu::LogicOperation::COPY: return "LogicOperation::COPY";
-            case stormkit::gpu::LogicOperation::COPY_INVERTED: return "LogicOperation::COPY_INVERTED";
-            case stormkit::gpu::LogicOperation::EQUIVALENT: return "LogicOperation::EQUIVALENT";
-            case stormkit::gpu::LogicOperation::INVERT: return "LogicOperation::INVERT";
-            case stormkit::gpu::LogicOperation::NAND: return "LogicOperation::NAND";
-            case stormkit::gpu::LogicOperation::NO_OP: return "LogicOperation::NO_OP";
-            case stormkit::gpu::LogicOperation::NOR: return "LogicOperation::NOR";
-            case stormkit::gpu::LogicOperation::OR: return "LogicOperation::OR";
-            case stormkit::gpu::LogicOperation::OR_INVERTED: return "LogicOperation::OR_INVERTED";
-            case stormkit::gpu::LogicOperation::OR_REVERSE: return "LogicOperation::OR_REVERSE";
-            case stormkit::gpu::LogicOperation::SET: return "LogicOperation::SET";
-            case stormkit::gpu::LogicOperation::XOR: return "LogicOperation::XOR";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::LogicOperation>(stormkit::gpu::LogicOperation value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::LogicOperation::AND: return "LogicOperation::AND";
-            case stormkit::gpu::LogicOperation::AND_INVERTED: return "LogicOperation::AND_INVERTED";
-            case stormkit::gpu::LogicOperation::AND_REVERSE: return "LogicOperation::AND_REVERSE";
-            case stormkit::gpu::LogicOperation::CLEAR: return "LogicOperation::CLEAR";
-            case stormkit::gpu::LogicOperation::COPY: return "LogicOperation::COPY";
-            case stormkit::gpu::LogicOperation::COPY_INVERTED: return "LogicOperation::COPY_INVERTED";
-            case stormkit::gpu::LogicOperation::EQUIVALENT: return "LogicOperation::EQUIVALENT";
-            case stormkit::gpu::LogicOperation::INVERT: return "LogicOperation::INVERT";
-            case stormkit::gpu::LogicOperation::NAND: return "LogicOperation::NAND";
-            case stormkit::gpu::LogicOperation::NO_OP: return "LogicOperation::NO_OP";
-            case stormkit::gpu::LogicOperation::NOR: return "LogicOperation::NOR";
-            case stormkit::gpu::LogicOperation::OR: return "LogicOperation::OR";
-            case stormkit::gpu::LogicOperation::OR_INVERTED: return "LogicOperation::OR_INVERTED";
-            case stormkit::gpu::LogicOperation::OR_REVERSE: return "LogicOperation::OR_REVERSE";
-            case stormkit::gpu::LogicOperation::SET: return "LogicOperation::SET";
-            case stormkit::gpu::LogicOperation::XOR: return "LogicOperation::XOR";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::MemoryPropertyFlag)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::MemoryPropertyFlag>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::MemoryPropertyFlag::DEVICE_LOCAL,
-            stormkit::gpu::MemoryPropertyFlag::HOST_CACHED,
-            stormkit::gpu::MemoryPropertyFlag::HOST_COHERENT,
-            stormkit::gpu::MemoryPropertyFlag::HOST_VISIBLE,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::MemoryPropertyFlag>(stormkit::gpu::MemoryPropertyFlag value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::MemoryPropertyFlag::DEVICE_LOCAL: return "MemoryPropertyFlag::DEVICE_LOCAL";
-            case stormkit::gpu::MemoryPropertyFlag::HOST_CACHED: return "MemoryPropertyFlag::HOST_CACHED";
-            case stormkit::gpu::MemoryPropertyFlag::HOST_COHERENT: return "MemoryPropertyFlag::HOST_COHERENT";
-            case stormkit::gpu::MemoryPropertyFlag::HOST_VISIBLE: return "MemoryPropertyFlag::HOST_VISIBLE";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::MemoryPropertyFlag>(stormkit::gpu::MemoryPropertyFlag value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::MemoryPropertyFlag::DEVICE_LOCAL: return "MemoryPropertyFlag::DEVICE_LOCAL";
-            case stormkit::gpu::MemoryPropertyFlag::HOST_CACHED: return "MemoryPropertyFlag::HOST_CACHED";
-            case stormkit::gpu::MemoryPropertyFlag::HOST_COHERENT: return "MemoryPropertyFlag::HOST_COHERENT";
-            case stormkit::gpu::MemoryPropertyFlag::HOST_VISIBLE: return "MemoryPropertyFlag::HOST_VISIBLE";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::PhysicalDeviceType)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::PhysicalDeviceType>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::PhysicalDeviceType::CPU,
-            stormkit::gpu::PhysicalDeviceType::DISCRETE_GPU,
-            stormkit::gpu::PhysicalDeviceType::INTEGRATED_GPU,
-            stormkit::gpu::PhysicalDeviceType::OTHER,
-            stormkit::gpu::PhysicalDeviceType::VIRTUAL_GPU,
-
-        };
-    }
-
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::PhysicalDeviceType>(stormkit::gpu::PhysicalDeviceType value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::PhysicalDeviceType::CPU: return "PhysicalDeviceType::CPU";
-            case stormkit::gpu::PhysicalDeviceType::DISCRETE_GPU: return "PhysicalDeviceType::DISCRETE_GPU";
-            case stormkit::gpu::PhysicalDeviceType::INTEGRATED_GPU: return "PhysicalDeviceType::INTEGRATED_GPU";
-            case stormkit::gpu::PhysicalDeviceType::OTHER: return "PhysicalDeviceType::OTHER";
-            case stormkit::gpu::PhysicalDeviceType::VIRTUAL_GPU: return "PhysicalDeviceType::VIRTUAL_GPU";
-        }
-        std::unreachable();
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::buffer_usage_flag> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::PhysicalDeviceType>(stormkit::gpu::PhysicalDeviceType value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::PhysicalDeviceType::CPU: return "PhysicalDeviceType::CPU";
-            case stormkit::gpu::PhysicalDeviceType::DISCRETE_GPU: return "PhysicalDeviceType::DISCRETE_GPU";
-            case stormkit::gpu::PhysicalDeviceType::INTEGRATED_GPU: return "PhysicalDeviceType::INTEGRATED_GPU";
-            case stormkit::gpu::PhysicalDeviceType::OTHER: return "PhysicalDeviceType::OTHER";
-            case stormkit::gpu::PhysicalDeviceType::VIRTUAL_GPU: return "PhysicalDeviceType::VIRTUAL_GPU";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::PipelineBindPoint)
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::color_component_flag> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::PipelineBindPoint>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::PipelineBindPoint::COMPUTE,
-            stormkit::gpu::PipelineBindPoint::GRAPHICS,
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::color_space> = true;
 
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::PipelineBindPoint>(stormkit::gpu::PipelineBindPoint value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::PipelineBindPoint::COMPUTE: return "PipelineBindPoint::COMPUTE";
-            case stormkit::gpu::PipelineBindPoint::GRAPHICS: return "PipelineBindPoint::GRAPHICS";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::PipelineBindPoint>(stormkit::gpu::PipelineBindPoint value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::PipelineBindPoint::COMPUTE: return "PipelineBindPoint::COMPUTE";
-            case stormkit::gpu::PipelineBindPoint::GRAPHICS: return "PipelineBindPoint::GRAPHICS";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::PipelineStageFlag)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::PipelineStageFlag>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::PipelineStageFlag::ALL_COMMANDS,
-            stormkit::gpu::PipelineStageFlag::ALL_GRAPHICS,
-            stormkit::gpu::PipelineStageFlag::BOTTOM_OF_PIPE,
-            stormkit::gpu::PipelineStageFlag::COLOR_ATTACHMENT_OUTPUT,
-            stormkit::gpu::PipelineStageFlag::COMPUTE_SHADER,
-            stormkit::gpu::PipelineStageFlag::DRAW_INDIRECT,
-            stormkit::gpu::PipelineStageFlag::EARLY_FRAGMENT_TESTS,
-            stormkit::gpu::PipelineStageFlag::FRAGMENT_SHADER,
-            stormkit::gpu::PipelineStageFlag::GEOMETRY_SHADER,
-            stormkit::gpu::PipelineStageFlag::HOST,
-            stormkit::gpu::PipelineStageFlag::LATE_FRAGMENT_TESTS,
-            stormkit::gpu::PipelineStageFlag::TESSELLATION_CONTROL_SHADER,
-            stormkit::gpu::PipelineStageFlag::TESSELLATION_EVALUATION_SHADER,
-            stormkit::gpu::PipelineStageFlag::TOP_OF_PIPE,
-            stormkit::gpu::PipelineStageFlag::TRANSFER,
-            stormkit::gpu::PipelineStageFlag::VERTEX_INPUT,
-            stormkit::gpu::PipelineStageFlag::VERTEX_SHADER,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::PipelineStageFlag>(stormkit::gpu::PipelineStageFlag value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::PipelineStageFlag::ALL_COMMANDS: return "PipelineStageFlag::ALL_COMMANDS";
-            case stormkit::gpu::PipelineStageFlag::ALL_GRAPHICS: return "PipelineStageFlag::ALL_GRAPHICS";
-            case stormkit::gpu::PipelineStageFlag::BOTTOM_OF_PIPE: return "PipelineStageFlag::BOTTOM_OF_PIPE";
-            case stormkit::gpu::PipelineStageFlag::COLOR_ATTACHMENT_OUTPUT: return "PipelineStageFlag::COLOR_ATTACHMENT_OUTPUT";
-            case stormkit::gpu::PipelineStageFlag::COMPUTE_SHADER: return "PipelineStageFlag::COMPUTE_SHADER";
-            case stormkit::gpu::PipelineStageFlag::DRAW_INDIRECT: return "PipelineStageFlag::DRAW_INDIRECT";
-            case stormkit::gpu::PipelineStageFlag::EARLY_FRAGMENT_TESTS: return "PipelineStageFlag::EARLY_FRAGMENT_TESTS";
-            case stormkit::gpu::PipelineStageFlag::FRAGMENT_SHADER: return "PipelineStageFlag::FRAGMENT_SHADER";
-            case stormkit::gpu::PipelineStageFlag::GEOMETRY_SHADER: return "PipelineStageFlag::GEOMETRY_SHADER";
-            case stormkit::gpu::PipelineStageFlag::HOST: return "PipelineStageFlag::HOST";
-            case stormkit::gpu::PipelineStageFlag::LATE_FRAGMENT_TESTS: return "PipelineStageFlag::LATE_FRAGMENT_TESTS";
-            case stormkit::gpu::PipelineStageFlag::TESSELLATION_CONTROL_SHADER:
-                return "PipelineStageFlag::TESSELLATION_CONTROL_SHADER";
-            case stormkit::gpu::PipelineStageFlag::TESSELLATION_EVALUATION_SHADER:
-                return "PipelineStageFlag::TESSELLATION_EVALUATION_SHADER";
-            case stormkit::gpu::PipelineStageFlag::TOP_OF_PIPE: return "PipelineStageFlag::TOP_OF_PIPE";
-            case stormkit::gpu::PipelineStageFlag::TRANSFER: return "PipelineStageFlag::TRANSFER";
-            case stormkit::gpu::PipelineStageFlag::VERTEX_INPUT: return "PipelineStageFlag::VERTEX_INPUT";
-            case stormkit::gpu::PipelineStageFlag::VERTEX_SHADER: return "PipelineStageFlag::VERTEX_SHADER";
-        }
-        std::unreachable();
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::PipelineStageFlag>(stormkit::gpu::PipelineStageFlag value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::PipelineStageFlag::ALL_COMMANDS: return "PipelineStageFlag::ALL_COMMANDS";
-            case stormkit::gpu::PipelineStageFlag::ALL_GRAPHICS: return "PipelineStageFlag::ALL_GRAPHICS";
-            case stormkit::gpu::PipelineStageFlag::BOTTOM_OF_PIPE: return "PipelineStageFlag::BOTTOM_OF_PIPE";
-            case stormkit::gpu::PipelineStageFlag::COLOR_ATTACHMENT_OUTPUT: return "PipelineStageFlag::COLOR_ATTACHMENT_OUTPUT";
-            case stormkit::gpu::PipelineStageFlag::COMPUTE_SHADER: return "PipelineStageFlag::COMPUTE_SHADER";
-            case stormkit::gpu::PipelineStageFlag::DRAW_INDIRECT: return "PipelineStageFlag::DRAW_INDIRECT";
-            case stormkit::gpu::PipelineStageFlag::EARLY_FRAGMENT_TESTS: return "PipelineStageFlag::EARLY_FRAGMENT_TESTS";
-            case stormkit::gpu::PipelineStageFlag::FRAGMENT_SHADER: return "PipelineStageFlag::FRAGMENT_SHADER";
-            case stormkit::gpu::PipelineStageFlag::GEOMETRY_SHADER: return "PipelineStageFlag::GEOMETRY_SHADER";
-            case stormkit::gpu::PipelineStageFlag::HOST: return "PipelineStageFlag::HOST";
-            case stormkit::gpu::PipelineStageFlag::LATE_FRAGMENT_TESTS: return "PipelineStageFlag::LATE_FRAGMENT_TESTS";
-            case stormkit::gpu::PipelineStageFlag::TESSELLATION_CONTROL_SHADER:
-                return "PipelineStageFlag::TESSELLATION_CONTROL_SHADER";
-            case stormkit::gpu::PipelineStageFlag::TESSELLATION_EVALUATION_SHADER:
-                return "PipelineStageFlag::TESSELLATION_EVALUATION_SHADER";
-            case stormkit::gpu::PipelineStageFlag::TOP_OF_PIPE: return "PipelineStageFlag::TOP_OF_PIPE";
-            case stormkit::gpu::PipelineStageFlag::TRANSFER: return "PipelineStageFlag::TRANSFER";
-            case stormkit::gpu::PipelineStageFlag::VERTEX_INPUT: return "PipelineStageFlag::VERTEX_INPUT";
-            case stormkit::gpu::PipelineStageFlag::VERTEX_SHADER: return "PipelineStageFlag::VERTEX_SHADER";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::PixelFormat)
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::PixelFormat>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::PixelFormat::A1_RGB5_UNORM_PACK16,
-            stormkit::gpu::PixelFormat::A2_RGB10I_PACK32,
-            stormkit::gpu::PixelFormat::A2_RGB10_SNORM_PACK32,
-            stormkit::gpu::PixelFormat::A2_RGB10_UNORM_PACK32,
-            stormkit::gpu::PixelFormat::A2_RGB10U_PACK32,
-            stormkit::gpu::PixelFormat::B10_GR11UF_PACK32,
-            stormkit::gpu::PixelFormat::BGR8_UNORM,
-            stormkit::gpu::PixelFormat::BGRA8_UNORM,
-            stormkit::gpu::PixelFormat::DEPTH16_UNORM,
-            stormkit::gpu::PixelFormat::DEPTH16_UNORM_STENCIL8U,
-            stormkit::gpu::PixelFormat::DEPTH24_UNORM_PACK32,
-            stormkit::gpu::PixelFormat::DEPTH24_UNORM_STENCIL8U,
-            stormkit::gpu::PixelFormat::DEPTH32F,
-            stormkit::gpu::PixelFormat::DEPTH32F_STENCIL8U,
-            stormkit::gpu::PixelFormat::R16F,
-            stormkit::gpu::PixelFormat::R16I,
-            stormkit::gpu::PixelFormat::R16_SNORM,
-            stormkit::gpu::PixelFormat::R16U,
-            stormkit::gpu::PixelFormat::R16_UNORM,
-            stormkit::gpu::PixelFormat::R32F,
-            stormkit::gpu::PixelFormat::R32I,
-            stormkit::gpu::PixelFormat::R32U,
-            stormkit::gpu::PixelFormat::R5_G6_B5_UNORM_PACK16,
-            stormkit::gpu::PixelFormat::R8I,
-            stormkit::gpu::PixelFormat::R8_SNORM,
-            stormkit::gpu::PixelFormat::R8U,
-            stormkit::gpu::PixelFormat::R8_UNORM,
-            stormkit::gpu::PixelFormat::RG16F,
-            stormkit::gpu::PixelFormat::RG16I,
-            stormkit::gpu::PixelFormat::RG16_SNORM,
-            stormkit::gpu::PixelFormat::RG16U,
-            stormkit::gpu::PixelFormat::RG16_UNORM,
-            stormkit::gpu::PixelFormat::RG32F,
-            stormkit::gpu::PixelFormat::RG32I,
-            stormkit::gpu::PixelFormat::RG32U,
-            stormkit::gpu::PixelFormat::RG8I,
-            stormkit::gpu::PixelFormat::RG8_SNORM,
-            stormkit::gpu::PixelFormat::RG8U,
-            stormkit::gpu::PixelFormat::RG8_UNORM,
-            stormkit::gpu::PixelFormat::RGB16F,
-            stormkit::gpu::PixelFormat::RGB16I,
-            stormkit::gpu::PixelFormat::RGB16_SNORM,
-            stormkit::gpu::PixelFormat::RGB16U,
-            stormkit::gpu::PixelFormat::RGB16_UNORM,
-            stormkit::gpu::PixelFormat::RGB32F,
-            stormkit::gpu::PixelFormat::RGB32I,
-            stormkit::gpu::PixelFormat::RGB32U,
-            stormkit::gpu::PixelFormat::RGB8I,
-            stormkit::gpu::PixelFormat::RGB8_SNORM,
-            stormkit::gpu::PixelFormat::RGB8U,
-            stormkit::gpu::PixelFormat::RGB8_UNORM,
-            stormkit::gpu::PixelFormat::RGBA16F,
-            stormkit::gpu::PixelFormat::RGBA16I,
-            stormkit::gpu::PixelFormat::RGBA16_SNORM,
-            stormkit::gpu::PixelFormat::RGBA16U,
-            stormkit::gpu::PixelFormat::RGBA16_UNORM,
-            stormkit::gpu::PixelFormat::RGBA32F,
-            stormkit::gpu::PixelFormat::RGBA32I,
-            stormkit::gpu::PixelFormat::RGBA32U,
-            stormkit::gpu::PixelFormat::RGBA4_UNORM_PACK16,
-            stormkit::gpu::PixelFormat::RGBA8I,
-            stormkit::gpu::PixelFormat::RGBA8_SNORM,
-            stormkit::gpu::PixelFormat::RGBA8U,
-            stormkit::gpu::PixelFormat::RGBA8_UNORM,
-            stormkit::gpu::PixelFormat::S8U,
-            stormkit::gpu::PixelFormat::SBGR8,
-            stormkit::gpu::PixelFormat::SBGRA8,
-            stormkit::gpu::PixelFormat::SR8,
-            stormkit::gpu::PixelFormat::SRG8,
-            stormkit::gpu::PixelFormat::SRGB8,
-            stormkit::gpu::PixelFormat::SRGBA8,
-            stormkit::gpu::PixelFormat::UNDEFINED,
-
-        };
-    }
-
-    template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::PixelFormat>(stormkit::gpu::PixelFormat value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::PixelFormat::A1_RGB5_UNORM_PACK16: return "PixelFormat::A1_RGB5_UNORM_PACK16";
-            case stormkit::gpu::PixelFormat::A2_RGB10I_PACK32: return "PixelFormat::A2_RGB10I_PACK32";
-            case stormkit::gpu::PixelFormat::A2_RGB10_SNORM_PACK32: return "PixelFormat::A2_RGB10_SNORM_PACK32";
-            case stormkit::gpu::PixelFormat::A2_RGB10_UNORM_PACK32: return "PixelFormat::A2_RGB10_UNORM_PACK32";
-            case stormkit::gpu::PixelFormat::A2_RGB10U_PACK32: return "PixelFormat::A2_RGB10U_PACK32";
-            case stormkit::gpu::PixelFormat::B10_GR11UF_PACK32: return "PixelFormat::B10_GR11UF_PACK32";
-            case stormkit::gpu::PixelFormat::BGR8_UNORM: return "PixelFormat::BGR8_UNORM";
-            case stormkit::gpu::PixelFormat::BGRA8_UNORM: return "PixelFormat::BGRA8_UNORM";
-            case stormkit::gpu::PixelFormat::DEPTH16_UNORM: return "PixelFormat::DEPTH16_UNORM";
-            case stormkit::gpu::PixelFormat::DEPTH16_UNORM_STENCIL8U: return "PixelFormat::DEPTH16_UNORM_STENCIL8U";
-            case stormkit::gpu::PixelFormat::DEPTH24_UNORM_PACK32: return "PixelFormat::DEPTH24_UNORM_PACK32";
-            case stormkit::gpu::PixelFormat::DEPTH24_UNORM_STENCIL8U: return "PixelFormat::DEPTH24_UNORM_STENCIL8U";
-            case stormkit::gpu::PixelFormat::DEPTH32F: return "PixelFormat::DEPTH32F";
-            case stormkit::gpu::PixelFormat::DEPTH32F_STENCIL8U: return "PixelFormat::DEPTH32F_STENCIL8U";
-            case stormkit::gpu::PixelFormat::R16F: return "PixelFormat::R16F";
-            case stormkit::gpu::PixelFormat::R16I: return "PixelFormat::R16I";
-            case stormkit::gpu::PixelFormat::R16_SNORM: return "PixelFormat::R16_SNORM";
-            case stormkit::gpu::PixelFormat::R16U: return "PixelFormat::R16U";
-            case stormkit::gpu::PixelFormat::R16_UNORM: return "PixelFormat::R16_UNORM";
-            case stormkit::gpu::PixelFormat::R32F: return "PixelFormat::R32F";
-            case stormkit::gpu::PixelFormat::R32I: return "PixelFormat::R32I";
-            case stormkit::gpu::PixelFormat::R32U: return "PixelFormat::R32U";
-            case stormkit::gpu::PixelFormat::R5_G6_B5_UNORM_PACK16: return "PixelFormat::R5_G6_B5_UNORM_PACK16";
-            case stormkit::gpu::PixelFormat::R8I: return "PixelFormat::R8I";
-            case stormkit::gpu::PixelFormat::R8_SNORM: return "PixelFormat::R8_SNORM";
-            case stormkit::gpu::PixelFormat::R8U: return "PixelFormat::R8U";
-            case stormkit::gpu::PixelFormat::R8_UNORM: return "PixelFormat::R8_UNORM";
-            case stormkit::gpu::PixelFormat::RG16F: return "PixelFormat::RG16F";
-            case stormkit::gpu::PixelFormat::RG16I: return "PixelFormat::RG16I";
-            case stormkit::gpu::PixelFormat::RG16_SNORM: return "PixelFormat::RG16_SNORM";
-            case stormkit::gpu::PixelFormat::RG16U: return "PixelFormat::RG16U";
-            case stormkit::gpu::PixelFormat::RG16_UNORM: return "PixelFormat::RG16_UNORM";
-            case stormkit::gpu::PixelFormat::RG32F: return "PixelFormat::RG32F";
-            case stormkit::gpu::PixelFormat::RG32I: return "PixelFormat::RG32I";
-            case stormkit::gpu::PixelFormat::RG32U: return "PixelFormat::RG32U";
-            case stormkit::gpu::PixelFormat::RG8I: return "PixelFormat::RG8I";
-            case stormkit::gpu::PixelFormat::RG8_SNORM: return "PixelFormat::RG8_SNORM";
-            case stormkit::gpu::PixelFormat::RG8U: return "PixelFormat::RG8U";
-            case stormkit::gpu::PixelFormat::RG8_UNORM: return "PixelFormat::RG8_UNORM";
-            case stormkit::gpu::PixelFormat::RGB16F: return "PixelFormat::RGB16F";
-            case stormkit::gpu::PixelFormat::RGB16I: return "PixelFormat::RGB16I";
-            case stormkit::gpu::PixelFormat::RGB16_SNORM: return "PixelFormat::RGB16_SNORM";
-            case stormkit::gpu::PixelFormat::RGB16U: return "PixelFormat::RGB16U";
-            case stormkit::gpu::PixelFormat::RGB16_UNORM: return "PixelFormat::RGB16_UNORM";
-            case stormkit::gpu::PixelFormat::RGB32F: return "PixelFormat::RGB32F";
-            case stormkit::gpu::PixelFormat::RGB32I: return "PixelFormat::RGB32I";
-            case stormkit::gpu::PixelFormat::RGB32U: return "PixelFormat::RGB32U";
-            case stormkit::gpu::PixelFormat::RGB8I: return "PixelFormat::RGB8I";
-            case stormkit::gpu::PixelFormat::RGB8_SNORM: return "PixelFormat::RGB8_SNORM";
-            case stormkit::gpu::PixelFormat::RGB8U: return "PixelFormat::RGB8U";
-            case stormkit::gpu::PixelFormat::RGB8_UNORM: return "PixelFormat::RGB8_UNORM";
-            case stormkit::gpu::PixelFormat::RGBA16F: return "PixelFormat::RGBA16F";
-            case stormkit::gpu::PixelFormat::RGBA16I: return "PixelFormat::RGBA16I";
-            case stormkit::gpu::PixelFormat::RGBA16_SNORM: return "PixelFormat::RGBA16_SNORM";
-            case stormkit::gpu::PixelFormat::RGBA16U: return "PixelFormat::RGBA16U";
-            case stormkit::gpu::PixelFormat::RGBA16_UNORM: return "PixelFormat::RGBA16_UNORM";
-            case stormkit::gpu::PixelFormat::RGBA32F: return "PixelFormat::RGBA32F";
-            case stormkit::gpu::PixelFormat::RGBA32I: return "PixelFormat::RGBA32I";
-            case stormkit::gpu::PixelFormat::RGBA32U: return "PixelFormat::RGBA32U";
-            case stormkit::gpu::PixelFormat::RGBA4_UNORM_PACK16: return "PixelFormat::RGBA4_UNORM_PACK16";
-            case stormkit::gpu::PixelFormat::RGBA8I: return "PixelFormat::RGBA8I";
-            case stormkit::gpu::PixelFormat::RGBA8_SNORM: return "PixelFormat::RGBA8_SNORM";
-            case stormkit::gpu::PixelFormat::RGBA8U: return "PixelFormat::RGBA8U";
-            case stormkit::gpu::PixelFormat::RGBA8_UNORM: return "PixelFormat::RGBA8_UNORM";
-            case stormkit::gpu::PixelFormat::S8U: return "PixelFormat::S8U";
-            case stormkit::gpu::PixelFormat::SBGR8: return "PixelFormat::SBGR8";
-            case stormkit::gpu::PixelFormat::SBGRA8: return "PixelFormat::SBGRA8";
-            case stormkit::gpu::PixelFormat::SR8: return "PixelFormat::SR8";
-            case stormkit::gpu::PixelFormat::SRG8: return "PixelFormat::SRG8";
-            case stormkit::gpu::PixelFormat::SRGB8: return "PixelFormat::SRGB8";
-            case stormkit::gpu::PixelFormat::SRGBA8: return "PixelFormat::SRGBA8";
-            case stormkit::gpu::PixelFormat::UNDEFINED: return "PixelFormat::UNDEFINED";
-        }
-        std::unreachable();
-    }
-
     template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::PixelFormat>(stormkit::gpu::PixelFormat value) noexcept -> string {
-        switch (value) {
-            case stormkit::gpu::PixelFormat::A1_RGB5_UNORM_PACK16: return "PixelFormat::A1_RGB5_UNORM_PACK16";
-            case stormkit::gpu::PixelFormat::A2_RGB10I_PACK32: return "PixelFormat::A2_RGB10I_PACK32";
-            case stormkit::gpu::PixelFormat::A2_RGB10_SNORM_PACK32: return "PixelFormat::A2_RGB10_SNORM_PACK32";
-            case stormkit::gpu::PixelFormat::A2_RGB10_UNORM_PACK32: return "PixelFormat::A2_RGB10_UNORM_PACK32";
-            case stormkit::gpu::PixelFormat::A2_RGB10U_PACK32: return "PixelFormat::A2_RGB10U_PACK32";
-            case stormkit::gpu::PixelFormat::B10_GR11UF_PACK32: return "PixelFormat::B10_GR11UF_PACK32";
-            case stormkit::gpu::PixelFormat::BGR8_UNORM: return "PixelFormat::BGR8_UNORM";
-            case stormkit::gpu::PixelFormat::BGRA8_UNORM: return "PixelFormat::BGRA8_UNORM";
-            case stormkit::gpu::PixelFormat::DEPTH16_UNORM: return "PixelFormat::DEPTH16_UNORM";
-            case stormkit::gpu::PixelFormat::DEPTH16_UNORM_STENCIL8U: return "PixelFormat::DEPTH16_UNORM_STENCIL8U";
-            case stormkit::gpu::PixelFormat::DEPTH24_UNORM_PACK32: return "PixelFormat::DEPTH24_UNORM_PACK32";
-            case stormkit::gpu::PixelFormat::DEPTH24_UNORM_STENCIL8U: return "PixelFormat::DEPTH24_UNORM_STENCIL8U";
-            case stormkit::gpu::PixelFormat::DEPTH32F: return "PixelFormat::DEPTH32F";
-            case stormkit::gpu::PixelFormat::DEPTH32F_STENCIL8U: return "PixelFormat::DEPTH32F_STENCIL8U";
-            case stormkit::gpu::PixelFormat::R16F: return "PixelFormat::R16F";
-            case stormkit::gpu::PixelFormat::R16I: return "PixelFormat::R16I";
-            case stormkit::gpu::PixelFormat::R16_SNORM: return "PixelFormat::R16_SNORM";
-            case stormkit::gpu::PixelFormat::R16U: return "PixelFormat::R16U";
-            case stormkit::gpu::PixelFormat::R16_UNORM: return "PixelFormat::R16_UNORM";
-            case stormkit::gpu::PixelFormat::R32F: return "PixelFormat::R32F";
-            case stormkit::gpu::PixelFormat::R32I: return "PixelFormat::R32I";
-            case stormkit::gpu::PixelFormat::R32U: return "PixelFormat::R32U";
-            case stormkit::gpu::PixelFormat::R5_G6_B5_UNORM_PACK16: return "PixelFormat::R5_G6_B5_UNORM_PACK16";
-            case stormkit::gpu::PixelFormat::R8I: return "PixelFormat::R8I";
-            case stormkit::gpu::PixelFormat::R8_SNORM: return "PixelFormat::R8_SNORM";
-            case stormkit::gpu::PixelFormat::R8U: return "PixelFormat::R8U";
-            case stormkit::gpu::PixelFormat::R8_UNORM: return "PixelFormat::R8_UNORM";
-            case stormkit::gpu::PixelFormat::RG16F: return "PixelFormat::RG16F";
-            case stormkit::gpu::PixelFormat::RG16I: return "PixelFormat::RG16I";
-            case stormkit::gpu::PixelFormat::RG16_SNORM: return "PixelFormat::RG16_SNORM";
-            case stormkit::gpu::PixelFormat::RG16U: return "PixelFormat::RG16U";
-            case stormkit::gpu::PixelFormat::RG16_UNORM: return "PixelFormat::RG16_UNORM";
-            case stormkit::gpu::PixelFormat::RG32F: return "PixelFormat::RG32F";
-            case stormkit::gpu::PixelFormat::RG32I: return "PixelFormat::RG32I";
-            case stormkit::gpu::PixelFormat::RG32U: return "PixelFormat::RG32U";
-            case stormkit::gpu::PixelFormat::RG8I: return "PixelFormat::RG8I";
-            case stormkit::gpu::PixelFormat::RG8_SNORM: return "PixelFormat::RG8_SNORM";
-            case stormkit::gpu::PixelFormat::RG8U: return "PixelFormat::RG8U";
-            case stormkit::gpu::PixelFormat::RG8_UNORM: return "PixelFormat::RG8_UNORM";
-            case stormkit::gpu::PixelFormat::RGB16F: return "PixelFormat::RGB16F";
-            case stormkit::gpu::PixelFormat::RGB16I: return "PixelFormat::RGB16I";
-            case stormkit::gpu::PixelFormat::RGB16_SNORM: return "PixelFormat::RGB16_SNORM";
-            case stormkit::gpu::PixelFormat::RGB16U: return "PixelFormat::RGB16U";
-            case stormkit::gpu::PixelFormat::RGB16_UNORM: return "PixelFormat::RGB16_UNORM";
-            case stormkit::gpu::PixelFormat::RGB32F: return "PixelFormat::RGB32F";
-            case stormkit::gpu::PixelFormat::RGB32I: return "PixelFormat::RGB32I";
-            case stormkit::gpu::PixelFormat::RGB32U: return "PixelFormat::RGB32U";
-            case stormkit::gpu::PixelFormat::RGB8I: return "PixelFormat::RGB8I";
-            case stormkit::gpu::PixelFormat::RGB8_SNORM: return "PixelFormat::RGB8_SNORM";
-            case stormkit::gpu::PixelFormat::RGB8U: return "PixelFormat::RGB8U";
-            case stormkit::gpu::PixelFormat::RGB8_UNORM: return "PixelFormat::RGB8_UNORM";
-            case stormkit::gpu::PixelFormat::RGBA16F: return "PixelFormat::RGBA16F";
-            case stormkit::gpu::PixelFormat::RGBA16I: return "PixelFormat::RGBA16I";
-            case stormkit::gpu::PixelFormat::RGBA16_SNORM: return "PixelFormat::RGBA16_SNORM";
-            case stormkit::gpu::PixelFormat::RGBA16U: return "PixelFormat::RGBA16U";
-            case stormkit::gpu::PixelFormat::RGBA16_UNORM: return "PixelFormat::RGBA16_UNORM";
-            case stormkit::gpu::PixelFormat::RGBA32F: return "PixelFormat::RGBA32F";
-            case stormkit::gpu::PixelFormat::RGBA32I: return "PixelFormat::RGBA32I";
-            case stormkit::gpu::PixelFormat::RGBA32U: return "PixelFormat::RGBA32U";
-            case stormkit::gpu::PixelFormat::RGBA4_UNORM_PACK16: return "PixelFormat::RGBA4_UNORM_PACK16";
-            case stormkit::gpu::PixelFormat::RGBA8I: return "PixelFormat::RGBA8I";
-            case stormkit::gpu::PixelFormat::RGBA8_SNORM: return "PixelFormat::RGBA8_SNORM";
-            case stormkit::gpu::PixelFormat::RGBA8U: return "PixelFormat::RGBA8U";
-            case stormkit::gpu::PixelFormat::RGBA8_UNORM: return "PixelFormat::RGBA8_UNORM";
-            case stormkit::gpu::PixelFormat::S8U: return "PixelFormat::S8U";
-            case stormkit::gpu::PixelFormat::SBGR8: return "PixelFormat::SBGR8";
-            case stormkit::gpu::PixelFormat::SBGRA8: return "PixelFormat::SBGRA8";
-            case stormkit::gpu::PixelFormat::SR8: return "PixelFormat::SR8";
-            case stormkit::gpu::PixelFormat::SRG8: return "PixelFormat::SRG8";
-            case stormkit::gpu::PixelFormat::SRGB8: return "PixelFormat::SRGB8";
-            case stormkit::gpu::PixelFormat::SRGBA8: return "PixelFormat::SRGBA8";
-            case stormkit::gpu::PixelFormat::UNDEFINED: return "PixelFormat::UNDEFINED";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::PolygonMode)
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::command_buffer_level> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::PolygonMode>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::PolygonMode::FILL,
-            stormkit::gpu::PolygonMode::LINE,
-            stormkit::gpu::PolygonMode::POINT,
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::compare_operation> = true;
 
-        };
-    }
-
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::PolygonMode>(stormkit::gpu::PolygonMode value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::PolygonMode::FILL: return "PolygonMode::FILL";
-            case stormkit::gpu::PolygonMode::LINE: return "PolygonMode::LINE";
-            case stormkit::gpu::PolygonMode::POINT: return "PolygonMode::POINT";
-        }
-        std::unreachable();
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::cull_mode_flag> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::PolygonMode>(stormkit::gpu::PolygonMode value) noexcept -> string {
-        switch (value) {
-            case stormkit::gpu::PolygonMode::FILL: return "PolygonMode::FILL";
-            case stormkit::gpu::PolygonMode::LINE: return "PolygonMode::LINE";
-            case stormkit::gpu::PolygonMode::POINT: return "PolygonMode::POINT";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::PresentMode)
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::debug_object_type> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::PresentMode>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::PresentMode::FIFO,
-            stormkit::gpu::PresentMode::FIFO_RELAXED,
-            stormkit::gpu::PresentMode::IMMEDIATE,
-            stormkit::gpu::PresentMode::MAILBOX,
-            stormkit::gpu::PresentMode::SHARED_CONTINUOUS_REFRESH,
-            stormkit::gpu::PresentMode::SHARED_DEMAND_REFRESH,
-
-        };
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::dependency_flag> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::PresentMode>(stormkit::gpu::PresentMode value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::PresentMode::FIFO: return "PresentMode::FIFO";
-            case stormkit::gpu::PresentMode::FIFO_RELAXED: return "PresentMode::FIFO_RELAXED";
-            case stormkit::gpu::PresentMode::IMMEDIATE: return "PresentMode::IMMEDIATE";
-            case stormkit::gpu::PresentMode::MAILBOX: return "PresentMode::MAILBOX";
-            case stormkit::gpu::PresentMode::SHARED_CONTINUOUS_REFRESH: return "PresentMode::SHARED_CONTINUOUS_REFRESH";
-            case stormkit::gpu::PresentMode::SHARED_DEMAND_REFRESH: return "PresentMode::SHARED_DEMAND_REFRESH";
-        }
-        std::unreachable();
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::descriptor_type> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::PresentMode>(stormkit::gpu::PresentMode value) noexcept -> string {
-        switch (value) {
-            case stormkit::gpu::PresentMode::FIFO: return "PresentMode::FIFO";
-            case stormkit::gpu::PresentMode::FIFO_RELAXED: return "PresentMode::FIFO_RELAXED";
-            case stormkit::gpu::PresentMode::IMMEDIATE: return "PresentMode::IMMEDIATE";
-            case stormkit::gpu::PresentMode::MAILBOX: return "PresentMode::MAILBOX";
-            case stormkit::gpu::PresentMode::SHARED_CONTINUOUS_REFRESH: return "PresentMode::SHARED_CONTINUOUS_REFRESH";
-            case stormkit::gpu::PresentMode::SHARED_DEMAND_REFRESH: return "PresentMode::SHARED_DEMAND_REFRESH";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::PrimitiveTopology)
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::dynamic_state> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::PrimitiveTopology>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::PrimitiveTopology::LINE_LIST,     stormkit::gpu::PrimitiveTopology::LINE_STRIP,
-            stormkit::gpu::PrimitiveTopology::POINT_LIST,    stormkit::gpu::PrimitiveTopology::TRIANGLE_FAN,
-            stormkit::gpu::PrimitiveTopology::TRIANGLE_LIST, stormkit::gpu::PrimitiveTopology::TRIANGLE_STRIP,
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::filter> = true;
 
-        };
-    }
-
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::PrimitiveTopology>(stormkit::gpu::PrimitiveTopology value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::PrimitiveTopology::LINE_LIST: return "PrimitiveTopology::LINE_LIST";
-            case stormkit::gpu::PrimitiveTopology::LINE_STRIP: return "PrimitiveTopology::LINE_STRIP";
-            case stormkit::gpu::PrimitiveTopology::POINT_LIST: return "PrimitiveTopology::POINT_LIST";
-            case stormkit::gpu::PrimitiveTopology::TRIANGLE_FAN: return "PrimitiveTopology::TRIANGLE_FAN";
-            case stormkit::gpu::PrimitiveTopology::TRIANGLE_LIST: return "PrimitiveTopology::TRIANGLE_LIST";
-            case stormkit::gpu::PrimitiveTopology::TRIANGLE_STRIP: return "PrimitiveTopology::TRIANGLE_STRIP";
-        }
-        std::unreachable();
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::format_feature_flag> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::PrimitiveTopology>(stormkit::gpu::PrimitiveTopology value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::PrimitiveTopology::LINE_LIST: return "PrimitiveTopology::LINE_LIST";
-            case stormkit::gpu::PrimitiveTopology::LINE_STRIP: return "PrimitiveTopology::LINE_STRIP";
-            case stormkit::gpu::PrimitiveTopology::POINT_LIST: return "PrimitiveTopology::POINT_LIST";
-            case stormkit::gpu::PrimitiveTopology::TRIANGLE_FAN: return "PrimitiveTopology::TRIANGLE_FAN";
-            case stormkit::gpu::PrimitiveTopology::TRIANGLE_LIST: return "PrimitiveTopology::TRIANGLE_LIST";
-            case stormkit::gpu::PrimitiveTopology::TRIANGLE_STRIP: return "PrimitiveTopology::TRIANGLE_STRIP";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::QueueFlag)
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::front_face> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::QueueFlag>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::QueueFlag::COMPUTE,   stormkit::gpu::QueueFlag::GRAPHICS,       stormkit::gpu::QueueFlag::NONE,
-            stormkit::gpu::QueueFlag::PROTECTED, stormkit::gpu::QueueFlag::SPARSE_BINDING, stormkit::gpu::QueueFlag::TRANSFER,
-
-        };
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::geometry_flag> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::QueueFlag>(stormkit::gpu::QueueFlag value) noexcept -> string_view {
-        switch (value) {
-            case stormkit::gpu::QueueFlag::COMPUTE: return "QueueFlag::COMPUTE";
-            case stormkit::gpu::QueueFlag::GRAPHICS: return "QueueFlag::GRAPHICS";
-            case stormkit::gpu::QueueFlag::NONE: return "QueueFlag::NONE";
-            case stormkit::gpu::QueueFlag::PROTECTED: return "QueueFlag::PROTECTED";
-            case stormkit::gpu::QueueFlag::SPARSE_BINDING: return "QueueFlag::SPARSE_BINDING";
-            case stormkit::gpu::QueueFlag::TRANSFER: return "QueueFlag::TRANSFER";
-        }
-        std::unreachable();
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::geometry_type> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::QueueFlag>(stormkit::gpu::QueueFlag value) noexcept -> string {
-        switch (value) {
-            case stormkit::gpu::QueueFlag::COMPUTE: return "QueueFlag::COMPUTE";
-            case stormkit::gpu::QueueFlag::GRAPHICS: return "QueueFlag::GRAPHICS";
-            case stormkit::gpu::QueueFlag::NONE: return "QueueFlag::NONE";
-            case stormkit::gpu::QueueFlag::PROTECTED: return "QueueFlag::PROTECTED";
-            case stormkit::gpu::QueueFlag::SPARSE_BINDING: return "QueueFlag::SPARSE_BINDING";
-            case stormkit::gpu::QueueFlag::TRANSFER: return "QueueFlag::TRANSFER";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::ResolveModeFlag)
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::image_aspect_flag> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ResolveModeFlag>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::ResolveModeFlag::AVERAGE, stormkit::gpu::ResolveModeFlag::EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID,
-            stormkit::gpu::ResolveModeFlag::MAX,     stormkit::gpu::ResolveModeFlag::MIN,
-            stormkit::gpu::ResolveModeFlag::NONE,    stormkit::gpu::ResolveModeFlag::SAMPLE_ZERO,
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::image_create_flag> = true;
 
-        };
-    }
-
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::ResolveModeFlag>(stormkit::gpu::ResolveModeFlag value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::ResolveModeFlag::AVERAGE: return "ResolveModeFlag::AVERAGE";
-            case stormkit::gpu::ResolveModeFlag::EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID:
-                return "ResolveModeFlag::EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID";
-            case stormkit::gpu::ResolveModeFlag::MAX: return "ResolveModeFlag::MAX";
-            case stormkit::gpu::ResolveModeFlag::MIN: return "ResolveModeFlag::MIN";
-            case stormkit::gpu::ResolveModeFlag::NONE: return "ResolveModeFlag::NONE";
-            case stormkit::gpu::ResolveModeFlag::SAMPLE_ZERO: return "ResolveModeFlag::SAMPLE_ZERO";
-        }
-        std::unreachable();
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::image_layout> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::ResolveModeFlag>(stormkit::gpu::ResolveModeFlag value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::ResolveModeFlag::AVERAGE: return "ResolveModeFlag::AVERAGE";
-            case stormkit::gpu::ResolveModeFlag::EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID:
-                return "ResolveModeFlag::EXTERNAL_FORMAT_DOWNSAMPLE_ANDROID";
-            case stormkit::gpu::ResolveModeFlag::MAX: return "ResolveModeFlag::MAX";
-            case stormkit::gpu::ResolveModeFlag::MIN: return "ResolveModeFlag::MIN";
-            case stormkit::gpu::ResolveModeFlag::NONE: return "ResolveModeFlag::NONE";
-            case stormkit::gpu::ResolveModeFlag::SAMPLE_ZERO: return "ResolveModeFlag::SAMPLE_ZERO";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::Result)
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::image_tiling> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::Result>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::Result::ERROR_DEVICE_LOST,
-            stormkit::gpu::Result::ERROR_EXTENSION_NOT_PRESENT,
-            stormkit::gpu::Result::ERROR_FEATURE_NOT_PRESENT,
-            stormkit::gpu::Result::ERROR_FORMAT_NOT_SUPPORTED,
-            stormkit::gpu::Result::ERROR_FRAGMENTATION,
-            stormkit::gpu::Result::ERROR_FRAGMENTED_POOL,
-            stormkit::gpu::Result::ERROR_FULLSCREEN_EXCLUSIVE_MODE_LOST,
-            stormkit::gpu::Result::ERROR_INCOMPATIBLE_DISPLAY,
-            stormkit::gpu::Result::ERROR_INCOMPATIBLE_DRIVER,
-            stormkit::gpu::Result::ERROR_INITIALIZATION_FAILED,
-            stormkit::gpu::Result::ERROR_INVALID_EXTERNAL_HANDLE,
-            stormkit::gpu::Result::ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS,
-            stormkit::gpu::Result::ERROR_LAYER_NOT_PRESENT,
-            stormkit::gpu::Result::ERROR_MEMORY_MAP_FAILED,
-            stormkit::gpu::Result::ERROR_NATIVE_WINDOW_IN_USE,
-            stormkit::gpu::Result::ERROR_NOT_PERMITTED,
-            stormkit::gpu::Result::ERROR_OUT_OF_DATE,
-            stormkit::gpu::Result::ERROR_OUT_OF_DEVICE_MEMORY,
-            stormkit::gpu::Result::ERROR_OUT_OF_HOST_MEMORY,
-            stormkit::gpu::Result::ERROR_OUT_OF_POOL_MEMORY,
-            stormkit::gpu::Result::ERROR_SURFACE_LOST,
-            stormkit::gpu::Result::ERROR_TOO_MANY_OBJECTS,
-            stormkit::gpu::Result::ERROR_UNKNOWN,
-            stormkit::gpu::Result::ERROR_VALIDATION_FAILED,
-            stormkit::gpu::Result::EVENT_RESET,
-            stormkit::gpu::Result::EVENT_SET,
-            stormkit::gpu::Result::INCOMPLETE,
-            stormkit::gpu::Result::NOT_READY,
-            stormkit::gpu::Result::OPERATION_DEFERRED,
-            stormkit::gpu::Result::OPERATION_NOT_DEFERRED,
-            stormkit::gpu::Result::PIPELINE_COMPILE_REQUIRED,
-            stormkit::gpu::Result::SUBOPTIMAL,
-            stormkit::gpu::Result::SUCCESS,
-            stormkit::gpu::Result::THREAD_DONE,
-            stormkit::gpu::Result::THREAD_IDLE,
-            stormkit::gpu::Result::TIMEOUT,
-
-        };
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::image_type> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::Result>(stormkit::gpu::Result value) noexcept -> string_view {
-        switch (value) {
-            case stormkit::gpu::Result::ERROR_DEVICE_LOST: return "Result::ERROR_DEVICE_LOST";
-            case stormkit::gpu::Result::ERROR_EXTENSION_NOT_PRESENT: return "Result::ERROR_EXTENSION_NOT_PRESENT";
-            case stormkit::gpu::Result::ERROR_FEATURE_NOT_PRESENT: return "Result::ERROR_FEATURE_NOT_PRESENT";
-            case stormkit::gpu::Result::ERROR_FORMAT_NOT_SUPPORTED: return "Result::ERROR_FORMAT_NOT_SUPPORTED";
-            case stormkit::gpu::Result::ERROR_FRAGMENTATION: return "Result::ERROR_FRAGMENTATION";
-            case stormkit::gpu::Result::ERROR_FRAGMENTED_POOL: return "Result::ERROR_FRAGMENTED_POOL";
-            case stormkit::gpu::Result::ERROR_FULLSCREEN_EXCLUSIVE_MODE_LOST:
-                return "Result::ERROR_FULLSCREEN_EXCLUSIVE_MODE_LOST";
-            case stormkit::gpu::Result::ERROR_INCOMPATIBLE_DISPLAY: return "Result::ERROR_INCOMPATIBLE_DISPLAY";
-            case stormkit::gpu::Result::ERROR_INCOMPATIBLE_DRIVER: return "Result::ERROR_INCOMPATIBLE_DRIVER";
-            case stormkit::gpu::Result::ERROR_INITIALIZATION_FAILED: return "Result::ERROR_INITIALIZATION_FAILED";
-            case stormkit::gpu::Result::ERROR_INVALID_EXTERNAL_HANDLE: return "Result::ERROR_INVALID_EXTERNAL_HANDLE";
-            case stormkit::gpu::Result::ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS:
-                return "Result::ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS";
-            case stormkit::gpu::Result::ERROR_LAYER_NOT_PRESENT: return "Result::ERROR_LAYER_NOT_PRESENT";
-            case stormkit::gpu::Result::ERROR_MEMORY_MAP_FAILED: return "Result::ERROR_MEMORY_MAP_FAILED";
-            case stormkit::gpu::Result::ERROR_NATIVE_WINDOW_IN_USE: return "Result::ERROR_NATIVE_WINDOW_IN_USE";
-            case stormkit::gpu::Result::ERROR_NOT_PERMITTED: return "Result::ERROR_NOT_PERMITTED";
-            case stormkit::gpu::Result::ERROR_OUT_OF_DATE: return "Result::ERROR_OUT_OF_DATE";
-            case stormkit::gpu::Result::ERROR_OUT_OF_DEVICE_MEMORY: return "Result::ERROR_OUT_OF_DEVICE_MEMORY";
-            case stormkit::gpu::Result::ERROR_OUT_OF_HOST_MEMORY: return "Result::ERROR_OUT_OF_HOST_MEMORY";
-            case stormkit::gpu::Result::ERROR_OUT_OF_POOL_MEMORY: return "Result::ERROR_OUT_OF_POOL_MEMORY";
-            case stormkit::gpu::Result::ERROR_SURFACE_LOST: return "Result::ERROR_SURFACE_LOST";
-            case stormkit::gpu::Result::ERROR_TOO_MANY_OBJECTS: return "Result::ERROR_TOO_MANY_OBJECTS";
-            case stormkit::gpu::Result::ERROR_UNKNOWN: return "Result::ERROR_UNKNOWN";
-            case stormkit::gpu::Result::ERROR_VALIDATION_FAILED: return "Result::ERROR_VALIDATION_FAILED";
-            case stormkit::gpu::Result::EVENT_RESET: return "Result::EVENT_RESET";
-            case stormkit::gpu::Result::EVENT_SET: return "Result::EVENT_SET";
-            case stormkit::gpu::Result::INCOMPLETE: return "Result::INCOMPLETE";
-            case stormkit::gpu::Result::NOT_READY: return "Result::NOT_READY";
-            case stormkit::gpu::Result::OPERATION_DEFERRED: return "Result::OPERATION_DEFERRED";
-            case stormkit::gpu::Result::OPERATION_NOT_DEFERRED: return "Result::OPERATION_NOT_DEFERRED";
-            case stormkit::gpu::Result::PIPELINE_COMPILE_REQUIRED: return "Result::PIPELINE_COMPILE_REQUIRED";
-            case stormkit::gpu::Result::SUBOPTIMAL: return "Result::SUBOPTIMAL";
-            case stormkit::gpu::Result::SUCCESS: return "Result::SUCCESS";
-            case stormkit::gpu::Result::THREAD_DONE: return "Result::THREAD_DONE";
-            case stormkit::gpu::Result::THREAD_IDLE: return "Result::THREAD_IDLE";
-            case stormkit::gpu::Result::TIMEOUT: return "Result::TIMEOUT";
-        }
-        std::unreachable();
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::image_usage_flag> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::Result>(stormkit::gpu::Result value) noexcept -> string {
-        switch (value) {
-            case stormkit::gpu::Result::ERROR_DEVICE_LOST: return "Result::ERROR_DEVICE_LOST";
-            case stormkit::gpu::Result::ERROR_EXTENSION_NOT_PRESENT: return "Result::ERROR_EXTENSION_NOT_PRESENT";
-            case stormkit::gpu::Result::ERROR_FEATURE_NOT_PRESENT: return "Result::ERROR_FEATURE_NOT_PRESENT";
-            case stormkit::gpu::Result::ERROR_FORMAT_NOT_SUPPORTED: return "Result::ERROR_FORMAT_NOT_SUPPORTED";
-            case stormkit::gpu::Result::ERROR_FRAGMENTATION: return "Result::ERROR_FRAGMENTATION";
-            case stormkit::gpu::Result::ERROR_FRAGMENTED_POOL: return "Result::ERROR_FRAGMENTED_POOL";
-            case stormkit::gpu::Result::ERROR_FULLSCREEN_EXCLUSIVE_MODE_LOST:
-                return "Result::ERROR_FULLSCREEN_EXCLUSIVE_MODE_LOST";
-            case stormkit::gpu::Result::ERROR_INCOMPATIBLE_DISPLAY: return "Result::ERROR_INCOMPATIBLE_DISPLAY";
-            case stormkit::gpu::Result::ERROR_INCOMPATIBLE_DRIVER: return "Result::ERROR_INCOMPATIBLE_DRIVER";
-            case stormkit::gpu::Result::ERROR_INITIALIZATION_FAILED: return "Result::ERROR_INITIALIZATION_FAILED";
-            case stormkit::gpu::Result::ERROR_INVALID_EXTERNAL_HANDLE: return "Result::ERROR_INVALID_EXTERNAL_HANDLE";
-            case stormkit::gpu::Result::ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS:
-                return "Result::ERROR_INVALID_OPAQUE_CAPTURE_ADDRESS";
-            case stormkit::gpu::Result::ERROR_LAYER_NOT_PRESENT: return "Result::ERROR_LAYER_NOT_PRESENT";
-            case stormkit::gpu::Result::ERROR_MEMORY_MAP_FAILED: return "Result::ERROR_MEMORY_MAP_FAILED";
-            case stormkit::gpu::Result::ERROR_NATIVE_WINDOW_IN_USE: return "Result::ERROR_NATIVE_WINDOW_IN_USE";
-            case stormkit::gpu::Result::ERROR_NOT_PERMITTED: return "Result::ERROR_NOT_PERMITTED";
-            case stormkit::gpu::Result::ERROR_OUT_OF_DATE: return "Result::ERROR_OUT_OF_DATE";
-            case stormkit::gpu::Result::ERROR_OUT_OF_DEVICE_MEMORY: return "Result::ERROR_OUT_OF_DEVICE_MEMORY";
-            case stormkit::gpu::Result::ERROR_OUT_OF_HOST_MEMORY: return "Result::ERROR_OUT_OF_HOST_MEMORY";
-            case stormkit::gpu::Result::ERROR_OUT_OF_POOL_MEMORY: return "Result::ERROR_OUT_OF_POOL_MEMORY";
-            case stormkit::gpu::Result::ERROR_SURFACE_LOST: return "Result::ERROR_SURFACE_LOST";
-            case stormkit::gpu::Result::ERROR_TOO_MANY_OBJECTS: return "Result::ERROR_TOO_MANY_OBJECTS";
-            case stormkit::gpu::Result::ERROR_UNKNOWN: return "Result::ERROR_UNKNOWN";
-            case stormkit::gpu::Result::ERROR_VALIDATION_FAILED: return "Result::ERROR_VALIDATION_FAILED";
-            case stormkit::gpu::Result::EVENT_RESET: return "Result::EVENT_RESET";
-            case stormkit::gpu::Result::EVENT_SET: return "Result::EVENT_SET";
-            case stormkit::gpu::Result::INCOMPLETE: return "Result::INCOMPLETE";
-            case stormkit::gpu::Result::NOT_READY: return "Result::NOT_READY";
-            case stormkit::gpu::Result::OPERATION_DEFERRED: return "Result::OPERATION_DEFERRED";
-            case stormkit::gpu::Result::OPERATION_NOT_DEFERRED: return "Result::OPERATION_NOT_DEFERRED";
-            case stormkit::gpu::Result::PIPELINE_COMPILE_REQUIRED: return "Result::PIPELINE_COMPILE_REQUIRED";
-            case stormkit::gpu::Result::SUBOPTIMAL: return "Result::SUBOPTIMAL";
-            case stormkit::gpu::Result::SUCCESS: return "Result::SUCCESS";
-            case stormkit::gpu::Result::THREAD_DONE: return "Result::THREAD_DONE";
-            case stormkit::gpu::Result::THREAD_IDLE: return "Result::THREAD_IDLE";
-            case stormkit::gpu::Result::TIMEOUT: return "Result::TIMEOUT";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::SampleCountFlag)
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::image_view_type> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::SampleCountFlag>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::SampleCountFlag::C1,  stormkit::gpu::SampleCountFlag::C16, stormkit::gpu::SampleCountFlag::C2,
-            stormkit::gpu::SampleCountFlag::C32, stormkit::gpu::SampleCountFlag::C4,  stormkit::gpu::SampleCountFlag::C64,
-            stormkit::gpu::SampleCountFlag::C8,
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::logic_operation> = true;
 
-        };
-    }
-
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::SampleCountFlag>(stormkit::gpu::SampleCountFlag value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::SampleCountFlag::C1: return "SampleCountFlag::C1";
-            case stormkit::gpu::SampleCountFlag::C16: return "SampleCountFlag::C16";
-            case stormkit::gpu::SampleCountFlag::C2: return "SampleCountFlag::C2";
-            case stormkit::gpu::SampleCountFlag::C32: return "SampleCountFlag::C32";
-            case stormkit::gpu::SampleCountFlag::C4: return "SampleCountFlag::C4";
-            case stormkit::gpu::SampleCountFlag::C64: return "SampleCountFlag::C64";
-            case stormkit::gpu::SampleCountFlag::C8: return "SampleCountFlag::C8";
-        }
-        std::unreachable();
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::memory_property_flag> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::SampleCountFlag>(stormkit::gpu::SampleCountFlag value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::SampleCountFlag::C1: return "SampleCountFlag::C1";
-            case stormkit::gpu::SampleCountFlag::C16: return "SampleCountFlag::C16";
-            case stormkit::gpu::SampleCountFlag::C2: return "SampleCountFlag::C2";
-            case stormkit::gpu::SampleCountFlag::C32: return "SampleCountFlag::C32";
-            case stormkit::gpu::SampleCountFlag::C4: return "SampleCountFlag::C4";
-            case stormkit::gpu::SampleCountFlag::C64: return "SampleCountFlag::C64";
-            case stormkit::gpu::SampleCountFlag::C8: return "SampleCountFlag::C8";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::SamplerAddressMode)
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::physical_device_type> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::SamplerAddressMode>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::SamplerAddressMode::CLAMP_TO_BORDER,
-            stormkit::gpu::SamplerAddressMode::CLAMP_TO_EDGE,
-            stormkit::gpu::SamplerAddressMode::MIRROR_CLAMP_TO_EDGE,
-            stormkit::gpu::SamplerAddressMode::MIRRORED_REPEAT,
-            stormkit::gpu::SamplerAddressMode::REPEAT,
-
-        };
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::pipeline_bind_point> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::SamplerAddressMode>(stormkit::gpu::SamplerAddressMode value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::SamplerAddressMode::CLAMP_TO_BORDER: return "SamplerAddressMode::CLAMP_TO_BORDER";
-            case stormkit::gpu::SamplerAddressMode::CLAMP_TO_EDGE: return "SamplerAddressMode::CLAMP_TO_EDGE";
-            case stormkit::gpu::SamplerAddressMode::MIRROR_CLAMP_TO_EDGE: return "SamplerAddressMode::MIRROR_CLAMP_TO_EDGE";
-            case stormkit::gpu::SamplerAddressMode::MIRRORED_REPEAT: return "SamplerAddressMode::MIRRORED_REPEAT";
-            case stormkit::gpu::SamplerAddressMode::REPEAT: return "SamplerAddressMode::REPEAT";
-        }
-        std::unreachable();
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::pipeline_stage_flag> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::SamplerAddressMode>(stormkit::gpu::SamplerAddressMode value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::SamplerAddressMode::CLAMP_TO_BORDER: return "SamplerAddressMode::CLAMP_TO_BORDER";
-            case stormkit::gpu::SamplerAddressMode::CLAMP_TO_EDGE: return "SamplerAddressMode::CLAMP_TO_EDGE";
-            case stormkit::gpu::SamplerAddressMode::MIRROR_CLAMP_TO_EDGE: return "SamplerAddressMode::MIRROR_CLAMP_TO_EDGE";
-            case stormkit::gpu::SamplerAddressMode::MIRRORED_REPEAT: return "SamplerAddressMode::MIRRORED_REPEAT";
-            case stormkit::gpu::SamplerAddressMode::REPEAT: return "SamplerAddressMode::REPEAT";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::SamplerMipmapMode)
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::pixel_format> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::SamplerMipmapMode>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::SamplerMipmapMode::LINEAR,
-            stormkit::gpu::SamplerMipmapMode::NEAREST,
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::polygon_mode> = true;
 
-        };
-    }
-
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::SamplerMipmapMode>(stormkit::gpu::SamplerMipmapMode value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::SamplerMipmapMode::LINEAR: return "SamplerMipmapMode::LINEAR";
-            case stormkit::gpu::SamplerMipmapMode::NEAREST: return "SamplerMipmapMode::NEAREST";
-        }
-        std::unreachable();
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::present_mode> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::SamplerMipmapMode>(stormkit::gpu::SamplerMipmapMode value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::SamplerMipmapMode::LINEAR: return "SamplerMipmapMode::LINEAR";
-            case stormkit::gpu::SamplerMipmapMode::NEAREST: return "SamplerMipmapMode::NEAREST";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::ShaderStageFlag)
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::primitive_topology> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::ShaderStageFlag>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::ShaderStageFlag::COMPUTE,  stormkit::gpu::ShaderStageFlag::FRAGMENT,
-            stormkit::gpu::ShaderStageFlag::GEOMETRY, stormkit::gpu::ShaderStageFlag::NONE,
-            stormkit::gpu::ShaderStageFlag::VERTEX,
-
-        };
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::queue_flag> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::ShaderStageFlag>(stormkit::gpu::ShaderStageFlag value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::ShaderStageFlag::COMPUTE: return "ShaderStageFlag::COMPUTE";
-            case stormkit::gpu::ShaderStageFlag::FRAGMENT: return "ShaderStageFlag::FRAGMENT";
-            case stormkit::gpu::ShaderStageFlag::GEOMETRY: return "ShaderStageFlag::GEOMETRY";
-            case stormkit::gpu::ShaderStageFlag::NONE: return "ShaderStageFlag::NONE";
-            case stormkit::gpu::ShaderStageFlag::VERTEX: return "ShaderStageFlag::VERTEX";
-        }
-        std::unreachable();
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::resolve_mode_flag> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::ShaderStageFlag>(stormkit::gpu::ShaderStageFlag value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::ShaderStageFlag::COMPUTE: return "ShaderStageFlag::COMPUTE";
-            case stormkit::gpu::ShaderStageFlag::FRAGMENT: return "ShaderStageFlag::FRAGMENT";
-            case stormkit::gpu::ShaderStageFlag::GEOMETRY: return "ShaderStageFlag::GEOMETRY";
-            case stormkit::gpu::ShaderStageFlag::NONE: return "ShaderStageFlag::NONE";
-            case stormkit::gpu::ShaderStageFlag::VERTEX: return "ShaderStageFlag::VERTEX";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::StencilFaceFlag)
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::result> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::StencilFaceFlag>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::StencilFaceFlag::BACK,
-            stormkit::gpu::StencilFaceFlag::FRONT,
-            stormkit::gpu::StencilFaceFlag::FRONT_AND_BACK,
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::sample_count_flag> = true;
 
-        };
-    }
-
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::StencilFaceFlag>(stormkit::gpu::StencilFaceFlag value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::StencilFaceFlag::BACK: return "StencilFaceFlag::BACK";
-            case stormkit::gpu::StencilFaceFlag::FRONT: return "StencilFaceFlag::FRONT";
-            case stormkit::gpu::StencilFaceFlag::FRONT_AND_BACK: return "StencilFaceFlag::FRONT_AND_BACK";
-        }
-        std::unreachable();
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::sampler_address_mode> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::StencilFaceFlag>(stormkit::gpu::StencilFaceFlag value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::StencilFaceFlag::BACK: return "StencilFaceFlag::BACK";
-            case stormkit::gpu::StencilFaceFlag::FRONT: return "StencilFaceFlag::FRONT";
-            case stormkit::gpu::StencilFaceFlag::FRONT_AND_BACK: return "StencilFaceFlag::FRONT_AND_BACK";
-        }
-        std::unreachable();
-    }
-    FLAG_ENUM(stormkit::gpu::VertexInputRate)
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::sampler_mipmap_mode> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::meta::enumerate<stormkit::gpu::VertexInputRate>() noexcept -> decltype(auto) {
-        return array {
-            stormkit::gpu::VertexInputRate::INSTANCE,
-            stormkit::gpu::VertexInputRate::VERTEX,
-
-        };
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::shader_stage_flag> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    STORMKIT_CONST
-    constexpr auto stormkit::core::as_string<stormkit::gpu::VertexInputRate>(stormkit::gpu::VertexInputRate value) noexcept
-      -> string_view {
-        switch (value) {
-            case stormkit::gpu::VertexInputRate::INSTANCE: return "VertexInputRate::INSTANCE";
-            case stormkit::gpu::VertexInputRate::VERTEX: return "VertexInputRate::VERTEX";
-        }
-        std::unreachable();
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::stencil_face_flag> = true;
 
     template<>
-    STORMKIT_FORCE_INLINE
-    constexpr auto stormkit::core::to_string<stormkit::gpu::VertexInputRate>(stormkit::gpu::VertexInputRate value) noexcept
-      -> string {
-        switch (value) {
-            case stormkit::gpu::VertexInputRate::INSTANCE: return "VertexInputRate::INSTANCE";
-            case stormkit::gpu::VertexInputRate::VERTEX: return "VertexInputRate::VERTEX";
-        }
-        std::unreachable();
-    }
+    inline constexpr auto stormkit::core::meta::flag_trait<stormkit::gpu::vertex_input_rate> = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3400,112 +4435,112 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto is_depth_only_format(PixelFormat format) noexcept -> bool {
-        return format == PixelFormat::DEPTH16_UNORM
-               or format == PixelFormat::DEPTH24_UNORM_PACK32
-               or format == PixelFormat::DEPTH32F;
+    constexpr auto is_depth_only_format(pixel_format format) noexcept -> bool {
+        return format == pixel_format::depth16_unorm
+               or format == pixel_format::depth24_unorm_pack32
+               or format == pixel_format::depth32f;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto is_stencil_only_format(PixelFormat format) noexcept -> bool {
-        return format == PixelFormat::S8U;
+    constexpr auto is_stencil_only_format(pixel_format format) noexcept -> bool {
+        return format == pixel_format::s8u;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto is_depth_stencil_format(PixelFormat format) noexcept -> bool {
-        return format == PixelFormat::DEPTH16_UNORM_STENCIL8U
-               or format == PixelFormat::DEPTH24_UNORM_STENCIL8U
-               or format == PixelFormat::DEPTH32F_STENCIL8U;
+    constexpr auto is_depth_stencil_format(pixel_format format) noexcept -> bool {
+        return format == pixel_format::depth16_unorm_stencil8u
+               or format == pixel_format::depth24_unorm_stencil8u
+               or format == pixel_format::depth32f_stencil8u;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto is_depth_format(PixelFormat format) noexcept -> bool {
+    constexpr auto is_depth_format(pixel_format format) noexcept -> bool {
         return is_depth_only_format(format) or is_depth_stencil_format(format);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto is_stencil_format(PixelFormat format) noexcept -> bool {
+    constexpr auto is_stencil_format(pixel_format format) noexcept -> bool {
         return is_stencil_only_format(format) or is_depth_stencil_format(format);
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto get_format_channel_count(PixelFormat format) noexcept -> u8 {
+    constexpr auto get_format_channel_count(pixel_format format) noexcept -> u8 {
         switch (format) {
-            case PixelFormat::R8_SNORM:
-            case PixelFormat::R8_UNORM:
-            case PixelFormat::R16_SNORM:
-            case PixelFormat::R16_UNORM:
-            case PixelFormat::R8I:
-            case PixelFormat::R8U:
-            case PixelFormat::R16I:
-            case PixelFormat::R16U:
-            case PixelFormat::R32I:
-            case PixelFormat::R32U:
-            case PixelFormat::R16F:
-            case PixelFormat::R32F:
-            case PixelFormat::DEPTH16_UNORM:
-            case PixelFormat::DEPTH24_UNORM_PACK32:
-            case PixelFormat::DEPTH32F: return 1;
+            case pixel_format::r8_snorm:
+            case pixel_format::r8_unorm:
+            case pixel_format::r16_snorm:
+            case pixel_format::r16_unorm:
+            case pixel_format::r8i:
+            case pixel_format::r8u:
+            case pixel_format::r16i:
+            case pixel_format::r16u:
+            case pixel_format::r32i:
+            case pixel_format::r32u:
+            case pixel_format::r16f:
+            case pixel_format::r32f:
+            case pixel_format::depth16_unorm:
+            case pixel_format::depth24_unorm_pack32:
+            case pixel_format::depth32f: return 1;
 
-            case PixelFormat::RG8_SNORM:
-            case PixelFormat::RG8_UNORM:
-            case PixelFormat::RG16_SNORM:
-            case PixelFormat::RG16_UNORM:
-            case PixelFormat::RG8I:
-            case PixelFormat::RG8U:
-            case PixelFormat::RG16I:
-            case PixelFormat::RG16U:
-            case PixelFormat::RG32I:
-            case PixelFormat::RG32U:
-            case PixelFormat::RG16F:
-            case PixelFormat::RG32F:
-            case PixelFormat::DEPTH16_UNORM_STENCIL8U:
-            case PixelFormat::DEPTH24_UNORM_STENCIL8U:
-            case PixelFormat::DEPTH32F_STENCIL8U: return 2;
+            case pixel_format::rg8_snorm:
+            case pixel_format::rg8_unorm:
+            case pixel_format::rg16_snorm:
+            case pixel_format::rg16_unorm:
+            case pixel_format::rg8i:
+            case pixel_format::rg8u:
+            case pixel_format::rg16i:
+            case pixel_format::rg16u:
+            case pixel_format::rg32i:
+            case pixel_format::rg32u:
+            case pixel_format::rg16f:
+            case pixel_format::rg32f:
+            case pixel_format::depth16_unorm_stencil8u:
+            case pixel_format::depth24_unorm_stencil8u:
+            case pixel_format::depth32f_stencil8u: return 2;
 
-            case PixelFormat::RGB8_SNORM:
-            case PixelFormat::RGB8_UNORM:
-            case PixelFormat::RGB16_SNORM:
-            case PixelFormat::RGB16_UNORM:
-            case PixelFormat::BGR8_UNORM:
-            case PixelFormat::RGB8I:
-            case PixelFormat::RGB8U:
-            case PixelFormat::RGB16I:
-            case PixelFormat::RGB16U:
-            case PixelFormat::RGB32I:
-            case PixelFormat::RGB32U:
-            case PixelFormat::RGB16F:
-            case PixelFormat::RGB32F:
-            case PixelFormat::SRGB8:
-            case PixelFormat::SBGR8:
-            case PixelFormat::R5_G6_B5_UNORM_PACK16:
-            case PixelFormat::B10_GR11UF_PACK32: return 3;
+            case pixel_format::rgb8_snorm:
+            case pixel_format::rgb8_unorm:
+            case pixel_format::rgb16_snorm:
+            case pixel_format::rgb16_unorm:
+            case pixel_format::bgr8_unorm:
+            case pixel_format::rgb8i:
+            case pixel_format::rgb8u:
+            case pixel_format::rgb16i:
+            case pixel_format::rgb16u:
+            case pixel_format::rgb32i:
+            case pixel_format::rgb32u:
+            case pixel_format::rgb16f:
+            case pixel_format::rgb32f:
+            case pixel_format::srgb8:
+            case pixel_format::sbgr8:
+            case pixel_format::r5_g6_b5_unorm_pack16:
+            case pixel_format::b10_gr11uf_pack32: return 3;
 
-            case PixelFormat::RGBA8_SNORM:
-            case PixelFormat::RGBA8_UNORM:
-            case PixelFormat::RGBA16_SNORM:
-            case PixelFormat::RGBA16_UNORM:
-            case PixelFormat::BGRA8_UNORM:
-            case PixelFormat::RGBA8I:
-            case PixelFormat::RGBA8U:
-            case PixelFormat::RGBA16I:
-            case PixelFormat::RGBA16U:
-            case PixelFormat::RGBA32I:
-            case PixelFormat::RGBA32U:
-            case PixelFormat::RGBA16F:
-            case PixelFormat::RGBA32F:
-            case PixelFormat::SRGBA8:
-            case PixelFormat::SBGRA8: return 4;
+            case pixel_format::rgba8_snorm:
+            case pixel_format::rgba8_unorm:
+            case pixel_format::rgba16_snorm:
+            case pixel_format::rgba16_unorm:
+            case pixel_format::bgra8_unorm:
+            case pixel_format::rgba8i:
+            case pixel_format::rgba8u:
+            case pixel_format::rgba16i:
+            case pixel_format::rgba16u:
+            case pixel_format::rgba32i:
+            case pixel_format::rgba32u:
+            case pixel_format::rgba16f:
+            case pixel_format::rgba32f:
+            case pixel_format::srgba8:
+            case pixel_format::sbgra8: return 4;
 
             default: break;
         }
@@ -3516,62 +4551,62 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_CONST
-    constexpr auto get_format_element_count(PixelFormat format) noexcept -> u8 {
+    constexpr auto get_format_element_count(pixel_format format) noexcept -> u8 {
         switch (format) {
-            case PixelFormat::R8_SNORM:
-            case PixelFormat::R8_UNORM:
-            case PixelFormat::RG8_SNORM:
-            case PixelFormat::RG8_UNORM:
-            case PixelFormat::R8I:
-            case PixelFormat::R8U:
-            case PixelFormat::RG8I:
-            case PixelFormat::RG8U:
-            case PixelFormat::RGB8_SNORM:
-            case PixelFormat::RGB8_UNORM:
-            case PixelFormat::BGR8_UNORM:
-            case PixelFormat::RGB8I:
-            case PixelFormat::RGB8U:
-            case PixelFormat::RGBA8_SNORM:
-            case PixelFormat::RGBA8_UNORM:
-            case PixelFormat::RGBA16_SNORM:
-            case PixelFormat::BGRA8_UNORM:
-            case PixelFormat::SRGB8:
-            case PixelFormat::SBGR8:
-            case PixelFormat::SRGBA8:
-            case PixelFormat::SBGRA8: return 1u;
+            case pixel_format::r8_snorm:
+            case pixel_format::r8_unorm:
+            case pixel_format::rg8_snorm:
+            case pixel_format::rg8_unorm:
+            case pixel_format::r8i:
+            case pixel_format::r8u:
+            case pixel_format::rg8i:
+            case pixel_format::rg8u:
+            case pixel_format::rgb8_snorm:
+            case pixel_format::rgb8_unorm:
+            case pixel_format::bgr8_unorm:
+            case pixel_format::rgb8i:
+            case pixel_format::rgb8u:
+            case pixel_format::rgba8_snorm:
+            case pixel_format::rgba8_unorm:
+            case pixel_format::rgba16_snorm:
+            case pixel_format::bgra8_unorm:
+            case pixel_format::srgb8:
+            case pixel_format::sbgr8:
+            case pixel_format::srgba8:
+            case pixel_format::sbgra8: return 1u;
 
-            case PixelFormat::R16_SNORM:
-            case PixelFormat::R16_UNORM:
-            case PixelFormat::R16I:
-            case PixelFormat::R16U:
-            case PixelFormat::RG16_SNORM:
-            case PixelFormat::RG16_UNORM:
-            case PixelFormat::RG16I:
-            case PixelFormat::RG16U:
-            case PixelFormat::RG16F:
-            case PixelFormat::RGB16I:
-            case PixelFormat::RGB16U:
-            case PixelFormat::RGB16F:
-            case PixelFormat::RGBA16I:
-            case PixelFormat::RGBA16U:
-            case PixelFormat::RGBA16F:
-            case PixelFormat::R16F: return 2u;
+            case pixel_format::r16_snorm:
+            case pixel_format::r16_unorm:
+            case pixel_format::r16i:
+            case pixel_format::r16u:
+            case pixel_format::rg16_snorm:
+            case pixel_format::rg16_unorm:
+            case pixel_format::rg16i:
+            case pixel_format::rg16u:
+            case pixel_format::rg16f:
+            case pixel_format::rgb16i:
+            case pixel_format::rgb16u:
+            case pixel_format::rgb16f:
+            case pixel_format::rgba16i:
+            case pixel_format::rgba16u:
+            case pixel_format::rgba16f:
+            case pixel_format::r16f: return 2u;
 
-            case PixelFormat::R32I:
-            case PixelFormat::R32U:
-            case PixelFormat::R32F:
-            case PixelFormat::RG32I:
-            case PixelFormat::RG32U:
-            case PixelFormat::RG32F:
-            case PixelFormat::RGB16_SNORM:
-            case PixelFormat::RGB32I:
-            case PixelFormat::RGB32U:
-            case PixelFormat::RGB32F:
-            case PixelFormat::RGBA8I:
-            case PixelFormat::RGBA8U:
-            case PixelFormat::RGBA32I:
-            case PixelFormat::RGBA32U:
-            case PixelFormat::RGBA32F: return 4u;
+            case pixel_format::r32i:
+            case pixel_format::r32u:
+            case pixel_format::r32f:
+            case pixel_format::rg32i:
+            case pixel_format::rg32u:
+            case pixel_format::rg32f:
+            case pixel_format::rgb16_snorm:
+            case pixel_format::rgb32i:
+            case pixel_format::rgb32u:
+            case pixel_format::rgb32f:
+            case pixel_format::rgba8i:
+            case pixel_format::rgba8u:
+            case pixel_format::rgba32i:
+            case pixel_format::rgba32u:
+            case pixel_format::rgba32f: return 4u;
 
             default: break;
         }
@@ -3579,92 +4614,68 @@ namespace stormkit::gpu {
         return 0u;
     }
 
-    namespace vk {
-        /////////////////////////////////////
-        /////////////////////////////////////
-        template<typename T = VkFlags, meta::IsVulkanEnumeration U>
-            requires(core::meta::c_enum<T> or core::meta::is<T, VkFlags>)
-        STORMKIT_FORCE_INLINE
-    	STORMKIT_CONST
-        STORMKIT_INTRINSIC
-        constexpr auto to_vk(U value) noexcept -> T {
-            return unchecked_narrow<T>(value);
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        template<meta::IsVulkanEnumeration T, typename U>
-            requires(core::meta::c_enum<U> or core::meta::is<U, VkFlags>)
-        STORMKIT_FORCE_INLINE
-    	STORMKIT_CONST
-        STORMKIT_INTRINSIC
-        constexpr auto from_vk(U value) noexcept -> T {
-            return unchecked_narrow<T>(value);
-        }
-    } // namespace vk
-
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-	STORMKIT_CONST
-    constexpr auto from_image(image::image::Format format) -> PixelFormat {
+    STORMKIT_CONST
+    constexpr auto from_image(image::image_format format) -> pixel_format {
         switch (format) {
-            case image::image::Format::R8_SNORM: return PixelFormat::R8_SNORM;
-            case image::image::Format::RG8_SNORM: return PixelFormat::RG8_SNORM;
-            case image::image::Format::RGB8_SNORM: return PixelFormat::RGB8_SNORM;
-            case image::image::Format::RGBA8_SNORM: return PixelFormat::RGBA8_SNORM;
-            case image::image::Format::R8_UNORM: return PixelFormat::R8_UNORM;
-            case image::image::Format::RG8_UNORM: return PixelFormat::RG8_UNORM;
-            case image::image::Format::RGB8_UNORM: return PixelFormat::RGB8_UNORM;
-            case image::image::Format::RGBA8_UNORM: return PixelFormat::RGBA8_UNORM;
-            case image::image::Format::R16_SNORM: return PixelFormat::R16_SNORM;
-            case image::image::Format::RG16_SNORM: return PixelFormat::RG16_SNORM;
-            case image::image::Format::RGB16_SNORM: return PixelFormat::RGB16_SNORM;
-            case image::image::Format::RGBA16_SNORM: return PixelFormat::RGBA16_SNORM;
-            case image::image::Format::R16_UNORM: return PixelFormat::R16_UNORM;
-            case image::image::Format::RG16_UNORM: return PixelFormat::RG16_UNORM;
-            case image::image::Format::RGB16_UNORM: return PixelFormat::RGB16_UNORM;
-            case image::image::Format::RGBA16_UNORM: return PixelFormat::RGBA16_UNORM;
-            case image::image::Format::RGBA4_UNORM: return PixelFormat::RGBA4_UNORM_PACK16;
-            case image::image::Format::BGR8_UNORM: return PixelFormat::BGR8_UNORM;
-            case image::image::Format::BGRA8_UNORM: return PixelFormat::BGRA8_UNORM;
-            case image::image::Format::R8I: return PixelFormat::R8I;
-            case image::image::Format::RG8I: return PixelFormat::RG8I;
-            case image::image::Format::RGB8I: return PixelFormat::RGB8I;
-            case image::image::Format::RGBA8I: return PixelFormat::RGBA8I;
-            case image::image::Format::R8U: return PixelFormat::R8U;
-            case image::image::Format::RG8U: return PixelFormat::RG8U;
-            case image::image::Format::RGB8U: return PixelFormat::RGB8U;
-            case image::image::Format::RGBA8U: return PixelFormat::RGBA8U;
-            case image::image::Format::R16I: return PixelFormat::R16I;
-            case image::image::Format::RG16I: return PixelFormat::RG16I;
-            case image::image::Format::RGB16I: return PixelFormat::RGB16I;
-            case image::image::Format::RGBA16I: return PixelFormat::RGBA16I;
-            case image::image::Format::R16U: return PixelFormat::R16U;
-            case image::image::Format::RG16U: return PixelFormat::RG16U;
-            case image::image::Format::RGB16U: return PixelFormat::RGB16U;
-            case image::image::Format::RGBA16U: return PixelFormat::RGBA16U;
-            case image::image::Format::R32I: return PixelFormat::R32I;
-            case image::image::Format::RG32I: return PixelFormat::RG32I;
-            case image::image::Format::RGB32I: return PixelFormat::RGB32I;
-            case image::image::Format::RGBA32I: return PixelFormat::RGBA32I;
-            case image::image::Format::R32U: return PixelFormat::R32U;
-            case image::image::Format::RG32U: return PixelFormat::RG32U;
-            case image::image::Format::RGB32U: return PixelFormat::RGB32U;
-            case image::image::Format::RGBA32U: return PixelFormat::RGBA32U;
-            case image::image::Format::R16F: return PixelFormat::R16F;
-            case image::image::Format::RG16F: return PixelFormat::RG16F;
-            case image::image::Format::RGB16F: return PixelFormat::RGB16F;
-            case image::image::Format::RGBA16F: return PixelFormat::RGBA16F;
-            case image::image::Format::R32F: return PixelFormat::R32F;
-            case image::image::Format::RG32F: return PixelFormat::RG32F;
-            case image::image::Format::RGB32F: return PixelFormat::RGB32F;
-            case image::image::Format::RGBA32F: return PixelFormat::RGBA32F;
-            case image::image::Format::SRGB8: return PixelFormat::SRGB8;
-            case image::image::Format::SRGBA8: return PixelFormat::SRGBA8;
-            case image::image::Format::SBGR8: return PixelFormat::SBGR8;
-            case image::image::Format::SBGRA8: return PixelFormat::SBGRA8;
-            case image::image::Format::UNDEFINED: return PixelFormat::UNDEFINED;
+            case image::image_format::r8_snorm: return pixel_format::r8_snorm;
+            case image::image_format::rg8_snorm: return pixel_format::rg8_snorm;
+            case image::image_format::rgb8_snorm: return pixel_format::rgb8_snorm;
+            case image::image_format::rgba8_snorm: return pixel_format::rgba8_snorm;
+            case image::image_format::r8_unorm: return pixel_format::r8_unorm;
+            case image::image_format::rg8_unorm: return pixel_format::rg8_unorm;
+            case image::image_format::rgb8_unorm: return pixel_format::rgb8_unorm;
+            case image::image_format::rgba8_unorm: return pixel_format::rgba8_unorm;
+            case image::image_format::r16_snorm: return pixel_format::r16_snorm;
+            case image::image_format::rg16_snorm: return pixel_format::rg16_snorm;
+            case image::image_format::rgb16_snorm: return pixel_format::rgb16_snorm;
+            case image::image_format::rgba16_snorm: return pixel_format::rgba16_snorm;
+            case image::image_format::r16_unorm: return pixel_format::r16_unorm;
+            case image::image_format::rg16_unorm: return pixel_format::rg16_unorm;
+            case image::image_format::rgb16_unorm: return pixel_format::rgb16_unorm;
+            case image::image_format::rgba16_unorm: return pixel_format::rgba16_unorm;
+            case image::image_format::rgba4_unorm: return pixel_format::rgba4_unorm_pack16;
+            case image::image_format::bgr8_unorm: return pixel_format::bgr8_unorm;
+            case image::image_format::bgra8_unorm: return pixel_format::bgra8_unorm;
+            case image::image_format::r8i: return pixel_format::r8i;
+            case image::image_format::rg8i: return pixel_format::rg8i;
+            case image::image_format::rgb8i: return pixel_format::rgb8i;
+            case image::image_format::rgba8i: return pixel_format::rgba8i;
+            case image::image_format::r8u: return pixel_format::r8u;
+            case image::image_format::rg8u: return pixel_format::rg8u;
+            case image::image_format::rgb8u: return pixel_format::rgb8u;
+            case image::image_format::rgba8u: return pixel_format::rgba8u;
+            case image::image_format::r16i: return pixel_format::r16i;
+            case image::image_format::rg16i: return pixel_format::rg16i;
+            case image::image_format::rgb16i: return pixel_format::rgb16i;
+            case image::image_format::rgba16i: return pixel_format::rgba16i;
+            case image::image_format::r16u: return pixel_format::r16u;
+            case image::image_format::rg16u: return pixel_format::rg16u;
+            case image::image_format::rgb16u: return pixel_format::rgb16u;
+            case image::image_format::rgba16u: return pixel_format::rgba16u;
+            case image::image_format::r32i: return pixel_format::r32i;
+            case image::image_format::rg32i: return pixel_format::rg32i;
+            case image::image_format::rgb32i: return pixel_format::rgb32i;
+            case image::image_format::rgba32i: return pixel_format::rgba32i;
+            case image::image_format::r32u: return pixel_format::r32u;
+            case image::image_format::rg32u: return pixel_format::rg32u;
+            case image::image_format::rgb32u: return pixel_format::rgb32u;
+            case image::image_format::rgba32u: return pixel_format::rgba32u;
+            case image::image_format::r16f: return pixel_format::r16f;
+            case image::image_format::rg16f: return pixel_format::rg16f;
+            case image::image_format::rgb16f: return pixel_format::rgb16f;
+            case image::image_format::rgba16f: return pixel_format::rgba16f;
+            case image::image_format::r32f: return pixel_format::r32f;
+            case image::image_format::rg32f: return pixel_format::rg32f;
+            case image::image_format::rgb32f: return pixel_format::rgb32f;
+            case image::image_format::rgba32f: return pixel_format::rgba32f;
+            case image::image_format::srgb8: return pixel_format::srgb8;
+            case image::image_format::srgba8: return pixel_format::srgba8;
+            case image::image_format::sbgr8: return pixel_format::sbgr8;
+            case image::image_format::sbgra8: return pixel_format::sbgra8;
+            case image::image_format::undefined: return pixel_format::undefined;
 
             default: break;
         }
@@ -3672,311 +4683,3 @@ namespace stormkit::gpu {
         std::unreachable();
     }
 } // namespace stormkit::gpu
-
-#ifndef STORMKIT_OS_WINDOWS
-    #undef STORMKIT_GPU_API
-    #define STORMKIT_GPU_API
-#endif
-
-template stormkit::gpu::AccessFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::AccessFlag, VkFlags>(VkFlags);
-template stormkit::gpu::AccessFlag STORMKIT_GPU_API
-                                  stormkit::gpu::vk::from_vk<stormkit::gpu::AccessFlag, VkAccessFlagBits>(VkAccessFlagBits);
-template VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::AccessFlag);
-template VkAccessFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkAccessFlagBits>(stormkit::gpu::AccessFlag);
-
-template stormkit::gpu::AttachmentLoadOperation STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::AttachmentLoadOperation, VkFlags>(VkFlags);
-template stormkit::gpu::AttachmentLoadOperation STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::AttachmentLoadOperation, VkAttachmentLoadOp>(VkAttachmentLoadOp);
-template VkFlags STORMKIT_GPU_API            stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::AttachmentLoadOperation);
-template VkAttachmentLoadOp STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkAttachmentLoadOp>(stormkit::gpu::AttachmentLoadOperation);
-
-template stormkit::gpu::AttachmentStoreOperation STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::AttachmentStoreOperation, VkFlags>(VkFlags);
-template stormkit::gpu::AttachmentStoreOperation STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::AttachmentStoreOperation, VkAttachmentStoreOp>(VkAttachmentStoreOp);
-template VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::AttachmentStoreOperation);
-template VkAttachmentStoreOp STORMKIT_GPU_API
-  stormkit::gpu::vk::to_vk<VkAttachmentStoreOp>(stormkit::gpu::AttachmentStoreOperation);
-
-template stormkit::gpu::BlendFactor STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::BlendFactor, VkFlags>(VkFlags);
-template stormkit::gpu::BlendFactor STORMKIT_GPU_API
-                                        stormkit::gpu::vk::from_vk<stormkit::gpu::BlendFactor, VkBlendFactor>(VkBlendFactor);
-template VkFlags STORMKIT_GPU_API       stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::BlendFactor);
-template VkBlendFactor STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkBlendFactor>(stormkit::gpu::BlendFactor);
-
-template stormkit::gpu::BlendOperation STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::BlendOperation, VkFlags>(VkFlags);
-template stormkit::gpu::BlendOperation STORMKIT_GPU_API
-                                    stormkit::gpu::vk::from_vk<stormkit::gpu::BlendOperation, VkBlendOp>(VkBlendOp);
-template VkFlags STORMKIT_GPU_API   stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::BlendOperation);
-template VkBlendOp STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkBlendOp>(stormkit::gpu::BlendOperation);
-
-template stormkit::gpu::BorderColor STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::BorderColor, VkFlags>(VkFlags);
-template stormkit::gpu::BorderColor STORMKIT_GPU_API
-                                        stormkit::gpu::vk::from_vk<stormkit::gpu::BorderColor, VkBorderColor>(VkBorderColor);
-template VkFlags STORMKIT_GPU_API       stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::BorderColor);
-template VkBorderColor STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkBorderColor>(stormkit::gpu::BorderColor);
-
-template stormkit::gpu::BufferUsageFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::BufferUsageFlag, VkFlags>(VkFlags);
-template stormkit::gpu::BufferUsageFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::BufferUsageFlag, VkBufferUsageFlagBits>(VkBufferUsageFlagBits);
-template VkFlags STORMKIT_GPU_API               stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::BufferUsageFlag);
-template VkBufferUsageFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkBufferUsageFlagBits>(stormkit::gpu::BufferUsageFlag);
-
-template stormkit::gpu::ColorComponentFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::ColorComponentFlag, VkFlags>(VkFlags);
-template stormkit::gpu::ColorComponentFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::ColorComponentFlag, VkColorComponentFlagBits>(VkColorComponentFlagBits);
-template VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ColorComponentFlag);
-template VkColorComponentFlagBits STORMKIT_GPU_API
-  stormkit::gpu::vk::to_vk<VkColorComponentFlagBits>(stormkit::gpu::ColorComponentFlag);
-
-template stormkit::gpu::ColorSpace STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ColorSpace, VkFlags>(VkFlags);
-template stormkit::gpu::ColorSpace STORMKIT_GPU_API
-                                          stormkit::gpu::vk::from_vk<stormkit::gpu::ColorSpace, VkColorSpaceKHR>(VkColorSpaceKHR);
-template VkFlags STORMKIT_GPU_API         stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ColorSpace);
-template VkColorSpaceKHR STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkColorSpaceKHR>(stormkit::gpu::ColorSpace);
-
-template stormkit::gpu::CommandBufferLevel STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::CommandBufferLevel, VkFlags>(VkFlags);
-template stormkit::gpu::CommandBufferLevel STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::CommandBufferLevel, VkCommandBufferLevel>(VkCommandBufferLevel);
-template VkFlags STORMKIT_GPU_API              stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::CommandBufferLevel);
-template VkCommandBufferLevel STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkCommandBufferLevel>(stormkit::gpu::CommandBufferLevel);
-
-template stormkit::gpu::CompareOperation STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::CompareOperation, VkFlags>(VkFlags);
-template stormkit::gpu::CompareOperation STORMKIT_GPU_API
-                                      stormkit::gpu::vk::from_vk<stormkit::gpu::CompareOperation, VkCompareOp>(VkCompareOp);
-template VkFlags STORMKIT_GPU_API     stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::CompareOperation);
-template VkCompareOp STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkCompareOp>(stormkit::gpu::CompareOperation);
-
-template stormkit::gpu::CullModeFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::CullModeFlag, VkFlags>(VkFlags);
-template stormkit::gpu::CullModeFlag STORMKIT_GPU_API
-                                  stormkit::gpu::vk::from_vk<stormkit::gpu::CullModeFlag, VkCullModeFlagBits>(VkCullModeFlagBits);
-template VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::CullModeFlag);
-template VkCullModeFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkCullModeFlagBits>(stormkit::gpu::CullModeFlag);
-
-template stormkit::gpu::DebugObjectType STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::DebugObjectType, VkFlags>(VkFlags);
-template stormkit::gpu::DebugObjectType STORMKIT_GPU_API
-                                       stormkit::gpu::vk::from_vk<stormkit::gpu::DebugObjectType, VkObjectType>(VkObjectType);
-template VkFlags STORMKIT_GPU_API      stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::DebugObjectType);
-template VkObjectType STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkObjectType>(stormkit::gpu::DebugObjectType);
-
-template stormkit::gpu::DependencyFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::DependencyFlag, VkFlags>(VkFlags);
-template stormkit::gpu::DependencyFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::DependencyFlag, VkDependencyFlagBits>(VkDependencyFlagBits);
-template VkFlags STORMKIT_GPU_API              stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::DependencyFlag);
-template VkDependencyFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkDependencyFlagBits>(stormkit::gpu::DependencyFlag);
-
-template stormkit::gpu::DescriptorType STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::DescriptorType, VkFlags>(VkFlags);
-template stormkit::gpu::DescriptorType STORMKIT_GPU_API
-                                  stormkit::gpu::vk::from_vk<stormkit::gpu::DescriptorType, VkDescriptorType>(VkDescriptorType);
-template VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::DescriptorType);
-template VkDescriptorType STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkDescriptorType>(stormkit::gpu::DescriptorType);
-
-template stormkit::gpu::DynamicState STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::DynamicState, VkFlags>(VkFlags);
-template stormkit::gpu::DynamicState STORMKIT_GPU_API
-                                         stormkit::gpu::vk::from_vk<stormkit::gpu::DynamicState, VkDynamicState>(VkDynamicState);
-template VkFlags STORMKIT_GPU_API        stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::DynamicState);
-template VkDynamicState STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkDynamicState>(stormkit::gpu::DynamicState);
-
-template stormkit::gpu::Filter STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::Filter, VkFlags>(VkFlags);
-template stormkit::gpu::Filter STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::Filter, VkFilter>(VkFilter);
-template VkFlags STORMKIT_GPU_API               stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::Filter);
-template VkFilter STORMKIT_GPU_API              stormkit::gpu::vk::to_vk<VkFilter>(stormkit::gpu::Filter);
-
-template stormkit::gpu::FormatFeatureFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::FormatFeatureFlag, VkFlags>(VkFlags);
-template stormkit::gpu::FormatFeatureFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::FormatFeatureFlag, VkFormatFeatureFlagBits>(VkFormatFeatureFlagBits);
-template VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::FormatFeatureFlag);
-template VkFormatFeatureFlagBits STORMKIT_GPU_API
-  stormkit::gpu::vk::to_vk<VkFormatFeatureFlagBits>(stormkit::gpu::FormatFeatureFlag);
-
-template stormkit::gpu::FrontFace STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::FrontFace, VkFlags>(VkFlags);
-template stormkit::gpu::FrontFace STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::FrontFace, VkFrontFace>(VkFrontFace);
-template VkFlags STORMKIT_GPU_API                  stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::FrontFace);
-template VkFrontFace STORMKIT_GPU_API              stormkit::gpu::vk::to_vk<VkFrontFace>(stormkit::gpu::FrontFace);
-
-template stormkit::gpu::GeometryFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::GeometryFlag, VkFlags>(VkFlags);
-template stormkit::gpu::GeometryFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::GeometryFlag, VkGeometryFlagBitsKHR>(VkGeometryFlagBitsKHR);
-template VkFlags STORMKIT_GPU_API               stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::GeometryFlag);
-template VkGeometryFlagBitsKHR STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkGeometryFlagBitsKHR>(stormkit::gpu::GeometryFlag);
-
-template stormkit::gpu::GeometryType STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::GeometryType, VkFlags>(VkFlags);
-template stormkit::gpu::GeometryType STORMKIT_GPU_API
-                                  stormkit::gpu::vk::from_vk<stormkit::gpu::GeometryType, VkGeometryTypeKHR>(VkGeometryTypeKHR);
-template VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::GeometryType);
-template VkGeometryTypeKHR STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkGeometryTypeKHR>(stormkit::gpu::GeometryType);
-
-template stormkit::gpu::ImageAspectFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::ImageAspectFlag, VkFlags>(VkFlags);
-template stormkit::gpu::ImageAspectFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::ImageAspectFlag, VkImageAspectFlagBits>(VkImageAspectFlagBits);
-template VkFlags STORMKIT_GPU_API               stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ImageAspectFlag);
-template VkImageAspectFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkImageAspectFlagBits>(stormkit::gpu::ImageAspectFlag);
-
-template stormkit::gpu::ImageCreateFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::ImageCreateFlag, VkFlags>(VkFlags);
-template stormkit::gpu::ImageCreateFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::ImageCreateFlag, VkImageCreateFlagBits>(VkImageCreateFlagBits);
-template VkFlags STORMKIT_GPU_API               stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ImageCreateFlag);
-template VkImageCreateFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkImageCreateFlagBits>(stormkit::gpu::ImageCreateFlag);
-
-template stormkit::gpu::ImageLayout STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ImageLayout, VkFlags>(VkFlags);
-template stormkit::gpu::ImageLayout STORMKIT_GPU_API
-                                        stormkit::gpu::vk::from_vk<stormkit::gpu::ImageLayout, VkImageLayout>(VkImageLayout);
-template VkFlags STORMKIT_GPU_API       stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ImageLayout);
-template VkImageLayout STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkImageLayout>(stormkit::gpu::ImageLayout);
-
-template stormkit::gpu::ImageTiling STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ImageTiling, VkFlags>(VkFlags);
-template stormkit::gpu::ImageTiling STORMKIT_GPU_API
-                                        stormkit::gpu::vk::from_vk<stormkit::gpu::ImageTiling, VkImageTiling>(VkImageTiling);
-template VkFlags STORMKIT_GPU_API       stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ImageTiling);
-template VkImageTiling STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkImageTiling>(stormkit::gpu::ImageTiling);
-
-template stormkit::gpu::ImageType STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ImageType, VkFlags>(VkFlags);
-template stormkit::gpu::ImageType STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ImageType, VkImageType>(VkImageType);
-template VkFlags STORMKIT_GPU_API                  stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ImageType);
-template VkImageType STORMKIT_GPU_API              stormkit::gpu::vk::to_vk<VkImageType>(stormkit::gpu::ImageType);
-
-template stormkit::gpu::ImageUsageFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::ImageUsageFlag, VkFlags>(VkFlags);
-template stormkit::gpu::ImageUsageFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::ImageUsageFlag, VkImageUsageFlagBits>(VkImageUsageFlagBits);
-template VkFlags STORMKIT_GPU_API              stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ImageUsageFlag);
-template VkImageUsageFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkImageUsageFlagBits>(stormkit::gpu::ImageUsageFlag);
-
-template stormkit::gpu::ImageViewType STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::ImageViewType, VkFlags>(VkFlags);
-template stormkit::gpu::ImageViewType STORMKIT_GPU_API
-                                  stormkit::gpu::vk::from_vk<stormkit::gpu::ImageViewType, VkImageViewType>(VkImageViewType);
-template VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ImageViewType);
-template VkImageViewType STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkImageViewType>(stormkit::gpu::ImageViewType);
-
-template stormkit::gpu::LogicOperation STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::LogicOperation, VkFlags>(VkFlags);
-template stormkit::gpu::LogicOperation STORMKIT_GPU_API
-                                    stormkit::gpu::vk::from_vk<stormkit::gpu::LogicOperation, VkLogicOp>(VkLogicOp);
-template VkFlags STORMKIT_GPU_API   stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::LogicOperation);
-template VkLogicOp STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkLogicOp>(stormkit::gpu::LogicOperation);
-
-template stormkit::gpu::MemoryPropertyFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::MemoryPropertyFlag, VkFlags>(VkFlags);
-template stormkit::gpu::MemoryPropertyFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::MemoryPropertyFlag, VkMemoryPropertyFlagBits>(VkMemoryPropertyFlagBits);
-template VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::MemoryPropertyFlag);
-template VkMemoryPropertyFlagBits STORMKIT_GPU_API
-  stormkit::gpu::vk::to_vk<VkMemoryPropertyFlagBits>(stormkit::gpu::MemoryPropertyFlag);
-
-template stormkit::gpu::PhysicalDeviceType STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::PhysicalDeviceType, VkFlags>(VkFlags);
-template stormkit::gpu::PhysicalDeviceType STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::PhysicalDeviceType, VkPhysicalDeviceType>(VkPhysicalDeviceType);
-template VkFlags STORMKIT_GPU_API              stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::PhysicalDeviceType);
-template VkPhysicalDeviceType STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkPhysicalDeviceType>(stormkit::gpu::PhysicalDeviceType);
-
-template stormkit::gpu::PipelineBindPoint STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::PipelineBindPoint, VkFlags>(VkFlags);
-template stormkit::gpu::PipelineBindPoint STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::PipelineBindPoint, VkPipelineBindPoint>(VkPipelineBindPoint);
-template VkFlags STORMKIT_GPU_API             stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::PipelineBindPoint);
-template VkPipelineBindPoint STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkPipelineBindPoint>(stormkit::gpu::PipelineBindPoint);
-
-template stormkit::gpu::PipelineStageFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::PipelineStageFlag, VkFlags>(VkFlags);
-template stormkit::gpu::PipelineStageFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::PipelineStageFlag, VkPipelineStageFlagBits>(VkPipelineStageFlagBits);
-template VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::PipelineStageFlag);
-template VkPipelineStageFlagBits STORMKIT_GPU_API
-  stormkit::gpu::vk::to_vk<VkPipelineStageFlagBits>(stormkit::gpu::PipelineStageFlag);
-
-template stormkit::gpu::PixelFormat STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::PixelFormat, VkFlags>(VkFlags);
-template stormkit::gpu::PixelFormat STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::PixelFormat, VkFormat>(VkFormat);
-template VkFlags STORMKIT_GPU_API                    stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::PixelFormat);
-template VkFormat STORMKIT_GPU_API                   stormkit::gpu::vk::to_vk<VkFormat>(stormkit::gpu::PixelFormat);
-
-template stormkit::gpu::PolygonMode STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::PolygonMode, VkFlags>(VkFlags);
-template stormkit::gpu::PolygonMode STORMKIT_GPU_API
-                                        stormkit::gpu::vk::from_vk<stormkit::gpu::PolygonMode, VkPolygonMode>(VkPolygonMode);
-template VkFlags STORMKIT_GPU_API       stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::PolygonMode);
-template VkPolygonMode STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkPolygonMode>(stormkit::gpu::PolygonMode);
-
-template stormkit::gpu::PresentMode STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::PresentMode, VkFlags>(VkFlags);
-template stormkit::gpu::PresentMode STORMKIT_GPU_API
-                                  stormkit::gpu::vk::from_vk<stormkit::gpu::PresentMode, VkPresentModeKHR>(VkPresentModeKHR);
-template VkFlags STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::PresentMode);
-template VkPresentModeKHR STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkPresentModeKHR>(stormkit::gpu::PresentMode);
-
-template stormkit::gpu::PrimitiveTopology STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::PrimitiveTopology, VkFlags>(VkFlags);
-template stormkit::gpu::PrimitiveTopology STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::PrimitiveTopology, VkPrimitiveTopology>(VkPrimitiveTopology);
-template VkFlags STORMKIT_GPU_API             stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::PrimitiveTopology);
-template VkPrimitiveTopology STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkPrimitiveTopology>(stormkit::gpu::PrimitiveTopology);
-
-template stormkit::gpu::QueueFlag STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::QueueFlag, VkFlags>(VkFlags);
-template stormkit::gpu::QueueFlag STORMKIT_GPU_API
-                                          stormkit::gpu::vk::from_vk<stormkit::gpu::QueueFlag, VkQueueFlagBits>(VkQueueFlagBits);
-template VkFlags STORMKIT_GPU_API         stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::QueueFlag);
-template VkQueueFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkQueueFlagBits>(stormkit::gpu::QueueFlag);
-
-template stormkit::gpu::ResolveModeFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::ResolveModeFlag, VkFlags>(VkFlags);
-template stormkit::gpu::ResolveModeFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::ResolveModeFlag, VkResolveModeFlagBits>(VkResolveModeFlagBits);
-template VkFlags STORMKIT_GPU_API               stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ResolveModeFlag);
-template VkResolveModeFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkResolveModeFlagBits>(stormkit::gpu::ResolveModeFlag);
-
-template stormkit::gpu::Result STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::Result, VkFlags>(VkFlags);
-template stormkit::gpu::Result STORMKIT_GPU_API stormkit::gpu::vk::from_vk<stormkit::gpu::Result, VkResult>(VkResult);
-template VkFlags STORMKIT_GPU_API               stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::Result);
-template VkResult STORMKIT_GPU_API              stormkit::gpu::vk::to_vk<VkResult>(stormkit::gpu::Result);
-
-template stormkit::gpu::SampleCountFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::SampleCountFlag, VkFlags>(VkFlags);
-template stormkit::gpu::SampleCountFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::SampleCountFlag, VkSampleCountFlagBits>(VkSampleCountFlagBits);
-template VkFlags STORMKIT_GPU_API               stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::SampleCountFlag);
-template VkSampleCountFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkSampleCountFlagBits>(stormkit::gpu::SampleCountFlag);
-
-template stormkit::gpu::SamplerAddressMode STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::SamplerAddressMode, VkFlags>(VkFlags);
-template stormkit::gpu::SamplerAddressMode STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::SamplerAddressMode, VkSamplerAddressMode>(VkSamplerAddressMode);
-template VkFlags STORMKIT_GPU_API              stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::SamplerAddressMode);
-template VkSamplerAddressMode STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkSamplerAddressMode>(stormkit::gpu::SamplerAddressMode);
-
-template stormkit::gpu::SamplerMipmapMode STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::SamplerMipmapMode, VkFlags>(VkFlags);
-template stormkit::gpu::SamplerMipmapMode STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::SamplerMipmapMode, VkSamplerMipmapMode>(VkSamplerMipmapMode);
-template VkFlags STORMKIT_GPU_API             stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::SamplerMipmapMode);
-template VkSamplerMipmapMode STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkSamplerMipmapMode>(stormkit::gpu::SamplerMipmapMode);
-
-template stormkit::gpu::ShaderStageFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::ShaderStageFlag, VkFlags>(VkFlags);
-template stormkit::gpu::ShaderStageFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::ShaderStageFlag, VkShaderStageFlagBits>(VkShaderStageFlagBits);
-template VkFlags STORMKIT_GPU_API               stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::ShaderStageFlag);
-template VkShaderStageFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkShaderStageFlagBits>(stormkit::gpu::ShaderStageFlag);
-
-template stormkit::gpu::StencilFaceFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::StencilFaceFlag, VkFlags>(VkFlags);
-template stormkit::gpu::StencilFaceFlag STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::StencilFaceFlag, VkStencilFaceFlagBits>(VkStencilFaceFlagBits);
-template VkFlags STORMKIT_GPU_API               stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::StencilFaceFlag);
-template VkStencilFaceFlagBits STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkStencilFaceFlagBits>(stormkit::gpu::StencilFaceFlag);
-
-template stormkit::gpu::VertexInputRate STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::VertexInputRate, VkFlags>(VkFlags);
-template stormkit::gpu::VertexInputRate STORMKIT_GPU_API
-  stormkit::gpu::vk::from_vk<stormkit::gpu::VertexInputRate, VkVertexInputRate>(VkVertexInputRate);
-template VkFlags STORMKIT_GPU_API           stormkit::gpu::vk::to_vk<VkFlags>(stormkit::gpu::VertexInputRate);
-template VkVertexInputRate STORMKIT_GPU_API stormkit::gpu::vk::to_vk<VkVertexInputRate>(stormkit::gpu::VertexInputRate);

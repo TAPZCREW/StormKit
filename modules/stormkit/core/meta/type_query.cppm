@@ -13,6 +13,7 @@ import std;
 import stormkit.core.meta.concepts;
 import stormkit.core.meta.type_manipulation;
 import stormkit.core.meta.algorithms;
+import stormkit.core.meta.tag_invoke;
 
 namespace stdr = std::ranges;
 
@@ -91,8 +92,19 @@ export namespace stormkit { inline namespace core { namespace meta {
     template<arithmetic T>
     using arithmetic_ordering_type = conditional<integral<T>, std::strong_ordering, std::partial_ordering>;
 
-    template<enumeration>
-    constexpr auto enumerate() noexcept -> decltype(auto) = delete;
+    template<enumeration T>
+    struct enumerate_fn final {
+        static constexpr auto tag_invokable = meta::tag_invocable<enumerate_fn<T>>;
+
+        static constexpr auto operator()() noexcept = delete ("No enumerator defined for this enumeration!");
+
+        [[nodiscard]]
+        static constexpr auto operator()() noexcept -> decltype(auto)
+            requires(tag_invokable);
+    };
+
+    template<enumeration T>
+    inline constexpr auto enumerate = enumerate_fn<T> {};
 
     template<typename T>
     consteval auto name_of() noexcept -> std::string_view;
@@ -242,4 +254,15 @@ namespace stormkit { inline namespace core { namespace meta {
 
         return std::string_view { res.data(), res.size() };
     }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<enumeration T>
+    STORMKIT_FORCE_INLINE
+    constexpr auto enumerate_fn<T>::operator()() noexcept -> decltype(auto)
+        requires(tag_invokable)
+    {
+        return meta::tag_invoke(enumerate_fn<T> {});
+    }
+
 }}} // namespace stormkit::core::meta

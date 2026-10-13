@@ -31,14 +31,6 @@ option("examples_entities", {
         if option:dep("examples"):enabled() then option:enable(option:dep("entities"):enabled()) end
     end,
 }) --option:enable(true) end end })
-option("examples_lua", {
-    default = false,
-    category = "root menu/build",
-    deps = { "examples", "lua" },
-    after_check = function(option)
-        if option:dep("examples"):enabled() then option:enable(option:dep("lua"):enabled()) end
-    end,
-})
 option("examples", { default = true, category = "root menu/build" })
 option("tools", {
     default = false,
@@ -58,8 +50,7 @@ option("math", { default = true, category = "root menu/modules" })
 option("entities", { default = false, category = "root menu/modules" })
 option("image", { default = true, category = "root menu/modules", deps = { "math", "log" } })
 option("wsi", { default = true, category = "root menu/modules", deps = { "log" } })
-option("gpu", { default = false, category = "root menu/modules", deps = { "log", "image", "wsi" } })
-option("lua", { default = false, category = "root menu/modules", deps = { "log" } })
+option("gpu", { default = true, category = "root menu/modules", deps = { "log", "image", "wsi" } })
 
 option("compile_commands", { default = false, category = "root menu/support" })
 option("vsxmake", { default = false, category = "root menu/support" })

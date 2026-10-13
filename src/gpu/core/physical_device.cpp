@@ -47,10 +47,10 @@ namespace stormkit::gpu {
             return "UNKNOWN";
         }
 
-        auto info(const PhysicalDeviceImplementation& physical_device) noexcept -> PhysicalDeviceInfo {
+        auto info(const PhysicalDeviceImplementation& physical_device) noexcept -> physical_device_info {
             const auto& handle = physical_device.native_handle();
 
-            auto device_info = PhysicalDeviceInfo {};
+            auto device_info = physical_device_info {};
 
             const auto properties = vk::call<VkPhysicalDeviceProperties>(vkGetPhysicalDeviceProperties, handle);
             const auto vendor_id  = properties.vendorID;
@@ -73,19 +73,19 @@ namespace stormkit::gpu {
             device_info.driver_patch_version = vk::version_patch(properties.driverVersion);
             stdr::copy(properties.pipelineCacheUUID, stdr::begin(device_info.pipeline_cache_uuid));
 
-            device_info.type = vk::from_vk<PhysicalDeviceType>(properties.deviceType);
+            device_info.type = vk::from_vk<physical_device_type>(properties.deviceType);
 
             return device_info;
         }
 
-        auto capabilities(const PhysicalDeviceImplementation& physical_device) noexcept -> RenderCapabilities {
+        auto capabilities(const PhysicalDeviceImplementation& physical_device) noexcept -> render_capabilities {
             const auto& handle = physical_device.native_handle();
 
             const auto properties = vk::call<VkPhysicalDeviceProperties>(vkGetPhysicalDeviceProperties, handle);
             // TODO port to vkGetPhysicalDeviceFeatures2
             const auto features = vk::call<VkPhysicalDeviceFeatures>(vkGetPhysicalDeviceFeatures, handle);
 
-            auto capabilities                                            = RenderCapabilities {};
+            auto capabilities                                            = render_capabilities {};
             capabilities.limits.max_image_dimension_1D                   = properties.limits.maxImageDimension1D;
             capabilities.limits.max_image_dimension_2D                   = properties.limits.maxImageDimension2D;
             capabilities.limits.max_image_dimension_3D                   = properties.limits.maxImageDimension3D;
@@ -176,23 +176,23 @@ namespace stormkit::gpu {
             capabilities.limits.max_framebuffer_height              = properties.limits.maxFramebufferHeight;
             capabilities.limits.max_framebuffer_layers              = properties.limits.maxFramebufferLayers;
             capabilities.limits.framebuffer_color_sample_counts     = unchecked_narrow<
-              SampleCountFlag>(properties.limits.framebufferColorSampleCounts);
+              sample_count_flag>(properties.limits.framebufferColorSampleCounts);
             capabilities.limits.framebuffer_depth_sample_counts = unchecked_narrow<
-              SampleCountFlag>(properties.limits.framebufferDepthSampleCounts);
+              sample_count_flag>(properties.limits.framebufferDepthSampleCounts);
             capabilities.limits.framebuffer_stencil_sample_counts = unchecked_narrow<
-              SampleCountFlag>(properties.limits.framebufferStencilSampleCounts);
+              sample_count_flag>(properties.limits.framebufferStencilSampleCounts);
             capabilities.limits.framebuffer_no_attachments_sample_counts = unchecked_narrow<
-              SampleCountFlag>(properties.limits.framebufferNoAttachmentsSampleCounts);
+              sample_count_flag>(properties.limits.framebufferNoAttachmentsSampleCounts);
             capabilities.limits.max_color_attachments             = properties.limits.maxColorAttachments;
             capabilities.limits.sampled_image_color_sample_counts = unchecked_narrow<
-              SampleCountFlag>(properties.limits.sampledImageColorSampleCounts);
+              sample_count_flag>(properties.limits.sampledImageColorSampleCounts);
             capabilities.limits.sampled_image_integer_sample_counts = unchecked_narrow<
-              SampleCountFlag>(properties.limits.sampledImageIntegerSampleCounts);
+              sample_count_flag>(properties.limits.sampledImageIntegerSampleCounts);
             capabilities.limits.sampled_image_depth_sample_counts = unchecked_narrow<
-              SampleCountFlag>(properties.limits.sampledImageDepthSampleCounts);
+              sample_count_flag>(properties.limits.sampledImageDepthSampleCounts);
             capabilities.limits.sampled_image_stencil_sample_counts = unchecked_narrow<
-              SampleCountFlag>(properties.limits.sampledImageStencilSampleCounts);
-            capabilities.limits.storage_image_sample_counts = unchecked_narrow<SampleCountFlag>(properties.limits.storageImageSampleCounts);
+              sample_count_flag>(properties.limits.sampledImageStencilSampleCounts);
+            capabilities.limits.storage_image_sample_counts = unchecked_narrow<sample_count_flag>(properties.limits.storageImageSampleCounts);
             capabilities.limits.max_sample_mask_words       = properties.limits.maxSampleMaskWords;
             capabilities.limits.timestamp_compute_and_engine         = properties.limits.timestampComputeAndGraphics;
             capabilities.limits.timestamp_period                     = properties.limits.timestampPeriod;
@@ -283,11 +283,11 @@ namespace stormkit::gpu {
             const auto& handle = physical_device.native_handle();
             return transform(vk::enumerate<VkQueueFamilyProperties>(vkGetPhysicalDeviceQueueFamilyProperties, handle),
                              [](const auto& family) static noexcept {
-                                 return QueueFamily { .flags = unchecked_narrow<QueueFlag>(family.queueFlags), .count = family.queueCount };
+                                 return QueueFamily { .flags = unchecked_narrow<queue_flag>(family.queueFlags), .count = family.queueCount };
                              });
         }
 
-        auto extensions(const PhysicalDeviceImplementation& physical_device, const PhysicalDeviceInfo& info) noexcept
+        auto extensions(const PhysicalDeviceImplementation& physical_device, const physical_device_info& info) noexcept
           -> dynarray<string> {
             const auto& handle     = physical_device.native_handle();
             const auto  extensions = TryXAssert(vk::enumerate_checked<VkExtensionProperties>(vkEnumerateDeviceExtensionProperties,
@@ -303,11 +303,11 @@ namespace stormkit::gpu {
         }
 
         auto formats_properties(const PhysicalDeviceImplementation& physical_device) noexcept
-          -> dynarray<std::pair<PixelFormat, FormatProperties>> {
+          -> dynarray<std::pair<pixel_format, format_properties>> {
             const auto& handle = physical_device.native_handle();
-            return transform(cm::enumerate<PixelFormat>(), [&handle](const auto val) noexcept {
+            return transform(cm::enumerate<pixel_format>(), [&handle](const auto val) noexcept {
                 return std::make_pair(val,
-                                      vk::from_vk(vk::call<VkFormatProperties>(vkGetPhysicalDeviceFormatProperties,
+                                      vk::from_vk(vk::call<Vkformat_properties>(vkGetPhysicalDeviceformat_properties,
                                                                                handle,
                                                                                vk::to_vk<VkFormat>(val))));
             });
@@ -324,10 +324,10 @@ namespace stormkit::gpu {
         const auto& info         = physical_device.info();
         const auto& capabilities = physical_device.capabilities();
 
-        if (info.type == PhysicalDeviceType::DISCRETE_GPU) score += 10000000u;
-        else if (info.type == PhysicalDeviceType::VIRTUAL_GPU)
+        if (info.type == physical_device_type::DISCRETE_GPU) score += 10000000u;
+        else if (info.type == physical_device_type::VIRTUAL_GPU)
             score += 5000000u;
-        else if (info.type == PhysicalDeviceType::INTEGRATED_GPU)
+        else if (info.type == physical_device_type::INTEGRATED_GPU)
             score += 250000u;
 
         score += capabilities.limits.max_image_dimension_1D;

@@ -135,7 +135,7 @@ export namespace base {
                                                   "Failed to create swapchain");
 
             const auto queue_entries = m_device->queue_entries();
-            const auto it            = stdr::find_if(queue_entries, gpu::monadic::find_queue<gpu::QueueFlag::GRAPHICS>());
+            const auto it            = stdr::find_if(queue_entries, gpu::monadic::find_queue<gpu::queue_flag::GRAPHICS>());
             ensures(it != stdr::cend(queue_entries), "No raster queue found!");
 
             m_raster_queue = gpu::Queue::create(m_device, *it);

@@ -13,22 +13,24 @@ export module stormkit.gpu.core:structs;
 import std;
 
 import stormkit.core;
+import stormkit.math;
 
 import :vulkan.enums;
 
-export {
-    namespace stormkit::gpu {
-        struct SurfaceFormat {
-            PixelFormat format;
-            ColorSpace  color_space;
+namespace cmeta = stormkit::core::meta;
+
+export namespace stormkit::gpu {
+        struct surface_format {
+            pixel_format format;
+            color_space  color_space;
         };
 
-        struct MemoryBarrier {
-            AccessFlag src;
-            AccessFlag dst;
+        struct memory_barrier {
+            access_flag src;
+            access_flag dst;
         };
 
-        struct RenderCapabilities {
+        struct render_capabilities {
             struct {
                 bool robust_buffer_access;
                 bool full_draw_index_uint32;
@@ -169,16 +171,16 @@ export {
                 u32                  max_framebuffer_width;
                 u32                  max_framebuffer_height;
                 u32                  max_framebuffer_layers;
-                SampleCountFlag      framebuffer_color_sample_counts;
-                SampleCountFlag      framebuffer_depth_sample_counts;
-                SampleCountFlag      framebuffer_stencil_sample_counts;
-                SampleCountFlag      framebuffer_no_attachments_sample_counts;
+                sample_count_flag    framebuffer_color_sample_counts;
+                sample_count_flag    framebuffer_depth_sample_counts;
+                sample_count_flag    framebuffer_stencil_sample_counts;
+                sample_count_flag    framebuffer_no_attachments_sample_counts;
                 u32                  max_color_attachments;
-                SampleCountFlag      sampled_image_color_sample_counts;
-                SampleCountFlag      sampled_image_integer_sample_counts;
-                SampleCountFlag      sampled_image_depth_sample_counts;
-                SampleCountFlag      sampled_image_stencil_sample_counts;
-                SampleCountFlag      storage_image_sample_counts;
+                sample_count_flag    sampled_image_color_sample_counts;
+                sample_count_flag    sampled_image_integer_sample_counts;
+                sample_count_flag    sampled_image_depth_sample_counts;
+                sample_count_flag    sampled_image_stencil_sample_counts;
+                sample_count_flag    storage_image_sample_counts;
                 u32                  max_sample_mask_words;
                 bool                 timestamp_compute_and_engine;
                 f32                  timestamp_period;
@@ -198,14 +200,14 @@ export {
             } limits;
         };
 
-        struct FormatProperties {
-            FormatFeatureFlag linear_tiling_features;
-            FormatFeatureFlag optimal_tiling_features;
-            FormatFeatureFlag buffer_features;
+        struct format_properties {
+            format_feature_flag linear_tiling_features;
+            format_feature_flag optimal_tiling_features;
+            format_feature_flag buffer_features;
         };
 
-        struct ImageSubresourceRange {
-            ImageAspectFlag aspect_mask = ImageAspectFlag::COLOR;
+        struct image_subresource_range {
+            image_aspect_flag aspect_mask = image_aspect_flag::color;
 
             u32 base_mip_level   = 0u;
             u32 level_count      = 1u;
@@ -213,61 +215,61 @@ export {
             u32 layer_count      = 1u;
         };
 
-        struct ImageSubresourceLayers {
-            ImageAspectFlag aspect_mask = ImageAspectFlag::COLOR;
+        struct image_subresource_layers {
+            image_aspect_flag aspect_mask = image_aspect_flag::color;
 
             u32 mip_level        = 0u;
             u32 base_array_layer = 0u;
             u32 layer_count      = 1u;
         };
 
-        struct Viewport {
+        struct viewport {
             math::fvec2        position;
             math::extent2<f32> extent;
             math::fvec2        depth;
         };
 
-        struct Scissor {
+        struct scissor {
             math::ivec2    offset;
             math::uextent2 extent;
         };
 
-        struct ClearColor {
+        struct clear_color {
             fcolor_rgba color = stormkit::colors::silver<f32>;
 
-            constexpr auto operator==(const ClearColor& other) const noexcept -> bool;
+            constexpr auto operator==(const clear_color& other) const noexcept -> bool;
         };
 
-        struct ClearDepth {
+        struct clear_depth {
             f32            depth = 1.f;
-            constexpr auto operator==(const ClearDepth& other) const noexcept -> bool;
+            constexpr auto operator==(const clear_depth& other) const noexcept -> bool;
         };
 
-        struct ClearStencil {
+        struct clear_stencil {
             u32            stencil = 0u;
-            constexpr auto operator==(const ClearStencil& other) const noexcept -> bool;
+            constexpr auto operator==(const clear_stencil& other) const noexcept -> bool;
         };
 
-        struct ClearDepthStencil: ClearDepth, ClearStencil {
-            constexpr auto operator==(const ClearDepthStencil& other) const noexcept -> bool;
+        struct clear_depth_stencil: clear_depth, clear_stencil {
+            constexpr auto operator==(const clear_depth_stencil& other) const noexcept -> bool;
         };
 
-        using ClearValue = std::variant<ClearColor, ClearDepthStencil>;
+        using clear_value = std::variant<clear_color, clear_depth_stencil>;
 
-        struct BufferImageCopy {
+        struct buffer_image_copy {
             u32 buffer_offset;
             u32 buffer_row_length;
             u32 buffer_image_height;
 
-            ImageSubresourceLayers subresource_layers;
+            image_subresource_layers subresource_layers;
 
             math::ivec3    offset;
             math::uextent3 extent;
         };
 
-        struct BlitRegion {
-            ImageSubresourceLayers src;
-            ImageSubresourceLayers dst;
+        struct blit_region {
+            image_subresource_layers src;
+            image_subresource_layers dst;
 
             struct {
                 math::ivec3    position;
@@ -280,13 +282,13 @@ export {
             } dst_offset;
         };
 
-        struct PushConstantRange {
-            ShaderStageFlag stages;
+        struct push_constant_range {
+            shader_stage_flag stages;
             u32             offset;
             usize           size;
         };
 
-        struct PhysicalDeviceInfo {
+        struct physical_device_info {
             u64    device_id;
             string device_name;
             u64    vendor_id;
@@ -302,41 +304,29 @@ export {
 
             array<u8, 16> pipeline_cache_uuid;
 
-            PhysicalDeviceType type;
+            physical_device_type type;
         };
 
-        struct QueueFamily {
-            QueueFlag flags;
-            u32       count;
+        struct queue_family {
+            queue_flag flags;
+            u32        count;
         };
 
-        using ClearValue = std::variant<ClearColor, ClearDepthStencil>;
-        using SpirvID    = u32;
+        using clear_value = std::variant<clear_color, clear_depth_stencil>;
+        using spirv_id    = u32;
 
         template<typename T>
-        using expected = std::expected<T, Result>;
+        using expected = std::expected<T, result>;
 
         [[nodiscard]]
         constexpr auto compute_mip_level(const math::uextent2& extent) noexcept -> u32;
         [[nodiscard]]
-        constexpr auto compute_uniform_buffer_offset_align(usize size, const RenderCapabilities& capabilities) noexcept -> usize;
+        constexpr auto compute_uniform_buffer_offset_align(usize size, const render_capabilities& capabilities) noexcept -> usize;
 
+        template<typename CharT, cmeta::format_context FormatContext>
         [[nodiscard]]
-        auto to_string(const PhysicalDeviceInfo& data) noexcept;
-
-        template<core::meta::hash Ret = hash32>
-        constexpr auto hasher(const Viewport& value) noexcept -> Ret;
-
-        template<core::meta::hash Ret = hash32>
-        constexpr auto hasher(const Scissor& value) noexcept -> Ret;
-
-        template<core::meta::hash Ret = hash32>
-        constexpr auto hasher(const ClearColor& value) noexcept -> Ret;
-
-        template<core::meta::hash Ret = hash32>
-        constexpr auto hasher(const ClearDepthStencil& value) noexcept -> Ret;
+        constexpr auto tag_invoke(format_as_fn<CharT>, const physical_device_info& value, FormatContext& ctx) -> decltype(ctx.out());
     } // namespace stormkit::gpu
-}
 
 ////////////////////////////////////////////////////////////////////
 ///                      IMPLEMENTATION                          ///
@@ -346,28 +336,28 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr auto ClearColor::operator==(const ClearColor& other) const noexcept -> bool {
+    constexpr auto clear_color::operator==(const clear_color& other) const noexcept -> bool {
         return color == other.color;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr auto ClearDepth::operator==(const ClearDepth& other) const noexcept -> bool {
+    constexpr auto clear_depth::operator==(const clear_depth& other) const noexcept -> bool {
         return depth == other.depth;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr auto ClearStencil::operator==(const ClearStencil& other) const noexcept -> bool {
+    constexpr auto clear_stencil::operator==(const clear_stencil& other) const noexcept -> bool {
         return stencil == other.stencil;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr auto ClearDepthStencil::operator==(const ClearDepthStencil& other) const noexcept -> bool {
+    constexpr auto clear_depth_stencil::operator==(const clear_depth_stencil& other) const noexcept -> bool {
         return depth == other.depth and stencil == other.stencil;
     }
 
@@ -375,14 +365,14 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
     constexpr auto compute_mip_level(const math::uextent2& extent) noexcept -> u32 {
-        const auto as_float = extent.to<f32>();
+        const auto as_float = as<math::fextent2>(extent);
         return as<u32>(math::floor(math::log2(math::max(as_float.width, as_float.height)))) + 1;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE
-    constexpr auto compute_uniform_buffer_offset_align(usize size, const RenderCapabilities& capabilities) noexcept -> usize {
+    constexpr auto compute_uniform_buffer_offset_align(usize size, const render_capabilities& capabilities) noexcept -> usize {
         const auto min_ubo_align = capabilities.limits.min_uniform_buffer_offset_alignment;
         if (min_ubo_align > 0) size = (size + min_ubo_align - 1) & ~(min_ubo_align - 1);
 
@@ -391,9 +381,10 @@ namespace stormkit::gpu {
 
     /////////////////////////////////////
     /////////////////////////////////////
+    template<typename CharT, cmeta::format_context FormatContext>
     STORMKIT_FORCE_INLINE
-    inline auto to_string(const PhysicalDeviceInfo& data) noexcept {
-        return std::format("[PhysicalDeviceInfo:\n"
+    inline constexpr auto tag_invoke(format_as_fn<CharT>, const physical_device_info& value, FormatContext& ctx) -> decltype(ctx.out()) {
+        return std::format_to(ctx.out(), "[physical_device_info:\n"
                            "   .device_id      = {:#06x},\n"
                            "   .device_name    = {},\n"
                            "   .vendor_id      = {:#06x},\n"
@@ -401,45 +392,16 @@ namespace stormkit::gpu {
                            "   .api_version    = {}.{}.{},\n"
                            "   .driver_version = {}.{}.{},\n"
                            "   .type           = {}]",
-                           data.device_id,
-                           data.device_name,
-                           data.vendor_id,
-                           data.vendor_name,
-                           data.api_major_version,
-                           data.api_minor_version,
-                           data.api_patch_version,
-                           data.driver_major_version,
-                           data.driver_minor_version,
-                           data.driver_patch_version,
-                           data.type);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<core::meta::hash Ret>
-    constexpr auto hasher(const Viewport& value) noexcept -> Ret {
-        return hash(value.position, value.extent, value.depth);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-
-    template<core::meta::hash Ret>
-    constexpr auto hasher(const Scissor& value) noexcept -> Ret {
-        return hash(value.offset, value.extent);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<core::meta::hash Ret>
-    constexpr auto hasher(const ClearColor& value) noexcept -> Ret {
-        return hash(value.color);
-    }
-
-    /////////////////////////////////////
-    /////////////////////////////////////
-    template<core::meta::hash Ret>
-    constexpr auto hasher(const ClearDepthStencil& value) noexcept -> Ret {
-        return hash(value.depth, value.stencil);
+                           value.device_id,
+                           value.device_name,
+                           value.vendor_id,
+                           value.vendor_name,
+                           value.api_major_version,
+                           value.api_minor_version,
+                           value.api_patch_version,
+                           value.driver_major_version,
+                           value.driver_minor_version,
+                           value.driver_patch_version,
+                           value.type);
     }
 } // namespace stormkit::gpu

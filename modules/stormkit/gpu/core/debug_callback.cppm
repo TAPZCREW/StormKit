@@ -18,53 +18,52 @@ import stormkit.core;
 import :base;
 import :vulkan;
 import :structs;
-import :objects;
 import :instance;
 
 namespace stormkit::gpu {
-    export {
-        struct DebugCallbackInterfaceBase {
-            struct CreateInfo {
-                using Closure = PFN_vkDebugUtilsMessengerCallbackEXT;
+    // export {
+    //     struct DebugCallbackInterfaceBase {
+    //         struct CreateInfo {
+    //             using Closure = PFN_vkDebugUtilsMessengerCallbackEXT;
 
-                Closure   messenger_closure;
-                ptr<void> user_data = nullptr;
-            };
-        };
+    //             Closure   messenger_closure;
+    //             ptr<void> user_data = nullptr;
+    //         };
+    //     };
 
-        template<typename Base>
-        class DebugCallbackInterface final: public InstanceObject<Base>, public DebugCallbackInterfaceBase {
-          public:
-            using InstanceObject<Base>::InstanceObject;
-            using InstanceObject<Base>::operator=;
-            using TagType = DebugCallbackTag;
-        };
-    }
+    //     template<typename Base>
+    //     class DebugCallbackInterface final: public InstanceObject<Base>, public DebugCallbackInterfaceBase {
+    //       public:
+    //         using InstanceObject<Base>::InstanceObject;
+    //         using InstanceObject<Base>::operator=;
+    //         using TagType = DebugCallbackTag;
+    //     };
+    // }
 
-    class STORMKIT_GPU_API DebugCallbackImplementation
-        : public GpuObjectImplementation<DebugCallbackTag, const DebugCallbackInterfaceBase::CreateInfo&> {
-      public:
-        using CreateInfo = DebugCallbackInterfaceBase::CreateInfo;
+    // class STORMKIT_GPU_API DebugCallbackImplementation
+    //     : public GpuObjectImplementation<DebugCallbackTag, const DebugCallbackInterfaceBase::CreateInfo&> {
+    //   public:
+    //     using CreateInfo = DebugCallbackInterfaceBase::CreateInfo;
 
-        DebugCallbackImplementation(PrivateTag, view::Instance&&) noexcept;
-        ~DebugCallbackImplementation() noexcept;
+    //     DebugCallbackImplementation(PrivateTag, view::Instance&&) noexcept;
+    //     ~DebugCallbackImplementation() noexcept;
 
-        DebugCallbackImplementation(const DebugCallbackImplementation&) noexcept                    = delete;
-        auto operator=(const DebugCallbackImplementation&) noexcept -> DebugCallbackImplementation& = delete;
+    //     DebugCallbackImplementation(const DebugCallbackImplementation&) noexcept                    = delete;
+    //     auto operator=(const DebugCallbackImplementation&) noexcept -> DebugCallbackImplementation& = delete;
 
-        DebugCallbackImplementation(DebugCallbackImplementation&&) noexcept;
-        auto operator=(DebugCallbackImplementation&&) noexcept -> DebugCallbackImplementation&;
+    //     DebugCallbackImplementation(DebugCallbackImplementation&&) noexcept;
+    //     auto operator=(DebugCallbackImplementation&&) noexcept -> DebugCallbackImplementation&;
 
-        auto do_init(PrivateTag, const CreateInfo&) noexcept -> expected<void>;
-    };
+    //     auto do_init(PrivateTag, const CreateInfo&) noexcept -> expected<void>;
+    // };
 
-    namespace view {
-        class DebugCallbackImplementation: public GpuObjectViewImplementation<DebugCallbackTag> {
-          public:
-            using GpuObjectViewImplementation<DebugCallbackTag>::GpuObjectViewImplementation;
-            using GpuObjectViewImplementation<DebugCallbackTag>::operator=;
-        };
-    } // namespace view
+    // namespace view {
+    //     class DebugCallbackImplementation: public GpuObjectViewImplementation<DebugCallbackTag> {
+    //       public:
+    //         using GpuObjectViewImplementation<DebugCallbackTag>::GpuObjectViewImplementation;
+    //         using GpuObjectViewImplementation<DebugCallbackTag>::operator=;
+    //     };
+    // } // namespace view
 } // namespace stormkit::gpu
 
 ////////////////////////////////////////////////////////////////////
@@ -72,26 +71,26 @@ namespace stormkit::gpu {
 ////////////////////////////////////////////////////////////////////
 
 namespace stormkit::gpu {
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline DebugCallbackImplementation::DebugCallbackImplementation(PrivateTag, view::Instance&& instance) noexcept
-        : GpuObjectImplementation { std::move(instance), auto(vkDestroyDebugUtilsMessengerEXT) } {
-    }
+    // /////////////////////////////////////
+    // /////////////////////////////////////
+    // STORMKIT_FORCE_INLINE
+    // inline DebugCallbackImplementation::DebugCallbackImplementation(PrivateTag, view::Instance&& instance) noexcept
+    //     : GpuObjectImplementation { std::move(instance), auto(vkDestroyDebugUtilsMessengerEXT) } {
+    // }
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline DebugCallbackImplementation::~DebugCallbackImplementation() noexcept = default;
+    // /////////////////////////////////////
+    // /////////////////////////////////////
+    // STORMKIT_FORCE_INLINE
+    // inline DebugCallbackImplementation::~DebugCallbackImplementation() noexcept = default;
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline DebugCallbackImplementation::DebugCallbackImplementation(DebugCallbackImplementation&&) noexcept = default;
+    // /////////////////////////////////////
+    // /////////////////////////////////////
+    // STORMKIT_FORCE_INLINE
+    // inline DebugCallbackImplementation::DebugCallbackImplementation(DebugCallbackImplementation&&) noexcept = default;
 
-    /////////////////////////////////////
-    /////////////////////////////////////
-    STORMKIT_FORCE_INLINE
-    inline auto DebugCallbackImplementation::operator=(DebugCallbackImplementation&&) noexcept
-      -> DebugCallbackImplementation& = default;
+    // /////////////////////////////////////
+    // /////////////////////////////////////
+    // STORMKIT_FORCE_INLINE
+    // inline auto DebugCallbackImplementation::operator=(DebugCallbackImplementation&&) noexcept
+    //   -> DebugCallbackImplementation& = default;
 } // namespace stormkit::gpu

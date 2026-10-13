@@ -6,5 +6,5 @@ export module stormkit.gpu;
 
 // export import stormkit.gpu:core.Compute;
 export import stormkit.gpu.core;
-export import stormkit.gpu.execution;
-export import stormkit.gpu.resource;
+// export import stormkit.gpu.execution;
+// export import stormkit.gpu.resource;

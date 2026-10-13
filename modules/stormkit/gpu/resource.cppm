@@ -4,7 +4,7 @@
 
 export module stormkit.gpu.resource;
 
-export import :objects;
-export import :buffer;
-export import :image;
-export import :shader;
+// export import :objects;
+// export import :buffer;
+// export import :image;
+// export import :shader;

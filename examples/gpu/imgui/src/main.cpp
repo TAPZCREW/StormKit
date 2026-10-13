@@ -126,7 +126,7 @@ class Application: public base::Application {
             .Instance                    = m_instance->native_handle(),
             .PhysicalDevice              = m_physical_device->native_handle(),
             .Device                      = m_device->native_handle(),
-            .QueueFamily                 = 0,
+            .queue_family                 = 0,
             .Queue                       = m_raster_queue->native_handle(),
             .DescriptorPool              = m_descriptor_pool->native_handle(),
             .DescriptorPoolSize          = 0,
@@ -227,7 +227,7 @@ class Application: public base::Application {
             .render_area       = { .x = 0, .y = 0, .width = window_extent.width, .height = window_extent.height },
             .color_attachments = { { .image_view  = swapchain_image_resource.view,
                                      .layout      = gpu::ImageLayout::ATTACHMENT_OPTIMAL,
-                                     .clear_value = gpu::ClearColor { .color = colors::silver<f32> } } }
+                                     .clear_value = gpu::clear_color { .color = colors::silver<f32> } } }
         };
 
         // render in it
