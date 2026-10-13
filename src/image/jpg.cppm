@@ -79,7 +79,7 @@ namespace stormkit::image::details {
         error_mgr.error_exit = jpg::error_callback;
 
         jpeg_create_decompress(&info);
-        if (setjmp(error_data.setjmp_buffer)) return std::unexpected { status_code(image_status_code::FAILED_TO_PARSE) };
+        if (setjmp(error_data.setjmp_buffer)) return std::unexpected { status_code(image_status_code::failed_to_parse) };
         // return std::unexpected(Error { .reason = Reason::FAILED_TO_PARSE, .str_error = error_data.msg });
 
         jpeg_mem_src(&info, reinterpret_cast<const unsigned char*>(stdr::data(data)), as<u32>(stdr::size(data)));
@@ -89,9 +89,9 @@ namespace stormkit::image::details {
         extent.width  = info.output_width;
         extent.height = info.output_height;
         extent.depth  = 1;
-        if (info.output_components == 1) format = image_format::R8_UNORM;
-        if (info.output_components == 2) format = image_format::RG8_UNORM;
-        if (info.output_components == 3) format = image_format::RGB8_UNORM;
+        if (info.output_components == 1) format = image_format::r8_unorm;
+        if (info.output_components == 2) format = image_format::rg8_unorm;
+        if (info.output_components == 3) format = image_format::rgb8_unorm;
 
         image_memory.resize(as<usize>(extent.width * extent.height * extent.depth * as<u32>(info.out_color_components)));
 
@@ -107,7 +107,7 @@ namespace stormkit::image::details {
 
         if (setjmp(error_data.setjmp_buffer)) {
             jpeg_destroy_decompress(&info);
-            return std::unexpected { status_code(image_status_code::FAILED_TO_PARSE) };
+            return std::unexpected { status_code(image_status_code::failed_to_parse) };
             // return std::unexpected(Error { .reason = Reason::FAILED_TO_PARSE, .str_error = error_data.msg });
         }
 
@@ -130,7 +130,7 @@ namespace stormkit::image::details {
     auto save_jpg(const image& image, const stdfs::path& filepath) noexcept -> image::result<void> {
         auto _filename = filepath;
 
-        auto image_rgb = image.convert_to(image_format::RGB8_UNORM);
+        auto image_rgb = image.convert_to(image_format::rgb8_unorm);
 
         auto info      = jpeg_compress_struct {};
         auto error_mgr = jpeg_error_mgr {};
@@ -145,7 +145,7 @@ namespace stormkit::image::details {
             if (i >= 1u) _filename += to_native_encoding(std::format("_mip{}", i));
 
             auto file = io::binary_file::open(_filename, io::access::write);
-            if (not file) return std::unexpected { status_code(image_status_code::FAILED_TO_SAVE) };
+            if (not file) return std::unexpected { status_code(image_status_code::failed_to_save) };
             // return std::unexpected(Error { .reason = Reason::FAILED_TO_SAVE, .str_error = error_data.msg });
 
             auto        data   = image_rgb.data(0, 0, 0);
@@ -163,7 +163,7 @@ namespace stormkit::image::details {
 
             info.image_width      = extent.width;
             info.image_height     = extent.height;
-            info.input_components = get_format_channel_count(image_format::RGB8_UNORM);
+            info.input_components = get_format_channel_count(image_format::rgb8_unorm);
             info.in_color_space   = JCS_RGB;
             jpeg_set_defaults(&info);
             jpeg_set_quality(&info, 75, TRUE);
@@ -186,7 +186,7 @@ namespace stormkit::image::details {
 
         if (setjmp(error_data.setjmp_buffer)) {
             jpeg_destroy_compress(&info);
-            return std::unexpected { status_code(image_status_code::FAILED_TO_SAVE) };
+            return std::unexpected { status_code(image_status_code::failed_to_save) };
             // return std::unexpected(Error { .reason = Reason::FAILED_TO_SAVE, .str_error = error_data.msg });
         }
 
@@ -200,7 +200,7 @@ namespace stormkit::image::details {
 
         auto output_ptr = uchar_ptr { nullptr };
 
-        auto image_rgb = image.convert_to(image_format::RGB8_UNORM);
+        auto image_rgb = image.convert_to(image_format::rgb8_unorm);
 
         auto info      = jpeg_compress_struct {};
         auto error_mgr = jpeg_error_mgr {};
@@ -222,7 +222,7 @@ namespace stormkit::image::details {
 
         info.image_width      = extent.width;
         info.image_height     = extent.height;
-        info.input_components = get_format_channel_count(image_format::RGB8_UNORM);
+        info.input_components = get_format_channel_count(image_format::rgb8_unorm);
         info.in_color_space   = JCS_RGB;
         jpeg_set_defaults(&info);
         jpeg_set_quality(&info, 75, TRUE);
@@ -242,7 +242,7 @@ namespace stormkit::image::details {
 
         if (setjmp(error_data.setjmp_buffer)) {
             jpeg_destroy_compress(&info);
-            return std::unexpected { status_code(image_status_code::FAILED_TO_SAVE) };
+            return std::unexpected { status_code(image_status_code::failed_to_save) };
             // return std::unexpected(Error { .reason = Reason::FAILED_TO_SAVE, .str_error = error_data.msg });
         }
 

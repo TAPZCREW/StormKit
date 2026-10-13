@@ -78,19 +78,19 @@ namespace stormkit::image::details {
         auto read_param = png::read_param { 8u, data };
 
         auto sig = std::bit_cast<png_const_bytep>(std::data(data));
-        if (!png_check_sig(sig, 8u)) return std::unexpected { status_code(image_status_code::FAILED_TO_PARSE) };
+        if (!png_check_sig(sig, 8u)) return std::unexpected { status_code(image_status_code::failed_to_parse) };
         // return std::unexpected(Error { .reason    = Reason::FAILED_TO_PARSE,
         //                                .str_error = "[libpng] Failed to validate PNG signature" });
 
         auto png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-        if (!png_ptr) return std::unexpected { status_code(image_status_code::FAILED_TO_PARSE) };
+        if (!png_ptr) return std::unexpected { status_code(image_status_code::failed_to_parse) };
         // return std::unexpected(Error { .reason    = Reason::FAILED_TO_PARSE,
         //                                .str_error = "[libpng] Failed to init (png_create_read_struct)" });
 
         auto info_ptr = png_create_info_struct(png_ptr);
         if (!info_ptr) {
             png_destroy_read_struct(&png_ptr, nullptr, nullptr);
-            return std::unexpected { status_code(image_status_code::FAILED_TO_PARSE) };
+            return std::unexpected { status_code(image_status_code::failed_to_parse) };
             // return std::unexpected(Error { .reason    = Reason::FAILED_TO_PARSE,
             //                                .str_error = "[libpng] Failed to init (png_create_info_struct)" });
         }
@@ -116,37 +116,37 @@ namespace stormkit::image::details {
 
         switch (color_type) {
             case PNG_COLOR_TYPE_GRAY: {
-                if (bit_depth == 8) format = image_format::R8_UNORM;
+                if (bit_depth == 8) format = image_format::r8_unorm;
                 else if (bit_depth == 16)
-                    format = image_format::R16_UNORM;
+                    format = image_format::r16_unorm;
 
                 break;
             }
             case PNG_COLOR_TYPE_GRAY_ALPHA: {
-                if (bit_depth == 8) format = image_format::RG8_UNORM;
+                if (bit_depth == 8) format = image_format::rg8_unorm;
                 else if (bit_depth == 16)
-                    format = image_format::RG16_UNORM;
+                    format = image_format::rg16_unorm;
 
                 break;
             }
             case PNG_COLOR_TYPE_RGB: {
-                if (bit_depth == 8) format = image_format::RGB8_UNORM;
+                if (bit_depth == 8) format = image_format::rgb8_unorm;
                 else if (bit_depth == 16)
-                    format = image_format::RGB16_UNORM;
+                    format = image_format::rgb16_unorm;
 
                 break;
             }
             case PNG_COLOR_TYPE_RGB_ALPHA: {
-                if (bit_depth == 8) format = image_format::RGBA8_UNORM;
+                if (bit_depth == 8) format = image_format::rgba8_unorm;
                 else if (bit_depth == 16)
-                    format = image_format::RGBA16_UNORM;
+                    format = image_format::rgba16_unorm;
 
                 break;
             }
             case PNG_COLOR_TYPE_PALETTE: {
-                if (bit_depth == 8) format = image_format::RGBA8_UNORM;
+                if (bit_depth == 8) format = image_format::rgba8_unorm;
                 else if (bit_depth == 16)
-                    format = image_format::RGBA16_UNORM;
+                    format = image_format::rgba16_unorm;
 
                 break;
             }
@@ -200,14 +200,14 @@ namespace stormkit::image::details {
         auto write_param = png::write_param { output };
 
         auto png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
-        if (!png_ptr) return std::unexpected { status_code(image_status_code::FAILED_TO_PARSE) };
+        if (!png_ptr) return std::unexpected { status_code(image_status_code::failed_to_parse) };
         // return std::unexpected(Error { .reason    = Reason::FAILED_TO_PARSE,
         //                                .str_error = "[libpng] Failed to init (png_create_write_struct)" });
 
         auto info_ptr = png_create_info_struct(png_ptr);
         if (!info_ptr) {
             png_destroy_write_struct(&png_ptr, nullptr);
-            return std::unexpected { status_code(image_status_code::FAILED_TO_PARSE) };
+            return std::unexpected { status_code(image_status_code::failed_to_parse) };
             // return std::unexpected(Error { .reason    = Reason::FAILED_TO_PARSE,
             //                                .str_error = "[libpng] Failed to init (png_create_info_struct)" });
         }
@@ -215,7 +215,7 @@ namespace stormkit::image::details {
         if (setjmp(png_jmpbuf(png_ptr))) {
             png_destroy_info_struct(png_ptr, &info_ptr);
             png_destroy_write_struct(&png_ptr, nullptr);
-            return std::unexpected { status_code(image_status_code::FAILED_TO_PARSE) };
+            return std::unexpected { status_code(image_status_code::failed_to_parse) };
             // return std::unexpected(Error { .reason    = Reason::FAILED_TO_PARSE,
             //                                .str_error = "[libpng] Unkown error during png creation" });
         }
