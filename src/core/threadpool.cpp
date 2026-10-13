@@ -87,14 +87,15 @@ namespace stormkit {
     auto thread_pool::worker_main(i32 id) noexcept -> void {
         set_current_thread_name(std::format("stormkit:worker_thread:{}", id));
         for (;;) {
-            auto task_ = task {};
-
-            {
+            auto task_ = [this] noexcept {
                 auto lock = std::unique_lock { mutex_ };
                 work_signal_.wait(lock, [this] { return not std::empty(tasks_); });
-                task_ = std::move(tasks_.front());
+
+                auto task = std::move(tasks_.front());
                 tasks_.pop();
-            }
+
+                return task;
+            }();
 
             running_task_counter_.acquire();
             task_.work();
