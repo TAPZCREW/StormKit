@@ -18,16 +18,16 @@ namespace stdr = std::ranges;
 
 namespace stormkit::log {
     namespace {
-        constexpr auto STYLE_MAP = make_static_hash_map<severity, console_style>({
-          { severity::INFO,    console_style { .fg = console_color::green, .modifiers = style_modifier::inverse }   },
-          { severity::WARNING, console_style { .fg = console_color::magenta, .modifiers = style_modifier::inverse } },
-          { severity::ERROR,   console_style { .fg = console_color::yellow, .modifiers = style_modifier::inverse }  },
-          { severity::FATAL,   console_style { .fg = console_color::red, .modifiers = style_modifier::inverse }     },
-          { severity::DEBUG,   console_style { .fg = console_color::cyan, .modifiers = style_modifier::inverse }    },
+        constexpr auto style_map = make_static_hash_map<severity, console_style>({
+          { severity::info,    console_style { .fg = console_color::green, .modifiers = style_modifier::inverse }   },
+          { severity::warning, console_style { .fg = console_color::magenta, .modifiers = style_modifier::inverse } },
+          { severity::error,   console_style { .fg = console_color::yellow, .modifiers = style_modifier::inverse }  },
+          { severity::fatal,   console_style { .fg = console_color::red, .modifiers = style_modifier::inverse }     },
+          { severity::debug,   console_style { .fg = console_color::cyan, .modifiers = style_modifier::inverse }    },
         });
 
-        constexpr auto FORMAT_STRING             = "{}[ {:^7} | {:%S} ]{} {}"sv;
-        constexpr auto FORMAT_STRING_WITH_MODULE = "{}[ {:^7} | {} | {:%S} ]{} {}"sv;
+        constexpr auto format_string             = "{}[ {:^7} | {:%S} ]{} {}"sv;
+        constexpr auto format_string_with_module = "{}[ {:^7} | {} | {:%S} ]{} {}"sv;
     } // namespace
 
     ////////////////////////////////////////
@@ -45,14 +45,14 @@ namespace stormkit::log {
     ////////////////////////////////////////
     auto console_logger::write(severity severity_, const module& module, std::string_view str) noexcept -> void {
         const auto now      = clock_type::now();
-        const auto time     = std::chrono::duration_cast<std::chrono::seconds>(now - m_start_time);
-        const auto is_error = severity_ == severity::ERROR or severity_ == severity::FATAL;
+        const auto time     = std::chrono::duration_cast<std::chrono::seconds>(now - start_time_);
+        const auto is_error = severity_ == severity::error or severity_ == severity::fatal;
         const auto out      = (is_error) ? get_stderr() : get_stdout();
-        const auto style    = STYLE_MAP.at(severity_);
+        const auto style    = style_map.at(severity_);
 
-        if (stdr::empty(module.name)) std::println(out, FORMAT_STRING, style, severity_, time, ecma48::reset, str);
+        if (stdr::empty(module.name)) std::println(out, format_string, style, severity_, time, ecma48::reset, str);
         else
-            std::println(out, FORMAT_STRING_WITH_MODULE, style, severity_, module.name, time, ecma48::reset, str);
+            std::println(out, format_string_with_module, style, severity_, module.name, time, ecma48::reset, str);
     }
 
     ////////////////////////////////////////
