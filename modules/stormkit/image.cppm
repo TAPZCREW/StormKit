@@ -21,88 +21,88 @@ namespace stdfs = std::filesystem;
 
 export namespace stormkit::image {
     enum class image_format : u8 {
-        R8_SNORM     = 0,
-        RG8_SNORM    = 1,
-        RGB8_SNORM   = 2,
-        RGBA8_SNORM  = 3,
-        R8_UNORM     = 4,
-        RG8_UNORM    = 5,
-        RGB8_UNORM   = 6,
-        RGBA8_UNORM  = 7,
-        R16_SNORM    = 8,
-        RG16_SNORM   = 9,
-        RGB16_SNORM  = 10,
-        RGBA16_SNORM = 11,
-        R16_UNORM    = 12,
-        RG16_UNORM   = 13,
-        RGB16_UNORM  = 14,
-        RGBA16_UNORM = 15,
-        RGBA4_UNORM  = 17,
-        BGR8_UNORM   = 20,
-        BGRA8_UNORM  = 21,
-        R8I          = 22,
-        RG8I         = 23,
-        RGB8I        = 24,
-        RGBA8I       = 25,
-        R8U          = 26,
-        RG8U         = 27,
-        RGB8U        = 28,
-        RGBA8U       = 29,
-        R16I         = 30,
-        RG16I        = 31,
-        RGB16I       = 32,
-        RGBA16I      = 33,
-        R16U         = 34,
-        RG16U        = 35,
-        RGB16U       = 36,
-        RGBA16U      = 37,
-        R32I         = 38,
-        RG32I        = 39,
-        RGB32I       = 40,
-        RGBA32I      = 41,
-        R32U         = 42,
-        RG32U        = 43,
-        RGB32U       = 44,
-        RGBA32U      = 45,
-        R16F         = 47,
-        RG16F        = 48,
-        RGB16F       = 49,
-        RGBA16F      = 50,
-        R32F         = 51,
-        RG32F        = 52,
-        RGB32F       = 53,
-        RGBA32F      = 54,
-        SRGB8        = 56,
-        SRGBA8       = 57,
-        SBGR8        = 58,
-        SBGRA8       = 59,
-        UNDEFINED    = 254,
+        r8_snorm     = 0,
+        rg8_snorm    = 1,
+        rgb8_snorm   = 2,
+        rgba8_snorm  = 3,
+        r8_unorm     = 4,
+        rg8_unorm    = 5,
+        rgb8_unorm   = 6,
+        rgba8_unorm  = 7,
+        r16_snorm    = 8,
+        rg16_snorm   = 9,
+        rgb16_snorm  = 10,
+        rgba16_snorm = 11,
+        r16_unorm    = 12,
+        rg16_unorm   = 13,
+        rgb16_unorm  = 14,
+        rgba16_unorm = 15,
+        rgba4_unorm  = 17,
+        bgr8_unorm   = 20,
+        bgra8_unorm  = 21,
+        r8i          = 22,
+        rg8i         = 23,
+        rgb8i        = 24,
+        rgba8i       = 25,
+        r8u          = 26,
+        rg8u         = 27,
+        rgb8u        = 28,
+        rgba8u       = 29,
+        r16i         = 30,
+        rg16i        = 31,
+        rgb16i       = 32,
+        rgba16i      = 33,
+        r16u         = 34,
+        rg16u        = 35,
+        rgb16u       = 36,
+        rgba16u      = 37,
+        r32i         = 38,
+        rg32i        = 39,
+        rgb32i       = 40,
+        rgba32i      = 41,
+        r32u         = 42,
+        rg32u        = 43,
+        rgb32u       = 44,
+        rgba32u      = 45,
+        r16f         = 47,
+        rg16f        = 48,
+        rgb16f       = 49,
+        rgba16f      = 50,
+        r32f         = 51,
+        rg32f        = 52,
+        rgb32f       = 53,
+        rgba32f      = 54,
+        srgb8        = 56,
+        srgba8       = 57,
+        sbgr8        = 58,
+        sbgra8       = 59,
+        undefined    = 254,
     };
 
     enum class image_codec : u8 {
-        AUTODETECT = 0,
-        JPEG       = 1,
-        PNG        = 2,
-        TARGA      = 3,
-        PPM        = 4,
-        HDR        = 5,
-        KTX        = 6,
-        QOI        = 7,
-        UNKNOWN    = 255,
+        autodetect = 0,
+        jpeg       = 1,
+        png        = 2,
+        targa      = 3,
+        ppm        = 4,
+        hdr        = 5,
+        ktx        = 6,
+        qoi        = 7,
+        unknown    = 255,
     };
 
     enum class image_codec_format : u8 {
-        BINARY = 0,
-        ASCII  = 1,
+        binary = 0,
+        ascii  = 1,
     };
 
     enum class image_status_code : u8 {
-        NOT_IMPLEMENTED = 0,
-        FAILED_TO_PARSE = 1,
-        FAILED_TO_SAVE  = 2,
-        FILE_NOT_FOUND  = 3,
-        INVALID_FORMAT  = 4,
-        UNKNOWN         = std::numeric_limits<u8>::max(),
+        not_implemented = 0,
+        failed_to_parse = 1,
+        failed_to_save  = 2,
+        file_not_found  = 3,
+        invalid_format  = 4,
+        unknown         = std::numeric_limits<u8>::max(),
     };
 
     constexpr auto status_code(image_status_code) noexcept -> system_error2::quick_status_code_from_enum_code<image_status_code>;
@@ -121,7 +121,7 @@ export namespace stormkit::image {
             u32            layers            = 1u;
             u32            faces             = 1u;
             u32            mip_levels        = 1u;
-            image_format   format            = image_format::UNDEFINED;
+            image_format   format            = image_format::undefined;
 
             dynarray<byte> data = {};
         };
@@ -129,8 +129,8 @@ export namespace stormkit::image {
         image() noexcept;
         explicit image(image_data_t&& data) noexcept;
         image(meta::in<math::uextent3> extent, image_format format) noexcept;
-        image(const stdfs::path& filepath, image_codec codec = image_codec::AUTODETECT) noexcept;
-        image(array_view<const byte> data, image_codec codec = image_codec::AUTODETECT) noexcept;
+        image(const stdfs::path& filepath, image_codec codec = image_codec::autodetect) noexcept;
+        image(array_view<const byte> data, image_codec codec = image_codec::autodetect) noexcept;
         ~image() noexcept;
 
         image(const image& rhs) noexcept;
@@ -140,16 +140,16 @@ export namespace stormkit::image {
         auto operator=(image&& rhs) noexcept -> image&;
 
         [[nodiscard]]
-        auto load_from_file(const stdfs::path& filepath, image_codec codec = image_codec::AUTODETECT) noexcept -> result<void>;
+        auto load_from_file(const stdfs::path& filepath, image_codec codec = image_codec::autodetect) noexcept -> result<void>;
         [[nodiscard]]
-        auto load_from_memory(array_view<const byte> data, image_codec codec = image_codec::AUTODETECT) noexcept -> result<void>;
+        auto load_from_memory(array_view<const byte> data, image_codec codec = image_codec::autodetect) noexcept -> result<void>;
         [[nodiscard]]
         auto save_to_file(const stdfs::path& filename,
                           image_codec        codec,
-                          image_codec_format args = image_codec_format::BINARY) const noexcept -> result<void>;
+                          image_codec_format args = image_codec_format::binary) const noexcept -> result<void>;
 
         [[nodiscard]]
-        auto save_to_memory(image_codec codec, image_codec_format args = image_codec_format::BINARY) const noexcept
+        auto save_to_memory(image_codec codec, image_codec_format args = image_codec_format::binary) const noexcept
           -> result<dynarray<byte>>;
 
         auto create(meta::in<math::uextent3> extent, image_format format) noexcept -> void;
@@ -266,7 +266,7 @@ export namespace stormkit::image {
 export template<>
 struct system_error2::quick_status_code_from_enum<stormkit::image::image_status_code>
     : quick_status_code_from_enum_defaults<stormkit::image::image_status_code> {
-    static constexpr auto domain_name = "stormkit Image";
+    static constexpr auto domain_name = "stormkit image";
     static constexpr auto domain_uuid = "{0f7f937d-b027-0427-27d2-47b9359122ae}";
 
     static constexpr auto value_mappings() noexcept -> const std::initializer_list<mapping>&;
@@ -282,12 +282,12 @@ namespace system_error2 {
     inline constexpr auto quick_status_code_from_enum<stormkit::image::image_status_code>::value_mappings() noexcept
       -> const std::initializer_list<mapping>& {
         static constexpr auto mapper = std::initializer_list<mapping> {
-            { stormkit::image::image_status_code::NOT_IMPLEMENTED, "Not implemented", { errc::not_supported }             },
-            { stormkit::image::image_status_code::FAILED_TO_PARSE, "Failed to parse", { errc::not_supported }             },
-            { stormkit::image::image_status_code::FAILED_TO_SAVE,  "Failed to save",  { errc::io_error }                  },
-            { stormkit::image::image_status_code::FILE_NOT_FOUND,  "File not found",  { errc::no_such_file_or_directory } },
-            { stormkit::image::image_status_code::INVALID_FORMAT,  "Invalid format",  { errc::not_supported }             },
-            { stormkit::image::image_status_code::UNKNOWN,         "Unknown error",   { errc::state_not_recoverable }     },
+            { stormkit::image::image_status_code::not_implemented, "Not implemented", { errc::not_supported }             },
+            { stormkit::image::image_status_code::failed_to_parse, "Failed to parse", { errc::not_supported }             },
+            { stormkit::image::image_status_code::failed_to_save,  "Failed to save",  { errc::io_error }                  },
+            { stormkit::image::image_status_code::file_not_found,  "File not found",  { errc::no_such_file_or_directory } },
+            { stormkit::image::image_status_code::invalid_format,  "Invalid format",  { errc::not_supported }             },
+            { stormkit::image::image_status_code::unknown,         "Unknown error",   { errc::state_not_recoverable }     },
         };
         return mapper;
     }
@@ -533,63 +533,63 @@ namespace stormkit::image {
     STORMKIT_CONST
     constexpr auto get_format_channel_count(image_format format) noexcept -> u8 {
         switch (format) {
-            case image_format::R8_SNORM:
-            case image_format::R8_UNORM:
-            case image_format::R16_SNORM:
-            case image_format::R16_UNORM:
-            case image_format::R8I:
-            case image_format::R8U:
-            case image_format::R16I:
-            case image_format::R16U:
-            case image_format::R32I:
-            case image_format::R32U:
-            case image_format::R16F:
-            case image_format::R32F: return 1;
+            case image_format::r8_snorm:
+            case image_format::r8_unorm:
+            case image_format::r16_snorm:
+            case image_format::r16_unorm:
+            case image_format::r8i:
+            case image_format::r8u:
+            case image_format::r16i:
+            case image_format::r16u:
+            case image_format::r32i:
+            case image_format::r32u:
+            case image_format::r16f:
+            case image_format::r32f: return 1;
 
-            case image_format::RG8_SNORM:
-            case image_format::RG8_UNORM:
-            case image_format::RG16_SNORM:
-            case image_format::RG16_UNORM:
-            case image_format::RG8I:
-            case image_format::RG8U:
-            case image_format::RG16I:
-            case image_format::RG16U:
-            case image_format::RG32I:
-            case image_format::RG32U:
-            case image_format::RG16F:
-            case image_format::RG32F: return 2;
+            case image_format::rg8_snorm:
+            case image_format::rg8_unorm:
+            case image_format::rg16_snorm:
+            case image_format::rg16_unorm:
+            case image_format::rg8i:
+            case image_format::rg8u:
+            case image_format::rg16i:
+            case image_format::rg16u:
+            case image_format::rg32i:
+            case image_format::rg32u:
+            case image_format::rg16f:
+            case image_format::rg32f: return 2;
 
-            case image_format::RGB8_SNORM:
-            case image_format::RGB8_UNORM:
-            case image_format::RGB16_SNORM:
-            case image_format::RGB16_UNORM:
-            case image_format::BGR8_UNORM:
-            case image_format::RGB8I:
-            case image_format::RGB8U:
-            case image_format::RGB16I:
-            case image_format::RGB16U:
-            case image_format::RGB32I:
-            case image_format::RGB32U:
-            case image_format::RGB16F:
-            case image_format::RGB32F:
-            case image_format::SRGB8:
-            case image_format::SBGR8: return 3;
+            case image_format::rgb8_snorm:
+            case image_format::rgb8_unorm:
+            case image_format::rgb16_snorm:
+            case image_format::rgb16_unorm:
+            case image_format::bgr8_unorm:
+            case image_format::rgb8i:
+            case image_format::rgb8u:
+            case image_format::rgb16i:
+            case image_format::rgb16u:
+            case image_format::rgb32i:
+            case image_format::rgb32u:
+            case image_format::rgb16f:
+            case image_format::rgb32f:
+            case image_format::srgb8:
+            case image_format::sbgr8: return 3;
 
-            case image_format::RGBA8_SNORM:
-            case image_format::RGBA8_UNORM:
-            case image_format::RGBA16_SNORM:
-            case image_format::RGBA16_UNORM:
-            case image_format::BGRA8_UNORM:
-            case image_format::RGBA8I:
-            case image_format::RGBA8U:
-            case image_format::RGBA16I:
-            case image_format::RGBA16U:
-            case image_format::RGBA32I:
-            case image_format::RGBA32U:
-            case image_format::RGBA16F:
-            case image_format::RGBA32F:
-            case image_format::SRGBA8:
-            case image_format::SBGRA8: return 4;
+            case image_format::rgba8_snorm:
+            case image_format::rgba8_unorm:
+            case image_format::rgba16_snorm:
+            case image_format::rgba16_unorm:
+            case image_format::bgra8_unorm:
+            case image_format::rgba8i:
+            case image_format::rgba8u:
+            case image_format::rgba16i:
+            case image_format::rgba16u:
+            case image_format::rgba32i:
+            case image_format::rgba32u:
+            case image_format::rgba16f:
+            case image_format::rgba32f:
+            case image_format::srgba8:
+            case image_format::sbgra8: return 4;
 
             default: break;
         }
@@ -602,60 +602,60 @@ namespace stormkit::image {
     STORMKIT_CONST
     constexpr auto get_format_component_size(image_format format) noexcept -> u8 {
         switch (format) {
-            case image_format::R8_SNORM:
-            case image_format::R8_UNORM:
-            case image_format::RG8_SNORM:
-            case image_format::RG8_UNORM:
-            case image_format::R8I:
-            case image_format::R8U:
-            case image_format::RG8I:
-            case image_format::RG8U:
-            case image_format::RGB8_SNORM:
-            case image_format::RGB8_UNORM:
-            case image_format::BGR8_UNORM:
-            case image_format::RGB8I:
-            case image_format::RGB8U:
-            case image_format::RGBA8_SNORM:
-            case image_format::RGBA8_UNORM:
-            case image_format::RGBA16_SNORM:
-            case image_format::BGRA8_UNORM:
-            case image_format::SRGB8:
-            case image_format::SBGR8:
-            case image_format::SRGBA8:
-            case image_format::SBGRA8: return 1u;
+            case image_format::r8_snorm:
+            case image_format::r8_unorm:
+            case image_format::rg8_snorm:
+            case image_format::rg8_unorm:
+            case image_format::r8i:
+            case image_format::r8u:
+            case image_format::rg8i:
+            case image_format::rg8u:
+            case image_format::rgb8_snorm:
+            case image_format::rgb8_unorm:
+            case image_format::bgr8_unorm:
+            case image_format::rgb8i:
+            case image_format::rgb8u:
+            case image_format::rgba8_snorm:
+            case image_format::rgba8_unorm:
+            case image_format::rgba16_snorm:
+            case image_format::bgra8_unorm:
+            case image_format::srgb8:
+            case image_format::sbgr8:
+            case image_format::srgba8:
+            case image_format::sbgra8: return 1u;
 
-            case image_format::R16_SNORM:
-            case image_format::R16_UNORM:
-            case image_format::R16I:
-            case image_format::R16U:
-            case image_format::RG16_SNORM:
-            case image_format::RG16_UNORM:
-            case image_format::RG16I:
-            case image_format::RG16U:
-            case image_format::RG16F:
-            case image_format::RGB16I:
-            case image_format::RGB16U:
-            case image_format::RGB16F:
-            case image_format::RGBA16I:
-            case image_format::RGBA16U:
-            case image_format::RGBA16F:
-            case image_format::R16F: return 2u;
+            case image_format::r16_snorm:
+            case image_format::r16_unorm:
+            case image_format::r16i:
+            case image_format::r16u:
+            case image_format::rg16_snorm:
+            case image_format::rg16_unorm:
+            case image_format::rg16i:
+            case image_format::rg16u:
+            case image_format::rg16f:
+            case image_format::rgb16i:
+            case image_format::rgb16u:
+            case image_format::rgb16f:
+            case image_format::rgba16i:
+            case image_format::rgba16u:
+            case image_format::rgba16f:
+            case image_format::r16f: return 2u;
 
-            case image_format::R32I:
-            case image_format::R32U:
-            case image_format::R32F:
-            case image_format::RG32I:
-            case image_format::RG32U:
-            case image_format::RG32F:
-            case image_format::RGB16_SNORM:
-            case image_format::RGB32I:
-            case image_format::RGB32U:
-            case image_format::RGB32F:
-            case image_format::RGBA8I:
-            case image_format::RGBA8U:
-            case image_format::RGBA32I:
-            case image_format::RGBA32U:
-            case image_format::RGBA32F: return 4u;
+            case image_format::r32i:
+            case image_format::r32u:
+            case image_format::r32f:
+            case image_format::rg32i:
+            case image_format::rg32u:
+            case image_format::rg32f:
+            case image_format::rgb16_snorm:
+            case image_format::rgb32i:
+            case image_format::rgb32u:
+            case image_format::rgb32f:
+            case image_format::rgba8i:
+            case image_format::rgba8u:
+            case image_format::rgba32i:
+            case image_format::rgba32u:
+            case image_format::rgba32f: return 4u;
 
             default: break;
         }

@@ -51,11 +51,11 @@ namespace stormkit::image::details {
     /////////////////////////////////////
     /////////////////////////////////////
     auto save_ppm(const image& image, image_codec_format format) noexcept -> image::result<dynarray<byte>> {
-        const auto  output_image = image.convert_to(image_format::RGB8_UNORM);
+        const auto  output_image = image.convert_to(image_format::rgb8_unorm);
         const auto& data         = output_image.image_data();
 
         auto output = dynarray<byte> {};
-        if (format == image_codec_format::ASCII) {
+        if (format == image_codec_format::ascii) {
             auto result = std::format("P3\n{}\n{}\n255\n"sv, data.extent.width, data.extent.height);
 
             const auto& extent = output_image.extent();
@@ -69,7 +69,7 @@ namespace stormkit::image::details {
 
             output.reserve(std::size(result) * sizeof(char));
             stdr::copy(view_of(as_bytes, result), std::back_inserter(output));
-        } else if (format == image_codec_format::BINARY) {
+        } else if (format == image_codec_format::binary) {
             auto header = std::format("P3\n{}\n{}\n255\n"sv, data.extent.width, data.extent.height);
             output.reserve((std::size(header) + std::size(output_image)) * sizeof(char));
 
