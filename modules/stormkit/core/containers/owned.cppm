@@ -14,43 +14,75 @@ import stormkit.core.contract;
 import stormkit.core.meta;
 import stormkit.core.functional;
 
-namespace stormkit { inline namespace core { namespace meta::details {
-    template<typename Func, typename Handle_type>
-    concept plain_constructor = is<return_type<Func>, Handle_type>;
+namespace stormkit { inline namespace core {
+    namespace details {
+        struct dummy_interface {};
+    }; // namespace details
 
-    template<typename Func, typename Handle_type>
-    concept expected_constructor = specialization_of<return_type<Func>, std::expected>
-                                   and is<value_type<return_type<Func>>, Handle_type>;
+    namespace meta::details {
+        template<typename Func, typename Handle_type>
+        concept plain_constructor = is<return_type<Func>, Handle_type>;
 
-    template<typename Func, typename Handle_type>
-    concept valid_constructor = plain_constructor<Func, Handle_type> or expected_constructor<Func, Handle_type>;
+        template<typename Func, typename Handle_type>
+        concept expected_constructor = specialization_of<return_type<Func>, std::expected>
+                                       and is<value_type<return_type<Func>>, Handle_type>;
 
-    template<typename Func, typename Handle_type>
-    concept valid_deleter = std::invocable<Func, Handle_type>;
+        template<typename Func, typename Handle_type>
+        concept valid_constructor = plain_constructor<Func, Handle_type> or expected_constructor<Func, Handle_type>;
 
-    template<typename Trait>
-    concept is_owned_trait = requires(const Trait& trait) {
-        typename Trait::element_type;
-        trait.constructor;
-        trait.deleter;
-    } and details::valid_constructor<decltype(Trait::constructor), typename Trait::element_type> and details::valid_deleter<decltype(Trait::deleter), typename Trait::element_type>;
+        template<typename Func, typename Handle_type>
+        concept valid_deleter = std::invocable<Func, Handle_type>;
 
-    template<typename Trait>
-    concept trait_has_null_handle = is_owned_trait<Trait> and requires(const Trait& trait) {
-        { trait.null_handle } -> meta::is<typename Trait::element_type>;
-    };
+        template<typename Trait>
+        concept is_owned_trait = requires(const Trait& trait) {
+            typename Trait::element_type;
+            trait.constructor;
+            trait.deleter;
+        } and details::valid_constructor<decltype(Trait::constructor), typename Trait::element_type> and details::valid_deleter<decltype(Trait::deleter), typename Trait::element_type>;
 
-    template<is_owned_trait Trait>
-    struct null_handle_selector {
-        static constexpr auto value = typename Trait::element_type { nullptr };
-    };
+        template<typename Trait>
+        concept trait_has_null_handle = is_owned_trait<Trait> and requires(const Trait& trait) {
+            { trait.null_handle } -> meta::is<typename Trait::element_type>;
+        };
 
-    template<is_owned_trait Trait>
-        requires(trait_has_null_handle<Trait>)
-    struct null_handle_selector<Trait> {
-        static constexpr auto value = Trait::null_handle;
-    };
-}}} // namespace stormkit::core::meta::details
+        template<typename Trait>
+        concept trait_has_interface = is_owned_trait<Trait> and requires(const Trait& trait) {
+            typename Trait::interface_type;
+        } and not meta::is<typename Trait::interface_type, void>;
+
+        template<is_owned_trait Trait>
+        struct null_handle_selector {
+            static constexpr auto value = typename Trait::element_type { nullptr };
+        };
+
+        template<is_owned_trait Trait>
+            requires(trait_has_null_handle<Trait>)
+        struct null_handle_selector<Trait> {
+            static constexpr auto value = Trait::null_handle;
+        };
+
+        template<is_owned_trait Trait>
+        struct interface_selector {
+            using type = core::details::dummy_interface;
+        };
+
+        template<is_owned_trait Trait>
+            requires(trait_has_interface<Trait>)
+        struct interface_selector<Trait> {
+            using type = typename Trait::interface_type;
+        };
+
+        template<is_owned_trait Trait>
+        struct owned_trait_remove_interface {
+            using element_type = typename Trait::element_type;
+
+            static constexpr auto null_handle = null_handle_selector<Trait>::value;
+
+            static constexpr auto constructor = Trait::constructor;
+            static constexpr auto deleter     = Trait::deleter;
+        };
+    } // namespace meta::details
+}} // namespace stormkit::core
 
 export namespace stormkit { inline namespace core {
     template<typename T>
@@ -61,9 +93,10 @@ export namespace stormkit { inline namespace core {
         concept is_owned_trait = details::is_owned_trait<Trait>;
     } // namespace meta
 
-    template<typename T, auto Constructor, auto Destructor, T Null_handle>
+    template<typename T, auto Constructor, auto Destructor, T Null_handle = T { nullptr }, typename U = void>
     struct owned_trait {
-        using element_type = T;
+        using element_type   = T;
+        using interface_type = U;
 
         static constexpr auto null_handle = Null_handle;
 
@@ -72,7 +105,7 @@ export namespace stormkit { inline namespace core {
     };
 
     template<typename Trait>
-    class STORMKIT_OWNER STORMKIT_TRIVIALLY_RELOCATABLE owned {
+    class STORMKIT_OWNER STORMKIT_TRIVIALLY_RELOCATABLE owned: public meta::details::interface_selector<Trait>::type {
         static_assert(meta::is_owned_trait<Trait>, "Trait should follow is_owned_trait concept for its interface!");
         using owned_type = owned<Trait>;
 
@@ -141,17 +174,18 @@ export namespace stormkit { inline namespace core {
           -> std::compare_three_way_result_t<element_type, element_type>
             requires std::three_way_comparable<element_type, element_type>;
 
+      protected:
+        element_type handle_ = null_handle;
+
       private:
         constexpr owned() noexcept;
         constexpr owned(element_type handle) noexcept;
 
         constexpr auto destroy() noexcept -> void;
-
-        element_type handle_ = null_handle;
     };
 
     template<typename Trait>
-    class STORMKIT_VIEW STORMKIT_TRIVIALLY_RELOCATABLE view {
+    class STORMKIT_VIEW STORMKIT_TRIVIALLY_RELOCATABLE view: public meta::details::interface_selector<Trait>::type {
         static_assert(meta::is_owned_trait<Trait>, "Trait should follow is_owned_trait concept for its interface!");
 
       public:

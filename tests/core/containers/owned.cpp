@@ -38,11 +38,15 @@ auto set_opt(test_handle handle, int opt) -> void {
     reinterpret_cast<test_handle_impl*>(handle)->a = opt;
 }
 
+auto get_opt(test_handle handle) -> int {
+    return reinterpret_cast<test_handle_impl*>(handle)->a;
+}
+
 auto do_work(test_handle handle) {
     std::println("TEST {}", reinterpret_cast<test_handle_impl*>(handle)->a);
 }
 
-struct test_handle_trait {
+struct test_handle_trait1 {
     using element_type                = test_handle;
     static constexpr auto null_handle = TEST_INVALID_HANDLE;
 
@@ -63,9 +67,46 @@ struct test_handle_trait2 {
 
 using test_handle_trait3 = owned_trait<test_handle, create_test, free_test, TEST_INVALID_HANDLE>;
 
-using owned_test_handle  = owned<test_handle_trait>;
+using owned_test_handle1 = owned<test_handle_trait1>;
 using owned_test_handle2 = owned<test_handle_trait2>;
 using owned_test_handle3 = owned<test_handle_trait3>;
+
+struct test_handle_interface {
+    auto set_opt(this auto& self, int opt) -> void { ::set_opt(self.handle(), opt); }
+
+    auto get_opt(this auto& self) -> int { return ::get_opt(self.handle()); }
+
+    auto do_work(this auto& self) -> void { ::do_work(self.handle()); }
+};
+
+struct test_handle_trait4 {
+    using element_type                = test_handle;
+    using interface_type              = test_handle_interface;
+    static constexpr auto null_handle = TEST_INVALID_HANDLE;
+
+    static constexpr auto constructor = create_test;
+    static constexpr auto deleter     = free_test;
+};
+
+struct test_handle_trait5 {
+    using element_type   = test_handle;
+    using interface_type = test_handle_interface;
+
+    static constexpr auto constructor = [] static noexcept {
+        auto handle = element_type { TEST_INVALID_HANDLE };
+        create_test2(&handle);
+        return handle;
+    };
+    static constexpr auto deleter = [](auto handle) static noexcept { free_test(handle); };
+};
+
+using test_handle_trait6 = owned_trait<test_handle, create_test, free_test, TEST_INVALID_HANDLE, test_handle_interface>;
+
+using owned_test_handle4 = owned<test_handle_trait4>;
+using owned_test_handle5 = owned<test_handle_trait5>;
+using owned_test_handle6 = owned<test_handle_trait6>;
+
+static_assert(meta::derived_from<owned_test_handle4, test_handle_interface>);
 
 namespace {
     auto _ = test::test_suite {
@@ -74,11 +115,11 @@ namespace {
           { "named_constructors",
             [] {
                 {
-                    auto value = owned_test_handle::create();
+                    auto value = owned_test_handle1::create();
                     EXPECTS(value.handle() != TEST_INVALID_HANDLE);
 
                     auto handle = create_test();
-                    auto value2 = owned_test_handle::take(std::move(handle));
+                    auto value2 = owned_test_handle1::take(std::move(handle));
 
                     EXPECTS(value2.handle() != TEST_INVALID_HANDLE);
                 }
@@ -98,11 +139,36 @@ namespace {
 
                     EXPECTS(value2.handle() != TEST_INVALID_HANDLE);
                 }
+                {
+                    auto value = owned_test_handle4::create();
+                    EXPECTS(value.handle() != TEST_INVALID_HANDLE);
+
+                    auto handle = create_test();
+                    auto value2 = owned_test_handle4::take(std::move(handle));
+
+                    EXPECTS(value2.handle() != TEST_INVALID_HANDLE);
+                }
+                {
+                    auto value = owned_test_handle5::create();
+                    EXPECTS(value.handle() != TEST_INVALID_HANDLE);
+
+                    auto value2 = owned_test_handle5::take(create_test());
+                    EXPECTS(value2.handle() != TEST_INVALID_HANDLE);
+                }
+                {
+                    auto value = owned_test_handle6::create();
+                    EXPECTS(value.handle() != TEST_INVALID_HANDLE);
+
+                    auto handle = create_test();
+                    auto value2 = owned_test_handle6::take(std::move(handle));
+
+                    EXPECTS(value2.handle() != TEST_INVALID_HANDLE);
+                }
             } },
           { "view_construction",
             [] {
                 {
-                    auto value = owned_test_handle::create();
+                    auto value = owned_test_handle1::create();
                     auto view  = core::view { value };
                     EXPECTS(view.handle() == value.handle());
                 }
@@ -115,6 +181,54 @@ namespace {
                     auto value = owned_test_handle3::create();
                     auto view  = core::view { value };
                     EXPECTS(view.handle() == value.handle());
+                }
+                {
+                    auto value = owned_test_handle4::create();
+                    auto view  = core::view { value };
+                    EXPECTS(view.handle() == value.handle());
+                }
+                {
+                    auto value = owned_test_handle5::create();
+                    auto view  = core::view { value };
+                    EXPECTS(view.handle() == value.handle());
+                }
+                {
+                    auto value = owned_test_handle6::create();
+                    auto view  = core::view { value };
+                    EXPECTS(view.handle() == value.handle());
+                }
+            } },
+          { "interfaces",
+            [] {
+                {
+                    auto value = owned_test_handle4::create();
+                    auto view  = core::view { value };
+
+                    value.set_opt(3);
+                    value.do_work();
+
+                    EXPECTS(value.get_opt() == 3);
+                    EXPECTS(value.get_opt() == view.get_opt());
+                }
+                {
+                    auto value = owned_test_handle5::create();
+                    auto view  = core::view { value };
+
+                    value.set_opt(3);
+                    value.do_work();
+
+                    EXPECTS(value.get_opt() == 3);
+                    EXPECTS(value.get_opt() == view.get_opt());
+                }
+                {
+                    auto value = owned_test_handle6::create();
+                    auto view  = core::view { value };
+
+                    value.set_opt(3);
+                    value.do_work();
+
+                    EXPECTS(value.get_opt() == 3);
+                    EXPECTS(value.get_opt() == view.get_opt());
                 }
             } },
 
