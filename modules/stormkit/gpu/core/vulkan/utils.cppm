@@ -23,6 +23,8 @@ namespace stdr = std::ranges;
 namespace cmeta    = stormkit::core::meta;
 namespace cmonadic = stormkit::core::monadic;
 
+using namespace stormkit::literals;
+
 export namespace stormkit::gpu::vk {
     namespace meta {
         template<typename Func, typename... Ts>
@@ -62,13 +64,13 @@ export namespace stormkit::gpu::vk {
     [[nodiscard]]
     auto call(const Func& func, Ts&&... args) noexcept -> Out;
 
-    template<VkResult... SUCCESS_RESULTS, typename... Ts, meta::return_result<Ts...> Func>
+    template<VkResult... Success_results, typename... Ts, meta::return_result<Ts...> Func>
     auto call_checked(const Func& func, Ts&&... args) noexcept -> expected<void>;
 
-    template<cmeta::is<VkResult> Out, VkResult... SUCCESS_RESULTS, typename... Ts, meta::return_result<Ts...> Func>
+    template<cmeta::is<VkResult> Out, VkResult... Success_results, typename... Ts, meta::return_result<Ts...> Func>
     auto call_checked(const Func& func, Ts&&... args) noexcept -> expected<Out>;
 
-    template<typename Out, typename... Ts, VkResult... SUCCESS_RESULTS, meta::has_out_argument<Out, Ts...> Func>
+    template<typename Out, typename... Ts, VkResult... Success_results, meta::has_out_argument<Out, Ts...> Func>
         requires meta::return_result<Func, Ts..., Out*>
     auto call_checked(const Func& func, Ts&&... args) noexcept -> expected<Out>;
 
@@ -89,7 +91,7 @@ export namespace stormkit::gpu::vk {
     [[nodiscard]]
     auto allocate(usize count, const Func& func, Ts&&... args) noexcept -> dynarray<Out>;
 
-    template<typename Out, typename... Ts, VkResult... SUCCESS_RESULTS, meta::has_out_argument<Out, Ts...> Func>
+    template<typename Out, typename... Ts, VkResult... Success_results, meta::has_out_argument<Out, Ts...> Func>
         requires(meta::return_result<Func, Ts..., Out*> and not cmeta::same_as<Out, void>)
     auto allocate_checked(usize count, const Func& func, Ts&&... args) noexcept -> expected<dynarray<Out>>;
 
@@ -103,7 +105,7 @@ export namespace stormkit::gpu::vk {
     [[nodiscard]]
     auto enumerate(const Func& func, Ts&&... args) noexcept -> dynarray<Out>;
 
-    template<typename Out, typename... Ts, VkResult... SUCCESS_RESULTS, meta::has_out_argument<Out, Ts..., u32*> Func>
+    template<typename Out, typename... Ts, VkResult... Success_results, meta::has_out_argument<Out, Ts..., u32*> Func>
         requires(meta::return_result<Func, Ts..., u32*, Out*> and not cmeta::same_as<Out, void>)
     auto enumerate_checked(const Func& func, Ts&&... args) noexcept -> expected<dynarray<Out>>;
 
@@ -158,22 +160,6 @@ export namespace stormkit::gpu::vk {
       private:
         T m_value;
     };
-
-    namespace monadic {
-        template<typename T>
-        [[nodiscard]]
-        constexpr auto to_vk() noexcept -> decltype(auto);
-
-        [[nodiscard]]
-        constexpr auto to_vk() noexcept -> decltype(auto);
-
-        [[nodiscard]]
-        constexpr auto from_vk() noexcept -> decltype(auto);
-
-        template<typename T>
-        [[nodiscard]]
-        constexpr auto from_vk() noexcept -> decltype(auto);
-    } // namespace monadic
 } // namespace stormkit::gpu::vk
 
 ////////////////////////////////////////////////////////////////////
@@ -242,32 +228,32 @@ namespace stormkit::gpu::vk {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<VkResult... _SUCCESS_RESULTS, typename... Ts, meta::return_result<Ts...> Func>
+    template<VkResult... Success_results_, typename... Ts, meta::return_result<Ts...> Func>
     inline auto call_checked(const Func& func, Ts&&... args) noexcept -> expected<void> {
-        static constexpr auto SUCCESS_RESULTS = array { VK_SUCCESS, _SUCCESS_RESULTS... };
+        static constexpr auto success_results = array { VK_SUCCESS, Success_results_... };
 
-        using Outexpected = expected<void>;
-        auto out_expected = Outexpected { std::in_place };
+        using out_expected_type = expected<void>;
+        auto out_expected       = out_expected_type { std::in_place };
 
         const auto result = std::invoke(func, std::forward<Ts>(args)...);
-        if (not stdr::any_of(SUCCESS_RESULTS, cmonadic::is(result))) [[likely]]
-            out_expected = std::unexpected { vk::from_vk<Result>(result) };
+        if (not stdr::any_of(success_results, cmonadic::is(result))) [[likely]]
+            out_expected = std::unexpected { as<gpu::result>(result) };
 
         return out_expected;
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<cmeta::is<VkResult> Out, VkResult... _SUCCESS_RESULTS, typename... Ts, meta::return_result<Ts...> Func>
+    template<cmeta::is<VkResult> Out, VkResult... Success_results_, typename... Ts, meta::return_result<Ts...> Func>
     inline auto call_checked(const Func& func, Ts&&... args) noexcept -> expected<Out> {
-        static constexpr auto SUCCESS_RESULTS = array { VK_SUCCESS, _SUCCESS_RESULTS... };
+        static constexpr auto success_results = array { VK_SUCCESS, Success_results_... };
 
-        using Outexpected = expected<Out>;
-        auto out_expected = Outexpected { std::in_place };
+        using out_expected_type = expected<Out>;
+        auto out_expected       = out_expected_type { std::in_place };
 
         const auto result = std::invoke(func, std::forward<Ts>(args)...);
-        if (not stdr::any_of(SUCCESS_RESULTS, cmonadic::is(result))) [[likely]]
-            out_expected = std::unexpected { vk::from_vk<Result>(result) };
+        if (not stdr::any_of(success_results, cmonadic::is(result))) [[likely]]
+            out_expected = std::unexpected { as<gpu::result>(result) };
         else
             out_expected = result;
 
@@ -276,18 +262,18 @@ namespace stormkit::gpu::vk {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename Out, typename... Ts, VkResult... _SUCCESS_RESULTS, meta::has_out_argument<Out, Ts...> Func>
+    template<typename Out, typename... Ts, VkResult... Success_results_, meta::has_out_argument<Out, Ts...> Func>
         requires meta::return_result<Func, Ts..., Out*>
     inline auto call_checked(const Func& func, Ts&&... args) noexcept -> expected<Out> {
-        static constexpr auto SUCCESS_RESULTS = array { VK_SUCCESS, _SUCCESS_RESULTS... };
+        static constexpr auto success_results = array { VK_SUCCESS, Success_results_... };
 
-        using Outexpected = expected<Out>;
-        auto out_expected = Outexpected { std::in_place };
+        using out_expected_type = expected<Out>;
+        auto out_expected       = out_expected_type { std::in_place };
 
         auto       out    = Out {};
         const auto result = std::invoke(func, std::forward<Ts>(args)..., &out);
-        if (not stdr::any_of(SUCCESS_RESULTS, cmonadic::is(result))) [[likely]]
-            out_expected = std::unexpected { vk::from_vk<Result>(result) };
+        if (not stdr::any_of(success_results, cmonadic::is(result))) [[likely]]
+            out_expected = std::unexpected { as<gpu::result>(result) };
         else
             out_expected = out;
 
@@ -334,19 +320,19 @@ namespace stormkit::gpu::vk {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename Out, typename... Ts, VkResult... _SUCCESS_RESULTS, meta::has_out_argument<Out, Ts...> Func>
+    template<typename Out, typename... Ts, VkResult... Success_results_, meta::has_out_argument<Out, Ts...> Func>
         requires(meta::return_result<Func, Ts..., Out*> and not cmeta::same_as<Out, void>)
     inline auto allocate_checked(usize count, const Func& func, Ts&&... args) noexcept -> expected<dynarray<Out>> {
-        static constexpr auto SUCCESS_RESULTS = array { VK_SUCCESS, _SUCCESS_RESULTS... };
+        static constexpr auto success_results = array { VK_SUCCESS, Success_results_... };
 
-        using Outexpected = expected<dynarray<Out>>;
-        auto out_expected = Outexpected { std::in_place };
+        using out_expected_type = expected<dynarray<Out>>;
+        auto out_expected       = out_expected_type { std::in_place };
 
         auto& out = out_expected.value();
         out.resize(count, VK_NULL_HANDLE);
         const auto result = std::invoke(func, std::forward<Ts>(args)..., stdr::data(out));
-        if (not stdr::any_of(SUCCESS_RESULTS, cmonadic::is(result))) [[likely]]
-            out_expected = std::unexpected { vk::from_vk<Result>(result) };
+        if (not stdr::any_of(success_results, cmonadic::is(result))) [[likely]]
+            out_expected = std::unexpected { as<gpu::result>(result) };
 
         return out_expected;
     }
@@ -378,26 +364,26 @@ namespace stormkit::gpu::vk {
 
     /////////////////////////////////////
     /////////////////////////////////////
-    template<typename Out, typename... Ts, VkResult... _SUCCESS_RESULTS, meta::has_out_argument<Out, Ts..., u32*> Func>
+    template<typename Out, typename... Ts, VkResult... Success_results_, meta::has_out_argument<Out, Ts..., u32*> Func>
         requires(meta::return_result<Func, Ts..., u32*, Out*> and not cmeta::same_as<Out, void>)
     inline auto enumerate_checked(const Func& func, Ts&&... args) noexcept -> expected<dynarray<Out>> {
-        static constexpr auto SUCCESS_RESULTS = array { VK_SUCCESS, _SUCCESS_RESULTS... };
+        static constexpr auto success_results = array { VK_SUCCESS, Success_results_... };
 
-        using Outexpected = expected<dynarray<Out>>;
-        auto out_expected = Outexpected { std::in_place };
+        using out_expected_type = expected<dynarray<Out>>;
+        auto out_expected       = out_expected_type { std::in_place };
 
         auto out  = dynarray<Out> {};
         auto size = 0_u32;
         {
             const auto result = std::invoke(func, std::forward<Ts>(args)..., &size, nullptr);
-            if (not stdr::any_of(SUCCESS_RESULTS, cmonadic::is(result))) [[likely]]
-                out_expected = std::unexpected { vk::from_vk<Result>(result) };
+            if (not stdr::any_of(success_results, cmonadic::is(result))) [[likely]]
+                out_expected = std::unexpected { as<gpu::result>(result) };
         }
         out.resize(size);
         {
             const auto result = std::invoke(func, std::forward<Ts>(args)..., &size, stdr::data(out));
-            if (not stdr::any_of(SUCCESS_RESULTS, cmonadic::is(result))) [[likely]]
-                out_expected = std::unexpected { vk::from_vk<Result>(result) };
+            if (not stdr::any_of(success_results, cmonadic::is(result))) [[likely]]
+                out_expected = std::unexpected { as<gpu::result>(result) };
             else
                 out_expected = std::move(out);
         }
@@ -547,41 +533,4 @@ namespace stormkit::gpu::vk {
     inline view<T>::operator T() const noexcept {
         return value();
     }
-
-    namespace monadic {
-        /////////////////////////////////////
-        /////////////////////////////////////
-        template<typename T>
-        STORMKIT_FORCE_INLINE STORMKIT_CONST
-        constexpr auto to_vk() noexcept -> decltype(auto) {
-            return []<typename U>(const U& value) static noexcept -> decltype(auto)
-                       requires(requires { gpu::vk::to_vk<T>(std::declval<U>()); })
-            { return gpu::vk::to_vk<T>(value); };
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE STORMKIT_CONST
-        constexpr auto to_vk() noexcept -> decltype(auto) {
-            return []<typename T>(const T& value) static noexcept -> decltype(auto) { return gpu::vk::to_vk(value); };
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        STORMKIT_FORCE_INLINE STORMKIT_CONST
-        constexpr auto from_vk() noexcept -> decltype(auto) {
-            return [](auto val) static noexcept -> decltype(auto) { return gpu::vk::from_vk(val); };
-        }
-
-        /////////////////////////////////////
-        /////////////////////////////////////
-        template<typename T>
-        STORMKIT_FORCE_INLINE
-        STORMKIT_CONST
-        constexpr auto from_vk() noexcept -> decltype(auto) {
-            return []<typename U>(U val) static noexcept -> T
-                       requires(requires { gpu::vk::from_vk<T>(std::declval<U>()); })
-            { return gpu::vk::from_vk<T>(val); };
-        }
-    } // namespace monadic
 } // namespace stormkit::gpu::vk

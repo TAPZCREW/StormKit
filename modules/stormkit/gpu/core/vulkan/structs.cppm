@@ -74,8 +74,9 @@ export namespace stormkit::gpu {
 namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
-    constexpr auto tag_invoke(cmeta::tag<core::as<VkRect2D>>, const math::irect& rect, core::source_location_arg location) noexcept
-      -> VkRect2D {
+    constexpr auto tag_invoke(cmeta::tag<core::as<VkRect2D>>,
+                              const math::irect&        rect,
+                              core::source_location_arg location) noexcept -> VkRect2D {
         return VkRect2D {
             .offset = { rect.x,                    rect.y                     },
             .extent = { as<u32>(rect.width.value), as<u32>(rect.height.value) }
@@ -92,8 +93,8 @@ namespace stormkit::gpu {
             .y        = viewport.position.y(),
             .width    = viewport.extent.width,
             .height   = viewport.extent.height,
-            .minDepth = viewport.depth.x,
-            .maxDepth = viewport.depth.y,
+            .minDepth = viewport.depth.x(),
+            .maxDepth = viewport.depth.y(),
         };
     }
 
@@ -103,7 +104,7 @@ namespace stormkit::gpu {
     constexpr auto tag_invoke(cmeta::tag<core::as<VkRect2D>>, const scissor& scissor, core::source_location_arg) noexcept
       -> VkRect2D {
         return VkRect2D {
-            .offset = { scissor.offset.x,     scissor.offset.y      },
+            .offset = { scissor.offset.x(),   scissor.offset.y()    },
             .extent = { scissor.extent.width, scissor.extent.height }
         };
     }
@@ -141,8 +142,9 @@ namespace stormkit::gpu {
     /////////////////////////////////////
     /////////////////////////////////////
     STORMKIT_FORCE_INLINE STORMKIT_PURE
-    constexpr auto tag_invoke(cmeta::tag<core::as<Out>>, const VkFormatProperties& properties, core::source_location_arg) noexcept
-      -> format_properties {
+    constexpr auto tag_invoke(cmeta::tag<core::as<format_properties>>,
+                              const VkFormatProperties& properties,
+                              core::source_location_arg) noexcept -> format_properties {
         return {
             .linear_tiling_features  = as<format_feature_flag>(properties.linearTilingFeatures),
             .optimal_tiling_features = as<format_feature_flag>(properties.optimalTilingFeatures),

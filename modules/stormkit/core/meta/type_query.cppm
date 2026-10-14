@@ -174,6 +174,12 @@ namespace stormkit { inline namespace core { namespace meta {
         template<class Return, class... Ts>
         struct callable_trait<Return (*)(Ts...) noexcept>: callable_trait<Return(Ts...) noexcept> {};
 
+        template<class Return, class... Ts>
+        struct callable_trait<Return (*const)(Ts...)>: callable_trait<Return(Ts...)> {};
+
+        template<class Return, class... Ts>
+        struct callable_trait<Return (*const)(Ts...) noexcept>: callable_trait<Return(Ts...) noexcept> {};
+
         template<class Object, class Return, class... Ts>
         struct callable_trait<Return (Object::*)(Ts...)>: callable_trait<Return(Ts...)> {};
 
@@ -210,6 +216,44 @@ namespace stormkit { inline namespace core { namespace meta {
         template<class Object, class Return, class... Ts>
         struct callable_trait<Return (Object::*)(Ts...) const && noexcept>: callable_trait<Return(Ts...) noexcept> {};
 
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::* const)(Ts...)>: callable_trait<Return(Ts...)> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::* const)(Ts...) const>: callable_trait<Return(Ts...)> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::* const)(Ts...) &>: callable_trait<Return(Ts...)> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::* const)(Ts...) const &>: callable_trait<Return(Ts...)> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::* const)(Ts...) &&>: callable_trait<Return(Ts...)> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::* const)(Ts...) const &&>: callable_trait<Return(Ts...)> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::* const)(Ts...) noexcept>: callable_trait<Return(Ts...) noexcept> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::* const)(Ts...) const noexcept>: callable_trait<Return(Ts...) noexcept> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::* const)(Ts...) & noexcept>: callable_trait<Return(Ts...) noexcept> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::* const)(Ts...) const & noexcept>: callable_trait<Return(Ts...) noexcept> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::* const)(Ts...) && noexcept>: callable_trait<Return(Ts...) noexcept> {};
+
+        template<class Object, class Return, class... Ts>
+        struct callable_trait<Return (Object::* const)(Ts...) const && noexcept>: callable_trait<Return(Ts...) noexcept> {};
+
+        template<callable T>
+        struct callable_trait<T>: callable_trait<decltype(T::operator())> {};
     } // namespace details
 
     ////////////////////////////////////////

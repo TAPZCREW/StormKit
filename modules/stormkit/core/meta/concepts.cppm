@@ -260,7 +260,8 @@ export namespace stormkit { inline namespace core { namespace meta {
     concept same_signeness_as = (signed_integer<T> and signed_integer<U>) or (unsigned_integer<T> and unsigned_integer<U>);
 
     template<typename To, typename From>
-    concept is_sign_narrowing = (signed_integer<From> ? not signed_integer<To> : signed_integer<To> and sizeof(From) == sizeof(To));
+    concept is_sign_narrowing = (signed_integer<From> ? not signed_integer<To>
+                                                      : signed_integer<To> and sizeof(From) == sizeof(To));
 
     template<typename To, typename From>
     concept is_byte_narrowing = ((arithmetic<To> and is<From, byte>) or (is<To, byte> and arithmetic<From>))
@@ -373,4 +374,7 @@ export namespace stormkit { inline namespace core { namespace meta {
 
     template<typename T>
     concept has_unique_object_representations = std::has_unique_object_representations_v<T>;
+
+    template<typename T>
+    concept callable = requires(T&& t) { T::operator(); };
 }}} // namespace stormkit::core::meta
