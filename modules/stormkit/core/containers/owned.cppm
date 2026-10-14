@@ -63,6 +63,16 @@ export namespace stormkit { inline namespace core {
         concept is_owned_trait = details::is_owned_trait<Trait>;
     } // namespace meta
 
+    template<typename T, auto Constructor, auto Destructor, T Null_handle>
+    struct owned_trait {
+        using element_type = T;
+
+        static constexpr auto null_handle = Null_handle;
+
+        static constexpr auto constructor = Constructor;
+        static constexpr auto deleter     = Destructor;
+    };
+
     template<typename Trait>
         requires(meta::is_owned_trait<Trait>)
     class owned {

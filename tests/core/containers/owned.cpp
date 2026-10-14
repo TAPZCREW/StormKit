@@ -61,8 +61,11 @@ struct test_handle_trait2 {
     static constexpr auto deleter = [](auto handle) static noexcept { free_test(handle); };
 };
 
+using test_handle_trait3 = owned_trait<test_handle, create_test, free_test, TEST_INVALID_HANDLE>;
+
 using owned_test_handle  = owned<test_handle_trait>;
 using owned_test_handle2 = owned<test_handle_trait2>;
+using owned_test_handle3 = owned<test_handle_trait3>;
 
 namespace {
     auto _ = test::test_suite {
@@ -84,6 +87,15 @@ namespace {
                     EXPECTS(value.managed() != TEST_INVALID_HANDLE);
 
                     auto value2 = owned_test_handle2::take(create_test());
+                    EXPECTS(value2.managed() != TEST_INVALID_HANDLE);
+                }
+                {
+                    auto value = owned_test_handle3::create();
+                    EXPECTS(value.managed() != TEST_INVALID_HANDLE);
+
+                    auto handle = create_test();
+                    auto value2 = owned_test_handle3::take(std::move(handle));
+
                     EXPECTS(value2.managed() != TEST_INVALID_HANDLE);
                 }
             } },
