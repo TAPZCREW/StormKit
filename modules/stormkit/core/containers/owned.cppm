@@ -72,8 +72,8 @@ export namespace stormkit { inline namespace core {
     };
 
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     class STORMKIT_OWNER STORMKIT_TRIVIALLY_RELOCATABLE owned {
+        static_assert(meta::is_owned_trait<Trait>, "Trait should follow is_owned_trait concept for its interface!");
         using owned_type = owned<Trait>;
 
       public:
@@ -151,8 +151,9 @@ export namespace stormkit { inline namespace core {
     };
 
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     class STORMKIT_VIEW STORMKIT_TRIVIALLY_RELOCATABLE view {
+        static_assert(meta::is_owned_trait<Trait>, "Trait should follow is_owned_trait concept for its interface!");
+
       public:
         using trait_type   = Trait;
         using element_type = trait_type::element_type;
@@ -229,13 +230,12 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
-    STORMKIT_FORCE_INLINE constexpr owned<Trait>::owned() noexcept = default;
+    STORMKIT_FORCE_INLINE
+    constexpr owned<Trait>::owned() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr owned<Trait>::owned(element_type handle) noexcept
         : handle_ { handle } {
@@ -244,7 +244,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::destroy() noexcept -> void {
         if (handle_ != null_handle) trait_type::deleter(handle_);
@@ -253,15 +252,14 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
-    STORMKIT_FORCE_INLINE constexpr owned<Trait>::~owned() noexcept {
+    STORMKIT_FORCE_INLINE
+    constexpr owned<Trait>::~owned() noexcept {
         destroy();
     }
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr owned<Trait>::owned(owned&& other) noexcept
         : handle_ { std::exchange(other.handle_, null_handle) } {
@@ -270,7 +268,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::operator=(owned&& other) noexcept -> owned& {
         if (&other == this) [[unlikely]]
@@ -284,7 +281,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     template<typename... Ts>
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::create(Ts&&... args) noexcept -> owned_type
@@ -296,7 +292,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     template<typename... Ts>
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::create(Ts&&... args) noexcept -> decltype(auto)
@@ -317,7 +312,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::take(element_type&& value) noexcept -> owned_type {
         return owned_type { value };
@@ -326,7 +320,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::empty() noexcept -> owned_type {
         return owned_type {};
@@ -335,7 +328,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::handle() const noexcept -> element_type {
         return handle_;
@@ -344,7 +336,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::release() noexcept -> element_type {
         const auto handle = handle_;
@@ -355,7 +346,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::reset(element_type handle) noexcept -> void {
         handle_ = handle;
@@ -364,7 +354,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr owned<Trait>::operator element_type() const noexcept {
         return handle_;
@@ -373,7 +362,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr owned<Trait>::operator bool() const noexcept {
         return handle_ != null_handle;
@@ -382,7 +370,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::operator==(element_type other) const noexcept -> bool {
         return handle_ == other;
@@ -391,7 +378,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::operator<(element_type other) const noexcept -> bool {
         return std::less<element_type> {}(handle_, other);
@@ -400,7 +386,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::operator<=(element_type other) const noexcept -> bool {
         return !(other < *this);
@@ -409,7 +394,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::operator>(element_type other) const noexcept -> bool {
         return other < *this;
@@ -418,7 +402,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::operator>=(element_type other) const noexcept -> bool {
         return !(*this < other);
@@ -427,7 +410,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::operator<=>(element_type other) const noexcept
       -> std::compare_three_way_result_t<element_type, element_type>
@@ -439,7 +421,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::operator==(const owned<trait_type>& other) const noexcept -> bool {
         return operator==(other.handle());
@@ -448,7 +429,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::operator<(const owned<trait_type>& other) const noexcept -> bool {
         return operator<(other.handle());
@@ -457,7 +437,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::operator<=(const owned<trait_type>& other) const noexcept -> bool {
         return operator<=(other.handle());
@@ -466,7 +445,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::operator>(const owned<trait_type>& other) const noexcept -> bool {
         return operator>(other.handle());
@@ -475,7 +453,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::operator>=(const owned<trait_type>& other) const noexcept -> bool {
         return operator>=(other.handle());
@@ -484,7 +461,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::operator<=>(const owned<trait_type>& other) const noexcept
       -> std::compare_three_way_result_t<element_type, element_type>
@@ -496,7 +472,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr view<Trait>::view(const owned<trait_type>& owned_handle) noexcept
         : handle_ { owned_handle.handle() } {
@@ -505,7 +480,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr view<Trait>::view(element_type handle) noexcept
         : handle_ { handle } {
@@ -514,39 +488,36 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
-    STORMKIT_FORCE_INLINE constexpr view<Trait>::~view() noexcept = default;
+    STORMKIT_FORCE_INLINE
+    constexpr view<Trait>::~view() noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
-    STORMKIT_FORCE_INLINE constexpr view<Trait>::view(const view&) noexcept = default;
+    STORMKIT_FORCE_INLINE
+    constexpr view<Trait>::view(const view&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::operator=(const view&) noexcept -> view& = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
-    STORMKIT_FORCE_INLINE constexpr view<Trait>::view(view&&) noexcept = default;
+    STORMKIT_FORCE_INLINE
+    constexpr view<Trait>::view(view&&) noexcept = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::operator=(view&&) noexcept -> view& = default;
 
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::handle() const noexcept -> element_type {
         return handle_;
@@ -555,7 +526,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr view<Trait>::operator element_type() const noexcept {
         return handle_;
@@ -564,7 +534,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr view<Trait>::operator bool() const noexcept {
         return handle_ != null_handle;
@@ -573,7 +542,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::operator==(element_type other) const noexcept -> bool {
         return handle_ == other;
@@ -582,7 +550,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::operator<(element_type other) const noexcept -> bool {
         return std::less<element_type> {}(handle_, other);
@@ -591,7 +558,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::operator<=(element_type other) const noexcept -> bool {
         return !(other < *this);
@@ -600,7 +566,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::operator>(element_type other) const noexcept -> bool {
         return other < *this;
@@ -609,7 +574,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::operator>=(element_type other) const noexcept -> bool {
         return !(*this < other);
@@ -618,7 +582,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::operator<=>(element_type other) const noexcept
       -> std::compare_three_way_result_t<element_type, element_type>
@@ -630,7 +593,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::operator==(const owned<trait_type>& other) const noexcept -> bool {
         return operator==(other.handle());
@@ -639,7 +601,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::operator<(const owned<trait_type>& other) const noexcept -> bool {
         return operator<(other.handle());
@@ -648,7 +609,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::operator<=(const owned<trait_type>& other) const noexcept -> bool {
         return operator<=(other.handle());
@@ -657,7 +617,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::operator>(const owned<trait_type>& other) const noexcept -> bool {
         return operator>(other.handle());
@@ -666,7 +625,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::operator>=(const owned<trait_type>& other) const noexcept -> bool {
         return operator>=(other.handle());
@@ -675,7 +633,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::operator<=>(const owned<trait_type>& other) const noexcept
       -> std::compare_three_way_result_t<element_type, element_type>
@@ -687,7 +644,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::operator==(view<trait_type> other) const noexcept -> bool {
         return operator==(other.handle());
@@ -696,7 +652,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::operator<(view<trait_type> other) const noexcept -> bool {
         return operator<(other.handle());
@@ -705,7 +660,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::operator<=(view<trait_type> other) const noexcept -> bool {
         return operator<=(other.handle());
@@ -714,7 +668,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::operator>(view<trait_type> other) const noexcept -> bool {
         return operator>(other.handle());
@@ -723,7 +676,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::operator>=(view<trait_type> other) const noexcept -> bool {
         return operator>=(other.handle());
@@ -732,7 +684,6 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<typename Trait>
-        requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto view<Trait>::operator<=>(view<trait_type> other) const noexcept
       -> std::compare_three_way_result_t<element_type, element_type>
