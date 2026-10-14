@@ -11,7 +11,7 @@ import stormkit.test;
 
 #include <stormkit/test/test_macro.hpp>
 
-using namespace stormkit::core;
+using namespace stormkit;
 using namespace std::literals;
 
 using test_handle = void*;
@@ -75,28 +75,46 @@ namespace {
             [] {
                 {
                     auto value = owned_test_handle::create();
-                    EXPECTS(value.managed() != TEST_INVALID_HANDLE);
+                    EXPECTS(value.handle() != TEST_INVALID_HANDLE);
 
                     auto handle = create_test();
                     auto value2 = owned_test_handle::take(std::move(handle));
 
-                    EXPECTS(value2.managed() != TEST_INVALID_HANDLE);
+                    EXPECTS(value2.handle() != TEST_INVALID_HANDLE);
                 }
                 {
                     auto value = owned_test_handle2::create();
-                    EXPECTS(value.managed() != TEST_INVALID_HANDLE);
+                    EXPECTS(value.handle() != TEST_INVALID_HANDLE);
 
                     auto value2 = owned_test_handle2::take(create_test());
-                    EXPECTS(value2.managed() != TEST_INVALID_HANDLE);
+                    EXPECTS(value2.handle() != TEST_INVALID_HANDLE);
                 }
                 {
                     auto value = owned_test_handle3::create();
-                    EXPECTS(value.managed() != TEST_INVALID_HANDLE);
+                    EXPECTS(value.handle() != TEST_INVALID_HANDLE);
 
                     auto handle = create_test();
                     auto value2 = owned_test_handle3::take(std::move(handle));
 
-                    EXPECTS(value2.managed() != TEST_INVALID_HANDLE);
+                    EXPECTS(value2.handle() != TEST_INVALID_HANDLE);
+                }
+            } },
+          { "view_construction",
+            [] {
+                {
+                    auto value = owned_test_handle::create();
+                    auto view  = core::view { value };
+                    EXPECTS(view.handle() == value.handle());
+                }
+                {
+                    auto value = owned_test_handle2::create();
+                    auto view  = core::view { value };
+                    EXPECTS(view.handle() == value.handle());
+                }
+                {
+                    auto value = owned_test_handle3::create();
+                    auto view  = core::view { value };
+                    EXPECTS(view.handle() == value.handle());
                 }
             } },
 

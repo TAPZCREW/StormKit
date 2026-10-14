@@ -73,7 +73,7 @@ export namespace stormkit { inline namespace core {
 
     template<typename Trait>
         requires(meta::is_owned_trait<Trait>)
-    class owned {
+    class STORMKIT_OWNER STORMKIT_TRIVIALLY_RELOCATABLE owned {
         using owned_type = owned<Trait>;
 
       public:
@@ -82,7 +82,7 @@ export namespace stormkit { inline namespace core {
         using constructor_type = decltype(trait_type::constructor);
         using deleter_type     = decltype(trait_type::deleter);
 
-        static constexpr auto null_handle = meta::details::null_handle_selector<Trait>::value;
+        static constexpr auto null_handle = meta::details::null_handle_selector<trait_type>::value;
 
         constexpr ~owned() noexcept;
 
@@ -105,9 +105,41 @@ export namespace stormkit { inline namespace core {
         static constexpr auto take(element_type&& value) noexcept -> owned_type;
         static constexpr auto empty() noexcept -> owned_type;
 
-        constexpr auto managed() const noexcept -> element_type;
+        constexpr auto handle() const noexcept STORMKIT_LIFETIMEBOUND -> element_type;
         constexpr auto release() noexcept -> element_type;
         constexpr auto reset(element_type handle = null_handle) noexcept -> void;
+
+        constexpr          operator element_type() const noexcept STORMKIT_LIFETIMEBOUND;
+        constexpr explicit operator bool() const noexcept;
+
+        [[nodiscard]]
+        constexpr auto operator==(element_type) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator<(element_type) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator<=(element_type) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator>(element_type) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator>=(element_type) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator<=>(element_type) const noexcept -> std::compare_three_way_result_t<element_type, element_type>
+            requires std::three_way_comparable<element_type, element_type>;
+
+        [[nodiscard]]
+        constexpr auto operator==(const owned<trait_type>&) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator<(const owned<trait_type>&) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator<=(const owned<trait_type>&) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator>(const owned<trait_type>&) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator>=(const owned<trait_type>&) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator<=>(const owned<trait_type>&) const noexcept
+          -> std::compare_three_way_result_t<element_type, element_type>
+            requires std::three_way_comparable<element_type, element_type>;
 
       private:
         constexpr owned() noexcept;
@@ -115,11 +147,79 @@ export namespace stormkit { inline namespace core {
 
         constexpr auto destroy() noexcept -> void;
 
-        element_type managed_ = null_handle;
+        element_type handle_ = null_handle;
     };
 
-    template<typename T>
-    class view {};
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    class STORMKIT_VIEW STORMKIT_TRIVIALLY_RELOCATABLE view {
+      public:
+        using trait_type   = Trait;
+        using element_type = trait_type::element_type;
+
+        static constexpr auto null_handle = meta::details::null_handle_selector<trait_type>::value;
+
+        constexpr view(const owned<trait_type>& owned_handle STORMKIT_LIFETIMEBOUND) noexcept;
+        constexpr view(element_type handle) noexcept;
+        constexpr ~view() noexcept;
+
+        constexpr view(const view&) noexcept;
+        constexpr auto operator=(const view&) noexcept -> view&;
+
+        constexpr view(view&&) noexcept;
+        constexpr auto operator=(view&&) noexcept -> view&;
+
+        constexpr auto handle() const noexcept STORMKIT_LIFETIMEBOUND -> element_type;
+
+        constexpr          operator element_type() const noexcept STORMKIT_LIFETIMEBOUND;
+        constexpr explicit operator bool() const noexcept;
+
+        [[nodiscard]]
+        constexpr auto operator==(element_type) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator<(element_type) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator<=(element_type) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator>(element_type) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator>=(element_type) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator<=>(element_type) const noexcept -> std::compare_three_way_result_t<element_type, element_type>
+            requires std::three_way_comparable<element_type, element_type>;
+
+        [[nodiscard]]
+        constexpr auto operator==(const owned<trait_type>&) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator<(const owned<trait_type>&) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator<=(const owned<trait_type>&) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator>(const owned<trait_type>&) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator>=(const owned<trait_type>&) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator<=>(const owned<trait_type>&) const noexcept
+          -> std::compare_three_way_result_t<element_type, element_type>
+            requires std::three_way_comparable<element_type, element_type>;
+
+        [[nodiscard]]
+        constexpr auto operator==(view<trait_type>) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator<(view<trait_type>) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator<=(view<trait_type>) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator>(view<trait_type>) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator>=(view<trait_type>) const noexcept -> bool;
+        [[nodiscard]]
+        constexpr auto operator<=>(view<trait_type>) const noexcept -> std::compare_three_way_result_t<element_type, element_type>
+            requires std::three_way_comparable<element_type, element_type>;
+
+      private:
+        element_type handle_;
+    };
 }} // namespace stormkit::core
 
 ////////////////////////////////////////////////////////////////////
@@ -138,7 +238,7 @@ namespace stormkit { inline namespace core {
         requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr owned<Trait>::owned(element_type handle) noexcept
-        : managed_ { handle } {
+        : handle_ { handle } {
     }
 
     /////////////////////////////////////
@@ -147,7 +247,7 @@ namespace stormkit { inline namespace core {
         requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::destroy() noexcept -> void {
-        if (managed_ != null_handle) trait_type::deleter(managed_);
+        if (handle_ != null_handle) trait_type::deleter(handle_);
     }
 
     /////////////////////////////////////
@@ -164,7 +264,7 @@ namespace stormkit { inline namespace core {
         requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr owned<Trait>::owned(owned&& other) noexcept
-        : managed_ { std::exchange(other.managed_, null_handle) } {
+        : handle_ { std::exchange(other.handle_, null_handle) } {
     }
 
     /////////////////////////////////////
@@ -176,7 +276,7 @@ namespace stormkit { inline namespace core {
         if (&other == this) [[unlikely]]
             return *this;
 
-        managed_ = std::exchange(other.managed_, null_handle);
+        handle_ = std::exchange(other.handle_, null_handle);
 
         return *this;
     }
@@ -237,8 +337,8 @@ namespace stormkit { inline namespace core {
     template<typename Trait>
         requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
-    constexpr auto owned<Trait>::managed() const noexcept -> element_type {
-        return managed_;
+    constexpr auto owned<Trait>::handle() const noexcept -> element_type {
+        return handle_;
     }
 
     /////////////////////////////////////
@@ -247,9 +347,9 @@ namespace stormkit { inline namespace core {
         requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::release() noexcept -> element_type {
-        const auto managed = managed_;
-        managed_           = null_handle;
-        return managed;
+        const auto handle = handle_;
+        handle_           = null_handle;
+        return handle;
     }
 
     /////////////////////////////////////
@@ -258,6 +358,386 @@ namespace stormkit { inline namespace core {
         requires(meta::is_owned_trait<Trait>)
     STORMKIT_FORCE_INLINE
     constexpr auto owned<Trait>::reset(element_type handle) noexcept -> void {
-        managed_ = handle;
+        handle_ = handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr owned<Trait>::operator element_type() const noexcept {
+        return handle_;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr owned<Trait>::operator bool() const noexcept {
+        return handle_ != null_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto owned<Trait>::operator==(element_type other) const noexcept -> bool {
+        return handle_ == other;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto owned<Trait>::operator<(element_type other) const noexcept -> bool {
+        return std::less<element_type> {}(handle_, other);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto owned<Trait>::operator<=(element_type other) const noexcept -> bool {
+        return !(other < *this);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto owned<Trait>::operator>(element_type other) const noexcept -> bool {
+        return other < *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto owned<Trait>::operator>=(element_type other) const noexcept -> bool {
+        return !(*this < other);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto owned<Trait>::operator<=>(element_type other) const noexcept
+      -> std::compare_three_way_result_t<element_type, element_type>
+        requires std::three_way_comparable<element_type, element_type>
+    {
+        return std::compare_three_way {}(handle_, other);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto owned<Trait>::operator==(const owned<trait_type>& other) const noexcept -> bool {
+        return operator==(other.handle());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto owned<Trait>::operator<(const owned<trait_type>& other) const noexcept -> bool {
+        return operator<(other.handle());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto owned<Trait>::operator<=(const owned<trait_type>& other) const noexcept -> bool {
+        return operator<=(other.handle());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto owned<Trait>::operator>(const owned<trait_type>& other) const noexcept -> bool {
+        return operator>(other.handle());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto owned<Trait>::operator>=(const owned<trait_type>& other) const noexcept -> bool {
+        return operator>=(other.handle());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto owned<Trait>::operator<=>(const owned<trait_type>& other) const noexcept
+      -> std::compare_three_way_result_t<element_type, element_type>
+        requires std::three_way_comparable<element_type, element_type>
+    {
+        return operator<=>(other.handle());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr view<Trait>::view(const owned<trait_type>& owned_handle) noexcept
+        : handle_ { owned_handle.handle() } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr view<Trait>::view(element_type handle) noexcept
+        : handle_ { handle } {
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE constexpr view<Trait>::~view() noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE constexpr view<Trait>::view(const view&) noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::operator=(const view&) noexcept -> view& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE constexpr view<Trait>::view(view&&) noexcept = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::operator=(view&&) noexcept -> view& = default;
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::handle() const noexcept -> element_type {
+        return handle_;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr view<Trait>::operator element_type() const noexcept {
+        return handle_;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr view<Trait>::operator bool() const noexcept {
+        return handle_ != null_handle;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::operator==(element_type other) const noexcept -> bool {
+        return handle_ == other;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::operator<(element_type other) const noexcept -> bool {
+        return std::less<element_type> {}(handle_, other);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::operator<=(element_type other) const noexcept -> bool {
+        return !(other < *this);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::operator>(element_type other) const noexcept -> bool {
+        return other < *this;
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::operator>=(element_type other) const noexcept -> bool {
+        return !(*this < other);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::operator<=>(element_type other) const noexcept
+      -> std::compare_three_way_result_t<element_type, element_type>
+        requires std::three_way_comparable<element_type, element_type>
+    {
+        return std::compare_three_way {}(handle_, other);
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::operator==(const owned<trait_type>& other) const noexcept -> bool {
+        return operator==(other.handle());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::operator<(const owned<trait_type>& other) const noexcept -> bool {
+        return operator<(other.handle());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::operator<=(const owned<trait_type>& other) const noexcept -> bool {
+        return operator<=(other.handle());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::operator>(const owned<trait_type>& other) const noexcept -> bool {
+        return operator>(other.handle());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::operator>=(const owned<trait_type>& other) const noexcept -> bool {
+        return operator>=(other.handle());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::operator<=>(const owned<trait_type>& other) const noexcept
+      -> std::compare_three_way_result_t<element_type, element_type>
+        requires std::three_way_comparable<element_type, element_type>
+    {
+        return operator<=>(other.handle());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::operator==(view<trait_type> other) const noexcept -> bool {
+        return operator==(other.handle());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::operator<(view<trait_type> other) const noexcept -> bool {
+        return operator<(other.handle());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::operator<=(view<trait_type> other) const noexcept -> bool {
+        return operator<=(other.handle());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::operator>(view<trait_type> other) const noexcept -> bool {
+        return operator>(other.handle());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::operator>=(view<trait_type> other) const noexcept -> bool {
+        return operator>=(other.handle());
+    }
+
+    /////////////////////////////////////
+    /////////////////////////////////////
+    template<typename Trait>
+        requires(meta::is_owned_trait<Trait>)
+    STORMKIT_FORCE_INLINE
+    constexpr auto view<Trait>::operator<=>(view<trait_type> other) const noexcept
+      -> std::compare_three_way_result_t<element_type, element_type>
+        requires std::three_way_comparable<element_type, element_type>
+    {
+        return operator<=>(other.handle());
     }
 }} // namespace stormkit::core
