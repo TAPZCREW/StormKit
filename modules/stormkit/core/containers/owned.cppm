@@ -33,9 +33,7 @@ namespace stormkit { inline namespace core { namespace meta::details {
         typename Trait::element_type;
         trait.constructor;
         trait.deleter;
-    };
-    // } and details::valid_constructor(decltype(Trait::constructor), typename Trait::element_type) and
-    // details::valid_deleter(decltype(Trait::deleter), typename Trait::element_type);
+    } and details::valid_constructor<decltype(Trait::constructor), typename Trait::element_type> and details::valid_deleter<decltype(Trait::deleter), typename Trait::element_type>;
 
     template<typename Trait>
     concept trait_has_null_handle = is_owned_trait<Trait> and requires(const Trait& trait) {
