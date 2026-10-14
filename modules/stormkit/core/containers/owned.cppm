@@ -194,6 +194,7 @@ export namespace stormkit { inline namespace core {
 
         static constexpr auto null_handle = meta::details::null_handle_selector<trait_type>::value;
 
+        constexpr view(owned<trait_type>&&) noexcept = delete;
         constexpr view(const owned<trait_type>& owned_handle STORMKIT_LIFETIMEBOUND) noexcept;
         constexpr view(element_type handle) noexcept;
         constexpr ~view() noexcept;

@@ -108,6 +108,15 @@ using owned_test_handle6 = owned<test_handle_trait6>;
 
 static_assert(meta::derived_from<owned_test_handle4, test_handle_interface>);
 
+auto foo(core::view<test_handle_trait4> handle) {
+}
+
+auto foo(core::view<test_handle_trait5> handle) {
+}
+
+auto foo(core::view<test_handle_trait6> handle) {
+}
+
 namespace {
     auto _ = test::test_suite {
         "core.owned",
@@ -186,16 +195,28 @@ namespace {
                     auto value = owned_test_handle4::create();
                     auto view  = core::view { value };
                     EXPECTS(view.handle() == value.handle());
+
+                    foo(value);
+                    foo(view);
+                    foo(std::move(view));
                 }
                 {
                     auto value = owned_test_handle5::create();
                     auto view  = core::view { value };
                     EXPECTS(view.handle() == value.handle());
+
+                    foo(value);
+                    foo(view);
+                    foo(std::move(view));
                 }
                 {
                     auto value = owned_test_handle6::create();
                     auto view  = core::view { value };
                     EXPECTS(view.handle() == value.handle());
+
+                    foo(value);
+                    foo(view);
+                    foo(std::move(view));
                 }
             } },
           { "interfaces",
