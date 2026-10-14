@@ -36,8 +36,8 @@ auto Renderer::renderFrame() -> void {
     }
 
     const auto viewports = [&] {
-        auto v = dynarray<gpu::Viewport> {};
-        v.emplace_back(gpu::Viewport {
+        auto v = dynarray<gpu::viewport> {};
+        v.emplace_back(gpu::viewport {
           .extent = surface_extentf,
           .depth  = { 0, 1 }
         });
@@ -46,8 +46,8 @@ auto Renderer::renderFrame() -> void {
     }();
 
     const auto scissors = [&] {
-        auto s = dynarray<gpu::Scissor> {};
-        s.emplace_back(gpu::Scissor { .extent = surface_extent });
+        auto s = dynarray<gpu::scissor> {};
+        s.emplace_back(gpu::scissor { .extent = surface_extent });
 
         return s;
     }();
@@ -134,8 +134,8 @@ auto Renderer::do_initMeshRenderObjects() -> void {
     const auto& surface_extent  = surface_->extent();
     const auto  surface_extentf = math::fextent2 { surface_extent };
 
-    m_board.vertex_shader   = m_device->allocateShader(SHADER_DATA, gpu::ShaderStageFlag::Vertex);
-    m_board.fragment_shader = m_device->allocateShader(SHADER_DATA, gpu::ShaderStageFlag::Fragment);
+    m_board.vertex_shader   = m_device->allocateShader(SHADER_DATA, gpu::shader_stage_flag::Vertex);
+    m_board.fragment_shader = m_device->allocateShader(SHADER_DATA, gpu::shader_stage_flag::Fragment);
 
     const auto description = gpu::RenderPassDescription {
         .attachments = { { .format = surface_->pixelFormat() } },
@@ -146,7 +146,7 @@ auto Renderer::do_initMeshRenderObjects() -> void {
     m_descriptor_set_layout
       ->addBinding({ .binding          = 0,
                      .type             = gpu::DescriptorType::Combined_Image_Sampler,
-                     .stages           = gpu::ShaderStageFlag::Fragment,
+                     .stages           = gpu::shader_stage_flag::Fragment,
                      .descriptor_count = 1 });
     m_descriptor_set_layout->bake();
     m_descriptor_pool = m_device->allocateDescriptorPool(
@@ -160,17 +160,17 @@ auto Renderer::do_initMeshRenderObjects() -> void {
     m_board.pipeline = m_device->allocateRasterPipeline();
     const auto state = gpu::RasterPipelineState {
         .input_assembly_state = { .topology = gpu::PrimitiveTopology::Triangle_Strip },
-        .viewport_state       = { .viewports = { gpu::Viewport { .position = { 0.f, 0.f },
+        .viewport_state       = { .viewports = { gpu::viewport { .position = { 0.f, 0.f },
                                                                  .extent   = surface_extentf,
                                                                  .depth    = { 0.f, 1.f } } },
-                                 .scissors  = { gpu::Scissor { .offset = { 0, 0 }, .extent = surface_extent } } },
+                                 .scissors  = { gpu::scissor { .offset = { 0, 0 }, .extent = surface_extent } } },
         .color_blend_state    = { .attachments = { { .blend_enable           = true,
                                                      .src_color_blend_factor = gpu::BlendFactor::Src_Alpha,
                                                      .dst_color_blend_factor = gpu::BlendFactor::One_Minus_Src_Alpha,
                                                      .src_alpha_blend_factor = gpu::BlendFactor::Src_Alpha,
                                                      .dst_alpha_blend_factor = gpu::BlendFactor::One_Minus_Src_Alpha,
                                                      .alpha_blend_operation  = gpu::BlendOperation::Add } } },
-        .dynamic_state        = { { gpu::DynamicState::Viewport, gpu::DynamicState::Scissor } },
+        .dynamic_state        = { { gpu::DynamicState::viewport, gpu::DynamicState::scissor } },
         .shader_state         = { .shaders = makeConstObserverArray(m_board.vertex_shader, m_board.fragment_shader) },
         /*.vertex_input_state   = { .binding_descriptions =
                                     to_dynarray(MESH_VERTEX_BINDING_DESCRIPTIONS),

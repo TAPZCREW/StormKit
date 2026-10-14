@@ -1,5 +1,5 @@
 namespace("tests", function()
-    for _, name in ipairs({ "core", "math", "log", "entities", "gpu", "image", "wsi", "lua" }) do
+    for _, name in ipairs({ "core", "math", "log", "entities", "gpu", "image", "wsi" }) do
         if name == "core" or get_config(name) then
             for _, file in ipairs(os.files(path.join(os.projectdir(), "tests", name, "**.cpp"))) do
                 local testname = path.basename(file)

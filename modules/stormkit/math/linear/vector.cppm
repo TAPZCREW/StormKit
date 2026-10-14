@@ -67,6 +67,8 @@ export namespace stormkit::math {
         template<typename Self>
         constexpr auto y(this Self& self) -> cmeta::forward_const_to<Self, T>&;
 
+
+
         STORMKIT_FOR_EACH_COMBINATION(GEN_SWIZZLE2, (x, y), (x, y))
     };
 

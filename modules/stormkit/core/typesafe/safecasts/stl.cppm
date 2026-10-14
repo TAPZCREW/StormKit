@@ -574,7 +574,7 @@ namespace stormkit { inline namespace core {
     /////////////////////////////////////
     /////////////////////////////////////
     template<meta::has_as_string_view From>
-        STORMKIT_FORCE_INLINE
+    STORMKIT_FORCE_INLINE
     constexpr auto tag_invoke(meta::tag<as<string>>, From&& value, source_location_arg) noexcept -> string
         requires(not meta::plain::is<From, string>)
     {
@@ -589,10 +589,13 @@ namespace stormkit { inline namespace core {
         out.resize(16);
         auto&& [ptr, errc] = std::to_chars(stdr::data(out), stdr::data(out) + stdr::size(out), value, base);
         if consteval {
-            ensures(errc != std::errc {}, "Failed to convert to string");
+            ensures(errc == std::errc {}, "Failed to convert to string");
         } else {
-            ensures(errc != std::errc {},
-                    std::format("Failed to convert {} {} to string, reason: {}!", value, base, error_code::from_stderrc(errc)));
+            ensures(errc == std::errc {},
+                    std::format("Failed to convert {} (with base {}) to string, reason: {}!",
+                                value,
+                                base,
+                                error_code::from_stderrc(errc)));
         }
 
         const auto size = std::distance(stdr::data(out), ptr);
@@ -609,9 +612,9 @@ namespace stormkit { inline namespace core {
         out.resize(16, '\0');
         auto&& [ptr, errc] = std::to_chars(stdr::data(out), stdr::data(out) + stdr::size(out), value, fmt);
         if consteval {
-            ensures(errc != std::errc {}, "Failed to convert to string");
+            ensures(errc == std::errc {}, "Failed to convert to string");
         } else {
-            ensures(errc != std::errc {},
+            ensures(errc == std::errc {},
                     std::format("Failed to convert {} (fmt: {}) to string, reason: {}!",
                                 value,
                                 fmt,
@@ -631,9 +634,9 @@ namespace stormkit { inline namespace core {
         auto out         = To { 0 };
         auto&& [_, errc] = std::from_chars(stdr::data(value), stdr::data(value) + stdr::size(value), out, base);
         if consteval {
-            ensures(errc != std::errc {}, "Failed to convert from string");
+            ensures(errc == std::errc {}, "Failed to convert from string");
         } else {
-            ensures(errc != std::errc {},
+            ensures(errc == std::errc {},
                     std::format("Failed to convert from string {} (base: {}), reason: {}!",
                                 value,
                                 base,
@@ -650,9 +653,9 @@ namespace stormkit { inline namespace core {
         auto out         = To { 0. };
         auto&& [_, errc] = std::from_chars(stdr::data(value), stdr::data(value) + stdr::size(value), out, fmt);
         if consteval {
-            ensures(errc != std::errc {}, "Failed to convert from string");
+            ensures(errc == std::errc {}, "Failed to convert from string");
         } else {
-            ensures(errc != std::errc {},
+            ensures(errc == std::errc {},
                     std::format("Failed to convert from string {} (fmt: {}), reason: {}!",
                                 value,
                                 fmt,

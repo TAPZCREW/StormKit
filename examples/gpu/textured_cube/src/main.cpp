@@ -53,8 +53,8 @@ struct Vertex {
 
     static constexpr auto attribute_descriptions() noexcept -> array<gpu::VertexInputAttributeDescription, 2> {
         return to_array<gpu::VertexInputAttributeDescription>({
-          { .location = 0, .binding = 0, .format = gpu::PixelFormat::RGB32F, .offset = offsetof(Vertex, position) },
-          { .location = 1, .binding = 0, .format = gpu::PixelFormat::RG32F,  .offset = offsetof(Vertex, uv)       }
+          { .location = 0, .binding = 0, .format = gpu::pixel_format::RGB32F, .offset = offsetof(Vertex, position) },
+          { .location = 1, .binding = 0, .format = gpu::pixel_format::RG32F,  .offset = offsetof(Vertex, uv)       }
         });
     }
 
@@ -71,7 +71,7 @@ struct ViewerData {
     static constexpr auto layout_binding() -> gpu::DescriptorSetLayoutBinding {
         return { .binding          = 0,
                  .type             = gpu::DescriptorType::UNIFORM_BUFFER,
-                 .stages           = gpu::ShaderStageFlag::VERTEX,
+                 .stages           = gpu::shader_stage_flag::VERTEX,
                  .descriptor_count = 1 };
     }
 };
@@ -147,10 +147,10 @@ class Application: public base::Application {
                                        "Failed to create descriptor pool!");
 
         // load shaders
-        m_vertex_shader = TryXAssert(gpu::Shader::load_from_file(m_device, SHADER, gpu::ShaderStageFlag::VERTEX),
+        m_vertex_shader = TryXAssert(gpu::Shader::load_from_file(m_device, SHADER, gpu::shader_stage_flag::VERTEX),
                                      std::format("Failed to load vertex shader {}!", SHADER.string()));
 
-        m_fragment_shader = TryXAssert(gpu::Shader::load_from_file(m_device, SHADER, gpu::ShaderStageFlag::FRAGMENT),
+        m_fragment_shader = TryXAssert(gpu::Shader::load_from_file(m_device, SHADER, gpu::shader_stage_flag::FRAGMENT),
                                        std::format("Failed to load fragment shader {}!", SHADER.string()));
 
         m_descriptor_set_layout = TryXAssert(gpu::DescriptorSetLayout::
@@ -159,7 +159,7 @@ class Application: public base::Application {
                                                                     gpu::DescriptorSetLayoutBinding {
                                                                       1,
                                                                       gpu::DescriptorType::COMBINED_IMAGE_SAMPLER,
-                                                                      gpu::ShaderStageFlag::FRAGMENT,
+                                                                      gpu::shader_stage_flag::FRAGMENT,
                                                                       1 })),
                                              "Failed to create descriptor set layout!");
 
@@ -171,16 +171,16 @@ class Application: public base::Application {
         // initialize render pass
         const auto depth_format = [this] {
             const auto formats_properties = m_physical_device->formats_properties();
-            const auto candidates         = array { gpu::PixelFormat::DEPTH32F,
-                                                    gpu::PixelFormat::DEPTH32F_STENCIL8U,
-                                                    gpu::PixelFormat::DEPTH24_UNORM_STENCIL8U };
+            const auto candidates         = array { gpu::pixel_format::DEPTH32F,
+                                                    gpu::pixel_format::DEPTH32F_STENCIL8U,
+                                                    gpu::pixel_format::DEPTH24_UNORM_STENCIL8U };
 
             for (const auto format : candidates) {
                 const auto properties = stdr::find_if(formats_properties, [format](const auto& pair) {
                     return pair.first == format;
                 });
                 ENSURES(properties != stdr::cend(formats_properties));
-                if (has_flag_bit(properties->second.optimal_tiling_features, gpu::FormatFeatureFlag::DEPTH_STENCIL_ATTACHMENT)) {
+                if (has_flag_bit(properties->second.optimal_tiling_features, gpu::format_feature_flag::DEPTH_STENCIL_ATTACHMENT)) {
                     return format;
                 }
             }
@@ -190,19 +190,19 @@ class Application: public base::Application {
         }();
 
         const auto depth_aspect_flag = [depth_format] {
-            auto flag = gpu::ImageAspectFlag::DEPTH;
-            if (gpu::is_depth_stencil_format(depth_format)) flag |= gpu::ImageAspectFlag::STENCIL;
+            auto flag = gpu::image_aspect_flag::DEPTH;
+            if (gpu::is_depth_stencil_format(depth_format)) flag |= gpu::image_aspect_flag::STENCIL;
             return flag;
         }();
 
         // initialize render pipeline
         const auto window_extent   = m_window->extent();
-        const auto window_viewport = gpu::Viewport {
+        const auto window_viewport = gpu::viewport {
             .position = { 0.f, 0.f },
             .extent   = window_extent.to<f32>(),
             .depth    = { 0.f, 1.f },
         };
-        const auto scissor = gpu::Scissor {
+        const auto scissor = gpu::scissor {
             .offset = { 0, 0 },
             .extent = window_extent,
         };
@@ -251,7 +251,7 @@ class Application: public base::Application {
 
         m_texture = TryXAssert(gpu::Image::create(m_device,
                                                   { .extent = image.extent(),
-                                                    .format = gpu::PixelFormat::RGBA8_UNORM,
+                                                    .format = gpu::pixel_format::RGBA8_UNORM,
                                                     .usages = gpu::ImageUsageFlag::SAMPLED | gpu::ImageUsageFlag::TRANSFER_DST,
                                                     .properties = gpu::MemoryPropertyFlag::DEVICE_LOCAL }),
                                "Failed to allocate texture!");
@@ -267,7 +267,7 @@ class Application: public base::Application {
             auto copy_cmb = TryXAssert(m_command_pool->create_command_buffer(), "Failed to allocate copy texture buffer");
             DiscardTryXAssert((copy_cmb.record([&](auto cmb) noexcept {
                                   const auto copy = array {
-                                      gpu::BufferImageCopy {
+                                      gpu::buffer_image_copy {
                                                             .buffer_offset       = 0,
                                                             .buffer_row_length   = 0,
                                                             .buffer_image_height = 0,
@@ -355,7 +355,7 @@ class Application: public base::Application {
             auto depth_view = TryXAssert(gpu::ImageView::create(m_device,
                                                                 { .image             = depth_image,
                                                                   .subresource_range = gpu::
-                                                                    ImageSubresourceRange { .aspect_mask = depth_aspect_flag } }),
+                                                                    image_subresource_range { .aspect_mask = depth_aspect_flag } }),
                                          "Failed to create depth image view!");
 
             m_image_resources.push_back({ .image           = swap_image,
@@ -470,10 +470,10 @@ class Application: public base::Application {
             .render_area = { .x = 0, .y = 0, .width = window_as<iextent2>(extent())().width, .height = window_as<iextent2>(extent())().height },
             .color_attachments = { { .image_view  = swapchain_image_resource.view,
                                      .layout      = gpu::ImageLayout::ATTACHMENT_OPTIMAL,
-                                     .clear_value = gpu::ClearColor { .color = colors::silver<f32> } } },
+                                     .clear_value = gpu::clear_color { .color = colors::silver<f32> } } },
             .depth_attachment  = { { .image_view  = swapchain_image_resource.depth_view,
                                      .layout      = gpu::ImageLayout::ATTACHMENT_OPTIMAL,
-                                     .clear_value = gpu::ClearDepthStencil {} } }
+                                     .clear_value = gpu::clear_depth_stencil {} } }
         };
 
         // render in it

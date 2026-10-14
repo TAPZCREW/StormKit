@@ -43,10 +43,10 @@ class Application: public base::Application {
   public:
     auto init_example() {
         // load shaders
-        m_vertex_shader = TryXAssert(gpu::Shader::load_from_file(m_device, SHADER, gpu::ShaderStageFlag::VERTEX),
+        m_vertex_shader = TryXAssert(gpu::Shader::load_from_file(m_device, SHADER, gpu::shader_stage_flag::VERTEX),
                                     std::format("Failed to load vertex shader {}!", SHADER.string()));
 
-        m_fragment_shader = TryXAssert(gpu::Shader::load_from_file(m_device, SHADER, gpu::ShaderStageFlag::FRAGMENT),
+        m_fragment_shader = TryXAssert(gpu::Shader::load_from_file(m_device, SHADER, gpu::shader_stage_flag::FRAGMENT),
                                       std::format("Failed to load fragment shader {}!", SHADER.string()));
 
         m_pipeline_layout = TryXAssert(gpu::PipelineLayout::create(m_device, gpu::RasterPipelineLayout {}),
@@ -55,12 +55,12 @@ class Application: public base::Application {
         const auto window_extent = m_window->extent();
 
         // initialize render pipeline
-        const auto window_viewport = gpu::Viewport {
+        const auto window_viewport = gpu::viewport {
             .position = { 0.f, 0.f },
             .extent   = window_extent.to<f32>(),
             .depth    = { 0.f, 1.f },
         };
-        const auto scissor = gpu::Scissor {
+        const auto scissor = gpu::scissor {
             .offset = { 0, 0 },
             .extent = window_extent,
         };
@@ -174,7 +174,7 @@ class Application: public base::Application {
             .render_area       = { .x = 0, .y = 0, .width = window_extent.width, .height = window_extent.height },
             .color_attachments = { { .image_view  = swapchain_image_resource.view,
                                      .layout      = gpu::ImageLayout::ATTACHMENT_OPTIMAL,
-                                     .clear_value = gpu::ClearColor { .color = colors::silver<f32> } } }
+                                     .clear_value = gpu::clear_color { .color = colors::silver<f32> } } }
         };
 
         // render in it

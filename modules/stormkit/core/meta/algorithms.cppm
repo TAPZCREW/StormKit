@@ -19,6 +19,7 @@ namespace stormkit { inline namespace core { namespace meta::details {
     struct lazy_type {
         using type = T;
     };
+
     template<bool, template<class...> typename, typename, typename>
     struct lazy_conditional;
 
